@@ -1,0 +1,125 @@
+names = ["B1_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 7;
+timepoints = [0,17,25,44,66,75,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+
+
+names = ["B2_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 7;
+timepoints = [0,17,25,44,66,75,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+
+names = ["B3_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 7;
+timepoints = [0,17,25,44,66,75,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+
+
+
+
+
+##Planktonic
+
+
+names = ["P1_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 5;
+timepoints = [0,17,44,66,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+
+
+
+
+
+names = ["P2_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 5;
+timepoints = [0,17,44,66,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+
+
+
+names = ["P3_muller_try1.xlsx"];
+sheets = ["Sheet1"];
+tNum = 5;
+timepoints = [0,17,44,66,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)
+
+## the above did not work, so I had to go back to the long list of mutations for the P3 population
+
+names = ["P3_muller_try2.xlsx"];
+sheets = ["Sheet1"];
+tNum = 5;
+timepoints = [0,17,44,66,90];
+xUnits = ["Days"];
+time_series_import_KMF
+get_genotypes_KMF
+
+order_clusters_KMF
+
+frequencies = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), 2:trajSize));
+nests = squeeze(genneststotal(1, any(squeeze(genneststotal(1, :, :)), 2), nameSize:end));
+nests = nests(:, any(nests, 1));
+muller_plots_KMF(frequencies, nests, timepoints)

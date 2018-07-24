@@ -151,12 +151,12 @@ for npop = 1
                       %badpairs = gencombos(gencombos(:,3) <= linkcut,:); %these are all the unlinked trajectories.
                       
                       [t, t] = min(abs(gencombos(:, 3) - linkcut));
-                      
                       %try picking two more closely linked trajectories
                       
                       newtype1 = gencombos(t,1); %assign one of the unlinked to a new genotype
                       newtype2 = gencombos(t, 2); %and the other unlinked to the other one
                       for gen = 1:size(gens, 2)
+                          debug_element = gens(gen);
                           if ~ismember(gens(gen), [newtype1, newtype2]) %if the trajectory is not yet sorted
                               p1 = gencombos(ismember(gencombos(:, 1:2), [newtype1(1,1) gens(gen)] ,'rows') | ismember(gencombos(:, 1:2), [gens(gen) newtype1(1,1)] ,'rows'),3);
                               p2 = gencombos(ismember(gencombos(:, 1:2), [newtype2(1,1) gens(gen)] ,'rows') | ismember(gencombos(:, 1:2), [gens(gen) newtype2(1,1)] ,'rows'),3);
@@ -255,9 +255,10 @@ end
 %gen_corrections
 
 %extract average trajectories from counts
+%FOR DEBUGGING PURPOSES
 avetrajectories_KMF
 
-%clear extraneous variables.
+clear extraneous variables.
 
 clear ans c column1 column2 combos dif difbar gen gencombos geno genotypes...
     gens n1 n2 ncolors newrow newsize newtype1 newtype2 ngenotypes npop ntrajectories...

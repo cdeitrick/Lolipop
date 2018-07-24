@@ -139,6 +139,8 @@ for npop = 1
                                 temp(index, 3) = find( trajectories(newindices(index), :) >0.15, 1, 'first');
                             else
                                 temp(index, 3) = 13;
+                                t = 0;
+                                t = 0;
                             end
                         end
                         while size(temp,1)>1
@@ -301,10 +303,10 @@ for npop = 1
     
 end
 
-clear backgrounds cut delta deltacut deltatest deltatype endpoint frequencies...
-    frequency gennests genotype gensorted index indices junk newindices ...
-    startpoint temp test testtrajectory time total trajectories trajectorydiff...
-    trajectorysum type typetrajectory where
+%clear backgrounds cut delta deltacut deltatest deltatype endpoint frequencies...
+%    frequency gennests genotype gensorted index indices junk newindices ...
+%    startpoint temp test testtrajectory time total trajectories trajectorydiff...
+%    trajectorysum type typetrajectory where
 
 
 
