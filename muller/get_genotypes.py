@@ -2,15 +2,16 @@
 import pandas
 
 import itertools
-from pprint import pprint
 import math
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict, Tuple
 from pathlib import Path
 try:
 	from muller.time_series_import import import_timeseries
 except ModuleNotFoundError:
 	from time_series_import import import_timeseries
+
+
 
 @dataclass
 class PairArrayValue:
@@ -24,11 +25,12 @@ class PairArrayValue:
 	sigma_value: float
 	difbar: float
 
+PairwiseArrayType = Dict[Tuple[int,int],PairArrayValue]
 
-def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFrame) -> List[PairArrayValue]:
+def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFrame) -> PairwiseArrayType:
 	trajectories = timeseries[[i for i in timeseries.columns if i not in ['Population', 'Position', 'Trajectory']]]
 	combos = sorted(itertools.combinations(timeseries['Trajectory'].values, 2))
-	pair_array = list()
+	pair_array = dict()
 	for pair in combos:
 		left, right = pair
 		# trajectory indicies start at 1, need to convert to 0-indexed.
@@ -54,7 +56,9 @@ def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFra
 			pair_array_value = PairArrayValue(
 				population_id, pair[0], pair[1], pval, sigmapair, difbar
 			)
-		pair_array.append(pair_array_value)
+		#pair_array.append(pair_array_value)
+		pair_array[(left, right)] = pair_array_value
+		pair_array[(right, left)] = pair_array_value
 	return pair_array
 
 
@@ -68,9 +72,13 @@ def find_genotype(element: int, genotypes: List[List[int]]) -> List[int]:
 	return value
 
 
-def find_all_genotypes(pairs: List[PairArrayValue], relative_cutoff: float = 0.05) -> List[List[int]]:
+def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float = 0.05) -> List[List[int]]:
 	genotypes = [[1]]
-	for pair in pairs:
+	seen = set()
+	for pair in pairs.values():
+		if (pair.left, pair.right) in seen or (pair.right, pair.left) in seen:
+			continue
+		seen.add((pair.left, pair.right))
 		if pair.p_value > relative_cutoff:  # are the genotypes related?
 			# Check if any of the trajectories are already listed in genotypes.
 			genotype_left = find_genotype(pair.left, genotypes)
@@ -90,7 +98,8 @@ def find_all_genotypes(pairs: List[PairArrayValue], relative_cutoff: float = 0.0
 	return genotypes
 
 
-def get_p_value(left: int, right: int, pairwise_array: List[PairArrayValue]) -> Optional[PairArrayValue]:
+def get_p_value(left: int, right: int, pairwise_array: PairwiseArrayType) -> Optional[PairArrayValue]:
+	"""
 	for candidate in pairwise_array:
 		l = candidate.left == left and candidate.right == right
 		r = candidate.left == right and candidate.right == left
@@ -98,7 +107,8 @@ def get_p_value(left: int, right: int, pairwise_array: List[PairArrayValue]) -> 
 			return candidate
 	else:
 		return None
-
+	"""
+	return pairwise_array[(left, right)]
 
 def split_genotype_in_two(genotype: List[int], unlinked_trajectories: pandas.DataFrame,
 		pair_array: List[PairArrayValue], link_cut: float):
@@ -127,7 +137,7 @@ def split_genotype_in_two(genotype: List[int], unlinked_trajectories: pandas.Dat
 	return new_genotype_1, new_genotype_2
 
 
-def split_unlinked_genotypes(genotypes: List[List[int]], pair_array: List[PairArrayValue], link_cutoff: float) -> List[
+def split_unlinked_genotypes(genotypes: List[List[int]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
 	List[int]]:
 	for genotype in genotypes:  # Operate on a copy of genotypes
 		if len(genotype) > 1:
@@ -152,11 +162,8 @@ def split_unlinked_genotypes(genotypes: List[List[int]], pair_array: List[PairAr
 
 
 def get_genotypes(timeseries: pandas.DataFrame):
-	npops = 1
-	plotting = 0
 	relative_cutoff = 0.10
 	link_cutoff = 0.05
-	totals = 0
 
 	#colors = varycolor(len(timeseries))
 	populations = timeseries.groupby(by = 'Population')
