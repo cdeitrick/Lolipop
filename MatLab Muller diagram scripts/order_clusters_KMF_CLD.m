@@ -182,79 +182,100 @@ for npop = 1
      % column 2 -> The probability this is the real genotype. Defaults to 1
      % Gennests ends up being
      % other columns -> trajectory frequencies
+     % last column is 0
 
      gennests = zeros(1, incolNum);
-     gennests(1, nameSize) = gensorted(1, 1); %name of first genotype
      gennests(1, 1) = 1; %probability that this is the real or correct genotype
+     gennests(1, nameSize) = gensorted(1, 1); %name of first genotype
      gennests(1, 2:trajSize) = trajectories(gensorted(1, 1),:); %trajectory of first genotype
-     
+     % ex. [1,0,0,0.2610,1,1,1,1,1,0]
+     % 1 - column 1: probability is correct genotype
+     % [0 - 1] - columns 2-8: genotype frequencies
+     % 1 - column 9: genotype label
+     % 0 - end: background
      for type = 2:size(gensorted, 2)
          %COMPARE TO GENOTYPES GOING BACKWARDS IN ORDER, UNTIL 'YES'
          %HAPPENS
          %QUESTIONS:
                   
          delta = 0;
-         
+         genotype_label = gensorted(1, type);
          for test = 1:(type-1)          
           % (1) is the sum of the frequencies consistently greater than 1?
           % if so, put it in the background of the other
+             test_index = type-test;
+             test_label = gensorted(1, test_index);
+             
              
              genotype = 0; 
-             testtrajectory = trajectories(gensorted(1, type-test), :);
-             typetrajectory = trajectories(gensorted(1, type), :);
+             testtrajectory = trajectories(test_label, :);
+             typetrajectory = trajectories(genotype_label, :);
+             
+             test_background = gennests(test_index,nameSize:end);
+             test_background = test_background(test_background ~= 0);
+             
              trajectorysum = testtrajectory + typetrajectory;
-             if size(trajectorysum(trajectorysum > 1.03), 2)>1 || ~isempty(trajectorysum(trajectorysum > 1.15)) %if the sum is larger than 1 at least twice, or much larger than 1 once
+             %if the sum is larger than 1 at least twice, or much larger than 1 once
+             sum_check = size(trajectorysum(trajectorysum > 1.03), 2)>1 || ~isempty(trajectorysum(trajectorysum > 1.15));
+             disp([genotype_label test_label sum_check]);
+             if sum_check
                     %SUCCESS!  
                      % Get the part of the row in gennests that does not
                      % contain trajectories. Contains genotype names?
-                     cut = gennests(type-test, nameSize: end); 
-                     genotype = [cut( cut ~= 0) gensorted(1, type) ] ; % Value in the first row indicating which genotype type belongs in.
-                     gennests(type, 1) = 1; %probability that this is the real or correct genotype
-                     gennests(type, 2:trajSize) = trajectories(gensorted(1, type),:); %trajectory of this genotype
-                     gennests(type, nameSize: trajSize+ size(genotype, 2)) = genotype;
-            end
+                     genotype = [test_background genotype_label ] ; % Value in the first row indicating which genotype type belongs in.
+                     %gennests(type, 1) = 1; %probability that this is the real or correct genotype
+                     %gennests(type, 2:trajSize) = typetrajectory; %trajectory of this genotype
+                     %gennests(type, nameSize: trajSize+ size(genotype, 2)) = genotype;
+                     type_background = [genotype_label typetrajectory genotype];
+                     gennests(type, 1: size(type_background, 2)) = type_background;
+             end
                 
-         % (2) if the current genotype is ever >15% larger than the other,
-         % then they are not on the same background
- 
-         trajectorydiff = testtrajectory- typetrajectory;
-         if size(trajectorydiff(trajectorydiff < -0.02), 2)>1 || ~isempty(trajectorydiff(trajectorydiff < -0.15)) %if typetrajectory > testtrajectory more than twice, or much greater once             
-             continue
-         end
-         
-         %(3) Look at the first point when both trajectories are non-zero, and
-         %observe Delta with time. Are derivatives correlated or
-         %anti-correlated? If sufficiently correlated, they are on the same
-         %background.
+             % (2) if the current genotype is ever >15% larger than the other,
+             % then they are not on the same background
+
+             trajectorydiff = testtrajectory- typetrajectory;
+             %if typetrajectory > testtrajectory more than twice, or much greater once    
+             diff_check = size(trajectorydiff(trajectorydiff < -0.02), 2)>1 || ~isempty(trajectorydiff(trajectorydiff < -0.15));
+             %disp([genotype_label test_label diff_check]);
+             if diff_check      
+                 continue
+             end
+
+             %(3) Look at the first point when both trajectories are non-zero, and
+             %observe Delta with time. Are derivatives correlated or
+             %anti-correlated? If sufficiently correlated, they are on the same
+             %background.
             
-           startpoint = max( [find(testtrajectory > 0.02, 1, 'first' ) find(typetrajectory > 0.02, 1, 'first') ]);           
-           endpoint = min( [find(testtrajectory > 0.02, 1, 'last' ) find(typetrajectory > 0.02, 1, 'last') ]); 
-            
-           deltatest = 0;
-           deltatype = 0;
-           
-%           if endpoint-startpoint>2
-               for time = startpoint:endpoint-1
-                   %compare derivatives here
-                   deltatest(time+1-startpoint) = testtrajectory(time+1) - testtrajectory(time);
-                   deltatype(time+1-startpoint) =  typetrajectory(time+1) - typetrajectory(time);
-               end
-%               testsize = dot(deltatest, deltatest);
-%               typesize = dot(deltatype, deltatype);
-%               deltatest = deltatest/sqrt(testsize); %making these unit vectors
-%               deltatype = deltatype/sqrt(typesize);
-               delta(test) = dot(deltatype, deltatest);
-               
-               if delta(test) > deltacut %then they are (probably) on the same background
-                   %however, need to do one last test- these two genotypes
-                   %cannot sum to larger than the background
-                   cut = gennests(type-test, nameSize: end);
-                   genotype = [cut( cut ~= 0) gensorted(1, type) ] ;
-                   gennests(type, 1) = 1; %probability that this is the real or correct genotype
-                   gennests(type, 2:trajSize) = trajectories(gensorted(1, type),:); %trajectory of this genotype
-                   gennests(type, nameSize: trajSize+ size(genotype, 2)) = genotype;
-                   break
-               end
+             startpoint = max( [find(testtrajectory > 0.02, 1, 'first' ) find(typetrajectory > 0.02, 1, 'first') ]);           
+             endpoint = min( [find(testtrajectory > 0.02, 1, 'last' ) find(typetrajectory > 0.02, 1, 'last') ]); 
+
+             deltatest = 0;
+             deltatype = 0;
+
+%            if endpoint-startpoint>2
+             for time = startpoint:endpoint-1
+                 %compare derivatives here
+                 deltatest(time+1-startpoint) = testtrajectory(time+1) - testtrajectory(time);
+                 deltatype(time+1-startpoint) = typetrajectory(time+1) - typetrajectory(time);
+             end
+             % testsize = dot(deltatest, deltatest);
+             % typesize = dot(deltatype, deltatype);
+             % deltatest = deltatest/sqrt(testsize); %making these unit vectors
+             % deltatype = deltatype/sqrt(typesize);
+             delta(test) = dot(deltatype, deltatest);
+             %disp([genotype_label test_label delta]);
+             if delta(test) > deltacut %then they are (probably) on the same background
+                 %however, need to do one last test- these two genotypes
+                 %cannot sum to larger than the background
+             
+                 genotype = [test_background genotype_label ] ;
+                 %gennests(type, 1) = 1; %probability that this is the real or correct genotype
+                 %gennests(type, 2:trajSize) = typetrajectory; %trajectory of this genotype
+                 %gennests(type, nameSize: trajSize + size(genotype, 2)) = genotype;
+                 type_background = [genotype_label typetrajectory genotype];
+                 gennests(type, 1:size(type_background, 2)) = type_background;
+                 break
+             end
                
                %EVENTUALLY: will need to use the value of delta to assign
                %probabilities for each background. Will have to keep
@@ -265,49 +286,45 @@ for npop = 1
                %background at every time point cannot exceed 1               
                
 %           end
-         end
+         end % Ends the testing for the test for block.
         
-               if ~ismember(gensorted(1, type), gennests(:, nameSize:end)) %if it hasn't been matched with a background, two things can happen
-                   %(1) IF it is logically possible (i.e., if the sum of it
-                   %and all existing backgrounds at each time point is ~1 or less),
-                   %then we can make it its own background. otherwise put
-                   %it in with the genotype it's most correlated with
-                   backgrounds = gennests( gennests(:,tNum) == 0 , 2:trajSize);
-                   total = sum(backgrounds,1) + typetrajectory;
-                    if size(total(total >1), 2)>1 || ~isempty(total(total < 1.15))
-                        gennests(type, 1) = 1; %probability that this is the real or correct genotype
-                        gennests(type, 2:trajSize) = trajectories(gensorted(1, type),:); %trajectory of this genotype
-                        gennests(type, nameSize) = gensorted(1, type);
-                    else
-                        if ~isempty(delta(delta>0)) %if this cluster is positively correlated with something, stick it there
-                            test = find(delta == max(delta));
-                            cut = gennests(type-test, nameSize: end);
-                            genotype = [cut( cut ~= 0) gensorted(1, type) ] ;
-                            gennests(type, 1) = 0.5; %just a dummy value for now
-                            gennests(type, 2:trajSize) = trajectories(gensorted(1, type),:); %trajectory of this genotype
-                            gennests(type, nameSize: trajSize+ size(genotype, 2)) = genotype;
-                        else
-                            fprintf('SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER %f IN POPULATION %f\n',gensorted(1, type),npop);
-                        end
-                    end                 
-               end               
+         if ~ismember(genotype_label, gennests(:, nameSize:end)) %if it hasn't been matched with a background, two things can happen
+            %(1) IF it is logically possible (i.e., if the sum of it
+            %and all existing backgrounds at each time point is ~1 or less),
+            %then we can make it its own background. otherwise put
+            %it in with the genotype it's most correlated with
+            backgrounds = gennests( gennests(:,tNum) == 0 , 2:trajSize);
+            total = sum(backgrounds,1) + typetrajectory;
+            if size(total(total >1), 2)>1 || ~isempty(total(total < 1.15))
+                %gennests(type, 1) = 1; %probability that this is the real or correct genotype
+                %gennests(type, 2:trajSize) = typetrajectory; %trajectory of this genotype
+                %gennests(type, nameSize) = genotype_label;
+                type_background = [genotype_label typetrajectory genotype_label];
+                gennests(type, 1:size(type_background, 2)) = type_background;
+            else
+                if ~isempty(delta(delta>0)) %if this cluster is positively correlated with something, stick it there
+                    test = find(delta == max(delta));
+                    
+                    genotype = [test_background genotype_label ] ;
+                    gennests(type, 1) = genotype_label; %just a dummy value for now
+                    gennests(type, 2:trajSize) = typetrajectory; %trajectory of this genotype
+                    gennests(type, nameSize: trajSize+ size(genotype, 2)) = genotype;
+                else
+                    fprintf('SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER %f IN POPULATION %f\n',genotype_label,npop);
+                end
+            end                 
+         end               
          
          gensortedtotal(npop, 1:size(gensorted, 1), 1:size(gensorted, 2)) = gensorted;
          genneststotal(npop, 1:size(gennests, 1), 1:size(gennests, 2)) = gennests;
          
-         
-
-         
          %these three conditions should take care of all genotypes that
          %reach a frequency of >50%, and their probabilities should all be
          %1.
-        
-         
-         
-     end
-     
+
+     end % Ends the type for block
     
-end
+end % Ends the population for block
 
 %clear backgrounds cut delta deltacut deltatest deltatype endpoint frequencies...
 %    frequency gennests genotype gensorted index indices junk newindices ...

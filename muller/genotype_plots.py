@@ -1,20 +1,29 @@
 import matplotlib.pyplot as plt
 import pandas
-from muller import varycolor
-from dataclasses import dataclass
-from typing import List
 
-
+from typing import Union
+import random
+def generate_random_color()->str:
+	r = random.randint(100,255)
+	g = random.randint(100,255)
+	b = random.randint(100,255)
+	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
+	return color
 def get_numeric_columns(columns):
+	"""
+		Return a list of all columns which can be converted to a number. These columns represent the timepoints for
+		each trajectory. """
 	for i in columns:
 		try:
 			int(i)
 			yield i
-		except:
+		except ValueError:
 			pass
 
-def get_cluster_color(element, cluster_colors)->str:
-
+def get_cluster_color(element:Union[int,float, str], cluster_colors)->str:
+	"""
+		Returns the color of the cluster this genotype belongs to.
+	"""
 	if isinstance(element, (int,float)):
 		color = [i for i in cluster_colors if element in i[0]]
 	else:
@@ -23,10 +32,21 @@ def get_cluster_color(element, cluster_colors)->str:
 
 	return color[0][1]
 
-def plot_genotypes(timeseries: pandas.DataFrame, genotypes: pandas.DataFrame):
+def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame, genotypes: pandas.DataFrame):
+	"""
+		Plots the clustered genotypes.
+	Parameters
+	----------
+	timeseries
+	mean_genotypes
+	genotypes
 
+	Returns
+	-------
+
+	"""
 	numeric_columns = list(get_numeric_columns(timeseries.columns))
-	genotype_colors = [(g, varycolor.generate_random_color()) for g in genotypes]
+	genotype_colors = [(g, generate_random_color()) for g in genotypes]
 	# Plot all trajectories
 	plt.subplot(2, 1, 1)
 
@@ -44,7 +64,6 @@ def plot_genotypes(timeseries: pandas.DataFrame, genotypes: pandas.DataFrame):
 	#Plot clustered genotypes. Should be same as above, but colored based on genotype cluster.
 
 	# Plot the mean of each cluster
-	mean_genotypes = get_mean_genotypes(genotypes, time_series)
 	plt.subplot(2, 1, 2)
 	plt.ylabel('frequency')
 	plt.xlabel('time')
@@ -58,11 +77,4 @@ def plot_genotypes(timeseries: pandas.DataFrame, genotypes: pandas.DataFrame):
 
 
 if __name__ == "__main__":
-	import variables
-	from time_series_import import import_timeseries
-	from get_genotypes import get_genotypes
-	from avetrajectories import get_mean_genotypes
-	time_series, info = import_timeseries(variables.filename)
-	genotypes = get_genotypes(time_series)
-
-	plot_genotypes(time_series, genotypes)
+	pass

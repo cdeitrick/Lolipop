@@ -41,7 +41,7 @@
 %names = ls('all_nuclear_mutations_Bt2.xls')
 %----------------------
 %names = ["B1_muller_try1.xlsx"];
-names = ["B3_Muller.xlsx"];
+names = ["B1_Muller.xlsx"];
 sheets = ["Sheet1"];
 tNum = 7;
 timepoints = [0,17,25,44,66,75,90];

@@ -20,7 +20,8 @@ for npop = 1: npops
     genotypes = squeeze(allgenotypes(npop,any(squeeze(allgenotypes(npop, :, :)), 2),any(squeeze(allgenotypes(npop, :, :)), 1) ));
     gens = size(genotypes, 1);
     for gen =  1:gens
-            trajs = size(genotypes(gen, genotypes(gen,:) ~= 0), 2);
+            %                     | trajectory row - nonzero |
+            trajs = size(genotypes(gen, genotypes(gen,:) ~= 0), 2); % Asking how many columns in trajectory are nonzero
             trajectories = zeros(tNum, trajs); %changed 7 to tNum
             for traj = 1:trajs
                 trajectories(:, traj) = timeseries(4:incolNum, timeseries(1,:) == npop & timeseries(2,:) == allgenotypes(npop, gen, traj));
@@ -32,5 +33,5 @@ for npop = 1: npops
 end
 
 %clear unnecessary variables
-clear traj trajs trajectories gens gen genotypes
+%clear traj trajs trajectories gens gen genotypes
 

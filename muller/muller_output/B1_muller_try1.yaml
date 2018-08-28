@@ -1,0 +1,144 @@
+genotypeTable: '          0      17     25        44      66        75        90
+
+  1        0.0  0.000  0.261  1.000000  1.0000  1.000000  1.000000
+
+  7        0.0  0.000  0.000  0.273000  0.7810  1.000000  1.000000
+
+  6        0.0  0.000  0.000  0.000000  0.0000  1.000000  1.000000
+
+  3|2      0.0  0.000  0.000  0.336000  0.4520  0.917500  0.898500
+
+  4|8      0.0  0.000  0.000  0.000000  0.2780  0.822000  0.803000
+
+  14       0.0  0.380  0.432  0.000000  0.0000  0.000000  0.000000
+
+  5        0.0  0.000  0.000  0.403000  0.4890  0.057000  0.080000
+
+  20|13    0.0  0.000  0.000  0.069000  0.2765  0.028500  0.078000
+
+  16       0.0  0.000  0.000  0.000000  0.2090  0.209000  0.000000
+
+  17|9|19  0.0  0.000  0.000  0.062667  0.0570  0.255667  0.298667
+
+  12       0.0  0.125  0.000  0.153000  0.1810  0.175000  0.191000
+
+  10       0.0  0.000  0.117  0.000000  0.0000  0.000000  0.103000
+
+  15|11    0.0  0.000  0.033  0.106000  0.1065  0.000000  0.000000
+
+  21|18    0.0  0.000  0.000  0.114500  0.0000  0.120500  0.061500'
+genotypes:
+- background: genotype-1
+  genotypeLabel: genotype-1
+  meanFrequencies: [0.0, 0.0, 0.261, 1.0, 1.0, 1.0, 1.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['1']
+- background: genotype-2->genotype-1
+  genotypeLabel: genotype-2
+  meanFrequencies: [0.0, 0.0, 0.0, 0.273, 0.781, 1.0, 1.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['7']
+- background: genotype-3->genotype-1
+  genotypeLabel: genotype-3
+  meanFrequencies: [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['6']
+- background: genotype-4->genotype-2->genotype-1
+  genotypeLabel: genotype-4
+  meanFrequencies: [0.0, 0.0, 0.0, 0.336, 0.452, 0.9175, 0.8985000000000001]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['3', '2']
+- background: genotype-5->genotype-4->genotype-2->genotype-1
+  genotypeLabel: genotype-5
+  meanFrequencies: [0.0, 0.0, 0.0, 0.0, 0.27799999999999997, 0.8220000000000001, 0.8029999999999999]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['4', '8']
+- background: genotype-6
+  genotypeLabel: genotype-6
+  meanFrequencies: [0.0, 0.38, 0.432, 0.0, 0.0, 0.0, 0.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['14']
+- background: genotype-7->genotype-1
+  genotypeLabel: genotype-7
+  meanFrequencies: [0.0, 0.0, 0.0, 0.403, 0.489, 0.057, 0.08]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['5']
+- background: genotype-8->genotype-7->genotype-1
+  genotypeLabel: genotype-8
+  meanFrequencies: [0.0, 0.0, 0.0, 0.069, 0.27649999999999997, 0.0285, 0.078]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['20', '13']
+- background: genotype-9->genotype-1
+  genotypeLabel: genotype-9
+  meanFrequencies: [0.0, 0.0, 0.0, 0.0, 0.209, 0.209, 0.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['16']
+- background: genotype-10->genotype-5->genotype-4->genotype-2->genotype-1
+  genotypeLabel: genotype-10
+  meanFrequencies: [0.0, 0.0, 0.0, 0.06266666666666666, 0.057, 0.25566666666666665,
+    0.2986666666666667]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['17', '9', '19']
+- background: genotype-11->genotype-2->genotype-1
+  genotypeLabel: genotype-11
+  meanFrequencies: [0.0, 0.125, 0.0, 0.153, 0.181, 0.175, 0.191]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['12']
+- background: genotype-12
+  genotypeLabel: genotype-12
+  meanFrequencies: [0.0, 0.0, 0.117, 0.0, 0.0, 0.0, 0.103]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['10']
+- background: genotype-13->genotype-1
+  genotypeLabel: genotype-13
+  meanFrequencies: [0.0, 0.0, 0.033, 0.106, 0.1065, 0.0, 0.0]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['15', '11']
+- background: genotype-14->genotype-10->genotype-5->genotype-4->genotype-2->genotype-1
+  genotypeLabel: genotype-14
+  meanFrequencies: [0.0, 0.0, 0.0, 0.1145, 0.0, 0.1205, 0.0615]
+  timepoints: [0, 17, 25, 44, 66, 75, 90]
+  trajectories: ['21', '18']
+mermaidDiagram: 'graph TD;
+
+  genotypeA-->root;
+
+  genotypeB-->genotypeA;
+
+  genotypeC-->genotypeA;
+
+  genotypeD-->genotypeB;
+
+  genotypeE-->genotypeD;
+
+  genotypeF-->root;
+
+  genotypeG-->genotypeA;
+
+  genotypeH-->genotypeG;
+
+  genotypeI-->genotypeA;
+
+  genotypeJ-->genotypeE;
+
+  genotypeK-->genotypeB;
+
+  genotypeL-->root;
+
+  genotypeM-->genotypeA;
+
+  genotypeN-->genotypeJ;'
+parameters:
+  additiveBackgroundDoubleCheckCutoff: 1.05
+  additiveBackgroundSingleCheckCutoff: 1.95
+  derivativeCheckCutoff: 0.01
+  derivativeDetectionCutoff: 0.05
+  detectionCutoff: 0.05
+  differenceCutoff: 0.1
+  fixedCutoff: 0.95
+  frequencyCutoffs: [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55,
+    0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0]
+  significanceCutoff: 0.15
+  similarityCutoff: 0.05
+  subtractiveBackgroundDoubleCheckCutoff: -0.05
+  subtractiveBackgroundSingleCheckCutoff: -0.95
