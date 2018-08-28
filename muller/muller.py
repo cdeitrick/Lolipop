@@ -5,6 +5,12 @@ import pandas
 from pprint import pprint
 import itertools
 import math
+import json
+
+try:
+	import yaml
+except ModuleNotFoundError:
+	yaml = None
 try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
 	from muller.get_genotypes import GenotypeOptions
@@ -22,21 +28,49 @@ except ModuleNotFoundError:
 	import get_genotypes
 	import order_clusters
 	import sort_genotypes
-def round(number:float)->float:
-	base = int(number)
-	remainder = number-base
-	remainder = float("{:.2f}".format(remainder))
-	return base+remainder
-def generate_formatted_output(clusters: ClusterType, genotype_options:GenotypeOptions, sort_options:SortOptions, cluster_options:OrderClusterParameters) -> Dict[str,Any]:
-	genotypes = list()
 
-	genotype_labels = {k: "genotype-{}".format(i) for i, k in enumerate(clusters.keys(), start = 1)}
+def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
+	table = list()
+	# "Generation", "Identity" and "Population"
+	for index, row in mean_genotypes.iterrows():
+		for column, value in row.items():
+			if isinstance(column, str):continue
+			line = {
+				'Generation': column,
+				'Identity':   row.name,
+				'Population': value
+			}
+			table.append(line)
+	return pandas.DataFrame(sorted(table, key = lambda s: s['Generation']))
+
+def convert_clusters_to_ggmuller_format(mermaid:str)->pandas.DataFrame:
+	lines = mermaid.split('\n')
+	table = list()
+	for line in lines:
+		if '>' not in line: continue
+		identity, parent = line.split('-->')
+		#identity,*_ = identity[:-1]
+		parent = parent[:-1]
+		row = {
+			'Parent': parent,
+			'Identity': identity
+		}
+		table.append(row)
+
+	return pandas.DataFrame(table)
+
+
+def generate_formatted_output(timepoints:pandas.DataFrame, mean_genotypes: pandas.DataFrame, clusters: ClusterType,
+		genotype_options: GenotypeOptions, sort_options: SortOptions, cluster_options: OrderClusterParameters) -> Dict[
+	str, Any]:
+
+	genotypes = list()
 
 	for label, background in clusters.items():
 		genotype_members = label.split('|')
-		b = "->".join([genotype_labels[i] for i in background.background[::-1]])
+		b = "->".join([i for i in background.background[::-1]])
 		genotype = {
-			'genotypeLabel':      genotype_labels[label],
+			'genotypeLabel':      label,
 			'genotypeMembers':    genotype_members,
 			'genotypeBackground': b
 		}
@@ -44,13 +78,13 @@ def generate_formatted_output(clusters: ClusterType, genotype_options:GenotypeOp
 
 	parameters = {
 		# get_genotype_options
-		'detectionCutoff': genotype_options.detection_breakpoint,
-		'fixedCutoff': genotype_options.fixed_breakpoint,
-		'similarityCutoff': genotype_options.similarity_breakpoint,
-		'differenceCutoff': genotype_options.difference_breakpoint,
+		'detectionCutoff':                        genotype_options.detection_breakpoint,
+		'fixedCutoff':                            genotype_options.fixed_breakpoint,
+		'similarityCutoff':                       genotype_options.similarity_breakpoint,
+		'differenceCutoff':                       genotype_options.difference_breakpoint,
 		# sort options
-		'significanceCutoff': sort_options.significant_breakpoint,
-		'frequencyCutoffs': sort_options.frequency_breakpoints,
+		'significanceCutoff':                     sort_options.significant_breakpoint,
+		'frequencyCutoffs':                       sort_options.frequency_breakpoints,
 		# cluster options
 		'additiveBackgroundDoubleCheckCutoff':    cluster_options.additive_background_double_cutoff,
 		'additiveBackgroundSingleCheckCutoff':    cluster_options.additive_background_single_cutoff,
@@ -61,41 +95,37 @@ def generate_formatted_output(clusters: ClusterType, genotype_options:GenotypeOp
 	}
 	gens = list()
 	genotype_table = list()
-	for genotype_members, background in clusters.items():
-		genotype_label = genotype_labels[genotype_members]
+	for label, background in clusters.items():
+		genotype_label = background.name
 		row = {
 			'genotypeLabel':   genotype_label,
-			'trajectories':    genotype_members.split('|'),
+			'trajectories':    background.members,
 			'timepoints':      list(background.trajectory.index),
 			'meanFrequencies': background.trajectory.tolist(),
-			'background':      "->".join([genotype_labels[i] for i in background.background[::-1]])
+			'background':      "->".join([i  for i in background.background[::-1]])
 		}
 		gens.append(row)
 		genotype_table.append(background.trajectory)
 
-	df = pandas.DataFrame(genotype_table)
 	mermaid_diagram = generate_mermaid_diagram(clusters)
+	ggmuller_population_table = convert_population_to_ggmuller_format(mean_genotypes)
+	ggmuller_edge_table = convert_clusters_to_ggmuller_format(mermaid_diagram)
+
 	data = {
-		'genotypes':  gens,
-		'parameters': parameters,
-		'genotypeTable': df.to_string(),
-		'mermaidDiagram': mermaid_diagram
+		'trajectories': timepoints.to_string(index = False),
+		'genotypes':               gens,
+		'parameters':              parameters,
+		'genotypeTable':           mean_genotypes,
+		'mermaidDiagram':          mermaid_diagram,
+		'ggmullerPopulationTable': ggmuller_population_table,
+		'ggmullerEdgeTable': ggmuller_edge_table
 	}
-	import json
-	import yaml
-	output_file = _output_folder / (_input_filename.stem + '.json')
-	output_file.write_text(json.dumps(data, sort_keys=True, indent = 4))
-	youtput_file = _output_folder / (_input_filename.stem + '.yaml')
-	youtput_file.write_text(yaml.dump(data))
+	#print(ggmuller_population_table.to_string())
 	return data
 
 
 def generate_mermaid_diagram(clusters: ClusterType) -> str:
 	contents = ["graph TD;"]
-
-	labels = {k: "genotype{}".format(i) for k, i in
-		zip(clusters.keys(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")}
-
 	for k, cluster in clusters.items():
 		if len(cluster.background) > 1:
 			cluster_background = cluster.background[::-1][:2]
@@ -103,8 +133,8 @@ def generate_mermaid_diagram(clusters: ClusterType) -> str:
 			cluster_background = cluster.background + ['root']
 		else:
 			cluster_background = cluster.background[::-1]
-		label = [(labels[i] if i != 'root' else i) for i in cluster_background]
-		contents.append("-->".join(label) + ';')
+
+		contents.append("-->".join(cluster_background) + ';')
 	return "\n".join(contents)
 
 
@@ -122,8 +152,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			else:
 				freqs = float(freqs)
 		if isinstance(freqs, float):
-			freqs = [math.fsum(itertools.repeat(freqs, i)) for i in range(int(1/freqs)+1)]
-			freqs = [round(i) for i in freqs]
+			freqs = [math.fsum(itertools.repeat(freqs, i)) for i in range(int(1 / freqs) + 1)]
+			freqs = [round(i,2) for i in freqs]
 
 		program_options_genotype = get_genotypes.GenotypeOptions.from_parser(program_options)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
@@ -134,7 +164,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			frequency_breakpoints = freqs
 		)
 
-
 	timepoints, info = import_timeseries(input_filename)
 
 	mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
@@ -143,14 +172,32 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
-	#df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
+	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
 	formatted_output = generate_formatted_output(
+		timepoints,
+		mean_genotypes,
 		genotype_clusters,
 		program_options_genotype,
 		program_options_sort,
 		program_options_clustering
 	)
-	pprint(formatted_output)
+
+	poutput_file = _output_folder / (_input_filename.stem + '.ggmuller_populations.csv')
+	eoutput_file = _output_folder / (_input_filename.stem + '.ggmuller_edges.csv')
+	formatted_output['ggmullerPopulationTable'].to_csv(str(poutput_file),index=False)
+	formatted_output['ggmullerEdgeTable'].to_csv(str(eoutput_file),index=False)
+
+	formatted_output['genotypeTable'] =  formatted_output['genotypeTable'].to_string()
+	formatted_output['ggmullerPopulationTable'] = formatted_output['ggmullerPopulationTable'].to_string(index=False)
+	formatted_output['ggmullerEdgeTable'] = formatted_output['ggmullerEdgeTable'].to_string(index=False)
+
+	joutput_file = _output_folder / (_input_filename.stem + '.json')
+	joutput_file.write_text(json.dumps(formatted_output, sort_keys = True, indent = 4))
+
+	if yaml:
+		youtput_file = _output_folder / (_input_filename.stem + '.yaml')
+		youtput_file.write_text(yaml.dump(formatted_output))
+	# pprint(formatted_output)
 	return genotype_clusters
 
 

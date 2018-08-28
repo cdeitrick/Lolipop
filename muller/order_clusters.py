@@ -8,13 +8,15 @@ from argparse import Namespace
 
 
 @dataclass
-class Background:
+class Genotype:
+	name:str
 	probability: float
 	trajectory: pandas.Series
 	background: List[str]
+	members: List[str]
 
 
-ClusterType = Dict[str, Background]
+ClusterType = Dict[str, Genotype]
 
 
 @dataclass
@@ -113,6 +115,7 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 	left_window = left_derivative[start_index:end_index] * -1
 
 	delta = left_window.dot(right_window)
+
 	return delta
 
 
@@ -134,17 +137,35 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	#sorted_df = sort_genotypes(genotype_trajectories)  # Equivilent to genneststotal in the matlab script
 
 	initial_background = sorted_df.iloc[0]
-	nests: Dict[str, Background] = {
-		initial_background.name: Background(1.0, initial_background, [initial_background.name])
+	_m = initial_background.pop('members')
+	initial_background = initial_background.astype(float)
+	nests: Dict[str, Genotype] = {
+		initial_background.name: Genotype(
+			name = initial_background.name,
+			probability = 1.0,
+			trajectory = initial_background,
+			background = [initial_background.name],
+			members = _m)
 		# Index corresponds to the initial background
 	}
 	for genotype_label, type_trajectory in sorted_df[1:].iterrows():
+		genotype_members = type_trajectory.pop('members')
+		type_trajectory = type_trajectory.astype(float)
 		genotype_deltas = list()
+
 		for test_label, test_trajectory in sorted_df[:genotype_label].iloc[::-1].iterrows():  # iterate in reverse order
 			if genotype_label == test_label:  # The reduced dataframe still contains the genotype being tested.
 				continue
+			test_trajectory.pop('members')
+			test_trajectory = test_trajectory.astype(float)
 			test_background = nests[test_label].background
-			type_genotype = Background(1.0, type_trajectory, test_background + [genotype_label])
+			type_genotype = Genotype(
+				name = genotype_label,
+				probability = 1.0,
+				trajectory = type_trajectory,
+				background = test_background + [genotype_label],
+				members = genotype_members
+			)
 
 			additive_check = check_additive_background(
 				left = type_trajectory,
@@ -203,22 +224,29 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			under_cuttoff_limit = (total < options.new_background_significant_cutoff).sum() == 0
 			if exceeds_background_limit or not under_cuttoff_limit:
 				# add as background
-				back = Background(
+				back = Genotype(
+					name = genotype_label,
 					probability = 1.0,
 					trajectory = type_trajectory,
-					background = [genotype_label]
+					background = [genotype_label],
+					members = genotype_members
 				)
 				nests[genotype_label] = back
 			elif correlated_delta > 0:
 				correlated_background = nests[correlated_label].background
-				type_genotype = Background(0.5, type_trajectory, correlated_background + [genotype_label])
+				type_genotype = Genotype(
+					name = genotype_label,
+					probability = 0.5,
+					trajectory = type_trajectory,
+					background = correlated_background + [genotype_label],
+					members = genotype_members
+				)
 				nests[genotype_label] = type_genotype
 
 			else:
 				message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + genotype_label
 
 				raise ValueError(message)
-
 	return nests
 
 

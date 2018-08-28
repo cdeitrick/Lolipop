@@ -213,7 +213,7 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 		By default the first trajectory makes a genotype category
 	Parameters
 	----------
-	pairs: PairArrayValue
+	pairs: PairwiseArrayType
 		A dictionary mapping pairs to p-values.
 	relative_cutoff: float; default 0.05
 		The cutoff indicating two trajectories are related.
@@ -449,14 +449,16 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 
 	Returns
 	-------
-	A dataframe where every row corresponds to a genotype (index labels are concatenated member trajectories),
+	A dataframe where every row corresponds to a genotype.
+	member trajectories are listed under the 'members' column.
 	every column represents a timepoint.
 	"""
 	mean_genotypes = list()
-	for genotype in all_genotypes:
+	for index, genotype in enumerate(all_genotypes, start = 1):
 		genotype_timeseries = timeseries[timeseries['Trajectory'].isin(genotype)]
 		mean_genotype_timeseries = genotype_timeseries.mean()
-		mean_genotype_timeseries.name = "|".join(map(str, genotype))
+		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
+		mean_genotype_timeseries.name = "genotype-{}".format(index)
 		mean_genotypes.append(mean_genotype_timeseries)
 
 	mean_genotypes = pandas.DataFrame(mean_genotypes)

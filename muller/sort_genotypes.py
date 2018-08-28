@@ -40,6 +40,8 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	# sorted_dataframe = sort_genotype_frequencies(genotype_frequencies, FIXED_THRESHOLD)
 	sorted_genotypes = list()
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
+	if 'members' in current_genotypes:
+		current_genotypes.pop('members')
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,

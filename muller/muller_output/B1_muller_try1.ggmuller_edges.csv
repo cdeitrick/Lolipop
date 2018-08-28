@@ -1,0 +1,15 @@
+Identity,Parent
+genotype-1,root
+genotype-2,genotype-1
+genotype-3,genotype-1
+genotype-9,genotype-2
+genotype-10,genotype-9
+genotype-4,root
+genotype-7,genotype-1
+genotype-13,genotype-7
+genotype-8,genotype-1
+genotype-14,genotype-10
+genotype-6,genotype-2
+genotype-5,root
+genotype-12,genotype-1
+genotype-11,genotype-14
