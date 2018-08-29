@@ -38,7 +38,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 			line = {
 				'Generation': column,
 				'Identity':   int(row.name.split('-')[-1]),
-				'Population': value
+				'Population': value*100
 			}
 			table.append(line)
 	numeric_columns = [i for i in mean_genotypes.columns if not isinstance(i, str)]
@@ -46,7 +46,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 		row = {
 			'Generation': column,
 			'Identity': 0,
-			'Population': 1 if column == min(numeric_columns) else 0
+			'Population': 100 if column == min(numeric_columns) else 0
 		}
 		table.append(row)
 	return pandas.DataFrame(sorted(table, key = lambda s: s['Generation']))
@@ -68,8 +68,10 @@ def convert_clusters_to_ggmuller_format(mermaid:str)->pandas.DataFrame:
 			'Identity': identity
 		}
 		table.append(row)
-
-	return pandas.DataFrame(table)
+	df = pandas.DataFrame(table)
+	df = df[['Parent', 'Identity']]
+	df = df.sort_values(by = 'Identity')
+	return df
 
 
 def generate_formatted_output(timepoints:pandas.DataFrame, mean_genotypes: pandas.DataFrame, clusters: ClusterType,
