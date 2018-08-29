@@ -28,19 +28,27 @@ except ModuleNotFoundError:
 	import get_genotypes
 	import order_clusters
 	import sort_genotypes
-
 def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
 	table = list()
 	# "Generation", "Identity" and "Population"
 	for index, row in mean_genotypes.iterrows():
 		for column, value in row.items():
 			if isinstance(column, str):continue
+
 			line = {
 				'Generation': column,
-				'Identity':   row.name,
+				'Identity':   int(row.name.split('-')[-1]),
 				'Population': value
 			}
 			table.append(line)
+	numeric_columns = [i for i in mean_genotypes.columns if not isinstance(i, str)]
+	for column in numeric_columns:
+		row = {
+			'Generation': column,
+			'Identity': 0,
+			'Population': 100 if column == min(numeric_columns) else 0
+		}
+		table.append(row)
 	return pandas.DataFrame(sorted(table, key = lambda s: s['Generation']))
 
 def convert_clusters_to_ggmuller_format(mermaid:str)->pandas.DataFrame:
@@ -49,8 +57,12 @@ def convert_clusters_to_ggmuller_format(mermaid:str)->pandas.DataFrame:
 	for line in lines:
 		if '>' not in line: continue
 		identity, parent = line.split('-->')
-		#identity,*_ = identity[:-1]
+		identity = int(identity.split('-')[-1])
 		parent = parent[:-1]
+		if parent == 'root':
+			parent = 0
+		else:
+			parent = int(parent.split('-')[-1])
 		row = {
 			'Parent': parent,
 			'Identity': identity
@@ -101,7 +113,7 @@ def generate_formatted_output(timepoints:pandas.DataFrame, mean_genotypes: panda
 			'genotypeLabel':   genotype_label,
 			'trajectories':    background.members,
 			'timepoints':      list(background.trajectory.index),
-			'meanFrequencies': background.trajectory.tolist(),
+			'meanFrequencies': [round(i,4) for i in background.trajectory.tolist()],
 			'background':      "->".join([i  for i in background.background[::-1]])
 		}
 		gens.append(row)

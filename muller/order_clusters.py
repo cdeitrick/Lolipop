@@ -103,6 +103,7 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	# Convert the index labels to their corresponding integer position in the index.
 	# Pandas can't use labels to get a slice of a series.
+
 	start_index = left.index.get_loc(startpoint)
 	end_index = left.index.get_loc(endpoint)
 	# The matlab script uses the difference of the following timepoint versus the curent one,
@@ -146,8 +147,8 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			trajectory = initial_background,
 			background = [initial_background.name],
 			members = _m)
-		# Index corresponds to the initial background
 	}
+
 	for genotype_label, type_trajectory in sorted_df[1:].iterrows():
 		genotype_members = type_trajectory.pop('members')
 		type_trajectory = type_trajectory.astype(float)
