@@ -46,7 +46,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 		row = {
 			'Generation': column,
 			'Identity': 0,
-			'Population': 100 if column == min(numeric_columns) else 0
+			'Population': 1 if column == min(numeric_columns) else 0
 		}
 		table.append(row)
 	return pandas.DataFrame(sorted(table, key = lambda s: s['Generation']))
