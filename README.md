@@ -5,7 +5,7 @@ python muller.py --input [trajectories] --output [output folder]
 ```
 
 The script generates four files:
-- [input filename].ggmuller_edges.csv
+-  [input filename].ggmuller_edges.csv
 
 	Used as the `edges` input to ggmuller
 

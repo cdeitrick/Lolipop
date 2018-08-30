@@ -83,7 +83,7 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 
 	population_table = data.pop('ggmullerPopulationTable')
 	edge_table = data.pop('ggmullerEdgeTable')
-	#genotype_table = data.pop('genotypeTable')
+	# genotype_table = data.pop('genotypeTable')
 	trajectory_table = data.pop('trajectoryTable')
 	mermaid_diagram = data.pop('mermaidDiagram')
 
@@ -95,10 +95,9 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 
 	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
 	edge_table.to_csv(str(edges_population_file), sep = '\t', index = False)
-	#genotype_table.to_csv(str(genotype_output_file), sep = '\t')
+	# genotype_table.to_csv(str(genotype_output_file), sep = '\t')
 	trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
 	mermaid_diagram_output.write_text(mermaid_diagram)
-
 
 	if yaml:
 		fname = output_folder / (name + '.yaml')
