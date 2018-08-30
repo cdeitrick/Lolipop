@@ -15,18 +15,22 @@ The script generates four files:
 	 	Contains additional information from the analysis. 
 
 # Script Options
-```
--h, --help            	show this help message and exit
--i, --input 			The table of trajectories to cluster.
--o,  --output 			The folder to save the files to.
---fixed					The minimum frequency at which to consider a 							mutation fixed.
---detected				The minimum frequency at which to consider a 							mutation detected.
--s, --significant		[0.15] The frequency at which to consider a genotype 				significantly greater than zero.
---matlab				Mimics the output of the original matlab script.
--f, --frequencies		[0.10] The frequency cutoff to use when sorting genotypes. May be a comma-separated string of frequencies, or a set inverval to use when generating the frequency breakpoints. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
--r --similarity-cutoff	[0.05] Maximum p-value difference to consider 									trajectories related. Used when grouping 								trajectories into genotypes.
--l, --difference-cutoff	[0.10] Used to unlink unrelated trajectories present in a genotype.
-```
+
+-h, --help						Show this help message and exit
+-i, --input						The table of trajectories to cluster.
+-o,  --output					The folder to save the files to.
+--fixed							The minimum frequency at which to consider a mutation fixed.
+--detected						The minimum frequency at which to consider a mutation detected.
+-s, --significant				[0.15] The frequency at which to consider a genotype significantly greater than zero.
+--matlab						Mimics the output of the original matlab script.
+-f, --frequencies				[0.10] The frequency cutoff to use when sorting genotypes. 
+								May be a comma-separated string of frequencies, or a set inverval to use when 
+								generating the frequency breakpoints. For example, a value of 0.15 will use the frequencies 
+								0,.15,.30,.45...
+-r --similarity-cutoff			[0.05] Maximum p-value difference to consider trajectories related.
+								Used when grouping trajectories into genotypes.
+-l, --difference-cutoff			[0.10] Used to unlink unrelated trajectories present in a genotype.
+
 # Example Usage
 ```
 python --input [filename] --output [folder] --matlab
