@@ -1,4 +1,4 @@
-# Simple Usage
+# Sample Usage
 
 ```
 python muller.py --input [trajectories] --output [output folder]
