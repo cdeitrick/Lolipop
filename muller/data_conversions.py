@@ -91,7 +91,6 @@ def generate_formatted_output(timepoints:pandas.DataFrame, mean_genotypes: panda
 		'derivativeCheckCutoff':                  cluster_options.derivative_check_cutoff
 	}
 	gens = list()
-	genotype_table = list()
 	for label, background in clusters.items():
 		genotype_label = background.name
 		row = {
@@ -102,17 +101,17 @@ def generate_formatted_output(timepoints:pandas.DataFrame, mean_genotypes: panda
 			'background':      "->".join([i  for i in background.background[::-1]])
 		}
 		gens.append(row)
-		genotype_table.append(background.trajectory)
+
 
 	mermaid_diagram = generate_mermaid_diagram(clusters)
 	ggmuller_population_table = convert_population_to_ggmuller_format(mean_genotypes)
 	ggmuller_edge_table = convert_clusters_to_ggmuller_format(mermaid_diagram)
 
 	data = {
-		'trajectories': timepoints.to_string(index = False),
+		'trajectoryTable': timepoints,
 		'genotypes':               gens,
 		'parameters':              parameters,
-		'genotypeTable':           mean_genotypes,
+		#'genotypeTable':           genotype_data,
 		'mermaidDiagram':          mermaid_diagram,
 		'ggmullerPopulationTable': ggmuller_population_table,
 		'ggmullerEdgeTable': ggmuller_edge_table

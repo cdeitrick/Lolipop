@@ -3,7 +3,7 @@ import argparse
 
 import itertools
 import math
-import json
+from typing import Dict
 
 try:
 	import yaml
@@ -29,6 +29,7 @@ except ModuleNotFoundError:
 	import sort_genotypes
 	import data_conversions
 
+
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
@@ -44,7 +45,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 				freqs = float(freqs)
 		if isinstance(freqs, float):
 			freqs = [math.fsum(itertools.repeat(freqs, i)) for i in range(int(1 / freqs) + 1)]
-			freqs = [round(i,2) for i in freqs]
+			freqs = [round(i, 2) for i in freqs]
 
 		program_options_genotype = get_genotypes.GenotypeOptions.from_parser(program_options)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
@@ -58,7 +59,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	timepoints, info = import_timeseries(input_filename)
 
 	mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
-	mean_genotypes.to_excel(str(output_folder / (input_filename.stem + '.mean.xlsx')))
+	mean_genotypes.to_csv(str(output_folder / (input_filename.stem + '.genotypes.csv')), sep = '\t')
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
 
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
@@ -73,23 +74,39 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options_clustering
 	)
 
-	poutput_file = _output_folder / (_input_filename.stem + '.ggmuller_populations.csv')
-	eoutput_file = _output_folder / (_input_filename.stem + '.ggmuller_edges.csv')
-	formatted_output['ggmullerPopulationTable'].to_csv(str(poutput_file),index=False)
-	formatted_output['ggmullerEdgeTable'].to_csv(str(eoutput_file),index=False)
+	save_output(input_filename, output_folder, formatted_output)
+	return genotype_clusters
 
-	formatted_output['genotypeTable'] =  formatted_output['genotypeTable'].to_string()
-	formatted_output['ggmullerPopulationTable'] = formatted_output['ggmullerPopulationTable'].to_string(index=False)
-	formatted_output['ggmullerEdgeTable'] = formatted_output['ggmullerEdgeTable'].to_string(index=False)
 
-	joutput_file = _output_folder / (_input_filename.stem + '.json')
-	joutput_file.write_text(json.dumps(formatted_output, sort_keys = True, indent = 4))
+def save_output(input_file: Path, output_folder: Path, data: Dict):
+	name = input_file.stem
+
+	population_table = data.pop('ggmullerPopulationTable')
+	edge_table = data.pop('ggmullerEdgeTable')
+	#genotype_table = data.pop('genotypeTable')
+	trajectory_table = data.pop('trajectoryTable')
+	mermaid_diagram = data.pop('mermaidDiagram')
+
+	population_output_file = output_folder / (name + '.ggmuller_populations.csv')
+	edges_population_file = output_folder / (name + '.ggmuller_edges.csv')
+	genotype_output_file = output_folder / (name + '.genotypes.csv')
+	trajectory_output_file = output_folder / (name + '.trajectories.csv')
+	mermaid_diagram_output = output_folder / (name + '.mermaid')
+
+	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
+	edge_table.to_csv(str(edges_population_file), sep = '\t', index = False)
+	#genotype_table.to_csv(str(genotype_output_file), sep = '\t')
+	trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
+	mermaid_diagram_output.write_text(mermaid_diagram)
+
 
 	if yaml:
-		youtput_file = _output_folder / (_input_filename.stem + '.yaml')
-		youtput_file.write_text(yaml.dump(formatted_output))
-	# pprint(formatted_output)
-	return genotype_clusters
+		fname = output_folder / (name + '.yaml')
+		fname.write_text(yaml.dump(data))
+	else:
+		import json
+		fname = output_folder / (name + '.json')
+		fname.write_text(json.dumps(data, indent = 2))
 
 
 def create_parser() -> argparse.ArgumentParser:
