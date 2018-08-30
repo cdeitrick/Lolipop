@@ -7,11 +7,11 @@ python muller.py --input [trajectories] --output [output folder]
 The script generates four files:
 - [input filename].ggmuller_edges.csv
 
-	Used as the 'edges' input to ggmuller
+	Used as the `edges` input to ggmuller
 
 - [input filename].ggmuller_populations.csv
 	
-	Used as the 'population' input to ggmuller
+	Used as the `population` input to ggmuller
 
 - [input filename].genotypes.xlsx
 
