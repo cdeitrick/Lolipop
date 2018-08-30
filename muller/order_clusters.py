@@ -155,8 +155,10 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 		genotype_deltas = list()
 
 		for test_label, test_trajectory in sorted_df[:genotype_label].iloc[::-1].iterrows():  # iterate in reverse order
+
 			if genotype_label == test_label:  # The reduced dataframe still contains the genotype being tested.
 				continue
+
 			test_trajectory.pop('members')
 			test_trajectory = test_trajectory.astype(float)
 			test_background = nests[test_label].background
@@ -274,7 +276,8 @@ def workflow(sorted_genotypes: pandas.DataFrame, options: OrderClusterParameters
 
 	#sorted_genotypes = sort_genotypes(sorted_genotypes)
 	clusters = order_clusters(sorted_genotypes, options)
-
+	#from pprint import pprint
+	#pprint(clusters)
 	return clusters
 
 
