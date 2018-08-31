@@ -143,7 +143,7 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = 'fixed_breakpoint'
 	)
 	parser.add_argument(
-		"--detected",
+		"-u", "--uncertainty",
 		help = "The minimum frequency at which to consider a mutation detected.",
 		action = 'store',
 		default = 0.03,

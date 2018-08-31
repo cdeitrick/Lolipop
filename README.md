@@ -47,8 +47,14 @@ The script generates eight files:
 	-h, --help                  Show this help message and exit
 	-i, --input                 The table of trajectories to cluster.
 	-o,  --output               The folder to save the files to.
-	--fixed                     The minimum frequency at which to consider a mutation fixed.
-	--detected                  The minimum frequency at which to consider a mutation detected.
+	-u, --uncertainty           The uncertainty to apply when performing
+	                            frequency-based calculations. For
+	                            example, a frequency at a given timepoint
+	                            is considered undetected if it falls
+	                            below 0 + `uncertainty`.
+	--fixed                     The minimum frequency at which to
+	                            consider a mutation fixed. Defaults to 
+	                            1 - `uncertainty`
 	-s, --significant           [0.15] The frequency at which to consider a genotype 
 	                            significantly greater than zero.
 	--matlab                    Mimics the output of the original matlab script.
@@ -70,7 +76,7 @@ python --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
-# Diagram
+# Mermaid Diagram
 
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
 
