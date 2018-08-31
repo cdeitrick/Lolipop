@@ -4,7 +4,7 @@ import argparse
 import itertools
 import math
 from typing import Dict
-
+import subprocess
 try:
 	import yaml
 except ModuleNotFoundError:
@@ -88,16 +88,28 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 	mermaid_diagram = data.pop('mermaidDiagram')
 
 	population_output_file = output_folder / (name + '.ggmuller_populations.csv')
-	edges_population_file = output_folder / (name + '.ggmuller_edges.csv')
+	edges_output_file = output_folder / (name + '.ggmuller_edges.csv')
 	genotype_output_file = output_folder / (name + '.genotypes.csv')
 	trajectory_output_file = output_folder / (name + '.trajectories.csv')
 	mermaid_diagram_output = output_folder / (name + '.mermaid')
+	r_script_file = output_folder / (name + '.r')
+	r_script_graph_file = output_folder/(name + '.muller.png')
 
 	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
-	edge_table.to_csv(str(edges_population_file), sep = '\t', index = False)
+	edge_table.to_csv(str(edges_output_file), sep = '\t', index = False)
 	# genotype_table.to_csv(str(genotype_output_file), sep = '\t')
 	trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
 	mermaid_diagram_output.write_text(mermaid_diagram)
+
+	r_script = data_conversions.generate_r_script(
+		population = population_output_file,
+		edges = edges_output_file,
+		output_file = r_script_graph_file
+	)
+	r_script_file.write_text(r_script)
+
+	subprocess.call(['Rscript', r_script_file])
+
 
 	if yaml:
 		fname = output_folder / (name + '.yaml')

@@ -1,5 +1,6 @@
 from typing import Any, Dict
 import pandas
+from pathlib import Path
 
 try:
 	from muller.get_genotypes import GenotypeOptions
@@ -133,3 +134,25 @@ def generate_mermaid_diagram(clusters: ClusterType) -> str:
 		contents.append("-->".join(cluster_background) + ';')
 	return "\n".join(contents)
 
+def generate_r_script(population:Path, edges:Path, output_file:Path)->str:
+
+	script = """
+	library("ggplot2")
+	library("ggmuller")
+	
+	population <- read.csv("{population}")
+	edges <- read.csv("{edges}")
+	
+	Muller_df <- get_Muller_df(example_edges, example_pop_df)
+	Muller_plot(Muller_df)
+	
+	ggsave("{output}")
+	
+	""".format(
+		population = population.absolute(),
+		edges = edges.absolute(),
+		output = output_file.absolute()
+	)
+	script = '\n'.join(i.strip() for i in script.split('\n'))
+
+	return script
