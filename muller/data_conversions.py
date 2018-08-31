@@ -146,7 +146,7 @@ def generate_r_script(population:Path, edges:Path, output_file:Path)->str:
 	Muller_df <- get_Muller_df(example_edges, example_pop_df)
 	Muller_plot(Muller_df)
 	
-	ggsave("{output}")
+	ggsave("{output}", height = 10, width = 10)
 	
 	""".format(
 		population = population.absolute(),

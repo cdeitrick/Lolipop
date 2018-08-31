@@ -108,8 +108,10 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 	)
 	r_script_file.write_text(r_script)
 
-	subprocess.call(['Rscript', r_script_file])
-
+	subprocess.call(['Rscript','--vanilla', '--silent', r_script_file])
+	_extra_file = Path.cwd() / "Rplots.pdf"
+	if _extra_file.exists():
+		_extra_file.unlink()
 
 	if yaml:
 		fname = output_folder / (name + '.yaml')
