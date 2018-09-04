@@ -33,9 +33,13 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 
 	# Read in the data table.
 	if filename.suffix in {'.xls', '.xlsx'}:
-		data = pandas.read_excel(str(filename), sheet_name = sheet_name)
+		data:pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
 	else:
-		data = pandas.read_table(str(filename))
+		if filename.suffix in {'.tsv', '.tab'}:
+			sep = '\t'
+		else:
+			sep = ','
+		data:pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
 
 	# Extract the columns which indicate timepoints of observations. Should be integers.
 	frequency_columns = list()
@@ -51,8 +55,10 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 	# timeseries = timeseries.transpose()
 
 	# Extract metadata for each trajectory.
-	info = data[['Population', 'Class', 'Mutation']]
-
+	try:
+		info = data[['Population', 'Class', 'Mutation']]
+	except:
+		info = None
 	return timeseries, info
 
 

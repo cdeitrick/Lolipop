@@ -1,6 +1,6 @@
 from pathlib import Path
 import argparse
-
+from typing import Tuple
 import itertools
 import math
 from typing import Dict
@@ -31,6 +31,8 @@ except ModuleNotFoundError:
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
+	# TODO: The background should be 1-sum(other genotypes) at each timepoint
+	# as long as the sum of the other genotypes that inherit from root is less than 1.
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
 		program_options_genotype = get_genotypes.GenotypeOptions.from_matlab()
@@ -65,7 +67,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
-	formatted_output = data_conversions.generate_formatted_output(
+	formatted_output: data_conversions.OutputType = data_conversions.generate_formatted_output(
 		timepoints,
 		mean_genotypes,
 		genotype_clusters,
@@ -78,14 +80,18 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	return genotype_clusters
 
 
-def save_output(input_file: Path, output_folder: Path, data: Dict):
+def save_output(input_file: Path, output_folder: Path, data: data_conversions.OutputType):
+	trajectory_table, gens, genotype_table, p, mermaid_diagram, population_table, edge_table = data
 	name = input_file.stem
-
-	population_table = data.pop('ggmullerPopulationTable')
-	edge_table = data.pop('ggmullerEdgeTable')
+	parameters = {
+		'genotypeDescriptions': gens,
+		'parameters': p
+	}
+	#population_table = data.pop('ggmullerPopulationTable')
+	#edge_table = data.pop('ggmullerEdgeTable')
 	# genotype_table = data.pop('genotypeTable')
-	trajectory_table = data.pop('trajectoryTable')
-	mermaid_diagram = data.pop('mermaidDiagram')
+	#trajectory_table = data.pop('trajectoryTable')
+	#mermaid_diagram = data.pop('mermaidDiagram')
 
 	population_output_file = output_folder / (name + '.ggmuller_populations.csv')
 	edges_output_file = output_folder / (name + '.ggmuller_edges.csv')
@@ -97,7 +103,7 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 
 	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
 	edge_table.to_csv(str(edges_output_file), sep = '\t', index = False)
-	# genotype_table.to_csv(str(genotype_output_file), sep = '\t')
+	genotype_table.to_csv(str(genotype_output_file), sep = '\t')
 	trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
 	mermaid_diagram_output.write_text(mermaid_diagram)
 
@@ -115,11 +121,11 @@ def save_output(input_file: Path, output_folder: Path, data: Dict):
 
 	if yaml:
 		fname = output_folder / (name + '.yaml')
-		fname.write_text(yaml.dump(data))
+		fname.write_text(yaml.dump(parameters))
 	else:
 		import json
 		fname = output_folder / (name + '.json')
-		fname.write_text(json.dumps(data, indent = 2))
+		fname.write_text(json.dumps(parameters, indent = 2))
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -144,7 +150,8 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"-u", "--uncertainty",
-		help = "The minimum frequency at which to consider a mutation detected.",
+		help = "The uncertainty to apply when performing frequency-based calculations. \
+			For example, a frequency at a given timepoint is considered undetected if it falls below 0 + `uncertainty`.",
 		action = 'store',
 		default = 0.03,
 		dest = 'detection_breakpoint'
