@@ -5,6 +5,7 @@ import itertools
 import math
 from typing import Dict
 import subprocess
+
 try:
 	import yaml
 except ModuleNotFoundError:
@@ -85,13 +86,13 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	name = input_file.stem
 	parameters = {
 		'genotypeDescriptions': gens,
-		'parameters': p
+		'parameters':           p
 	}
-	#population_table = data.pop('ggmullerPopulationTable')
-	#edge_table = data.pop('ggmullerEdgeTable')
+	# population_table = data.pop('ggmullerPopulationTable')
+	# edge_table = data.pop('ggmullerEdgeTable')
 	# genotype_table = data.pop('genotypeTable')
-	#trajectory_table = data.pop('trajectoryTable')
-	#mermaid_diagram = data.pop('mermaidDiagram')
+	# trajectory_table = data.pop('trajectoryTable')
+	# mermaid_diagram = data.pop('mermaidDiagram')
 
 	population_output_file = output_folder / (name + '.ggmuller_populations.csv')
 	edges_output_file = output_folder / (name + '.ggmuller_edges.csv')
@@ -99,7 +100,13 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	trajectory_output_file = output_folder / (name + '.trajectories.csv')
 	mermaid_diagram_output = output_folder / (name + '.mermaid')
 	r_script_file = output_folder / (name + '.r')
-	r_script_graph_file = output_folder/(name + '.muller.png')
+	r_script_graph_file = output_folder / (name + '.muller.png')
+	genotype_details_file = output_folder / (name + '.genotypemembers.tsv')
+
+	with genotype_details_file.open('w') as csv_file:
+		for g in gens:
+			line = "{}\t".format(g['genotypeLabel']) + "\t".join(g['trajectories'].split('|'))
+			csv_file.write(line + '\n')
 
 	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
 	edge_table.to_csv(str(edges_output_file), sep = '\t', index = False)
@@ -114,7 +121,7 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	)
 	r_script_file.write_text(r_script)
 
-	subprocess.call(['Rscript','--vanilla', '--silent', r_script_file])
+	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file])
 	_extra_file = Path.cwd() / "Rplots.pdf"
 	if _extra_file.exists():
 		_extra_file.unlink()

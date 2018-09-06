@@ -51,7 +51,15 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 			pass
 
 	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
+	if 'Population' not in data.columns:
+		data['Population'] = 'Population1'
+
 	timeseries = data[['Population', 'Trajectory', 'Position'] + frequency_columns]
+	for column in frequency_columns:
+		#print(timeseries[column])
+		if max(timeseries[column]) > 1.0:
+			timeseries[column] /=100
+
 	# timeseries = timeseries.transpose()
 
 	# Extract metadata for each trajectory.
@@ -59,7 +67,11 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 		info = data[['Population', 'Class', 'Mutation']]
 	except:
 		info = None
+
+
+
 	return timeseries, info
+
 
 
 if __name__ == "__main__":

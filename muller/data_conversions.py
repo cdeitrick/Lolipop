@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple, List
+from typing import Any, Dict, Tuple, List, Union
 import pandas
 from pathlib import Path
 
@@ -15,13 +15,25 @@ except ModuleNotFoundError:
 	from order_clusters import OrderClusterParameters, ClusterType
 
 
+def get_numeric_columns(columns: List) -> List[Union[int, float]]:
+	output_columns = list()
+	for col in columns:
+		try:
+			int(col)
+			output_columns.append(col)
+		except:
+			pass
+	return output_columns
+
+
 def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
 	table = list()
 	# "Generation", "Identity" and "Population"
+	numeric_columns = get_numeric_columns(mean_genotypes.columns)
 	for index, row in mean_genotypes.iterrows():
 		for column, value in row.items():
-			if isinstance(column, str): continue
-
+			# if isinstance(column, str): continue
+			if column not in numeric_columns: continue
 			line = {
 				'Generation': column,
 				'Identity':   int(row.name.split('-')[-1]),
@@ -191,6 +203,7 @@ def calculate_root_background_values(genotypes: pandas.DataFrame, edges) -> pand
 	"""
 
 	# Get all genotypes that inherit from the root.
+
 	root_series = genotypes.iloc[0].copy()
 	root_lineage = {root_series.name}
 	for index, row in edges.iterrows():
@@ -207,6 +220,8 @@ def calculate_root_background_values(genotypes: pandas.DataFrame, edges) -> pand
 	totals = 1 - totals[totals < 1]
 
 	root_series.update(totals)
+
+	# root_series = genotypes.iloc[0].copy()
 
 	genotypes.iloc[0] = root_series
 	return genotypes

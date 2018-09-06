@@ -13,11 +13,12 @@ def filter_genotypes(trajectories:pandas.DataFrame, fixed_cutoff:float, detectio
 
 	for genotype_label, genotype in genotypes.iterrows():
 		for background_label, background in backgrounds.iterrows():
+			detected = genotype[genotype > fixed_cutoff]
+			fixed_timepoint = background[background > fixed_cutoff].index[0]
 
-			difference = background - genotype
+			# The genotype was seen both before and after the background fixed.
 
-			genotype_above_background = difference[difference > detection_cutoff]
-
+			seen_before_after = ''
 
 
 

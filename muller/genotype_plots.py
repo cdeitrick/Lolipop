@@ -24,6 +24,7 @@ def get_cluster_color(element:Union[int,float, str], cluster_colors)->str:
 	"""
 		Returns the color of the cluster this genotype belongs to.
 	"""
+	return generate_random_color()
 	if isinstance(element, (int,float)):
 		color = [i for i in cluster_colors if element in i[0]]
 	else:
@@ -32,7 +33,7 @@ def get_cluster_color(element:Union[int,float, str], cluster_colors)->str:
 
 	return color[0][1]
 
-def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame, genotypes: pandas.DataFrame):
+def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame):
 	"""
 		Plots the clustered genotypes.
 	Parameters
@@ -45,8 +46,9 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame
 	-------
 
 	"""
+	mean_genotypes.pop('members')
 	numeric_columns = list(get_numeric_columns(timeseries.columns))
-	genotype_colors = [(g, generate_random_color()) for g in genotypes]
+	genotype_colors = [(g, generate_random_color()) for g in mean_genotypes.index]
 	# Plot all trajectories
 	plt.subplot(2, 1, 1)
 
@@ -74,7 +76,21 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame
 		plt.plot(cluster_timeseries.index, cluster_timeseries.values, '-o', color = cluster_color, label = cluster_id)
 	plt.legend()
 	plt.show()
+	print()
 
 
 if __name__ == "__main__":
-	pass
+	from pathlib import Path
+	try:
+		from muller.time_series_import import import_timeseries
+		from muller import get_genotypes
+	except ModuleNotFoundError:
+		from time_series_import import import_timeseries
+		import get_genotypes
+
+	input_filename = Path('/home/cld100/Documents/github/muller_diagrams/Data files/P1/P1_Muller.xlsx')
+
+	timepoints, info = import_timeseries(input_filename)
+
+	mean_genotypes = get_genotypes.workflow(timepoints)
+	plot_genotypes(timepoints, mean_genotypes)

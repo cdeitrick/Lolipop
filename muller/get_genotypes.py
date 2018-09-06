@@ -21,7 +21,6 @@ class PairArrayValue:
 	"""
 		Holds the values assigned to parray in the original script.
 	"""
-	population: int
 	left: int
 	right: int
 	p_value: float
@@ -81,7 +80,7 @@ class GenotypeOptions:
 				difference_breakpoint = parser.difference_breakpoint
 			)
 
-def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFrame, detection_cutoff: float,
+def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff: float,
 		fixed_cutoff: float, n_binomial: int) -> PairwiseArrayType:
 	"""
 		Calculates the relative similarity between all trajectory pairs.
@@ -108,7 +107,6 @@ def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFra
 
 	Parameters
 	----------
-	population_id
 	timeseries: pandas.DataFrame
 	detection_cutoff: float
 	fixed_cutoff: float
@@ -148,7 +146,7 @@ def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFra
 			# Both trajectories have no timepoints where they are detected but not yet fixed.
 			# Assign a p-value of 0.0
 			pair_array_value = PairArrayValue(
-				population_id, pair[0], pair[1], math.nan, math.nan, math.nan
+				pair[0], pair[1], math.nan, math.nan, math.nan
 			)
 		else:
 			# Find the mean frequency of each timepoint
@@ -165,7 +163,6 @@ def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFra
 
 			# Difference of frequencies at each timepoint
 			difference: pandas.Series = filtered_df.iloc[:, 0] - filtered_df.iloc[:, 1]
-
 			sigmapair: float = math.sqrt(sigma_freq.sum()) / len(difference)
 
 			# Sum of differences
@@ -176,7 +173,7 @@ def calculate_pairwise_similarity(population_id: int, timeseries: pandas.DataFra
 			pval: float = 1 - math.erf(X)
 
 			pair_array_value = PairArrayValue(
-				population_id, pair[0], pair[1], pval, sigmapair, difbar
+				pair[0], pair[1], pval, sigmapair, difbar
 			)
 		# Add the p-value information for the forward and reverse pairs (will be the same, no need to do again)
 		pair_array[(left, right)] = pair_array_value
@@ -364,7 +361,7 @@ def split_unlinked_genotypes(all_genotypes: List[List[int]], pair_array: Pairwis
 	return sorted(all_genotypes, key = lambda s: len(s))
 
 
-def get_genotypes(timeseries: pandas.DataFrame, options: GenotypeOptions) -> List[Genotype]:
+def get_genotypes_from_population(timeseries: pandas.DataFrame, options: GenotypeOptions) -> List[Genotype]:
 	"""
 		Clusters trajectories into genotypes.
 	Parameters
@@ -372,8 +369,6 @@ def get_genotypes(timeseries: pandas.DataFrame, options: GenotypeOptions) -> Lis
 	timeseries: pandas.DataFrame
 		The timeseries output from import_timeseries.
 		- Columns
-			- Population: str
-				Name of the population. ex. 'B2'
 			- Trajectory: int
 				Identifies a unique mutation based on population and posiiton. Should be sorted starting from 1
 			- Position: int
@@ -392,47 +387,48 @@ def get_genotypes(timeseries: pandas.DataFrame, options: GenotypeOptions) -> Lis
 	#link_cutoff = 0.05  # Calculates the relative similarity between all trajectory pairs.
 
 	# Group all trajectories by the population they belong to. Usually only one population.
-	populations = timeseries.groupby(by = 'Population')
-	assert populations # Make sure 'populations' is not empty
-	all_genotypes = dict()
-	for population_id, population_data in populations:
-		# Trajectories represent the population frequencies at each timepoint
-		# Each row represents a single timepoint, each column represents a mutation.
+	#populations = timeseries.groupby(by = 'Population')
+	#assert populations # Make sure 'populations' is not empty
+	#all_genotypes = dict()
+	#from pprint import pprint
+	#pprint(populations.keys)
+	#for population_id, population_data in populations:
+	# Trajectories represent the population frequencies at each timepoint
+	# Each row represents a single timepoint, each column represents a mutation.
 
-		# calculate the similarity between all pairs of trajectories in the population.
-		pair_array = calculate_pairwise_similarity(
-			population_id,
-			timeseries,
-			detection_cutoff = options.detection_breakpoint,
-			fixed_cutoff = options.fixed_breakpoint,
-			n_binomial = options.n_binom
+	# calculate the similarity between all pairs of trajectories in the population.
+	pair_array = calculate_pairwise_similarity(
+		timeseries,
+		detection_cutoff = options.detection_breakpoint,
+		fixed_cutoff = options.fixed_breakpoint,
+		n_binomial = options.n_binom
 
-		)
+	)
 
-		population_genotypes = find_all_genotypes(pair_array, options.similarity_breakpoint)
+	population_genotypes = find_all_genotypes(pair_array, options.similarity_breakpoint)
 
-		# at the end, look at all trajectories that are not listed and
-		# append them as their own category.
-		# List of all trajectories
-		flattened_genotypes = list(itertools.chain.from_iterable(population_genotypes))
-		# Any missing trajectories. Will probably be empty
-		other_trajectories = [i for i in timeseries['Trajectory'].values if i not in flattened_genotypes]
-		population_genotypes.append(other_trajectories)
+	# at the end, look at all trajectories that are not listed and
+	# append them as their own category.
+	# List of all trajectories
+	flattened_genotypes = list(itertools.chain.from_iterable(population_genotypes))
+	# Any missing trajectories. Will probably be empty
+	other_trajectories = [i for i in timeseries['Trajectory'].values if i not in flattened_genotypes]
+	population_genotypes.append(other_trajectories)
 
-		# finally, for each genotype, make sure each trajectory pair has some
-		# non-trivial linkage (say, >0.0005). this avoids falsely linking together
-		# trajectories. if not, divide the offending trajectories into two
-		# camps, and sort the rest according to which one they are more
-		# closely linked to. repeat until everything is linked.
-		# pprint(pair_array)
+	# finally, for each genotype, make sure each trajectory pair has some
+	# non-trivial linkage (say, >0.0005). this avoids falsely linking together
+	# trajectories. if not, divide the offending trajectories into two
+	# camps, and sort the rest according to which one they are more
+	# closely linked to. repeat until everything is linked.
+	# pprint(pair_array)
 
-		while True:
-			starting_size_of_the_genotype_array = len(population_genotypes)
-			population_genotypes = split_unlinked_genotypes(population_genotypes[:], pair_array, options.difference_breakpoint)
-			if len(population_genotypes) == starting_size_of_the_genotype_array:
-				break
+	while True:
+		starting_size_of_the_genotype_array = len(population_genotypes)
+		population_genotypes = split_unlinked_genotypes(population_genotypes[:], pair_array, options.difference_breakpoint)
+		if len(population_genotypes) == starting_size_of_the_genotype_array:
+			break
 
-		all_genotypes[population_id] = population_genotypes
+	#all_genotypes[population_id] = population_genotypes
 	# TODO Fix so that it returns a genotype for each population
 	return population_genotypes
 
@@ -553,7 +549,7 @@ def workflow(io:Union[Path, pandas.DataFrame], options:GenotypeOptions=None, mat
 	else:
 		timepoints = io
 
-	genotypes = get_genotypes(timepoints, options)
+	genotypes = get_genotypes_from_population(timepoints, options)
 	_mean_genotypes = get_mean_genotypes(genotypes, timepoints)
 
 	#_mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
