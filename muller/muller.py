@@ -14,7 +14,7 @@ try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
 	from muller.get_genotypes import GenotypeOptions
 	from muller.sort_genotypes import SortOptions
-	from muller.time_series_import import import_timeseries
+	from muller.import_table import import_timeseries
 
 	from muller import get_genotypes
 	from muller import order_clusters
@@ -22,7 +22,7 @@ try:
 	from muller import data_conversions
 except ModuleNotFoundError:
 	from order_clusters import ClusterType, OrderClusterParameters
-	from time_series_import import import_timeseries
+	from import_table import import_timeseries
 	from get_genotypes import GenotypeOptions
 	from sort_genotypes import SortOptions
 	import get_genotypes
@@ -94,9 +94,9 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	# trajectory_table = data.pop('trajectoryTable')
 	# mermaid_diagram = data.pop('mermaidDiagram')
 
-	population_output_file = output_folder / (name + '.ggmuller_populations.csv')
-	edges_output_file = output_folder / (name + '.ggmuller_edges.csv')
-	genotype_output_file = output_folder / (name + '.genotypes.csv')
+	population_output_file = output_folder / (name + '.ggmuller_populations.tsv')
+	edges_output_file = output_folder / (name + '.ggmuller_edges.tsv')
+	genotype_output_file = output_folder / (name + '.genotypes.tsv')
 	trajectory_output_file = output_folder / (name + '.trajectories.csv')
 	mermaid_diagram_output = output_folder / (name + '.mermaid')
 	r_script_file = output_folder / (name + '.r')

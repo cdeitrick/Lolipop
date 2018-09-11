@@ -29,6 +29,7 @@ def get_numeric_columns(columns: List) -> List[Union[int, float]]:
 def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
 	table = list()
 	# "Generation", "Identity" and "Population"
+
 	numeric_columns = get_numeric_columns(mean_genotypes.columns)
 	for index, row in mean_genotypes.iterrows():
 		for column, value in row.items():
@@ -40,15 +41,24 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 				'Population': value * 100
 			}
 			table.append(line)
-	numeric_columns = [i for i in mean_genotypes.columns if not isinstance(i, str)]
-	for column in numeric_columns:
+	df = pandas.DataFrame(table)
+	generations = df.groupby(by = 'Generation')
+
+	root_genotype_generations = list()
+	for generation, gdf in generations:
+		total = gdf['Population'].sum()
+		value = 100.0 - total
+		if value < 0:
+			value = 0
 		row = {
-			'Generation': column,
-			'Identity':   0,
-			'Population': 100 if column == min(numeric_columns) else 0
+			'Generation': generation,
+			'Identity': 0,
+			'Population': value
 		}
-		table.append(row)
-	return pandas.DataFrame(sorted(table, key = lambda s: s['Generation']))
+		root_genotype_generations.append(row)
+	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
+	return fdf.sort_values(by = 'Generation')
+
 
 
 def convert_clusters_to_ggmuller_format(mermaid: str) -> pandas.DataFrame:
@@ -135,8 +145,8 @@ def generate_formatted_output(timepoints: pandas.DataFrame, mean_genotypes: pand
 
 	mermaid_diagram = generate_mermaid_diagram(clusters)
 	ggmuller_edge_table = convert_clusters_to_ggmuller_format(mermaid_diagram)
-	corrected_table = calculate_root_background_values(mean_genotypes, ggmuller_edge_table)
-	ggmuller_population_table = convert_population_to_ggmuller_format(corrected_table)
+
+	ggmuller_population_table = convert_population_to_ggmuller_format(mean_genotypes)
 
 	data = {
 		'trajectoryTable':         timepoints,
@@ -148,7 +158,7 @@ def generate_formatted_output(timepoints: pandas.DataFrame, mean_genotypes: pand
 		'ggmullerEdgeTable':       ggmuller_edge_table
 	}
 	# print(ggmuller_population_table.to_string())
-	return timepoints, gens, corrected_table, parameters, mermaid_diagram, ggmuller_population_table, ggmuller_edge_table
+	return timepoints, gens, mean_genotypes, parameters, mermaid_diagram, ggmuller_population_table, ggmuller_edge_table
 
 
 def generate_mermaid_diagram(clusters: ClusterType) -> str:
@@ -188,40 +198,4 @@ def generate_r_script(population: Path, edges: Path, output_file: Path) -> str:
 	return script
 
 
-def calculate_root_background_values(genotypes: pandas.DataFrame, edges) -> pandas.DataFrame:
-	"""
-		The root background should have values equal to 1-sum(genotypes) for all timepoints where the sum is less than 1
-		and only for genotypes that inherit from root.
-	Parameters
-	----------
-	genotypes: pandas.DataFrame
-	edges: pandas.DataFrame
 
-	Returns
-	-------
-	pandas.DataFrame
-	"""
-
-	# Get all genotypes that inherit from the root.
-
-	root_series = genotypes.iloc[0].copy()
-	root_lineage = {root_series.name}
-	for index, row in edges.iterrows():
-		parent = row['Parent']
-		identity = row['Identity']
-
-		if parent in root_lineage:
-			root_lineage.add(parent)
-			root_lineage.add(identity)
-
-	root_lineage = [i for i in root_lineage if i != root_series.name]
-	root_genotypes = genotypes.loc[list(root_lineage)]
-	totals = root_genotypes.sum()
-	totals = 1 - totals[totals < 1]
-
-	root_series.update(totals)
-
-	# root_series = genotypes.iloc[0].copy()
-
-	genotypes.iloc[0] = root_series
-	return genotypes

@@ -8,9 +8,9 @@ from pathlib import Path
 import argparse
 
 try:
-	from muller.time_series_import import import_timeseries
+	from muller.import_table import import_timeseries
 except ModuleNotFoundError:
-	from time_series_import import import_timeseries
+	from import_table import import_timeseries
 
 # The data structure of a agenotype
 Genotype = List[int]
@@ -122,7 +122,7 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 
 	# get a list of all possible trajectory pairs, ignoring element order.
 	trajectories = timeseries[[i for i in timeseries.columns if i not in ['Population', 'Position', 'Trajectory']]]
-	combos = sorted(itertools.combinations(timeseries['Trajectory'].values, 2))
+	combos = sorted(itertools.combinations(timeseries.index, 2))
 	pair_array = dict()
 
 	for pair in combos:
@@ -131,8 +131,13 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 
 		# Extract the trajectory frequencies for both trajectories in the pair.
 		# trajectory indicies start at 1, need to convert to 0-indexed.
-		left_trajectories = trajectories.iloc[left - 1]
-		right_trajectories = trajectories.iloc[right - 1]
+
+		#left_trajectories = trajectories.iloc[left - 1]
+		#print(left, right)
+		#print(trajectories.index)
+		left_trajectories = trajectories.loc[left]
+		#right_trajectories = trajectories.iloc[right - 1]
+		right_trajectories = trajectories.loc[right]
 
 		# Merge into a dataframe for convienience
 		df = pandas.concat([left_trajectories, right_trajectories], axis = 1)
@@ -181,7 +186,7 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 	return pair_array
 
 
-def find_genotype(element: int, all_genotypes: List[List[int]]) -> Optional[Genotype]:
+def _find_genotype_from_trajectory(element: int, all_genotypes: List[List[int]]) -> Optional[Genotype]:
 	"""
 		Finds the genotype that contains the trajectory.
 	Parameters
@@ -230,8 +235,8 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 		if pair.p_value > relative_cutoff:  # are the genotypes related?
 			# Check if any of the trajectories are already listed in genotypes.
 			# These will return None if no genotype is found.
-			genotype_left = find_genotype(pair.left, genotype_candidates)
-			genotype_right = find_genotype(pair.right, genotype_candidates)
+			genotype_left = _find_genotype_from_trajectory(pair.left, genotype_candidates)
+			genotype_right = _find_genotype_from_trajectory(pair.right, genotype_candidates)
 
 			if genotype_left and genotype_right:
 				# they are listed under two different genotypes. Combine them.
@@ -412,7 +417,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	# List of all trajectories
 	flattened_genotypes = list(itertools.chain.from_iterable(population_genotypes))
 	# Any missing trajectories. Will probably be empty
-	other_trajectories = [i for i in timeseries['Trajectory'].values if i not in flattened_genotypes]
+	other_trajectories = [i for i in timeseries.index if i not in flattened_genotypes]
 	population_genotypes.append(other_trajectories)
 
 	# finally, for each genotype, make sure each trajectory pair has some
@@ -451,7 +456,8 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 	"""
 	mean_genotypes = list()
 	for index, genotype in enumerate(all_genotypes, start = 1):
-		genotype_timeseries = timeseries[timeseries['Trajectory'].isin(genotype)]
+
+		genotype_timeseries = timeseries.loc[genotype]
 		mean_genotype_timeseries = genotype_timeseries.mean()
 		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
 		mean_genotype_timeseries.name = "genotype-{}".format(index)
@@ -557,6 +563,7 @@ def workflow(io:Union[Path, pandas.DataFrame], options:GenotypeOptions=None, mat
 
 if __name__ == "__main__":
 	cmd_parser = create_parser().parse_args()
-	cmd_options = GenotypeOptions.from_parser(cmd_parser)
 
-	workflow(Path(cmd_parser.filename), options = cmd_options)
+	#cmd_options = GenotypeOptions.from_parser(cmd_parser)
+	cmd_options = GenotypeOptions.from_matlab()
+	workflow(Path("/home/cld100/Documents/pops/B1_updated.csv"), options = cmd_options)
