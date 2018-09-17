@@ -41,7 +41,7 @@ The table must have a column named `Trajectory` or `Genotype` and integer column
 python muller.py --input [input filename] --output [output folder]
 ```
 
-The script generates eight files:
+The script generates nine files:
 -  `input filename`.ggmuller_edges.tsv
 
 	Used as the `edges` input to ggmuller.
@@ -49,6 +49,10 @@ The script generates eight files:
 - `input filename`.ggmuller_populations.tsv
 
 	Used as the `population` input to ggmuller.
+
+- `input filename`.genotypemembers.tsv
+
+    A table indicating which trajectories compose each genotype.
 
 - `input filename`.genotypes.tsv
 
