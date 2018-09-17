@@ -15,6 +15,7 @@ try:
 	from muller.get_genotypes import GenotypeOptions
 	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
+	from muller.genotype_plots import plot_genotypes
 
 	from muller import get_genotypes
 	from muller import order_clusters
@@ -25,6 +26,7 @@ except ModuleNotFoundError:
 	from import_table import import_trajectory_table, import_genotype_table
 	from get_genotypes import GenotypeOptions
 	from sort_genotypes import SortOptions
+	from genotype_plots import plot_genotypes
 	import get_genotypes
 	import order_clusters
 	import sort_genotypes
@@ -67,6 +69,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 		mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
 
+
+
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
 
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
@@ -106,6 +110,8 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	r_script_file = output_folder / (name + '.r')
 	r_script_graph_file = output_folder / (name + '.muller.png')
 	genotype_details_file = output_folder / (name + '.genotypemembers.tsv')
+	genotype_plot_filename = output_folder / (name + '.genotypeplot.png')
+	plot_genotypes(trajectory_table, genotype_table, genotype_plot_filename)
 
 	with genotype_details_file.open('w') as csv_file:
 		for g in gens:
