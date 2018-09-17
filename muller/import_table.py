@@ -41,7 +41,7 @@ def import_genotype_table(filename: Path) -> pandas.DataFrame:
 	data = data[[key_column, 'members'] + get_numeric_columns(data.columns)]
 
 	data = data.set_index(key_column)
-	data.index.name = 'Genotypes'
+	data.index.name = 'Genotype'
 
 	def _convert_to_numeric(col):
 		try:
