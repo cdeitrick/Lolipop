@@ -1,5 +1,5 @@
 # A set of scripts to cluster mutations into genotypes and cluster genotypes by background.
-![muller_plot](./data/B1_muller_try1.muller.png)
+![muller_plot](./example/B1_muller_try1.muller.png)
 
 # Input Parameters
 
@@ -121,12 +121,12 @@ Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.
 
 # Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
-![genotypeplot](./data/example/example.genotypeplot.png)
+![genotypeplot](./example/example.genotypeplot.png)
 
 # Mermaid Diagram
 
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
 
-![diagram](./data/sample_mermaid_diagram.png)
+![diagram](./example/sample_mermaid_diagram.png)
 
 
