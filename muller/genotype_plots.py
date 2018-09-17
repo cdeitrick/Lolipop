@@ -112,7 +112,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 
 
 	if filename:
-		plt.savefig(str(filename), dpi = 2000, format = 'png')
+		plt.savefig(str(filename), dpi = 500, format = 'png')
 	else:
 		plt.show()
 
