@@ -8,9 +8,9 @@ from pathlib import Path
 import argparse
 
 try:
-	from muller.import_table import import_timeseries
+	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
-	from import_table import import_timeseries
+	from import_table import import_trajectory_table
 
 # The data structure of a agenotype
 Genotype = List[int]
@@ -62,13 +62,13 @@ class GenotypeOptions:
 		)
 
 	@classmethod
-	def from_parser(cls, parser:argparse.Namespace) -> 'GenotypeOptions':
+	def from_parser(cls, parser: argparse.Namespace) -> 'GenotypeOptions':
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
 		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
 		nbinom = int(parser.n_binomial) if hasattr(parser, 'n_binomial') and parser.n_binomial else None
 		if fixed_breakpoint is None:
-			fixed_breakpoint = 1-detection_breakpoint
+			fixed_breakpoint = 1 - detection_breakpoint
 		if compatibility_mode:
 			return cls.from_matlab()
 		else:
@@ -79,6 +79,7 @@ class GenotypeOptions:
 				similarity_breakpoint = parser.similarity_breakpoint,
 				difference_breakpoint = parser.difference_breakpoint
 			)
+
 
 def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff: float,
 		fixed_cutoff: float, n_binomial: int) -> PairwiseArrayType:
@@ -132,11 +133,11 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 		# Extract the trajectory frequencies for both trajectories in the pair.
 		# trajectory indicies start at 1, need to convert to 0-indexed.
 
-		#left_trajectories = trajectories.iloc[left - 1]
-		#print(left, right)
-		#print(trajectories.index)
+		# left_trajectories = trajectories.iloc[left - 1]
+		# print(left, right)
+		# print(trajectories.index)
 		left_trajectories = trajectories.loc[left]
-		#right_trajectories = trajectories.iloc[right - 1]
+		# right_trajectories = trajectories.iloc[right - 1]
 		right_trajectories = trajectories.loc[right]
 
 		# Merge into a dataframe for convienience
@@ -388,16 +389,16 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	A list of the genotypes, where each genotype is itself a list of the member trajectories.
 
 	"""
-	#relative_cutoff = 0.10  # v Calculates the relative similarity between all trajectory pairs.
-	#link_cutoff = 0.05  # Calculates the relative similarity between all trajectory pairs.
+	# relative_cutoff = 0.10  # v Calculates the relative similarity between all trajectory pairs.
+	# link_cutoff = 0.05  # Calculates the relative similarity between all trajectory pairs.
 
 	# Group all trajectories by the population they belong to. Usually only one population.
-	#populations = timeseries.groupby(by = 'Population')
-	#assert populations # Make sure 'populations' is not empty
-	#all_genotypes = dict()
-	#from pprint import pprint
-	#pprint(populations.keys)
-	#for population_id, population_data in populations:
+	# populations = timeseries.groupby(by = 'Population')
+	# assert populations # Make sure 'populations' is not empty
+	# all_genotypes = dict()
+	# from pprint import pprint
+	# pprint(populations.keys)
+	# for population_id, population_data in populations:
 	# Trajectories represent the population frequencies at each timepoint
 	# Each row represents a single timepoint, each column represents a mutation.
 
@@ -429,11 +430,12 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 
 	while True:
 		starting_size_of_the_genotype_array = len(population_genotypes)
-		population_genotypes = split_unlinked_genotypes(population_genotypes[:], pair_array, options.difference_breakpoint)
+		population_genotypes = split_unlinked_genotypes(population_genotypes[:], pair_array,
+			options.difference_breakpoint)
 		if len(population_genotypes) == starting_size_of_the_genotype_array:
 			break
 
-	#all_genotypes[population_id] = population_genotypes
+	# all_genotypes[population_id] = population_genotypes
 	# TODO Fix so that it returns a genotype for each population
 	return population_genotypes
 
@@ -456,7 +458,6 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 	"""
 	mean_genotypes = list()
 	for index, genotype in enumerate(all_genotypes, start = 1):
-
 		genotype_timeseries = timeseries.loc[genotype]
 		mean_genotype_timeseries = genotype_timeseries.mean()
 		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
@@ -525,7 +526,8 @@ def create_parser() -> argparse.ArgumentParser:
 	return parser
 
 
-def workflow(io:Union[Path, pandas.DataFrame], options:GenotypeOptions=None, matlab:bool=True, detection_breakpoint:float=0.03, fixed_breakpoint:float=None)->pandas.DataFrame:
+def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None, matlab: bool = False,
+		detection_breakpoint: float = 0.03, fixed_breakpoint: float = None) -> pandas.DataFrame:
 	"""
 
 	Parameters
@@ -545,25 +547,26 @@ def workflow(io:Union[Path, pandas.DataFrame], options:GenotypeOptions=None, mat
 		options = GenotypeOptions.from_matlab()
 	if options is None:
 		if fixed_breakpoint is None:
-			fixed_breakpoint = 1-detection_breakpoint
+			fixed_breakpoint = 1 - detection_breakpoint
 
 		options = GenotypeOptions.from_breakpoints(detection_breakpoint, fixed_breakpoint)
 
-
 	if isinstance(io, Path):
-		timepoints, info = import_timeseries(io)
+		timepoints, info = import_trajectory_table(io)
 	else:
 		timepoints = io
+
 
 	genotypes = get_genotypes_from_population(timepoints, options)
 	_mean_genotypes = get_mean_genotypes(genotypes, timepoints)
 
-	#_mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
+	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
 	return _mean_genotypes
+
 
 if __name__ == "__main__":
 	cmd_parser = create_parser().parse_args()
 
-	#cmd_options = GenotypeOptions.from_parser(cmd_parser)
+	# cmd_options = GenotypeOptions.from_parser(cmd_parser)
 	cmd_options = GenotypeOptions.from_matlab()
 	workflow(Path("/home/cld100/Documents/pops/B1_updated.csv"), options = cmd_options)

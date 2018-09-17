@@ -14,7 +14,7 @@ try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
 	from muller.get_genotypes import GenotypeOptions
 	from muller.sort_genotypes import SortOptions
-	from muller.import_table import import_timeseries
+	from muller.import_table import import_trajectory_table, import_genotype_table
 
 	from muller import get_genotypes
 	from muller import order_clusters
@@ -22,7 +22,7 @@ try:
 	from muller import data_conversions
 except ModuleNotFoundError:
 	from order_clusters import ClusterType, OrderClusterParameters
-	from import_table import import_timeseries
+	from import_table import import_trajectory_table, import_genotype_table
 	from get_genotypes import GenotypeOptions
 	from sort_genotypes import SortOptions
 	import get_genotypes
@@ -59,12 +59,18 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			frequency_breakpoints = freqs
 		)
 
-	timepoints, info = import_timeseries(input_filename)
+	if program_options.is_genotype:
+		timepoints = None
+		mean_genotypes = import_genotype_table(input_filename)
+	else:
+		timepoints, info = import_trajectory_table(input_filename)
 
-	mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
-	mean_genotypes.to_csv(str(output_folder / (input_filename.stem + '.genotypes.csv')), sep = '\t')
+		mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
+
+	print(mean_genotypes)
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
-
+	print()
+	print(sort_genotypes)
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
@@ -97,7 +103,7 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	population_output_file = output_folder / (name + '.ggmuller_populations.tsv')
 	edges_output_file = output_folder / (name + '.ggmuller_edges.tsv')
 	genotype_output_file = output_folder / (name + '.genotypes.tsv')
-	trajectory_output_file = output_folder / (name + '.trajectories.csv')
+	trajectory_output_file = output_folder / (name + '.trajectories.tsv')
 	mermaid_diagram_output = output_folder / (name + '.mermaid')
 	r_script_file = output_folder / (name + '.r')
 	r_script_graph_file = output_folder / (name + '.muller.png')
@@ -111,7 +117,8 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
 	edge_table.to_csv(str(edges_output_file), sep = '\t', index = False)
 	genotype_table.to_csv(str(genotype_output_file), sep = '\t')
-	trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
+	if trajectory_table is not None:
+		trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
 	mermaid_diagram_output.write_text(mermaid_diagram)
 
 	r_script = data_conversions.generate_r_script(
@@ -181,7 +188,7 @@ def create_parser() -> argparse.ArgumentParser:
 		help = 'The frequency cutoff to use when sorting the genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
 		action = 'store',
 		dest = 'frequencies',
-		default = 0.15
+		default = 0.10
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
@@ -198,11 +205,24 @@ def create_parser() -> argparse.ArgumentParser:
 		default = 0.10,
 		dest = "difference_breakpoint"
 	)
+	parser.add_argument(
+		"--genotypes", "--cohorts",
+		help = "Indicates that the input table contains genotypes rather than trajectories.",
+		action = 'store_true',
+		dest = 'is_genotype'
+	)
 	return parser
 
 
 if __name__ == "__main__":
+
 	cmd_parser = create_parser().parse_args()
+
+	#cmd_parser.is_genotype = True
+	#cmd_parser.output_folder = "./B1_muller_try1"
+
+	#cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/muller/original/B1_muller_try1.genotypes.tsv"
+
 
 	_input_filename = Path(cmd_parser.filename)
 	if cmd_parser.output_folder:

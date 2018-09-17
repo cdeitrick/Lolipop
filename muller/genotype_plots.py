@@ -82,7 +82,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes:pandas.DataFrame
 if __name__ == "__main__":
 	from pathlib import Path
 	try:
-		from muller.import_table import import_timeseries
+		from muller.import_table import import_trajectory_table
 		from muller import get_genotypes
 	except ModuleNotFoundError:
 		from import_table import import_timeseries
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
 	input_filename = Path('/home/cld100/Documents/github/muller_diagrams/Data files/P1/P1_Muller.xlsx')
 
-	timepoints, info = import_timeseries(input_filename)
+	timepoints, info = import_trajectory_table(input_filename)
 
 	mean_genotypes = get_genotypes.workflow(timepoints)
 	plot_genotypes(timepoints, mean_genotypes)

@@ -1,9 +1,59 @@
 from pathlib import Path
 import pandas
-from typing import Tuple
+from typing import Tuple, List
 
 
-def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def get_numeric_columns(columns: List[str]) -> List[str]:
+	numeric_columns = list()
+	for column in columns:
+		try:
+			int(column)
+			numeric_columns.append(column)
+		except ValueError:
+			pass
+	return numeric_columns
+
+
+def import_table(filename: Path, sheet_name = 'Sheet1') -> pandas.DataFrame:
+	if filename.suffix in {'.xls', '.xlsx'}:
+		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
+	else:
+		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
+		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
+	return data
+
+
+def import_genotype_table(filename: Path) -> pandas.DataFrame:
+	data = import_table(filename)
+
+	if 'Genotype' in data.columns:
+		key_column = 'Genotype'
+	elif 'Unnamed: 0' in data.columns:
+		key_column = 'Unnamed: 0'
+	else:
+		message = "One of the columns needs to be labeled 'Genotype'"
+		raise ValueError(message)
+
+	if 'members' not in data.columns:
+		message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
+		raise ValueError(message)
+
+	data = data[[key_column, 'members'] + get_numeric_columns(data.columns)]
+
+	data = data.set_index(key_column)
+	data.index.name = 'Genotypes'
+
+	def _convert_to_numeric(col):
+		try:
+			return int(col)
+		except:
+			return col
+
+	data = data.rename(_convert_to_numeric, axis = 'columns')
+	return data
+
+
+def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Reads an excel or csv file. Assumes that the file has the following columns:
 		- Population:
@@ -32,35 +82,24 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 	"""
 
 	# Read in the data table.
-	if filename.suffix in {'.xls', '.xlsx'}:
-		data:pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
-	else:
-		if filename.suffix in {'.tsv', '.tab'}:
-			sep = '\t'
-		else:
-			sep = ','
-		data:pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
+	data = import_table(filename, sheet_name)
 
+	key_column = 'Trajectory'
 	# Extract the columns which indicate timepoints of observations. Should be integers.
-	frequency_columns = list()
-	for column in data.columns:
-		try:
-			int(column)
-			frequency_columns.append(column)
-		except ValueError:
-			pass
+	frequency_columns = get_numeric_columns(data.columns)
 
 	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
-	#if 'Population' not in data.columns:
+	# if 'Population' not in data.columns:
 	#	data['Population'] = 'Population1'
 
-	#timeseries = data[['Population', 'Trajectory', 'Position'] + frequency_columns]
-	data = data.set_index('Trajectory')
+	# timeseries = data[['Population', 'Trajectory', 'Position'] + frequency_columns]
+
+	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
 	for column in frequency_columns:
-		#print(timeseries[column])
+		# print(timeseries[column])
 		if max(timeseries[column]) > 1.0:
-			timeseries[column] /=100
+			timeseries[column] /= 100
 
 	# timeseries = timeseries.transpose()
 
@@ -69,9 +108,8 @@ def import_timeseries(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.Dat
 		info = data[['Population', 'Class', 'Mutation']]
 	except:
 		info = None
-	#print(timeseries)
+	# print(timeseries)
 	return timeseries, info
-
 
 
 if __name__ == "__main__":

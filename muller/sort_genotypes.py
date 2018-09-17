@@ -21,7 +21,17 @@ class SortOptions:
 			fixed_breakpoint = 0.85,
 			frequency_breakpoints = [0.90, 0.75, 0.60, 0.45, 0.30, 0.15, 0.00]
 		)
+	@classmethod
+	def from_breakpoints(cls, detection:float, significant:float=0.15, fixed:float=None)->'SortOptions':
+		if fixed is None:
+			fixed = 1-detection
 
+		return SortOptions(
+			detection_breakpoint = detection,
+			significant_breakpoint = significant,
+			fixed_breakpoint = fixed,
+			frequency_breakpoints = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+		)
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
@@ -61,9 +71,6 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 
 def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency_breakpoint: float,
 		detection_cutoff: float, significant_cutuff: float, fixed_cutoff: float) -> pandas.DataFrame:
-	# Should be 1, 7, 2|3, 6, 8|4, 5, 14, 9|17, 19|13|..., 21|10|15, 18|11
-	# Should Be 8, 7|12|28,
-	# frequency_threshold = FIXED_THRESHOLD if FREQUENCY_THRESHOLD < frequency_breakpoint else frequency_breakpoint
 
 	transposed = genotype_trajectories.transpose()
 
@@ -93,25 +100,23 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
 
-	debug = False
-	if not debug:
-		freq_groups = list()
-		groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
-		for label, group in groups:
-			trajectories = genotype_trajectories.loc[group.index]
-			if len(group) < 2:
-				freq_groups.append(trajectories)
-			else:
-				trajectories = genotype_trajectories.drop(
-					[gt for gt in genotype_trajectories.index if gt not in group.index])
-				# sgens = gens.sort_values(by = list(genotype_trajectories.columns))
-				freq_groups.append(trajectories)
-		if freq_groups:  # Make sure freq_groups is not empty
-			freq_df = pandas.concat(freq_groups)
+
+	freq_groups = list()
+	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
+	for label, group in groups:
+		trajectories = genotype_trajectories.loc[group.index]
+		if len(group) < 2:
+			freq_groups.append(trajectories)
 		else:
-			freq_df = sorted_frequencies
+			trajectories = genotype_trajectories.drop(
+				[gt for gt in genotype_trajectories.index if gt not in group.index])
+			# sgens = gens.sort_values(by = list(genotype_trajectories.columns))
+			freq_groups.append(trajectories)
+	if freq_groups:  # Make sure freq_groups is not empty
+		freq_df = pandas.concat(freq_groups)
 	else:
 		freq_df = sorted_frequencies
+
 	return freq_df
 
 
@@ -132,10 +137,37 @@ def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matl
 			significant_breakpoint = significant_cutoff,
 			frequency_breakpoints = frequency_breakpoint
 		)
+
 	sorted_genotypes = sort_genotypes(mean_genotypes, options)
 
 	return sorted_genotypes
 
 
 if __name__ == "__main__":
-	pass
+	from pathlib import Path
+	from muller import get_genotypes
+	import import_table
+
+	original_filename = Path("../Data files/B1_muller_try1.xlsx")
+	new_filename = Path("./original/B1_muller_try1.genotypes.tsv")
+
+	original_trajectories, _ = import_table.import_trajectory_table(original_filename)
+	original_genotypes = get_genotypes.workflow(original_trajectories, options = get_genotypes.GenotypeOptions.from_breakpoints(0.03))
+	original_genotypes.index.name = 'Genotypes'
+	original_sorted_genotypes = workflow(original_genotypes, options = SortOptions.from_breakpoints(0.03))
+
+	new_table = import_table.import_genotype_table(new_filename)
+	new_table.index.name = 'Genotypes'
+	new_table = new_table[[0, 17, 25, 44, 66, 75, 90, 'members']]
+	new_sorted_genotypes = workflow(new_table, options = SortOptions.from_breakpoints(0.03))
+
+	print(original_sorted_genotypes)
+	print()
+	print(new_sorted_genotypes)
+	print()
+
+	print(new_sorted_genotypes.round(3) == original_sorted_genotypes.round(3))
+
+
+
+

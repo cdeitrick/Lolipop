@@ -60,14 +60,14 @@ class OrderClusterParameters:
 	def from_parser(cls, parser: Namespace) -> 'OrderClusterParameters':
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
+		significant_breakpoint = float(parser.significant_breakpoint)
 		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
 
-		if fixed_breakpoint is None:
-			fixed_breakpoint = 1 - detection_breakpoint
+
 		if compatibility_mode:
 			return cls.from_matlab()
 		else:
-			return cls.from_breakpoints(detection_breakpoint, fixed_breakpoint)
+			return cls.from_breakpoints(detection_breakpoint, significant_breakpoint)
 
 
 def check_additive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float,
@@ -159,7 +159,9 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			if genotype_label == test_label:  # The reduced dataframe still contains the genotype being tested.
 				continue
 
-			test_trajectory.pop('members')
+			if 'members' in test_trajectory:
+				test_trajectory.pop('members')
+
 			test_trajectory = test_trajectory.astype(float)
 			test_background = nests[test_label].background
 			type_genotype = Genotype(
