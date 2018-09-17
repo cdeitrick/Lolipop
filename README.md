@@ -119,9 +119,7 @@ python --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
-# Genotype Plots
-The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
-![genotypeplot](./data/example.genotypeplot.png)
+
 # Mermaid Diagram
 
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
