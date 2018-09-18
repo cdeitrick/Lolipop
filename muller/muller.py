@@ -69,10 +69,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 		mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
 
-
-	print(mean_genotypes)
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
-	print(sorted_genotypes)
+
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
@@ -111,6 +109,7 @@ def save_output(input_file: Path, output_folder: Path, data: data_conversions.Ou
 	r_script_graph_file = output_folder / (name + '.muller.png')
 	genotype_details_file = output_folder / (name + '.genotypemembers.tsv')
 	genotype_plot_filename = output_folder / (name + '.genotypeplot.png')
+
 	plot_genotypes(trajectory_table, genotype_table, genotype_plot_filename)
 
 	with genotype_details_file.open('w') as csv_file:

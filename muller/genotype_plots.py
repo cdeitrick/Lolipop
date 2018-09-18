@@ -52,37 +52,43 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 		'#bf0000', '#ffa280', '#402b00', '#98b32d', '#3df29d', '#60acbf', '#000f73',
 		'#ce3df2', '#e639ac', '#bf6060', '#594943', '#f2ca79', '#4a592d', '#003322',
 		'#001b33', '#333366', '#66005f', '#a60058', '#331a1a', '#ff6600', '#d9c7a3',
-		'#19bf00', '#468c75', '# #266399', '#070033', '#cc99c2', '#ff0044', '#f2beb6',
+		'#19bf00', '#468c75', '#266399', '#070033', '#cc99c2', '#ff0044', '#f2beb6',
 		'#a65b29', '#8c7000', '#a0cc99', '#00d9ca', '#80c4ff', '#3000b3', '#40303d',
-		'# #73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
+		'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
 		'#8f66cc', '#330022', '#59161f'
 	]
 
 	genotype_members = mean_genotypes.pop('members')
 	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in genotype_members.items()}
-	numeric_columns = list(get_numeric_columns(timeseries.columns))
-
+	if timeseries is not None:
+		numeric_columns = list(get_numeric_columns(timeseries.columns))
+	else:
+		numeric_columns = list(get_numeric_columns(mean_genotypes.columns))
 	if len(mean_genotypes.index) < len(color_palette):
 		genotype_colors = dict(zip(mean_genotypes.index, color_palette))
 	else:
 		genotype_colors = {g: generate_random_color() for g in mean_genotypes.index}
 	# Plot all trajectories
 	grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3)
-	plt.subplot(grid[0,0:2])
-	plt.ylabel('frequency')
-	plt.title('Trajectories')
+	if timeseries is not None:
+		plt.subplot(grid[0,0:2])
+		plt.ylabel('frequency')
+		plt.title('Trajectories')
 
-	for trajectory_id, trajectory in timeseries.iterrows():
-		trajectory_genotype_id = find_parent_genotype(trajectory_id, genotype_members)
-		color = genotype_colors[trajectory_genotype_id]
-		trajectory_timeseries = sorted((column, trajectory[column]) for column in numeric_columns)
-		x_values, y_values = zip(*trajectory_timeseries)
-		plt.plot(x_values, y_values, '-o', color = color, label = trajectory_id, markersize = 2)
+		for trajectory_id, trajectory in timeseries.iterrows():
+			trajectory_genotype_id = find_parent_genotype(trajectory_id, genotype_members)
+			color = genotype_colors[trajectory_genotype_id]
+			trajectory_timeseries = sorted((column, trajectory[column]) for column in numeric_columns)
+			x_values, y_values = zip(*trajectory_timeseries)
+			plt.plot(x_values, y_values, '-o', color = color, label = trajectory_id, markersize = 2)
 
 	# Plot clustered genotypes. Should be same as above, but colored based on genotype cluster.
 
 	# Plot the mean of each cluster
-	plt.subplot(grid[1, :])
+	if timeseries is not None:
+		plt.subplot(grid[1, :])
+	else:
+		plt.subplot(grid[:,:])
 	plt.ylabel('frequency')
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
