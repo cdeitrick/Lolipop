@@ -67,3 +67,4 @@ target/
 *output/
 # Ignore the folders used for testing
 *1/
+example/

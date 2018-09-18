@@ -437,7 +437,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 
 	# all_genotypes[population_id] = population_genotypes
 	# TODO Fix so that it returns a genotype for each population
-	return population_genotypes
+	return [i for i in population_genotypes if i] # Only return non-empty lists.
 
 
 def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFrame) -> pandas.DataFrame:
@@ -558,8 +558,9 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 
 	genotypes = get_genotypes_from_population(timepoints, options)
+	print(genotypes)
 	_mean_genotypes = get_mean_genotypes(genotypes, timepoints)
-
+	print(_mean_genotypes)
 	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
 	return _mean_genotypes
 
@@ -568,5 +569,5 @@ if __name__ == "__main__":
 	cmd_parser = create_parser().parse_args()
 
 	# cmd_options = GenotypeOptions.from_parser(cmd_parser)
-	cmd_options = GenotypeOptions.from_matlab()
-	workflow(Path("/home/cld100/Documents/pops/B1_updated.csv"), options = cmd_options)
+	cmd_options = GenotypeOptions.from_breakpoints(0.03)
+	workflow(Path("../Data files/P1_Final_Muller.csv"), options = cmd_options)

@@ -70,9 +70,9 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
 
 
-
+	print(mean_genotypes)
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
-
+	print(sorted_genotypes)
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
