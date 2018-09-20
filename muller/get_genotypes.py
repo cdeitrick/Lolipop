@@ -30,6 +30,9 @@ class PairArrayValue:
 
 PairwiseArrayType = Dict[Tuple[int, int], PairArrayValue]
 
+PAIRWISE_P_VALUES:PairwiseArrayType = None
+REMOVED_P_VALUES:PairwiseArrayType = dict()
+
 
 @dataclass
 class GenotypeOptions:
@@ -411,12 +414,24 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	# Each row represents a single timepoint, each column represents a mutation.
 
 	# calculate the similarity between all pairs of trajectories in the population.
-	pair_array = calculate_pairwise_similarity(
-		timeseries,
-		detection_cutoff = options.detection_breakpoint,
-		fixed_cutoff = options.fixed_breakpoint,
-		n_binomial = options.n_binom
-	)
+	global PAIRWISE_P_VALUES
+
+	if PAIRWISE_P_VALUES:
+
+		for key in sorted(PAIRWISE_P_VALUES.keys()):
+			left_key, right_key = key
+			if left_key not in timeseries.index or right_key not in timeseries.index:
+				PAIRWISE_P_VALUES.pop(key)
+		pair_array = PAIRWISE_P_VALUES
+
+	else:
+		pair_array = calculate_pairwise_similarity(
+			timeseries,
+			detection_cutoff = options.detection_breakpoint,
+			fixed_cutoff = options.fixed_breakpoint,
+			n_binomial = options.n_binom
+		)
+		PAIRWISE_P_VALUES = pair_array
 
 	population_genotypes = find_all_genotypes(pair_array, options.similarity_breakpoint)
 

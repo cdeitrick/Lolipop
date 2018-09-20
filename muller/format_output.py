@@ -138,7 +138,6 @@ def generate_r_script(population: Path, edges: Path, output_file: Path, color_pa
     scale_fill_manual(name = "Identity", values = palette) +
     scale_color_manual(values = palette)
 	ggsave("{output}", height = 10, width = 10)
-	
 	""".format(
 		population = population.absolute(),
 		edges = edges.absolute(),
@@ -285,8 +284,10 @@ def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, e
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)
-	subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
+	try:
+		subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	except FileNotFoundError:
+		pass
 	r_script = generate_r_script(
 		population = population_output_file,
 		edges = edges_output_file,
