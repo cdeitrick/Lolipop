@@ -149,10 +149,15 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 		filtered_df = filtered_df[(filtered_df > detection_cutoff).any(axis = 1)]
 
 		if filtered_df.empty:
+			left_fixed = left_trajectories[left_trajectories>fixed_cutoff]
+			right_fixed = right_trajectories[right_trajectories>fixed_cutoff]
+			overlap = set(left_fixed.index) & set(right_fixed.index)
+			p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
+
 			# Both trajectories have no timepoints where they are detected but not yet fixed.
 			# Assign a p-value of 0.0
 			pair_array_value = PairArrayValue(
-				pair[0], pair[1], math.nan, math.nan, math.nan
+				pair[0], pair[1], p_value, math.nan, math.nan
 			)
 		else:
 			# Find the mean frequency of each timepoint
@@ -225,7 +230,10 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 	-------
 		A list of all genotypes (each of which is a list of ints)
 	"""
-	genotype_candidates = [[1]]  # by default the first trajectory forms the first genotype.
+	if pairs:
+		genotype_candidates = [[min(pairs.keys())[0]]]  # by default the first trajectory forms the first genotype.
+	else:
+		genotype_candidates = []
 	seen = set()
 	for pair in pairs.values():
 		# ignore pairs that have already been sorted into a genotype.
@@ -408,7 +416,6 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 		detection_cutoff = options.detection_breakpoint,
 		fixed_cutoff = options.fixed_breakpoint,
 		n_binomial = options.n_binom
-
 	)
 
 	population_genotypes = find_all_genotypes(pair_array, options.similarity_breakpoint)
@@ -456,8 +463,11 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 	member trajectories are listed under the 'members' column.
 	every column represents a timepoint.
 	"""
+
 	mean_genotypes = list()
+
 	for index, genotype in enumerate(all_genotypes, start = 1):
+
 		genotype_timeseries = timeseries.loc[genotype]
 		mean_genotype_timeseries = genotype_timeseries.mean()
 		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
@@ -465,6 +475,7 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 		mean_genotypes.append(mean_genotype_timeseries)
 
 	mean_genotypes = pandas.DataFrame(mean_genotypes)
+
 	if 'Trajectory' in mean_genotypes:
 		mean_genotypes.pop('Trajectory')
 	if 'Position' in mean_genotypes:
@@ -558,9 +569,9 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 
 	genotypes = get_genotypes_from_population(timepoints, options)
-	print(genotypes)
+
 	_mean_genotypes = get_mean_genotypes(genotypes, timepoints)
-	print(_mean_genotypes)
+
 	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
 	return _mean_genotypes
 

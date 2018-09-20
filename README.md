@@ -54,17 +54,29 @@ The script generates the following files:
 
     A table indicating which trajectories compose each genotype.
 
+- `input filename`.genotypes.original.tsv
+
+    The initial genotypes generated before applying the genotype filters.
+    
 - `input filename`.genotypes.tsv
 
 	A tab-delimited table with the mean frequency of each genotype at each timepoint. The mean is calculated from the trajectories that comprise each genotype.
+
+- `input filename`.trajectories.original.tsv
+
+    The unfiltered trajectories.
 
 - `input filename`.trajectories.tsv
 
 	A tab-delimited table of the population trajectories used in the analysis. Each trajectory represents the frequency of a single mutation at each timepoint.
 
-- `input filename`.mermaid
+- `input filename`.mermaid.md
 
 	A script written in the [mermaid](https://mermaidjs.github.io) scripting language. Generates a diagram indicating the hierarchy of genotypes/backgrounds in the current population.
+
+- `input filename`.mermaid.png
+
+    If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
 
 - `input filename`.yaml
 
@@ -121,6 +133,7 @@ Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.
 
 # Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
+Trajectories are colored based on their parent genotype.
 ![genotypeplot](./example/example.genotypeplot.png)
 
 # Mermaid Diagram

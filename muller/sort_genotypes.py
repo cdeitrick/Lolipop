@@ -52,6 +52,7 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
 	if 'members' in current_genotypes:
 		current_genotypes.pop('members')
+
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,
@@ -60,11 +61,14 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			significant_cutuff = options.significant_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint
 		)
+
 		if not sorted_dataframe.empty:
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
-
+	#print("WARNING:")
+	sorted_genotypes.append(current_genotypes)
 	df = pandas.concat(sorted_genotypes)
+
 	df = genotype_frequencies.reindex(df.index)
 	return df
 
@@ -100,7 +104,6 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
 
-
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
 	for label, group in groups:
@@ -112,6 +115,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 				[gt for gt in genotype_trajectories.index if gt not in group.index])
 			# sgens = gens.sort_values(by = list(genotype_trajectories.columns))
 			freq_groups.append(trajectories)
+
 	if freq_groups:  # Make sure freq_groups is not empty
 		freq_df = pandas.concat(freq_groups)
 	else:

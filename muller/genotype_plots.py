@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas
 from pathlib import Path
-from typing import Union, Dict, List
+from typing import Dict, List
 import random
 
 #plt.style.use('classic')
 
-##bf0000, #bf6060, #331a1a, #f2beb6, #661b00, #ffa280, #594943, #ff6600, #a65b29, #ffaa00, #402b00, #f2ca79, #d9c7a3, #8c7000, #ffee00, #98b32d, #4a592d, #19bf00, #a0cc99, #00731f, #3df29d, #003322, #468c75, #00d9ca, #394b4d, #60acbf, #001b33, #266399, #80c4ff, #0066ff, #000f73, #333366, #070033, #3000b3, #8f66cc, #ce3df2, #66005f, #cc99c2, #40303d, #330022, #e639ac, #a60058, #ff0044, #73565e, #59161f
 def generate_random_color() -> str:
 	r = random.randint(100, 255)
 	g = random.randint(100, 255)
@@ -59,13 +58,14 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 	]
 
 	genotype_members = mean_genotypes.pop('members')
-	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in genotype_members.items()}
+	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in sorted(genotype_members.items())}
 	if timeseries is not None:
 		numeric_columns = list(get_numeric_columns(timeseries.columns))
 	else:
 		numeric_columns = list(get_numeric_columns(mean_genotypes.columns))
+
 	if len(mean_genotypes.index) < len(color_palette):
-		genotype_colors = dict(zip(mean_genotypes.index, color_palette))
+		genotype_colors = dict(zip(sorted(mean_genotypes.index), color_palette))
 	else:
 		genotype_colors = {g: generate_random_color() for g in mean_genotypes.index}
 	# Plot all trajectories

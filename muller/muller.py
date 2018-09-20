@@ -1,41 +1,36 @@
 from pathlib import Path
 import argparse
-from typing import Tuple
 import itertools
 import math
-from typing import Dict
-import subprocess
 
-try:
-	import yaml
-except ModuleNotFoundError:
-	yaml = None
 try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
 	from muller.get_genotypes import GenotypeOptions
 	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
-	from muller.genotype_plots import plot_genotypes
+
 
 	from muller import get_genotypes
 	from muller import order_clusters
 	from muller import sort_genotypes
-	from muller import data_conversions
+	from muller import format_output
+	from muller import genotype_filters
 except ModuleNotFoundError:
 	from order_clusters import ClusterType, OrderClusterParameters
 	from import_table import import_trajectory_table, import_genotype_table
 	from get_genotypes import GenotypeOptions
 	from sort_genotypes import SortOptions
-	from genotype_plots import plot_genotypes
+
 	import get_genotypes
 	import order_clusters
 	import sort_genotypes
-	import data_conversions
+	import format_output
+	import genotype_filters
+
+# For convienience. Helps with autocomplete.
 
 
-def workflow(input_filename: Path, output_folder: Path, program_options):
-	# TODO: The background should be 1-sum(other genotypes) at each timepoint
-	# as long as the sum of the other genotypes that inherit from root is less than 1.
+def parse_workflow_options(program_options):
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
 		program_options_genotype = get_genotypes.GenotypeOptions.from_matlab()
@@ -60,89 +55,52 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			significant_breakpoint = program_options.significant_breakpoint,
 			frequency_breakpoints = freqs
 		)
+	return program_options, program_options_genotype, program_options_sort, program_options_clustering
+
+
+def workflow(input_filename: Path, output_folder: Path, program_options):
+	# TODO: The background should be 1-sum(other genotypes) at each timepoint
+	# as long as the sum of the other genotypes that inherit from root is less than 1.
+	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
+		program_options)
 
 	if program_options.is_genotype:
-		timepoints = None
+		original_timepoints, original_genotypes, timepoints = None, None, None
 		mean_genotypes = import_genotype_table(input_filename)
 	else:
-		timepoints, info = import_trajectory_table(input_filename)
+		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
 
-		mean_genotypes = get_genotypes.workflow(timepoints, options = program_options_genotype)
+		original_genotypes = get_genotypes.workflow(original_timepoints, options = program_options_genotype)
+
+		if program_options.use_filter:
+			timepoints, mean_genotypes = genotype_filters.workflow(input_filename, program_options.detection_breakpoint,
+				program_options.fixed_breakpoint)
+		else:
+			timepoints = original_timepoints.copy()
+			mean_genotypes = original_genotypes.copy()
 
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
+	print(sorted_genotypes)
 
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
-	# df = pandas.DataFrame(i.trajectory for i in genotype_clusters.values())
-	formatted_output: data_conversions.OutputType = data_conversions.generate_formatted_output(
-		timepoints,
-		mean_genotypes,
-		genotype_clusters,
-		program_options_genotype,
-		program_options_sort,
-		program_options_clustering
+	workflow_data = format_output.WorkflowData(
+		filename = input_filename,
+		original_trajectories = original_timepoints,
+		original_genotypes = original_genotypes,
+		trajectories = timepoints,
+		genotypes = mean_genotypes,
+		clusters = genotype_clusters,
+		genotype_options = program_options_genotype,
+		sort_options = program_options_sort,
+		cluster_options = program_options_clustering
 	)
+	format_output.generate_output(workflow_data, output_folder)
 
-	save_output(input_filename, output_folder, formatted_output)
 	return genotype_clusters
 
 
-def save_output(input_file: Path, output_folder: Path, data: data_conversions.OutputType):
-	trajectory_table, gens, genotype_table, p, mermaid_diagram, population_table, edge_table = data
-	name = input_file.stem
-	parameters = {
-		'genotypeDescriptions': gens,
-		'parameters':           p
-	}
-	# population_table = data.pop('ggmullerPopulationTable')
-	# edge_table = data.pop('ggmullerEdgeTable')
-	# genotype_table = data.pop('genotypeTable')
-	# trajectory_table = data.pop('trajectoryTable')
-	# mermaid_diagram = data.pop('mermaidDiagram')
 
-	population_output_file = output_folder / (name + '.ggmuller_populations.tsv')
-	edges_output_file = output_folder / (name + '.ggmuller_edges.tsv')
-	genotype_output_file = output_folder / (name + '.genotypes.tsv')
-	trajectory_output_file = output_folder / (name + '.trajectories.tsv')
-	mermaid_diagram_output = output_folder / (name + '.mermaid')
-	r_script_file = output_folder / (name + '.r')
-	r_script_graph_file = output_folder / (name + '.muller.png')
-	genotype_details_file = output_folder / (name + '.genotypemembers.tsv')
-	genotype_plot_filename = output_folder / (name + '.genotypeplot.png')
-
-	plot_genotypes(trajectory_table, genotype_table, genotype_plot_filename)
-
-	with genotype_details_file.open('w') as csv_file:
-		for g in gens:
-			line = "{}\t".format(g['genotypeLabel']) + "\t".join(g['trajectories'].split('|'))
-			csv_file.write(line + '\n')
-
-	population_table.to_csv(str(population_output_file), sep = '\t', index = False)
-	edge_table.to_csv(str(edges_output_file), sep = '\t', index = False)
-	genotype_table.to_csv(str(genotype_output_file), sep = '\t')
-	if trajectory_table is not None:
-		trajectory_table.to_csv(str(trajectory_output_file), sep = '\t', index = False)
-	mermaid_diagram_output.write_text(mermaid_diagram)
-
-	r_script = data_conversions.generate_r_script(
-		population = population_output_file,
-		edges = edges_output_file,
-		output_file = r_script_graph_file
-	)
-	r_script_file.write_text(r_script)
-
-	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file])
-	_extra_file = Path.cwd() / "Rplots.pdf"
-	if _extra_file.exists():
-		_extra_file.unlink()
-
-	if yaml:
-		fname = output_folder / (name + '.yaml')
-		fname.write_text(yaml.dump(parameters))
-	else:
-		import json
-		fname = output_folder / (name + '.json')
-		fname.write_text(json.dumps(parameters, indent = 2))
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -152,6 +110,13 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "The table of trajectories to cluster.",
 		action = 'store',
 		dest = 'filename'
+	)
+	parser.add_argument(
+		"--sheetname",
+		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
+		action = 'store',
+		dest = 'sheetname',
+		default = 'Sheet1'
 	)
 	parser.add_argument(
 		'-o', '--output',
@@ -214,18 +179,22 @@ def create_parser() -> argparse.ArgumentParser:
 		action = 'store_true',
 		dest = 'is_genotype'
 	)
+	parser.add_argument(
+		"--no-filter",
+		help = "Disables genotype filtering.",
+		action = 'store_false',
+		dest = 'use_filter'
+	)
 	return parser
 
 
 if __name__ == "__main__":
-
 	cmd_parser = create_parser().parse_args()
 
-	#cmd_parser.is_genotype = True
-	#cmd_parser.output_folder = "./B1_muller_try1"
+	# cmd_parser.is_genotype = True
+	# cmd_parser.output_folder = "./B1_muller_try1"
 
-	#cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/muller/original/B1_muller_try1.genotypes.tsv"
-
+	# cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/muller/original/B1_muller_try1.genotypes.tsv"
 
 	_input_filename = Path(cmd_parser.filename)
 	if cmd_parser.output_folder:

@@ -93,7 +93,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	#	data['Population'] = 'Population1'
 
 	# timeseries = data[['Population', 'Trajectory', 'Position'] + frequency_columns]
-
+	print(data.columns)
 	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
 	for column in frequency_columns:
@@ -108,7 +108,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 		info = data[['Population', 'Class', 'Mutation']]
 	except:
 		info = None
-	# print(timeseries)
+
 	return timeseries, info
 
 
