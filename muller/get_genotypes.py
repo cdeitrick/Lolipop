@@ -140,10 +140,7 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 		# print(left, right)
 		# print(trajectories.index)
 		left_trajectories = trajectories.loc[left]
-		#left_trajectories_fixed = left_trajectories[left_trajectories > fixed_cutoff]
-		# right_trajectories = trajectories.iloc[right - 1]
 		right_trajectories = trajectories.loc[right]
-		#right_trajectories_fixed = right_trajectories[right_trajectories > fixed_cutoff]
 
 		# Merge into a dataframe for convienience
 		df = pandas.concat([left_trajectories, right_trajectories], axis = 1)
@@ -151,6 +148,7 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 		# Calculate similarity
 		# Remove timepoints where at least one trajectory was not fixed or undetected.
 		filtered_df = df[(df < fixed_cutoff).any(axis = 1)]
+
 		filtered_df = filtered_df[(filtered_df > detection_cutoff).any(axis = 1)]
 
 		if filtered_df.empty:
@@ -165,14 +163,11 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 			# Find the mean frequency of each timepoint
 			# index is timepoints,  values are frequencies
 			mean_frequencies: pandas.Series = filtered_df.mean(axis = 1)
-
 			# Calculate sigma_total
-
 			n_binom = n_binomial if n_binomial else len(mean_frequencies)
 
 			# noinspection PyTypeChecker
-			sigma_freq: pandas.Series = (mean_frequencies * (
-					1 - mean_frequencies)) / n_binom  # The 5 is arbitrary see above
+			sigma_freq: pandas.Series = (mean_frequencies * (1 - mean_frequencies)) / n_binom
 
 			# Difference of frequencies at each timepoint
 			difference: pandas.Series = filtered_df.iloc[:, 0] - filtered_df.iloc[:, 1]
