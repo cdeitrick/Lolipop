@@ -9,7 +9,6 @@ try:
 	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
 
-
 	from muller import get_genotypes
 	from muller import order_clusters
 	from muller import sort_genotypes
@@ -26,6 +25,7 @@ except ModuleNotFoundError:
 	import sort_genotypes
 	import format_output
 	import genotype_filters
+
 
 # For convienience. Helps with autocomplete.
 
@@ -97,9 +97,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	format_output.generate_output(workflow_data, output_folder)
 
 	return genotype_clusters
-
-
-
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -192,9 +189,10 @@ if __name__ == "__main__":
 
 	# cmd_parser.is_genotype = True
 	# cmd_parser.output_folder = "./B1_muller_try1"
-
-	# cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/muller/original/B1_muller_try1.genotypes.tsv"
-
+	DEBUG = True
+	if DEBUG:
+		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B3_Muller.xlsx"
+		cmd_parser.output_folder = './output'
 	_input_filename = Path(cmd_parser.filename)
 	if cmd_parser.output_folder:
 		_output_folder = Path(cmd_parser.output_folder)

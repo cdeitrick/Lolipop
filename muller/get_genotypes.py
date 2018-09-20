@@ -30,8 +30,8 @@ class PairArrayValue:
 
 PairwiseArrayType = Dict[Tuple[int, int], PairArrayValue]
 
-PAIRWISE_P_VALUES:PairwiseArrayType = None
-REMOVED_P_VALUES:PairwiseArrayType = dict()
+PAIRWISE_P_VALUES: PairwiseArrayType = None
+REMOVED_P_VALUES: PairwiseArrayType = dict()
 
 
 @dataclass
@@ -84,7 +84,7 @@ class GenotypeOptions:
 			)
 
 
-def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff: float,
+def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cutoff: float,
 		fixed_cutoff: float, n_binomial: int) -> PairwiseArrayType:
 	"""
 		Calculates the relative similarity between all trajectory pairs.
@@ -125,8 +125,8 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 	"""
 
 	# get a list of all possible trajectory pairs, ignoring element order.
-	trajectories = timeseries[[i for i in timeseries.columns if i not in ['Population', 'Position', 'Trajectory']]]
-	combos = sorted(itertools.combinations(timeseries.index, 2))
+	# trajectories = timeseries[[i for i in timeseries.columns if i not in ['Population', 'Position', 'Trajectory']]]
+	combos = sorted(itertools.combinations(trajectories.index, 2))
 	pair_array = dict()
 
 	for pair in combos:
@@ -140,8 +140,10 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 		# print(left, right)
 		# print(trajectories.index)
 		left_trajectories = trajectories.loc[left]
+		#left_trajectories_fixed = left_trajectories[left_trajectories > fixed_cutoff]
 		# right_trajectories = trajectories.iloc[right - 1]
 		right_trajectories = trajectories.loc[right]
+		#right_trajectories_fixed = right_trajectories[right_trajectories > fixed_cutoff]
 
 		# Merge into a dataframe for convienience
 		df = pandas.concat([left_trajectories, right_trajectories], axis = 1)
@@ -152,8 +154,8 @@ def calculate_pairwise_similarity(timeseries: pandas.DataFrame, detection_cutoff
 		filtered_df = filtered_df[(filtered_df > detection_cutoff).any(axis = 1)]
 
 		if filtered_df.empty:
-			left_fixed = left_trajectories[left_trajectories>fixed_cutoff]
-			right_fixed = right_trajectories[right_trajectories>fixed_cutoff]
+			left_fixed = left_trajectories[left_trajectories > fixed_cutoff]
+			right_fixed = right_trajectories[right_trajectories > fixed_cutoff]
 			overlap = set(left_fixed.index) & set(right_fixed.index)
 			p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
 
@@ -417,7 +419,6 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	global PAIRWISE_P_VALUES
 
 	if PAIRWISE_P_VALUES:
-
 		for key in sorted(PAIRWISE_P_VALUES.keys()):
 			left_key, right_key = key
 			if left_key not in timeseries.index or right_key not in timeseries.index:
@@ -459,7 +460,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 
 	# all_genotypes[population_id] = population_genotypes
 	# TODO Fix so that it returns a genotype for each population
-	return [i for i in population_genotypes if i] # Only return non-empty lists.
+	return [i for i in population_genotypes if i]  # Only return non-empty lists.
 
 
 def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFrame) -> pandas.DataFrame:
@@ -482,7 +483,6 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 	mean_genotypes = list()
 
 	for index, genotype in enumerate(all_genotypes, start = 1):
-
 		genotype_timeseries = timeseries.loc[genotype]
 		mean_genotype_timeseries = genotype_timeseries.mean()
 		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
@@ -581,7 +581,6 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 		timepoints, info = import_trajectory_table(io)
 	else:
 		timepoints = io
-
 
 	genotypes = get_genotypes_from_population(timepoints, options)
 
