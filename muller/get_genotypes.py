@@ -161,9 +161,6 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 
 			# Both trajectories have no timepoints where they are detected but not yet fixed.
 			# Assign a p-value of 0.0
-			pair_array_value = PairArrayValue(
-				pair[0], pair[1], p_value, math.nan, math.nan
-			)
 		else:
 			# Find the mean frequency of each timepoint
 			# index is timepoints,  values are frequencies
@@ -186,11 +183,11 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 
 			# Calculates the relative similarity between all trajectory pairs.
 			X = difbar / (math.sqrt(2) * sigmapair)
-			pval: float = 1 - math.erf(X)
+			p_value: float = 1 - math.erf(X)
 
-			pair_array_value = PairArrayValue(
-				pair[0], pair[1], pval, sigmapair, difbar
-			)
+		pair_array_value = PairArrayValue(
+			pair[0], pair[1], p_value, math.nan, math.nan
+		)
 		# Add the p-value information for the forward and reverse pairs (will be the same, no need to do again)
 		pair_array[(left, right)] = pair_array_value
 		pair_array[(right, left)] = pair_array_value
