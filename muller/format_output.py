@@ -133,7 +133,8 @@ def generate_r_script(population: Path, edges: Path, output_file: Path, color_pa
     geom_area() +
     theme(legend.position = "right") +
     guides(linetype = FALSE, color = FALSE) + 
-    scale_y_continuous(labels = 25 * (0:4), name = "Percentage") +
+    scale_y_continuous(labels = 25 * (0:4), name = "Percentage", expand=c(0,0)) +
+    scale_x_continuous(expand=c(0,0)) + 
     scale_fill_manual(name = "Identity", values = palette) +
     scale_color_manual(values = palette)
 	ggsave("{output}", height = 10, width = 10)
