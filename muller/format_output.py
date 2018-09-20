@@ -116,17 +116,7 @@ def generate_mermaid_diagram(clusters: ClusterType) -> str:
 	return "\n".join(contents)
 
 
-def generate_r_script(population: Path, edges: Path, output_file: Path) -> str:
-
-	color_palette = [
-		'#bf0000', '#ffa280', '#402b00', '#98b32d', '#3df29d', '#60acbf', '#000f73',
-		'#ce3df2', '#e639ac', '#bf6060', '#594943', '#f2ca79', '#4a592d', '#003322',
-		'#001b33', '#333366', '#66005f', '#a60058', '#331a1a', '#ff6600', '#d9c7a3',
-		'#19bf00', '#468c75', '#266399', '#070033', '#cc99c2', '#ff0044', '#f2beb6',
-		'#a65b29', '#8c7000', '#a0cc99', '#00d9ca', '#80c4ff', '#3000b3', '#40303d',
-		'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
-		'#8f66cc', '#330022', '#59161f'
-	]
+def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette:List[str]) -> str:
 
 	script = """
 	library("ggplot2")
@@ -159,10 +149,19 @@ def generate_r_script(population: Path, edges: Path, output_file: Path) -> str:
 	return script
 
 def generate_output(workflow_data:WorkflowData, output_folder):
-	population, edges, mermaid, parameters = generate_formatted_output(workflow_data)
-	save_output(workflow_data, population, edges, mermaid, parameters, output_folder)
 
-def generate_formatted_output(workflow_data: WorkflowData) -> OutputType:
+	color_palette = [
+		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+		'#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+		'#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
+		'#ffffff', '#000000'
+	]
+
+	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_palette)
+	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_palette)
+
+def generate_formatted_output(workflow_data: WorkflowData, color_palette:List[str]) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -240,7 +239,7 @@ def generate_formatted_output(workflow_data: WorkflowData) -> OutputType:
 #
 
 
-def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, edge_table:pandas.DataFrame, mermaid_diagram:str, parameters:Dict, output_folder:Path):
+def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, edge_table:pandas.DataFrame, mermaid_diagram:str, parameters:Dict, output_folder:Path, color_palette:List[str]):
 
 	name = workflow_data.filename.stem
 	delimiter = '\t'
@@ -281,8 +280,8 @@ def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, e
 	if workflow_data.trajectories is not None:
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter, index = False)
 
-	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename)
-	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename)
+	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
+	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)
 	subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -290,7 +289,8 @@ def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, e
 	r_script = generate_r_script(
 		population = population_output_file,
 		edges = edges_output_file,
-		output_file = r_script_graph_file
+		output_file = r_script_graph_file,
+		color_palette = color_palette
 	)
 	r_script_file.write_text(r_script)
 

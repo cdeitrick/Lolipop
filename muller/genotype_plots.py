@@ -33,7 +33,7 @@ def find_parent_genotype(trajectory_id: int, genotypes: Dict[str, List[int]]):
 	return None
 
 
-def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFrame, filename: Path = None):
+def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFrame, filename: Path = None, color_palette:List[str]=None):
 	"""
 		Plots the clustered genotypes.
 	Parameters
@@ -47,15 +47,16 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 	-------
 
 	"""
-	color_palette = [
-		'#bf0000', '#ffa280', '#402b00', '#98b32d', '#3df29d', '#60acbf', '#000f73',
-		'#ce3df2', '#e639ac', '#bf6060', '#594943', '#f2ca79', '#4a592d', '#003322',
-		'#001b33', '#333366', '#66005f', '#a60058', '#331a1a', '#ff6600', '#d9c7a3',
-		'#19bf00', '#468c75', '#266399', '#070033', '#cc99c2', '#ff0044', '#f2beb6',
-		'#a65b29', '#8c7000', '#a0cc99', '#00d9ca', '#80c4ff', '#3000b3', '#40303d',
-		'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
-		'#8f66cc', '#330022', '#59161f'
-	]
+	if color_palette is None:
+		color_palette = [
+			'#bf0000', '#ffa280', '#402b00', '#98b32d', '#3df29d', '#60acbf', '#000f73',
+			'#ce3df2', '#e639ac', '#bf6060', '#594943', '#f2ca79', '#4a592d', '#003322',
+			'#001b33', '#333366', '#66005f', '#a60058', '#331a1a', '#ff6600', '#d9c7a3',
+			'#19bf00', '#468c75', '#266399', '#070033', '#cc99c2', '#ff0044', '#f2beb6',
+			'#a65b29', '#8c7000', '#a0cc99', '#00d9ca', '#80c4ff', '#3000b3', '#40303d',
+			'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
+			'#8f66cc', '#330022', '#59161f'
+		]
 
 	genotype_members = mean_genotypes.pop('members')
 	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in sorted(genotype_members.items())}
