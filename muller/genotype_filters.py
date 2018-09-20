@@ -38,7 +38,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 				first_detected = 0
 				last_detected = 0
 
-			print(first_detected, fixed_point, last_detected)
+			#print(first_detected, fixed_point, last_detected)
 			if first_detected < fixed_point < last_detected:
 				first_fixed_points: pandas.Series = genotype[fixed_timepoints]
 
