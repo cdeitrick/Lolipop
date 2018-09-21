@@ -188,8 +188,6 @@ def create_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
 	cmd_parser = create_parser().parse_args()
 
-	# cmd_parser.is_genotype = True
-	# cmd_parser.output_folder = "./B1_muller_try1"
 	DEBUG = False
 	if DEBUG:
 		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B3_Muller.xlsx"

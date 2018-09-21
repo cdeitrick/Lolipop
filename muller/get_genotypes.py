@@ -394,16 +394,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	A list of the genotypes, where each genotype is itself a list of the member trajectories.
 
 	"""
-	# relative_cutoff = 0.10  # v Calculates the relative similarity between all trajectory pairs.
-	# link_cutoff = 0.05  # Calculates the relative similarity between all trajectory pairs.
 
-	# Group all trajectories by the population they belong to. Usually only one population.
-	# populations = timeseries.groupby(by = 'Population')
-	# assert populations # Make sure 'populations' is not empty
-	# all_genotypes = dict()
-	# from pprint import pprint
-	# pprint(populations.keys)
-	# for population_id, population_data in populations:
 	# Trajectories represent the population frequencies at each timepoint
 	# Each row represents a single timepoint, each column represents a mutation.
 

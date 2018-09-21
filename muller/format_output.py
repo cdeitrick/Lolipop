@@ -3,6 +3,7 @@ import pandas
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
+
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
 	import yaml
@@ -21,9 +22,10 @@ except ModuleNotFoundError:
 	from order_clusters import OrderClusterParameters, ClusterType
 	from genotype_plots import plot_genotypes
 
+
 @dataclass
 class WorkflowData:
-	filename:Path
+	filename: Path
 	info: Optional[pandas.DataFrame]
 	original_trajectories: Optional[pandas.DataFrame]
 	original_genotypes: Optional[pandas.DataFrame]
@@ -33,6 +35,7 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+
 
 def get_numeric_columns(columns: List) -> List[Union[int, float]]:
 	output_columns = list()
@@ -117,8 +120,7 @@ def generate_mermaid_diagram(clusters: ClusterType) -> str:
 	return "\n".join(contents)
 
 
-def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette:List[str]) -> str:
-
+def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette: List[str]) -> str:
 	script = """
 	library("ggplot2")
 	library("ggmuller")
@@ -143,14 +145,14 @@ def generate_r_script(population: Path, edges: Path, output_file: Path, color_pa
 		population = population.absolute(),
 		edges = edges.absolute(),
 		output = output_file.absolute(),
-		palette = ",".join(['"#333333"']+['"{}"'.format(i) for i in color_palette])
+		palette = ",".join(['"#333333"'] + ['"{}"'.format(i) for i in color_palette])
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
 	return script
 
-def generate_output(workflow_data:WorkflowData, output_folder):
 
+def generate_output(workflow_data: WorkflowData, output_folder):
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -162,7 +164,8 @@ def generate_output(workflow_data:WorkflowData, output_folder):
 	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_palette)
 	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_palette)
 
-def get_workflow_parameters(workflow_data:WorkflowData)->Dict[str,float]:
+
+def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 	parameters = {
 		# get_genotype_options
 		'detectionCutoff':                        workflow_data.genotype_options.detection_breakpoint,
@@ -182,7 +185,8 @@ def get_workflow_parameters(workflow_data:WorkflowData)->Dict[str,float]:
 	}
 	return parameters
 
-def generate_formatted_output(workflow_data: WorkflowData, color_palette:List[str]) -> OutputType:
+
+def generate_formatted_output(workflow_data: WorkflowData, color_palette: List[str]) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -199,7 +203,6 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette:List[st
 	Tuple[pandas.DataFrame, Dict[str,Any], pandas.DataFrame, Dict[str,float], str, pandas.DataFrame, pandas.DataFrame]
 	"""
 
-
 	workflow_parameters = get_workflow_parameters(workflow_data)
 	mermaid_diagram = generate_mermaid_diagram(workflow_data.clusters)
 
@@ -207,30 +210,29 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette:List[st
 	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes)
 
 	if workflow_data.info is not None:
-		genotype_map = {k:v.split('|') for k, v in workflow_data.genotypes['members'].items()}
+		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
 		trajectory_map = dict()
 		for g, v in genotype_map.items():
 			for t in v:
 				trajectory_map[int(t)] = g
-		trajectory_table:pandas.DataFrame = workflow_data.trajectories.copy()
+		trajectory_table: pandas.DataFrame = workflow_data.trajectories.copy()
 
 		trajectory_table['genotype'] = [trajectory_map[k] for k in trajectory_table.index]
 		trajectory_table = trajectory_table.join(workflow_data.info).sort_values(by = ['genotype'])
 		workflow_data.trajectories = trajectory_table
 
 	return ggmuller_population_table, ggmuller_edge_table, mermaid_diagram, workflow_parameters
-#
 
 
-def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, edge_table:pandas.DataFrame, mermaid_diagram:str, parameters:Dict, output_folder:Path, color_palette:List[str]):
-
+def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame, edge_table: pandas.DataFrame,
+		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: List[str]):
 	name = workflow_data.filename.stem
 	delimiter = '\t'
 	subfolder = output_folder / "supplementary_files"
 	if not subfolder.exists():
 		subfolder.mkdir()
 
-	original_trajectory_file = subfolder/ (name + '.trajectories.original.tsv')
+	original_trajectory_file = subfolder / (name + '.trajectories.original.tsv')
 	trajectory_output_file = output_folder / (name + '.trajectories.tsv')
 
 	original_genotype_file = subfolder / (name + '.genotypes.original.tsv')
@@ -260,12 +262,14 @@ def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, e
 	if workflow_data.trajectories is not None:
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
+	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes,
+		original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)
 	try:
-		subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+		subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE,
+			stderr = subprocess.PIPE)
 	except FileNotFoundError:
 		pass
 
@@ -277,7 +281,8 @@ def save_output(workflow_data:WorkflowData, population_table:pandas.DataFrame, e
 	)
 	r_script_file.write_text(r_script)
 
-	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
+		stderr = subprocess.PIPE)
 	_extra_file = Path.cwd() / "Rplots.pdf"
 	if _extra_file.exists():
 		_extra_file.unlink()

@@ -63,10 +63,14 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 		)
 
 		if not sorted_dataframe.empty:
+			print()
+			print("Frequency: ", frequency)
+			print(sorted_dataframe)
+			print()
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
 	#print("WARNING:")
-	sorted_genotypes.append(current_genotypes)
+	#sorted_genotypes.append(current_genotypes)
 	df = pandas.concat(sorted_genotypes)
 
 	df = genotype_frequencies.reindex(df.index)

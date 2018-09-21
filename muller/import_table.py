@@ -94,23 +94,19 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	frequency_columns = get_numeric_columns(data.columns)
 
 	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
-	# if 'Population' not in data.columns:
-	#	data['Population'] = 'Population1'
 
-	# timeseries = data[['Population', 'Trajectory', 'Position'] + frequency_columns]
 	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
 	for column in frequency_columns:
-		# print(timeseries[column])
 		if max(timeseries[column]) > 1.0:
 			timeseries[column] /= 100
 
-	# timeseries = timeseries.transpose()
 
 	# Extract metadata for each trajectory.
 	try:
 		potential_columns = ['Population','Position', 'Class', 'Gene', 'Mutation', 'Annotation']
-		info = data[[i for i in potential_columns if i in data]]
+		#info = data[[i for i in potential_columns if i in data]]
+		info = data[potential_columns]
 	except:
 		info = None
 
