@@ -52,7 +52,6 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
 	if 'members' in current_genotypes:
 		current_genotypes.pop('members')
-
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,
@@ -61,16 +60,10 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			significant_cutuff = options.significant_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint
 		)
-
 		if not sorted_dataframe.empty:
-			print()
-			print("Frequency: ", frequency)
-			print(sorted_dataframe)
-			print()
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
-	#print("WARNING:")
-	#sorted_genotypes.append(current_genotypes)
+
 	df = pandas.concat(sorted_genotypes)
 
 	df = genotype_frequencies.reindex(df.index)
@@ -82,6 +75,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	transposed = genotype_trajectories.transpose()
 
+	#Finds the first timepoint where each genotype exceeded the fixed frequency
 	first_detected: pandas.Series = (transposed > detection_cutoff).idxmax(0).sort_values()
 	first_detected.name = 'firstDetected'
 
@@ -94,13 +88,16 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Remove the genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
-	first_above_threshold_reduced = first_above_threshold.replace(0,
-		13)  # To replicate the behavior in the matlab script
-	first_fixed_reduced = first_fixed.iloc[first_fixed.nonzero()]
+	first_above_threshold_reduced = first_above_threshold.replace(0, 13)  # To replicate the behavior in the matlab script
+	#first_above_threshold_reduced = first_above_threshold
+	first_fixed_reduced:pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
+	if first_fixed_reduced.empty:
+		first_fixed_reduced = first_fixed
 
-	df: pandas.DataFrame = pandas.concat([first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
+	combined_df: pandas.DataFrame = pandas.concat([first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
 		axis = 1)
-	df = df[~df['firstFixed'].isna()]
+
+	df = combined_df[~combined_df['firstFixed'].isna()]
 
 	if frequency_breakpoint == fixed_cutoff:
 		df = df.dropna()
@@ -110,6 +107,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
+
 	for label, group in groups:
 		trajectories = genotype_trajectories.loc[group.index]
 		if len(group) < 2:
@@ -117,7 +115,6 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 		else:
 			trajectories = genotype_trajectories.drop(
 				[gt for gt in genotype_trajectories.index if gt not in group.index])
-			# sgens = gens.sort_values(by = list(genotype_trajectories.columns))
 			freq_groups.append(trajectories)
 
 	if freq_groups:  # Make sure freq_groups is not empty

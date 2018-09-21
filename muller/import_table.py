@@ -16,12 +16,9 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 
 def import_table(filename: Path, sheet_name:str) -> pandas.DataFrame:
 	if filename.suffix in {'.xls', '.xlsx'}:
-		try:
-			data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
-		except:
-			data = pandas.read_excel(str(filename), sheet_name = None)
-			print(data.keys())
-			raise ValueError
+
+		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
+
 	else:
 		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
 		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
