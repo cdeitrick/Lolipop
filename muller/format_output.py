@@ -80,6 +80,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 		root_genotype_generations.append(row)
 
 	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
+	fdf['Identity'] = ["Genotype-{}".format(i) for i in fdf['Identity'].values]
 	return fdf.sort_values(by = 'Generation')
 
 
@@ -103,6 +104,8 @@ def convert_clusters_to_ggmuller_format(mermaid: str) -> pandas.DataFrame:
 	df = pandas.DataFrame(table)
 	df = df[['Parent', 'Identity']]
 	df = df.sort_values(by = 'Identity')
+	df['Parent'] = ['Genotype-{}'.format(i) for i in df['Parent']]
+	df['Identity'] = ['Genotype-{}'.format(i) for i in df['Identity']]
 	return df
 
 

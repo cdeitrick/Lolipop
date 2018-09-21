@@ -66,6 +66,7 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
 
+	#sorted_genotypes.append(current_genotypes)
 	df = pandas.concat(sorted_genotypes)
 
 	df = genotype_frequencies.reindex(df.index)
@@ -89,10 +90,11 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Remove the genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
-	first_above_threshold_reduced = first_above_threshold.replace(0,
-		13)  # To replicate the behavior in the matlab script
-	# first_above_threshold_reduced = first_above_threshold
+	# To replicate the behavior in the matlab script
+	first_above_threshold_reduced = first_above_threshold.replace(0, 13)
+
 	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
+
 	if first_fixed_reduced.empty:
 		first_fixed_reduced = first_fixed
 
