@@ -50,11 +50,8 @@ The script generates the following files:
 
 	Used as the `population` input to ggmuller.
 
-- `input filename`.genotypemembers.tsv
 
-    A table indicating which trajectories compose each genotype.
-
-- `input filename`.genotypes.original.tsv
+- supplementary_files / `input filename`.genotypes.original.tsv
 
     The initial genotypes generated before applying the genotype filters.
 
@@ -62,7 +59,7 @@ The script generates the following files:
 
 	A tab-delimited table with the mean frequency of each genotype at each timepoint. The mean is calculated from the trajectories that comprise each genotype.
 
-- `input filename`.trajectories.original.tsv
+- supplementary_files / `input filename`.trajectories.original.tsv
 
     The unfiltered trajectories.
 
@@ -70,7 +67,7 @@ The script generates the following files:
 
 	A tab-delimited table of the population trajectories used in the analysis. Each trajectory represents the frequency of a single mutation at each timepoint.
 
-- `input filename`.mermaid.md
+- supplementary_files / `input filename`.mermaid.md
 
 	A script written in the [mermaid](https://mermaidjs.github.io) scripting language. Generates a diagram indicating the hierarchy of genotypes/backgrounds in the current population.
 
@@ -82,7 +79,7 @@ The script generates the following files:
 
 	Contains additional information for each genotype, as well as the parameters used for the analysis.
 
-- `input filename`.r
+- supplementary_files / `input filename`.r
 
 	A basic r script to import the `population` and `edges` tables and generate a muller plot.
 	

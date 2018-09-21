@@ -65,7 +65,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options)
 
 	if program_options.is_genotype:
-		original_timepoints, original_genotypes, timepoints = None, None, None
+		original_timepoints = original_genotypes = timepoints = info = None
 		mean_genotypes = import_genotype_table(input_filename)
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
@@ -85,6 +85,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 	workflow_data = format_output.WorkflowData(
 		filename = input_filename,
+		info = info,
 		original_trajectories = original_timepoints,
 		original_genotypes = original_genotypes,
 		trajectories = timepoints,
@@ -189,7 +190,7 @@ if __name__ == "__main__":
 
 	# cmd_parser.is_genotype = True
 	# cmd_parser.output_folder = "./B1_muller_try1"
-	DEBUG = True
+	DEBUG = False
 	if DEBUG:
 		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B3_Muller.xlsx"
 		cmd_parser.output_folder = './output'

@@ -14,9 +14,14 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 	return numeric_columns
 
 
-def import_table(filename: Path, sheet_name = 'Sheet1') -> pandas.DataFrame:
+def import_table(filename: Path, sheet_name:str) -> pandas.DataFrame:
 	if filename.suffix in {'.xls', '.xlsx'}:
-		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
+		try:
+			data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
+		except:
+			data = pandas.read_excel(str(filename), sheet_name = None)
+			print(data.keys())
+			raise ValueError
 	else:
 		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
 		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
@@ -104,7 +109,8 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 
 	# Extract metadata for each trajectory.
 	try:
-		info = data[['Population', 'Class', 'Mutation']]
+		potential_columns = ['Population','Position', 'Class', 'Gene', 'Mutation', 'Annotation']
+		info = data[[i for i in potential_columns if i in data]]
 	except:
 		info = None
 
