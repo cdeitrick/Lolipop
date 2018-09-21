@@ -1,10 +1,10 @@
-
 import pandas
 
 pandas.set_option('display.max_columns', 400)
 pandas.set_option('display.width', 400)
 from typing import List
 from dataclasses import dataclass
+
 
 @dataclass
 class SortOptions:
@@ -21,10 +21,11 @@ class SortOptions:
 			fixed_breakpoint = 0.85,
 			frequency_breakpoints = [0.90, 0.75, 0.60, 0.45, 0.30, 0.15, 0.00]
 		)
+
 	@classmethod
-	def from_breakpoints(cls, detection:float, significant:float=0.15, fixed:float=None)->'SortOptions':
+	def from_breakpoints(cls, detection: float, significant: float = 0.15, fixed: float = None) -> 'SortOptions':
 		if fixed is None:
-			fixed = 1-detection
+			fixed = 1 - detection
 
 		return SortOptions(
 			detection_breakpoint = detection,
@@ -32,6 +33,7 @@ class SortOptions:
 			fixed_breakpoint = fixed,
 			frequency_breakpoints = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 		)
+
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
@@ -72,10 +74,9 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 
 def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency_breakpoint: float,
 		detection_cutoff: float, significant_cutuff: float, fixed_cutoff: float) -> pandas.DataFrame:
-
 	transposed = genotype_trajectories.transpose()
 
-	#Finds the first timepoint where each genotype exceeded the fixed frequency
+	# Finds the first timepoint where each genotype exceeded the fixed frequency
 	first_detected: pandas.Series = (transposed > detection_cutoff).idxmax(0).sort_values()
 	first_detected.name = 'firstDetected'
 
@@ -88,13 +89,15 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Remove the genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
-	first_above_threshold_reduced = first_above_threshold.replace(0, 13)  # To replicate the behavior in the matlab script
-	#first_above_threshold_reduced = first_above_threshold
-	first_fixed_reduced:pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
+	first_above_threshold_reduced = first_above_threshold.replace(0,
+		13)  # To replicate the behavior in the matlab script
+	# first_above_threshold_reduced = first_above_threshold
+	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
 	if first_fixed_reduced.empty:
 		first_fixed_reduced = first_fixed
 
-	combined_df: pandas.DataFrame = pandas.concat([first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
+	combined_df: pandas.DataFrame = pandas.concat(
+		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
 		axis = 1)
 
 	df = combined_df[~combined_df['firstFixed'].isna()]
@@ -125,7 +128,8 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	return freq_df
 
 
-def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matlab:bool=False, detection_cutoff: float = 0.03,
+def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matlab: bool = False,
+		detection_cutoff: float = 0.03,
 		fixed_cutoff: float = None, significant_cutoff: float = 0.15, frequency_breakpoint: float = None):
 	if matlab:
 		options = SortOptions.from_matlab()
@@ -133,7 +137,7 @@ def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matl
 		if frequency_breakpoint is None:
 			frequency_breakpoint = [0.90, 0.80, 0.70, 0.60, 0.50, 0.40, 0.30, 0.20, 0.10, 0.00]
 		else:
-			frequency_breakpoint = [frequency_breakpoint*i for i in range(int(1/frequency_breakpoint)+1)]
+			frequency_breakpoint = [frequency_breakpoint * i for i in range(int(1 / frequency_breakpoint) + 1)]
 		if fixed_cutoff is None:
 			fixed_cutoff = 1 - detection_cutoff
 		options = SortOptions(
@@ -157,7 +161,8 @@ if __name__ == "__main__":
 	new_filename = Path("./original/B1_muller_try1.genotypes.tsv")
 
 	original_trajectories, _ = import_table.import_trajectory_table(original_filename)
-	original_genotypes = get_genotypes.workflow(original_trajectories, options = get_genotypes.GenotypeOptions.from_breakpoints(0.03))
+	original_genotypes = get_genotypes.workflow(original_trajectories,
+		options = get_genotypes.GenotypeOptions.from_breakpoints(0.03))
 	original_genotypes.index.name = 'Genotypes'
 	original_sorted_genotypes = workflow(original_genotypes, options = SortOptions.from_breakpoints(0.03))
 
@@ -172,7 +177,3 @@ if __name__ == "__main__":
 	print()
 
 	print(new_sorted_genotypes.round(3) == original_sorted_genotypes.round(3))
-
-
-
-
