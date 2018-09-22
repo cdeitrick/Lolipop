@@ -3,7 +3,8 @@ import pandas
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
-
+import random
+from pprint import pprint
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
 	import yaml
@@ -35,6 +36,14 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+
+
+def generate_random_color() -> str:
+	r = random.randint(100, 255)
+	g = random.randint(100, 255)
+	b = random.randint(100, 255)
+	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
+	return color
 
 
 def get_numeric_columns(columns: List) -> List[Union[int, float]]:
@@ -84,7 +93,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 	return fdf.sort_values(by = 'Generation')
 
 
-def convert_clusters_to_ggmuller_format(mermaid: str) -> pandas.DataFrame:
+def create_ggmuller_edges2(mermaid: str) -> pandas.DataFrame:
 	lines = mermaid.split('\n')
 	table = list()
 	for line in lines:
@@ -108,22 +117,63 @@ def convert_clusters_to_ggmuller_format(mermaid: str) -> pandas.DataFrame:
 	df['Identity'] = ['Genotype-{}'.format(i) for i in df['Identity']]
 	return df
 
+def create_ggmuller_edges(genotype_clusters: ClusterType)->pandas.DataFrame:
+	table = list()
+	for genotype_label, genotype_info in genotype_clusters.items():
+		background = genotype_info.background
 
-def generate_mermaid_diagram(clusters: ClusterType) -> str:
-	contents = ["graph TD;"]
-	for k, cluster in clusters.items():
-		if len(cluster.background) > 1:
-			cluster_background = cluster.background[::-1][:2]
-		elif len(cluster.background) == 1:
-			cluster_background = cluster.background + ['root']
+		if len(background) == 1:
+			parent = 'genotype-0'
+			identity = background[0]
 		else:
-			cluster_background = cluster.background[::-1]
+			parent, identity = background
 
-		contents.append("-->".join(cluster_background) + ';')
-	return "\n".join(contents)
+		row = {
+			'Parent': parent,
+			'Identity': identity
+		}
+		table.append(row)
+	return pandas.DataFrame(table)
+
+def generate_mermaid_diagram(backgrounds:pandas.DataFrame, color_palette: Dict[str, str]) -> str:
+	"""
+	graph LR
+    id1(Start)-->id2(Stop)
+    style id1 fill:#f9f,stroke:#333,stroke-width:4px
+    style id2 fill:#ccf,stroke:#f66,stroke-width:2px,stroke-dasharray: 5, 5
+	Parameters
+	----------
+	backgrounds
+	color_palette
+
+	Returns
+	-------
+
+	"""
+	genotype_labels = list(set(backgrounds['Identity'].values))
+
+	node_map = {k: "style id{} fill:{}".format(k.split('-')[-1], color_palette[k]) for k in genotype_labels}
+
+	diagram_contents = ["graph TD;"]
+	for index, row in backgrounds.iterrows():
+		parent = row['Parent']
+		identity = row['Identity']
+		parent_id = parent.split('-')[-1]
+		identity_id = identity.split('-')[-1]
+		line = "id{left_id}(Genotype-{left})-->id{right_id}(Genotype-{right});".format(
+			left_id = identity_id,
+			right_id = parent_id,
+			left = identity,
+			right = parent
+		)
+		diagram_contents.append(line)
+
+	diagram_contents += list(node_map.values())
+
+	return "\n".join(diagram_contents)
 
 
-def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette: List[str]) -> str:
+def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette: Dict[str, str]) -> str:
 	script = """
 	library("ggplot2")
 	library("ggmuller")
@@ -148,7 +198,7 @@ def generate_r_script(population: Path, edges: Path, output_file: Path, color_pa
 		population = population.absolute(),
 		edges = edges.absolute(),
 		output = output_file.absolute(),
-		palette = ",".join(['"#333333"'] + ['"{}"'.format(i) for i in color_palette])
+		palette = ",".join(['"#333333"'] + ['"{}"'.format(k) for k,v in sorted(color_palette.items())])
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
@@ -164,8 +214,13 @@ def generate_output(workflow_data: WorkflowData, output_folder):
 		'#ffffff', '#000000'
 	]
 
-	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_palette)
-	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_palette)
+	if len(workflow_data.original_genotypes) >= len(color_palette):
+		color_palette += [generate_random_color() for _ in workflow_data.genotypes.index]
+
+	color_map = {i: j for i, j in zip(sorted(workflow_data.genotypes.index), color_palette)}
+
+	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map)
+	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map)
 
 
 def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
@@ -189,7 +244,7 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 	return parameters
 
 
-def generate_formatted_output(workflow_data: WorkflowData, color_palette: List[str]) -> OutputType:
+def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str]) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -207,11 +262,11 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: List[s
 	"""
 
 	workflow_parameters = get_workflow_parameters(workflow_data)
-	mermaid_diagram = generate_mermaid_diagram(workflow_data.clusters)
 
-	ggmuller_edge_table = convert_clusters_to_ggmuller_format(mermaid_diagram)
+
+	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
 	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes)
-
+	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
 	if workflow_data.info is not None:
 		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
 		trajectory_map = dict()
@@ -228,7 +283,7 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: List[s
 
 
 def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame, edge_table: pandas.DataFrame,
-		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: List[str]):
+		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str,str]):
 	name = workflow_data.filename.stem
 	delimiter = '\t'
 	subfolder = output_folder / "supplementary_files"
@@ -265,13 +320,13 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	if workflow_data.trajectories is not None:
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes,
-		original_genotype_plot_filename, color_palette)
+	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes,
+	#	original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)
 	try:
-		subprocess.call(["mmdc", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE,
+		subprocess.call(["mmdc", "--height", "400", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render], stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE)
 	except FileNotFoundError:
 		pass

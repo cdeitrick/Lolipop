@@ -33,7 +33,7 @@ def find_parent_genotype(trajectory_id: int, genotypes: Dict[str, List[int]]):
 	return None
 
 
-def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFrame, filename: Path = None, color_palette:List[str]=None):
+def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFrame, filename: Path = None, genotype_colors:Dict[str,str]=None):
 	"""
 		Plots the clustered genotypes.
 	Parameters
@@ -47,7 +47,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 	-------
 
 	"""
-	if color_palette is None:
+	if genotype_colors is None:
 		color_palette = [
 			'#bf0000', '#ffa280', '#402b00', '#98b32d', '#3df29d', '#60acbf', '#000f73',
 			'#ce3df2', '#e639ac', '#bf6060', '#594943', '#f2ca79', '#4a592d', '#003322',
@@ -57,6 +57,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 			'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
 			'#8f66cc', '#330022', '#59161f'
 		]
+		genotype_colors = {k:v for k,v in zip(sorted(mean_genotypes.index), color_palette)}
 
 	genotype_members = mean_genotypes.pop('members')
 	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in sorted(genotype_members.items())}
@@ -65,10 +66,6 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 	else:
 		numeric_columns = list(get_numeric_columns(mean_genotypes.columns))
 
-	if len(mean_genotypes.index) < len(color_palette):
-		genotype_colors = dict(zip(sorted(mean_genotypes.index), color_palette))
-	else:
-		genotype_colors = {g: generate_random_color() for g in mean_genotypes.index}
 	# Plot all trajectories
 	grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3)
 	if timeseries is not None:
