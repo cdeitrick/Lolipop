@@ -89,7 +89,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 		root_genotype_generations.append(row)
 
 	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
-	fdf['Identity'] = ["Genotype-{}".format(i) for i in fdf['Identity'].values]
+	fdf['Identity'] = ["genotype-{}".format(i) for i in fdf['Identity'].values]
 	return fdf.sort_values(by = 'Generation')
 
 
@@ -113,8 +113,8 @@ def create_ggmuller_edges2(mermaid: str) -> pandas.DataFrame:
 	df = pandas.DataFrame(table)
 	df = df[['Parent', 'Identity']]
 	df = df.sort_values(by = 'Identity')
-	df['Parent'] = ['Genotype-{}'.format(i) for i in df['Parent']]
-	df['Identity'] = ['Genotype-{}'.format(i) for i in df['Identity']]
+	df['Parent'] = ['genotype-{}'.format(i) for i in df['Parent']]
+	df['Identity'] = ['genotype-{}'.format(i) for i in df['Identity']]
 	return df
 
 def create_ggmuller_edges(genotype_clusters: ClusterType)->pandas.DataFrame:
@@ -133,7 +133,7 @@ def create_ggmuller_edges(genotype_clusters: ClusterType)->pandas.DataFrame:
 			'Identity': identity
 		}
 		table.append(row)
-	return pandas.DataFrame(table)
+	return pandas.DataFrame(table)[['Parent', 'Identity']]
 
 def generate_mermaid_diagram(backgrounds:pandas.DataFrame, color_palette: Dict[str, str]) -> str:
 	"""
@@ -160,7 +160,7 @@ def generate_mermaid_diagram(backgrounds:pandas.DataFrame, color_palette: Dict[s
 		identity = row['Identity']
 		parent_id = parent.split('-')[-1]
 		identity_id = identity.split('-')[-1]
-		line = "id{left_id}(Genotype-{left})-->id{right_id}(Genotype-{right});".format(
+		line = "id{left_id}(genotype-{left})-->id{right_id}(genotype-{right});".format(
 			left_id = identity_id,
 			right_id = parent_id,
 			left = identity,
@@ -198,7 +198,7 @@ def generate_r_script(population: Path, edges: Path, output_file: Path, color_pa
 		population = population.absolute(),
 		edges = edges.absolute(),
 		output = output_file.absolute(),
-		palette = ",".join(['"#333333"'] + ['"{}"'.format(k) for k,v in sorted(color_palette.items())])
+		palette = ",".join(['"#333333"'] + ['"{}"'.format(v) for k,v in sorted(color_palette.items())])
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
