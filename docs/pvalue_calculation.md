@@ -24,8 +24,10 @@ Since we are interested in the similarity between both mutational time series, l
 Finally, given $\sigma_d$ and $\bar{d}$ we can calculate the probability that this pair of mutations belong to the same genotype using the cumulative probability distribution  of the normal distribution:
 
 5. $$
-     p_{pair}=1 - \int_{- \bar{d}/ \sigma_p}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
+     p_{pair}=1 - \int_{- \infty}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
      $$
+
+
 
 
 

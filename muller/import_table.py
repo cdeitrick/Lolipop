@@ -102,8 +102,8 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	# Extract metadata for each trajectory.
 	try:
 		potential_columns = ['Population','Position', 'Class', 'Gene', 'Mutation', 'Annotation']
-		#info = data[[i for i in potential_columns if i in data]]
-		info = data[potential_columns]
+		info = data[[i for i in potential_columns if i in data.columns]]
+		#info = data[potential_columns]
 	except:
 		info = None
 
