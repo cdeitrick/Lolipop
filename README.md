@@ -1,6 +1,48 @@
 # A set of scripts to cluster mutations into genotypes and cluster genotypes by background.
 ![muller_plot](./example/B1_muller_try1.muller.png)
 
+# Contents
+- [General Workflow](#General-Workflow)
+- [Script Options](#Script-Options)
+- [Input Parameters](#Input-Parameters)
+- [Sample Usage](#Sample-Usage)
+- [Output Files](#Output-Files)
+- [Genotype Plots](#Genotype-Plots)
+- [Mermaid Diagram](#Mermaid-Diagram)
+
+# General Workflow
+
+Flowcharts for each individual step can be found under docs/flowcharts.
+
+![overview](./docs/flowcharts/0-overview.png)
+
+# Script Options
+
+	-h, --help                  Show this help message and exit
+	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
+	-o,  --output               The folder to save the files to.
+	--genotypes                 Indicates that the input table contains genotypes rather
+	                            than mutational trajectories.
+	-u, --uncertainty           The uncertainty to apply when performing
+	                            frequency-based calculations. For
+	                            example, a frequency at a given timepoint
+	                            is considered undetected if it falls
+	                            below 0 + `uncertainty`.
+	--fixed                     The minimum frequency at which to
+	                            consider a mutation fixed. Defaults to
+	                            1 - `uncertainty`
+	-s, --significant           [0.15] The frequency at which to consider a genotype
+	                            significantly greater than zero.
+	--matlab                    Mimics the output of the original matlab script.
+	-f, --frequencies           [0.10] The frequency cutoff to use when sorting genotypes.
+	                            May be a comma-separated string of frequencies, or a set inverval
+	                            to use when generating the frequency breakpoints.
+	                            For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
+	-r --similarity-cutoff      [0.05] Maximum p-value difference to consider trajectories related.
+	                            Used when grouping trajectories into genotypes.
+	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype.
+
+
 # Input Parameters
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint or a table with each genotype and frequency at each timepoint.
@@ -40,6 +82,20 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 ```
 python muller.py --input [input filename] --output [output folder]
 ```
+
+Run with default parameters.
+
+```
+python --input [filename] --output [folder] --matlab
+```
+Trajectories will be grouped into genotypes and each genotype will be nested using the same parameters the original matlab script used. The original script used different values in each script when performing frequency detection/significance. The improved version of the script (without the --matlab flag) harmonized these parameters so that similar calculations use the same parameter rather than re-defining the value to use.
+```
+python --input [filename] --frequencies 0.05 --detected 0.10
+```
+Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
+
+
+# Output Files
 
 The script generates the following files:
 -  `input filename`.ggmuller_edges.tsv
@@ -92,42 +148,6 @@ The script generates the following files:
     Plots of all trajectories (colored by parent genotype) and genotypes.
 
 
-# Script Options
-
-	-h, --help                  Show this help message and exit
-	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
-	-o,  --output               The folder to save the files to.
-	--genotypes                 Indicates that the input table contains genotypes rather
-	                            than mutational trajectories.
-	-u, --uncertainty           The uncertainty to apply when performing
-	                            frequency-based calculations. For
-	                            example, a frequency at a given timepoint
-	                            is considered undetected if it falls
-	                            below 0 + `uncertainty`.
-	--fixed                     The minimum frequency at which to
-	                            consider a mutation fixed. Defaults to 
-	                            1 - `uncertainty`
-	-s, --significant           [0.15] The frequency at which to consider a genotype 
-	                            significantly greater than zero.
-	--matlab                    Mimics the output of the original matlab script.
-	-f, --frequencies           [0.10] The frequency cutoff to use when sorting genotypes. 
-	                            May be a comma-separated string of frequencies, or a set inverval 
-	                            to use when generating the frequency breakpoints. 
-	                            For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
-	-r --similarity-cutoff      [0.05] Maximum p-value difference to consider trajectories related. 
-	                            Used when grouping trajectories into genotypes.
-	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype.
-
-# Example Usage
-```
-python --input [filename] --output [folder] --matlab
-```
-Trajectories will be grouped into genotypes and each genotype will be nested using the same parameters the original matlab script used. The original script used different values in each script when performing frequency detection/significance. The improved version of the script (without the --matlab flag) harmonized these parameters so that similar calculations use the same parameter rather than re-defining the value to use.
-```
-python --input [filename] --frequencies 0.05 --detected 0.10
-```
-Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
-
 # Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
 Trajectories are colored based on their parent genotype.
@@ -139,8 +159,5 @@ The `.mermaid` file can be used to generate a quick diagram showing the relation
 
 ![diagram](./example/sample_mermaid_diagram.png)
 
-# General Workflow
-
-![overview](./docs/flowcharts/0-overview.png)
 
 
