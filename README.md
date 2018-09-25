@@ -139,4 +139,8 @@ The `.mermaid` file can be used to generate a quick diagram showing the relation
 
 ![diagram](./example/sample_mermaid_diagram.png)
 
+# General Workflow
+
+![overview](./docs/flowcharts/0-overview.png)
+
 
