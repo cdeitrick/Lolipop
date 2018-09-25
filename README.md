@@ -2,13 +2,13 @@
 ![muller_plot](./example/B1_muller_try1.muller.png)
 
 # Contents
-- [General Workflow](#General-Workflow)
-- [Script Options](#Script-Options)
-- [Input Parameters](#Input-Parameters)
-- [Sample Usage](#Sample-Usage)
-- [Output Files](#Output-Files)
-- [Genotype Plots](#Genotype-Plots)
-- [Mermaid Diagram](#Mermaid-Diagram)
+- [General Workflow](#general-workflow)
+- [Script Options](#script-options)
+- [Input Parameters](#input-parameters)
+- [Sample Usage](#sample-usage)
+- [Output Files](#output-files)
+- [Genotype Plots](#genotype-plots)
+- [Mermaid Diagram](#mermaid-diagram)
 
 # General Workflow
 
