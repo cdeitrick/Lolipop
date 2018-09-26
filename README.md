@@ -46,7 +46,9 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 # Input Parameters
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint or a table with each genotype and frequency at each timepoint.
-The table must have a column named `Trajectory` or `Genotype` and integer columns for each timepoint. All other columns will be ignored. The frequencies can be represented as either a number between [0,1], a number between [0, 100] or as percentage.
+The table must have a column named `Trajectory` or `Genotype` and integer columns for each timepoint. All other columns will be ignored.
+The frequencies can be represented as either a number between 0 - 1,
+a number between 0 - 100 or as percentage.
 The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype.
 
 |            |            |            |          |       |          |   |       |       |       |       |       |       |

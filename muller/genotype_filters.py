@@ -74,7 +74,7 @@ def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff:
 			genotype_table = get_genotypes.workflow(trajectory_table, options = goptions)
 			members = genotype_table.pop('members')
 	else:
-		print("Could not filter the genotypes properly.")
+		print("Could not filter the genotypes after 20 iterations.")
 	genotype_table['members'] = members
 	return trajectory_table, genotype_table
 
