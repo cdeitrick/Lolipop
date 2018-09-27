@@ -23,6 +23,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	-o,  --output               The folder to save the files to.
 	--genotypes                 Indicates that the input table contains genotypes rather
 	                            than mutational trajectories.
+	--no-filter                 Skips the genotype filtering step.
 	-u, --uncertainty           The uncertainty to apply when performing
 	                            frequency-based calculations. For
 	                            example, a frequency at a given timepoint
