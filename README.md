@@ -51,9 +51,8 @@ The frequencies can be represented as either a number between 0 - 1,
 a number between 0 - 100 or as percentage.
 The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype. 
 
-|            |            |            |          |       |          |   |       |       |       |       |       |       |
-|------------|------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
 | Population | Trajectory | Chromosome | Position | Class | Mutation | 0 | 17    | 25    | 44    | 66    | 75    | 90    |
+|------------|------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
 | B2         | 1          | 1          | 38102    | SNP   | C>T      | 0 | 0     | 26.1% | 100%  | 100%  | 100%  | 100%  |
 | B2         | 2          | 1          | 62997    | SNP   | T>G      | 0 | 0     | 0     | 52.5% | 45.4% | 91.1% | 91%   |
 | B2         | 3          | 1          | 78671    | SNP   | A>C      | 0 | 0     | 0     | 14.7% | 45%   | 92.4% | 88.7% |
