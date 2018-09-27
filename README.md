@@ -1,4 +1,4 @@
-# A set of scripts to cluster mutations into genotypes and cluster genotypes by background.
+# A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background.
 ![muller_plot](./example/B1_muller_try1.muller.png)
 
 # Contents
@@ -45,11 +45,11 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 
 # Input Parameters
 
-The script operates on a table listing all mutations and their corresponding frequencies at each timepoint or a table with each genotype and frequency at each timepoint.
-The table must have a column named `Trajectory` or `Genotype` and integer columns for each timepoint. All other columns will be ignored.
+The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
+The table must have a column named `Trajectory` with labels for each mutational trajectory (or `Genotype` when using `--genotype`) and integer columns for each timepoint. The labels are solely used to identify trajectories belonging to a specific genotype, and must be integers. All other columns will be ignored when calculating genotypes and genotype clusters.
 The frequencies can be represented as either a number between 0 - 1,
 a number between 0 - 100 or as percentage.
-The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype.
+The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype. 
 
 |            |            |            |          |       |          |   |       |       |       |       |       |       |
 |------------|------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
