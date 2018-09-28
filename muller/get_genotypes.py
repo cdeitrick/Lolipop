@@ -302,8 +302,8 @@ def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.Data
 	minimum_pvalue_genotype = unlinked_trajectories.loc[minimum_pvalue_index]
 
 	# Form two new genotypes based on the two trajectories corresponding to the minimum p-value
-	new_genotype_1_base = int(minimum_pvalue_genotype['left'])
-	new_genotype_2_base = int(minimum_pvalue_genotype['right'])
+	new_genotype_1_base = minimum_pvalue_genotype['left']
+	new_genotype_2_base = minimum_pvalue_genotype['right']
 
 	# Make sure genotype 1 includes the lower id-value. Not important, but maintains parity with matlab script.
 	new_genotype_1_base, new_genotype_2_base = sorted([new_genotype_1_base, new_genotype_2_base])
@@ -312,7 +312,7 @@ def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.Data
 
 	# Sort each member in the current genotype into one of the new genotypes.
 	for genotype_member in genotype:
-		genotype_member = int(genotype_member)
+		genotype_member = genotype_member
 		# Check if the current genotype member is already contained in one of the genotypes.
 		# Should only be one of the two trajectories used to form a new genotype.
 		if genotype_member in new_genotype_1 or genotype_member in new_genotype_2:

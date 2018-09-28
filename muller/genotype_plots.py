@@ -60,7 +60,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 		genotype_colors = {k:v for k,v in zip(sorted(mean_genotypes.index), color_palette)}
 
 	genotype_members = mean_genotypes.pop('members')
-	genotype_members = {k: [int(j) for j in v.split('|')] for k, v in sorted(genotype_members.items())}
+	genotype_members = {k: [j for j in v.split('|')] for k, v in sorted(genotype_members.items())}
 	if timeseries is not None:
 		numeric_columns = list(get_numeric_columns(timeseries.columns))
 	else:

@@ -106,7 +106,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 		#info = data[potential_columns]
 	except:
 		info = None
-	timeseries.rename(columns = int, inplace = True)
+	timeseries = timeseries.rename(columns = int)
 	return timeseries, info
 
 

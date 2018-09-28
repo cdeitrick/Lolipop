@@ -137,7 +137,7 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 		trajectory_map = dict()
 		for g, v in genotype_map.items():
 			for t in v:
-				trajectory_map[int(t)] = g
+				trajectory_map[t] = g
 		trajectory_table: pandas.DataFrame = workflow_data.trajectories.copy()
 
 		trajectory_table['genotype'] = [trajectory_map[k] for k in trajectory_table.index]
