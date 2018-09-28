@@ -5,12 +5,15 @@ try:
 	from muller import get_genotypes
 	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
+	# noinspection PyUnresolvedReferences
 	import get_genotypes
+	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table
 from pathlib import Path
 from typing import Tuple
 
 
+# noinspection PyTypeChecker
 def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float) -> pandas.DataFrame:
 	fuzzy_fixed_cutoff = 0.5
 	backgrounds = genotypes[genotypes.max(axis = 1) > fuzzy_fixed_cutoff]
@@ -69,7 +72,6 @@ def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff:
 			break
 		else:
 			invalid_members = members.loc[current_invalid_genotype].split('|')
-			invalid_members = [int(i) for i in invalid_members]
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
 			genotype_table = get_genotypes.workflow(trajectory_table, options = goptions)
 			members = genotype_table.pop('members')

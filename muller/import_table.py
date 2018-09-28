@@ -14,7 +14,7 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 	return numeric_columns
 
 
-def import_table(filename: Path, sheet_name:str) -> pandas.DataFrame:
+def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
 	if filename.suffix in {'.xls', '.xlsx'}:
 
 		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
@@ -25,8 +25,8 @@ def import_table(filename: Path, sheet_name:str) -> pandas.DataFrame:
 	return data
 
 
-def import_genotype_table(filename: Path) -> pandas.DataFrame:
-	data = import_table(filename)
+def import_genotype_table(filename: Path, sheetname:str) -> pandas.DataFrame:
+	data = import_table(filename, sheet_name = sheetname)
 
 	if 'Genotype' in data.columns:
 		key_column = 'Genotype'
@@ -48,7 +48,7 @@ def import_genotype_table(filename: Path) -> pandas.DataFrame:
 	def _convert_to_numeric(col):
 		try:
 			return int(col)
-		except:
+		except ValueError:
 			return col
 
 	data = data.rename(_convert_to_numeric, axis = 'columns')
@@ -91,7 +91,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	frequency_columns = get_numeric_columns(data.columns)
 
 	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
-
+	data[key_column] = [str(i) for i in data[key_column].values]
 	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
 	for column in frequency_columns:
@@ -104,7 +104,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 		potential_columns = ['Population','Position', 'Class', 'Gene', 'Mutation', 'Annotation']
 		info = data[[i for i in potential_columns if i in data.columns]]
 		#info = data[potential_columns]
-	except:
+	except ValueError:
 		info = None
 	timeseries = timeseries.rename(columns = int)
 	return timeseries, info

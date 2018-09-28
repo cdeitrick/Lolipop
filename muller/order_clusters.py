@@ -61,7 +61,7 @@ class OrderClusterParameters:
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
 		significant_breakpoint = float(parser.significant_breakpoint)
-		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
+		#fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
 
 
 		if compatibility_mode:

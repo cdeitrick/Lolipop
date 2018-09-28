@@ -76,8 +76,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options)
 
 	if program_options.is_genotype:
-		original_timepoints = original_genotypes = timepoints = info = None
-		mean_genotypes = import_genotype_table(input_filename)
+
+		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
+
+		original_timepoints = timepoints = info = None
+		original_genotypes = mean_genotypes
+
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
 
@@ -160,9 +164,9 @@ class ProgramOptions:
 
 	@classmethod
 	def debug(cls, parser)->'ProgramOptions':
-		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.labeled.csv"
+		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx"
 		parser.output_folder ='./output'
-		parser.use_filter = False
+		parser.use_filter = True
 		return cls.from_parser(parser)
 
 def create_parser() -> argparse.ArgumentParser:
@@ -255,5 +259,6 @@ if __name__ == "__main__":
 	cmd_parser = ProgramOptions.from_parser(args)
 	DEBUG = False
 	if DEBUG:
+		# noinspection PyRedeclaration
 		cmd_parser = ProgramOptions.debug(args)
 	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)
