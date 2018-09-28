@@ -40,8 +40,23 @@ class WorkflowData:
 
 
 def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
+	"""
+		Converts the genotype frequencies to a population table suitable for ggmuller.
+	Parameters
+	----------
+	mean_genotypes: pandas.DataFrame
+
+	Returns
+	-------
+
+	"""
 	table = list()
 	# "Generation", "Identity" and "Population"
+	# Adjust populations to account for inheritance.
+	# If a child genotype fixed, the parent genotype should be replaced.
+	modified_genotypes = mean_genotypes.copy()
+
+	print(modified_genotypes)
 
 	numeric_columns = get_numeric_columns(mean_genotypes.columns)
 	for index, row in mean_genotypes.iterrows():
@@ -93,30 +108,6 @@ def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
 		table.append(row)
 	return pandas.DataFrame(table)[['Parent', 'Identity']]
 
-
-def create_ggmuller_edges2(mermaid: str) -> pandas.DataFrame:
-	lines = mermaid.split('\n')
-	table = list()
-	for line in lines:
-		if '>' not in line: continue
-		identity, parent = line.split('-->')
-		identity = int(identity.split('-')[-1])
-		parent = parent[:-1]
-		if parent == 'root':
-			parent = 0
-		else:
-			parent = int(parent.split('-')[-1])
-		row = {
-			'Parent':   parent,
-			'Identity': identity
-		}
-		table.append(row)
-	df = pandas.DataFrame(table)
-	df = df[['Parent', 'Identity']]
-	df = df.sort_values(by = 'Identity')
-	df['Parent'] = ['genotype-{}'.format(i) for i in df['Parent']]
-	df['Identity'] = ['genotype-{}'.format(i) for i in df['Identity']]
-	return df
 
 
 def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str]) -> OutputType:
@@ -327,12 +318,14 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)
-	try:
-		subprocess.call(["mmdc", "--height", "400", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render],
-			stdout = subprocess.PIPE,
-			stderr = subprocess.PIPE)
-	except FileNotFoundError:
-		pass
+	#try:
+	process = subprocess.call(
+		[Path.home() / "applications" / "mmdc", "--height", "400", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render],
+		stdout = subprocess.PIPE,
+		stderr = subprocess.PIPE)
+
+	#except FileNotFoundError:
+	#	pass
 
 	r_script = generate_r_script(
 		population = population_output_file,

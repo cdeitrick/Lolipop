@@ -190,11 +190,9 @@ if __name__ == "__main__":
 
 	DEBUG = True
 	if DEBUG:
-		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.csv"
+		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.labeled.csv"
 		cmd_parser.output_folder = './output'
-		_output_folder = Path("./output")
-		if _output_folder.exists():
-			_output_folder.rename('old output')
+
 		cmd_parser.use_filter = False
 	_input_filename = Path(cmd_parser.filename)
 
