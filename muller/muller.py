@@ -2,6 +2,8 @@ from pathlib import Path
 import argparse
 import itertools
 import math
+from typing import List, Union, Optional
+from dataclasses import dataclass
 
 try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
@@ -15,15 +17,24 @@ try:
 	from muller import format_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
+	# noinspection PyUnresolvedReferences
 	from order_clusters import ClusterType, OrderClusterParameters
+	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table, import_genotype_table
+	# noinspection PyUnresolvedReferences
 	from get_genotypes import GenotypeOptions
+	# noinspection PyUnresolvedReferences
 	from sort_genotypes import SortOptions
 
+	# noinspection PyUnresolvedReferences
 	import get_genotypes
+	# noinspection PyUnresolvedReferences
 	import order_clusters
+	# noinspection PyUnresolvedReferences
 	import sort_genotypes
+	# noinspection PyUnresolvedReferences
 	import format_output
+	# noinspection PyUnresolvedReferences
 	import genotype_filters
 
 
@@ -95,10 +106,64 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering
 	)
-	format_output.generate_output(workflow_data, output_folder)
+	format_output.generate_output(workflow_data, output_folder, program_options.fixed_breakpoint)
 
 	return genotype_clusters
 
+
+@dataclass
+class ProgramOptions:
+	filename: Path
+	output_folder: Path
+	sheetname: str = "Sheet1"
+	fixed_breakpoint: Optional[float] = None
+	detection_breakpoint: float = 0.03
+	significant_breakpoint: float = 0.15
+	mode: bool = False
+	frequencies: Union[float, List[float]] = 0.10
+	similarity_breakpoint: float = 0.05
+	difference_breakpoint: float = 0.10
+	is_genotype: bool = False
+	use_filter: bool = True
+
+	def __post_init__(self):
+		if self.output_folder and not self.output_folder.exists():
+			sup = self.output_folder / "supplementary_files"
+			self.output_folder.mkdir()
+
+			if not sup.exists():
+				sup.mkdir()
+
+	@classmethod
+	def from_parser(cls, parser: Union['ProgramOptions', argparse.Namespace]) -> 'ProgramOptions':
+		filename = Path(parser.filename) if parser.filename else None
+		output_folder = Path(parser.output_folder) if parser.output_folder else None
+
+		fixed = parser.fixed_breakpoint
+		if fixed is None:
+			fixed = 1 - parser.detection_breakpoint
+
+		return cls(
+			filename = filename,
+			output_folder = output_folder,
+			sheetname = parser.sheetname,
+			fixed_breakpoint = fixed,
+			detection_breakpoint = parser.detection_breakpoint,
+			significant_breakpoint = parser.significant_breakpoint,
+			mode = parser.mode,
+			frequencies = parser.frequencies,
+			similarity_breakpoint = parser.similarity_breakpoint,
+			difference_breakpoint = parser.difference_breakpoint,
+			is_genotype = parser.is_genotype,
+			use_filter = parser.use_filter
+		)
+
+	@classmethod
+	def debug(cls, parser)->'ProgramOptions':
+		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.labeled.csv"
+		parser.output_folder ='./output'
+		parser.use_filter = False
+		return cls.from_parser(parser)
 
 def create_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser()
@@ -186,22 +251,9 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 if __name__ == "__main__":
-	cmd_parser = create_parser().parse_args()
-
-	DEBUG = True
+	args = create_parser().parse_args()
+	cmd_parser = ProgramOptions.from_parser(args)
+	DEBUG = False
 	if DEBUG:
-		cmd_parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.labeled.csv"
-		cmd_parser.output_folder = './output'
-
-		cmd_parser.use_filter = False
-	_input_filename = Path(cmd_parser.filename)
-
-	if cmd_parser.output_folder:
-		_output_folder = Path(cmd_parser.output_folder)
-	else:
-		_output_folder = _input_filename.parent
-
-	if not _output_folder.exists():
-		_output_folder.mkdir()
-
-	workflow(_input_filename, _output_folder, program_options = cmd_parser)
+		cmd_parser = ProgramOptions.debug(args)
+	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)

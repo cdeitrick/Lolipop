@@ -39,7 +39,7 @@ class WorkflowData:
 	cluster_options: OrderClusterParameters
 
 
-def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> pandas.DataFrame:
+def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, backgrounds:pandas.DataFrame, fixed_cutoff:float) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
@@ -51,18 +51,44 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame) -> p
 
 	"""
 	table = list()
+
+
+
 	# "Generation", "Identity" and "Population"
 	# Adjust populations to account for inheritance.
 	# If a child genotype fixed, the parent genotype should be replaced.
-	modified_genotypes = mean_genotypes.copy()
+	modified_genotypes: pandas.DataFrame = mean_genotypes.copy()
+	modified_genotypes.pop('members')
 
-	print(modified_genotypes)
-
+	fixed_genotypes = backgrounds.groupby(by = 'Parent')
 	numeric_columns = get_numeric_columns(mean_genotypes.columns)
-	for index, row in mean_genotypes.iterrows():
+	for genotype_label, row in modified_genotypes.iterrows():
+
+		if genotype_label in backgrounds['Parent'].values:
+			# Find the first timepoint a child genotype fixed.
+
+			background = fixed_genotypes.get_group(genotype_label)
+			print(background)
+
+			children = modified_genotypes.loc[list(background['Identity'].values)]
+			transposed = children.transpose()
+
+			first_fixed: pandas.Series = (transposed > fixed_cutoff).idxmax(0).sort_values()
+			first_fixed = first_fixed[first_fixed > 0]
+			fixed_children = background[background > fixed_cutoff]
+
+			# Get the child that fixed first.
+			successor = first_fixed.idxmin(0)
+			print(first_fixed)
+			print(successor)
+			genotype_timepoint_cutoff = first_fixed[successor]
+		else:
+			genotype_timepoint_cutoff = max(modified_genotypes.columns)
 		for column, value in row.items():
 			# if isinstance(column, str): continue
 			if column not in numeric_columns: continue
+			if column > genotype_timepoint_cutoff:
+				continue
 			line = {
 				'Generation': column,
 				'Identity':   int(row.name.split('-')[-1]),
@@ -110,7 +136,7 @@ def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
 
 
 
-def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str]) -> OutputType:
+def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str], fixed_cutoff:float) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -130,7 +156,7 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 	workflow_parameters = get_workflow_parameters(workflow_data)
 
 	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
-	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes)
+	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table, fixed_cutoff)
 	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
 	if workflow_data.info is not None:
 		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
@@ -185,7 +211,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 	return "\n".join(diagram_contents)
 
 
-def generate_output(workflow_data: WorkflowData, output_folder):
+def generate_output(workflow_data: WorkflowData, output_folder:Path, fixed_cutoff:float):
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -199,7 +225,7 @@ def generate_output(workflow_data: WorkflowData, output_folder):
 
 	color_map = {i: j for i, j in zip(sorted(workflow_data.genotypes.index), color_palette)}
 
-	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map)
+	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map, fixed_cutoff)
 	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map)
 
 
