@@ -10,10 +10,11 @@ import argparse
 try:
 	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
+	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table
 
 # The data structure of a agenotype
-Genotype = List[int]
+Genotype = List[str]
 
 
 @dataclass
@@ -21,14 +22,14 @@ class PairArrayValue:
 	"""
 		Holds the values assigned to parray in the original script.
 	"""
-	left: int
-	right: int
+	left: str
+	right: str
 	p_value: float
 	sigma_value: float
 	difbar: float
 
 
-PairwiseArrayType = Dict[Tuple[int, int], PairArrayValue]
+PairwiseArrayType = Dict[Tuple[str, str], PairArrayValue]
 
 PAIRWISE_P_VALUES: PairwiseArrayType = None
 REMOVED_P_VALUES: PairwiseArrayType = dict()
@@ -111,7 +112,8 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 
 	Parameters
 	----------
-	timeseries: pandas.DataFrame
+	trajectories: pandas.DataFrame
+		A table of mutational trajectories.
 	detection_cutoff: float
 	fixed_cutoff: float
 	n_binomial: int
@@ -194,7 +196,7 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 	return pair_array
 
 
-def _find_genotype_from_trajectory(element: int, all_genotypes: List[List[int]]) -> Optional[Genotype]:
+def _find_genotype_from_trajectory(element: str, all_genotypes: List[Genotype]) -> Optional[Genotype]:
 	"""
 		Finds the genotype that contains the trajectory.
 	Parameters
@@ -266,7 +268,7 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 	return genotype_candidates
 
 
-def get_p_value(left: int, right: int, pairwise_array: PairwiseArrayType) -> Optional[PairArrayValue]:
+def get_p_value(left: str, right: str, pairwise_array: PairwiseArrayType) -> Optional[PairArrayValue]:
 	"""	Finds the p-value for a given pair."""
 	return pairwise_array[(left, right)]
 
@@ -279,7 +281,7 @@ def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.Data
 		the other members that where found later.
 	Parameters
 	----------
-	genotype: List[int]
+	genotype: Genotype
 		The genotype to split.
 	unlinked_trajectories: pandas.DataFrame
 		A dataframe of trajectory pairs and their corresponding p-value.
@@ -330,7 +332,7 @@ def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.Data
 	return new_genotype_1, new_genotype_2
 
 
-def split_unlinked_genotypes(all_genotypes: List[List[int]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
+def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
 	Genotype]:
 	"""
 		Splits each genotype if any of its members are not related enough to the other members. Genotypes will continue

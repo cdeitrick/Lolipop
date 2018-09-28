@@ -160,9 +160,9 @@ class ProgramOptions:
 
 	@classmethod
 	def debug(cls, parser)->'ProgramOptions':
-		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/p2/p2_muller.labeled.csv"
+		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx"
 		parser.output_folder ='./output'
-		parser.use_filter = False
+		parser.use_filter = True
 		return cls.from_parser(parser)
 
 def create_parser() -> argparse.ArgumentParser:
@@ -253,7 +253,8 @@ def create_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
 	args = create_parser().parse_args()
 	cmd_parser = ProgramOptions.from_parser(args)
-	DEBUG = False
+	DEBUG = True
 	if DEBUG:
+		# noinspection PyRedeclaration
 		cmd_parser = ProgramOptions.debug(args)
 	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)

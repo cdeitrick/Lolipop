@@ -33,16 +33,18 @@ def find_parent_genotype(trajectory_id: int, genotypes: Dict[str, List[int]]):
 	return None
 
 
-def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFrame, filename: Path = None, genotype_colors:Dict[str,str]=None):
+def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path = None, genotype_colors:Dict[str,str]=None):
 	"""
 		Plots the clustered genotypes.
 	Parameters
 	----------
 	timeseries: pandas.DataFrame
 		The table with each trajectory used to generate the genotypes.
-	mean_genotypes: pandas.DataFrame
-	genotypes
-
+	filename: Optional[Path]
+		Path to save the genotype plot.
+	mutational_genotypes: pandas.DataFrame
+	genotype_colors: Dict[str,str]
+		A mapping of genotypes to their corresponding colors.
 	Returns
 	-------
 
@@ -57,14 +59,14 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 			'#73565e', '#661b00', '#ffaa00', '#ffee00', '#00731f', '#394b4d', '#0066ff',
 			'#8f66cc', '#330022', '#59161f'
 		]
-		genotype_colors = {k:v for k,v in zip(sorted(mean_genotypes.index), color_palette)}
+		genotype_colors = {k:v for k,v in zip(sorted(mutational_genotypes.index), color_palette)}
 
-	genotype_members = mean_genotypes.pop('members')
+	genotype_members = mutational_genotypes.pop('members')
 	genotype_members = {k: [j for j in v.split('|')] for k, v in sorted(genotype_members.items())}
 	if timeseries is not None:
 		numeric_columns = list(get_numeric_columns(timeseries.columns))
 	else:
-		numeric_columns = list(get_numeric_columns(mean_genotypes.columns))
+		numeric_columns = list(get_numeric_columns(mutational_genotypes.columns))
 
 	# Plot all trajectories
 	grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3)
@@ -91,7 +93,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
 
-	for cluster_id, cluster_timeseries in mean_genotypes.iterrows():
+	for cluster_id, cluster_timeseries in mutational_genotypes.iterrows():
 		cluster_color = genotype_colors[cluster_id]
 
 		plt.plot(
@@ -101,6 +103,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mean_genotypes: pandas.DataFram
 			label = cluster_id,
 			markersize = 2
 		)
+	# noinspection PyUnboundLocalVariable
 	if len(cluster_timeseries) > 20:
 		bbox = (1, 1.8)
 	else:
@@ -129,7 +132,9 @@ if __name__ == "__main__":
 		from muller.import_table import import_trajectory_table
 		from muller import get_genotypes
 	except ModuleNotFoundError:
+		# noinspection PyUnresolvedReferences
 		from import_table import import_trajectory_table
+		# noinspection PyUnresolvedReferences
 		import get_genotypes
 
 	input_filename = Path('/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx')
