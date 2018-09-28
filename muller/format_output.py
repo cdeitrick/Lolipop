@@ -332,7 +332,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	mermaid_diagram_script = subfolder / (name + '.mermaid.md')
 	mermaid_diagram_render = output_folder / (name + '.mermaid.png')
 
-	original_genotype_plot_filename = subfolder / (name + '.original.png')
+	#original_genotype_plot_filename = subfolder / (name + '.original.png')
 	genotype_plot_filename = output_folder / (name + '.filtered.png')
 
 	population_table.to_csv(str(population_output_file), sep = delimiter, index = False)
@@ -347,7 +347,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	if workflow_data.trajectories is not None:
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
+	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	mermaid_diagram_script.write_text(mermaid_diagram)

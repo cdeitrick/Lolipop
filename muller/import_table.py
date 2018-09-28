@@ -25,8 +25,8 @@ def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
 	return data
 
 
-def import_genotype_table(filename: Path) -> pandas.DataFrame:
-	data = import_table(filename)
+def import_genotype_table(filename: Path, sheetname:str) -> pandas.DataFrame:
+	data = import_table(filename, sheet_name = sheetname)
 
 	if 'Genotype' in data.columns:
 		key_column = 'Genotype'

@@ -76,8 +76,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options)
 
 	if program_options.is_genotype:
-		original_timepoints = original_genotypes = timepoints = info = None
-		mean_genotypes = import_genotype_table(input_filename)
+
+		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
+
+		original_timepoints = timepoints = info = None
+		original_genotypes = mean_genotypes
+
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
 
@@ -253,7 +257,7 @@ def create_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
 	args = create_parser().parse_args()
 	cmd_parser = ProgramOptions.from_parser(args)
-	DEBUG = True
+	DEBUG = False
 	if DEBUG:
 		# noinspection PyRedeclaration
 		cmd_parser = ProgramOptions.debug(args)
