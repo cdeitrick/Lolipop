@@ -154,8 +154,13 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 		if filtered_df.empty:
 			left_fixed = left_trajectories[left_trajectories > fixed_cutoff]
 			right_fixed = right_trajectories[right_trajectories > fixed_cutoff]
-			overlap = set(left_fixed.index) & set(right_fixed.index)
-			p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
+
+			if left_fixed.empty and right_fixed.empty:
+				# Both are undetected
+				p_value = 1
+			else:
+				overlap = set(left_fixed.index) & set(right_fixed.index)
+				p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
 
 			# Both trajectories have no timepoints where they are detected but not yet fixed.
 			# Assign a p-value of 0.0
