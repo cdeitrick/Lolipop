@@ -92,6 +92,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 				genotype_timepoint_cutoff = first_fixed[successor]
 		else:
 			genotype_timepoint_cutoff = max(modified_genotypes.columns)
+		genotype_timepoint_cutoff = max(modified_genotypes.columns)
 		for column, value in row.items():
 			# if isinstance(column, str): continue
 			if column not in numeric_columns: continue
@@ -99,14 +100,16 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 				continue
 			line = {
 				'Generation': column,
-				'Identity':   int(row.name.split('-')[-1]),
+				'Identity':   row.name,
 				'Population': value * 100
 			}
 			table.append(line)
 	df = pandas.DataFrame(table)
 	generations = df.groupby(by = 'Generation')
 
+	# Add the root background
 	root_genotype_generations = list()
+	"""
 	for generation, gdf in generations:
 		total = gdf['Population'].sum()
 		value = 100.0 - total
@@ -114,13 +117,15 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 			value = 0
 		row = {
 			'Generation': generation,
-			'Identity':   0,
+			'Identity':   "genotype-0",
 			'Population': value
 		}
 		root_genotype_generations.append(row)
-
+	"""
+	root_genotype_generations.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
 	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
-	fdf['Identity'] = ["genotype-{}".format(i) for i in fdf['Identity'].values]
+
+	fdf = fdf[fdf['Population'] != 0]
 	return fdf.sort_values(by = 'Generation')
 
 
@@ -162,10 +167,14 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 	"""
 
 	workflow_parameters = get_workflow_parameters(workflow_data)
-
+	print("generating edges...")
 	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
+	print("generating populations...")
 	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table, fixed_cutoff)
+
+	print("generating mermaid diagram...")
 	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
+	print("generating trajectories table...")
 	if workflow_data.info is not None:
 		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
 		trajectory_map = dict()
@@ -206,7 +215,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 		identity = row['Identity']
 		parent_id = parent.split('-')[-1]
 		identity_id = identity.split('-')[-1]
-		line = "id{left_id}(genotype-{left})-->id{right_id}(genotype-{right});".format(
+		line = "id{left_id}({left})-->id{right_id}({right});".format(
 			left_id = identity_id,
 			right_id = parent_id,
 			left = identity,
@@ -346,11 +355,13 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 
 	if workflow_data.trajectories is not None:
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
-
+	print("plotting...")
 	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
+	print("writing muller script")
 	mermaid_diagram_script.write_text(mermaid_diagram)
+	print("generating mermaid plot")
 	try:
 		subprocess.call(
 			["mmdc", "--height", "400", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render],
@@ -358,7 +369,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 			stderr = subprocess.PIPE)
 	except FileNotFoundError:
 		pass
-
+	print("generating r script")
 	r_script = generate_r_script(
 		population = population_output_file,
 		edges = edges_output_file,
@@ -366,7 +377,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		color_palette = color_palette
 	)
 	r_script_file.write_text(r_script)
-
+	print("generating muller plot...")
 	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE)
 	_extra_file = Path.cwd() / "Rplots.pdf"
