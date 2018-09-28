@@ -109,6 +109,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 
 	# Add the root background
 	root_genotype_generations = list()
+	"""
 	for generation, gdf in generations:
 		total = gdf['Population'].sum()
 		value = 100.0 - total
@@ -120,8 +121,11 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 			'Population': value
 		}
 		root_genotype_generations.append(row)
-
+	"""
+	root_genotype_generations.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
 	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
+
+	fdf = fdf[fdf['Population'] != 0]
 	return fdf.sort_values(by = 'Generation')
 
 

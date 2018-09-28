@@ -27,6 +27,10 @@ def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
 	else:
 		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
 		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
+
+	if 0 not in data.columns and '0' not in data.columns:
+		print("Warning: Make sure timepoint 0 is included in the table. Current timepoints: ", list(data.columns))
+
 	return data
 
 
