@@ -72,9 +72,10 @@ def parse_workflow_options(program_options):
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# TODO: The background should be 1-sum(other genotypes) at each timepoint
 	# as long as the sum of the other genotypes that inherit from root is less than 1.
+	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
-
+	print("Importing data...")
 	if program_options.is_genotype:
 
 		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
@@ -94,10 +95,13 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
 
+	print("sorting genotypes...")
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
 
+	print("nesting genotypes...")
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
+	print("Generating output...")
 	workflow_data = format_output.WorkflowData(
 		filename = input_filename,
 		info = info,

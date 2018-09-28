@@ -13,7 +13,12 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 			pass
 	return numeric_columns
 
-
+def correct_math_scale(data: pandas.DataFrame)->pandas.DataFrame:
+	numeric = get_numeric_columns(data.columns)
+	for column in numeric:
+		if max(data[column]) > 1.0:
+			data[column] /= 100
+	return data
 def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
 	if filename.suffix in {'.xls', '.xlsx'}:
 
@@ -52,6 +57,13 @@ def import_genotype_table(filename: Path, sheetname:str) -> pandas.DataFrame:
 			return col
 
 	data = data.rename(_convert_to_numeric, axis = 'columns')
+
+	# Remove undetected genotypes.
+
+	data = data[data.max(axis = 1) > 0]
+	data['members'] = [str(i) for i in data['members']]
+	data = correct_math_scale(data)
+	print(data)
 	return data
 
 
@@ -94,9 +106,7 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	data[key_column] = [str(i) for i in data[key_column].values]
 	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
-	for column in frequency_columns:
-		if max(timeseries[column]) > 1.0:
-			timeseries[column] /= 100
+	timeseries = correct_math_scale(timeseries)
 
 
 	# Extract metadata for each trajectory.
