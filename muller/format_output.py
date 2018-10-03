@@ -246,36 +246,50 @@ def generate_output(workflow_data: WorkflowData, output_folder:Path, fixed_cutof
 	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map)
 
 
-def generate_r_script(population: Path, edges: Path, output_file: Path, color_palette: Dict[str, str]) -> str:
+def generate_r_script(annotations:Dict[str,str], trajectory:Path, population: Path, edges: Path, output_file: Path, color_palette: Dict[str, str]) -> str:
+
+	an = ["-".join(v) for k, v in sorted(annotations.items())]
+	an = ['"{}"'.format(i) for i in an]
 	script = """
 	library(ggplot2)
 	library(ggmuller)
 	
 	population <- read.table("{population}", header=TRUE)
 	edges <- read.table("{edges}", header=TRUE)
+	trajectories <- read.table("{trajectory}", header = TRUE, sep = "\t")
 	
 	Muller_df <- get_Muller_df(edges, population)
 	#Muller_plot(Muller_df, add_legend = TRUE)
 	
 	palette <- c({palette})
+	
+	text <- c({labels})
+	
 	ggplot(Muller_df, aes_string(x = "Generation", y = "Frequency", group = "Group_id", fill = "Identity", colour = "Identity")) + 
     geom_area() +
+    geom_text() + 
     theme(legend.position = "right") +
     guides(linetype = FALSE, color = FALSE) + 
     scale_y_continuous(labels = 25 * (0:4), name = "Percentage", expand=c(0,0)) +
     scale_x_continuous(expand=c(0,0)) + 
     scale_fill_manual(name = "Identity", values = palette) +
-    scale_color_manual(values = palette)
+    scale_color_manual(values = palette) +
+    
+    annotate(c, x = 2:5, y = 25, label = "Some text")
+    
 	ggsave("{output}", height = 10, width = 10)
 	""".format(
+		labels = ",".join(an),
+		trajectory = trajectory,
 		population = population.absolute(),
 		edges = edges.absolute(),
 		output = output_file.absolute(),
 		palette = ",".join(['"#333333"'] + ['"{}"'.format(v) for k, v in sorted(color_palette.items())])
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
-
+	print(script)
 	return script
+
 
 
 def generate_random_color() -> str:
@@ -326,6 +340,12 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	if not subfolder.exists():
 		subfolder.mkdir()
 
+	trajectory_to_genotype = dict()
+	for label, genotype in workflow_data.genotypes.iterrows():
+		items = genotype['members'].split('|')
+		for i in items:
+			trajectory_to_genotype[i] = label
+
 	original_trajectory_file = subfolder / (name + '.trajectories.original.tsv')
 	trajectory_output_file = output_folder / (name + '.trajectories.tsv')
 
@@ -354,7 +374,22 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		workflow_data.original_trajectories.to_csv(str(original_trajectory_file), sep = delimiter)
 
 	if workflow_data.trajectories is not None:
+		annotations = dict()
+		workflow_data.trajectories['genotype'] = [trajectory_to_genotype[i] for i in workflow_data.trajectories.index]
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
+
+		groups = workflow_data.trajectories.groupby(by = 'genotype')
+
+		for name, group in groups:
+			s:pandas.Series = group.mean(axis = 1)
+			largest = s.nlargest(3)
+			print(largest)
+			annotations[name] = group.loc[largest.index]['Gene'].tolist()
+	else:
+		annotations = dict()
+	from pprint import pprint
+	pprint(annotations)
+
 	print("plotting...")
 	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
@@ -369,8 +404,11 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 			stderr = subprocess.PIPE)
 	except FileNotFoundError:
 		pass
+
 	print("generating r script")
 	r_script = generate_r_script(
+		annotations = annotations,
+		trajectory = trajectory_output_file,
 		population = population_output_file,
 		edges = edges_output_file,
 		output_file = r_script_graph_file,

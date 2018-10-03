@@ -75,6 +75,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
+
 	print("Importing data...")
 	if program_options.is_genotype:
 
@@ -94,6 +95,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		else:
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
+
 
 	print("sorting genotypes...")
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
