@@ -16,6 +16,8 @@ try:
 	from muller.sort_genotypes import SortOptions
 	from muller.order_clusters import OrderClusterParameters, ClusterType
 	from muller.genotype_plots import plot_genotypes
+	from muller.generate_muller_plot import generate_muller_plot
+	from muller.r_integration import generate_ggmuller_script
 except ModuleNotFoundError:
 	# noinspection PyUnresolvedReferences
 	from get_genotypes import GenotypeOptions
@@ -25,6 +27,10 @@ except ModuleNotFoundError:
 	from order_clusters import OrderClusterParameters, ClusterType
 	# noinspection PyUnresolvedReferences
 	from genotype_plots import plot_genotypes
+
+	from generate_muller_plot import generate_muller_plot
+
+	from r_integration import generate_ggmuller_script
 
 
 @dataclass
@@ -41,7 +47,7 @@ class WorkflowData:
 	cluster_options: OrderClusterParameters
 
 
-def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, backgrounds:pandas.DataFrame, fixed_cutoff:float) -> pandas.DataFrame:
+def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, backgrounds: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
@@ -58,8 +64,6 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 	"""
 	table = list()
 
-
-
 	# "Generation", "Identity" and "Population"
 	# Adjust populations to account for inheritance.
 	# If a child genotype fixed, the parent genotype should be replaced.
@@ -69,7 +73,6 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 	fixed_genotypes = backgrounds.groupby(by = 'Parent')
 	numeric_columns = get_numeric_columns(mean_genotypes.columns)
 	for genotype_label, row in modified_genotypes.iterrows():
-
 		if genotype_label in backgrounds['Parent'].values:
 			# Find the first timepoint a child genotype fixed.
 
@@ -84,7 +87,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 			if first_fixed.empty:
 				genotype_timepoint_cutoff = max(modified_genotypes.columns)
 			else:
-				#fixed_children = background[background > fixed_cutoff]
+				# fixed_children = background[background > fixed_cutoff]
 
 				# Get the child that fixed first.
 				successor = first_fixed.idxmin(0)
@@ -92,6 +95,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 				genotype_timepoint_cutoff = first_fixed[successor]
 		else:
 			genotype_timepoint_cutoff = max(modified_genotypes.columns)
+
 		genotype_timepoint_cutoff = max(modified_genotypes.columns)
 		for column, value in row.items():
 			# if isinstance(column, str): continue
@@ -105,23 +109,10 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 			}
 			table.append(line)
 	df = pandas.DataFrame(table)
-	generations = df.groupby(by = 'Generation')
 
 	# Add the root background
 	root_genotype_generations = list()
-	"""
-	for generation, gdf in generations:
-		total = gdf['Population'].sum()
-		value = 100.0 - total
-		if value < 0:
-			value = 0
-		row = {
-			'Generation': generation,
-			'Identity':   "genotype-0",
-			'Population': value
-		}
-		root_genotype_generations.append(row)
-	"""
+
 	root_genotype_generations.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
 	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
 
@@ -148,8 +139,7 @@ def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
 	return pandas.DataFrame(table)[['Parent', 'Identity']]
 
 
-
-def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str], fixed_cutoff:float) -> OutputType:
+def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str], fixed_cutoff: float) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -228,7 +218,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 	return "\n".join(diagram_contents)
 
 
-def generate_output(workflow_data: WorkflowData, output_folder:Path, fixed_cutoff:float):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cutoff: float, annotate_all:bool):
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -241,55 +231,10 @@ def generate_output(workflow_data: WorkflowData, output_folder:Path, fixed_cutof
 		color_palette += [generate_random_color() for _ in workflow_data.genotypes.index]
 
 	color_map = {i: j for i, j in zip(sorted(workflow_data.genotypes.index), color_palette)}
+	color_map['genotype-0'] = "#333333"
 
 	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map, fixed_cutoff)
-	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map)
-
-
-def generate_r_script(annotations:Dict[str,str], trajectory:Path, population: Path, edges: Path, output_file: Path, color_palette: Dict[str, str]) -> str:
-
-	an = ["-".join(v) for k, v in sorted(annotations.items())]
-	an = ['"{}"'.format(i) for i in an]
-	script = """
-	library(ggplot2)
-	library(ggmuller)
-	
-	population <- read.table("{population}", header=TRUE)
-	edges <- read.table("{edges}", header=TRUE)
-	trajectories <- read.table("{trajectory}", header = TRUE, sep = "\t")
-	
-	Muller_df <- get_Muller_df(edges, population)
-	#Muller_plot(Muller_df, add_legend = TRUE)
-	
-	palette <- c({palette})
-	
-	text <- c({labels})
-	
-	ggplot(Muller_df, aes_string(x = "Generation", y = "Frequency", group = "Group_id", fill = "Identity", colour = "Identity")) + 
-    geom_area() +
-    geom_text() + 
-    theme(legend.position = "right") +
-    guides(linetype = FALSE, color = FALSE) + 
-    scale_y_continuous(labels = 25 * (0:4), name = "Percentage", expand=c(0,0)) +
-    scale_x_continuous(expand=c(0,0)) + 
-    scale_fill_manual(name = "Identity", values = palette) +
-    scale_color_manual(values = palette) +
-    
-    annotate(c, x = 2:5, y = 25, label = "Some text")
-    
-	ggsave("{output}", height = 10, width = 10)
-	""".format(
-		labels = ",".join(an),
-		trajectory = trajectory,
-		population = population.absolute(),
-		edges = edges.absolute(),
-		output = output_file.absolute(),
-		palette = ",".join(['"#333333"'] + ['"{}"'.format(v) for k, v in sorted(color_palette.items())])
-	)
-	script = '\n'.join(i.strip() for i in script.split('\n'))
-	print(script)
-	return script
-
+	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map, annotate_all)
 
 
 def generate_random_color() -> str:
@@ -333,7 +278,7 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 
 
 def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame, edge_table: pandas.DataFrame,
-		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str, str]):
+		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str, str], annotate_all:bool):
 	name = workflow_data.filename.stem
 	delimiter = '\t'
 	subfolder = output_folder / "supplementary_files"
@@ -356,12 +301,14 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	edges_output_file = output_folder / (name + '.ggmuller.edges.tsv')
 
 	r_script_file = subfolder / (name + '.r')
-	r_script_graph_file = output_folder / (name + '.muller.png')
+	muller_table_file = subfolder / (name + '.muller.tsv')
+	muller_plot_basic_file = output_folder / (name + '.muller.basic.png')
+	muller_plot_annotated_file = output_folder / (name + '.muller.annotated.png')
 
 	mermaid_diagram_script = subfolder / (name + '.mermaid.md')
 	mermaid_diagram_render = output_folder / (name + '.mermaid.png')
 
-	#original_genotype_plot_filename = subfolder / (name + '.original.png')
+	# original_genotype_plot_filename = subfolder / (name + '.original.png')
 	genotype_plot_filename = output_folder / (name + '.filtered.png')
 
 	population_table.to_csv(str(population_output_file), sep = delimiter, index = False)
@@ -374,24 +321,11 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		workflow_data.original_trajectories.to_csv(str(original_trajectory_file), sep = delimiter)
 
 	if workflow_data.trajectories is not None:
-		annotations = dict()
 		workflow_data.trajectories['genotype'] = [trajectory_to_genotype[i] for i in workflow_data.trajectories.index]
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-		groups = workflow_data.trajectories.groupby(by = 'genotype')
-
-		for name, group in groups:
-			s:pandas.Series = group.mean(axis = 1)
-			largest = s.nlargest(3)
-			print(largest)
-			annotations[name] = group.loc[largest.index]['Gene'].tolist()
-	else:
-		annotations = dict()
-	from pprint import pprint
-	pprint(annotations)
-
 	print("plotting...")
-	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
+	# plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
 	print("writing muller script")
@@ -406,15 +340,19 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		pass
 
 	print("generating r script")
-	r_script = generate_r_script(
-		annotations = annotations,
+	muller_df = generate_ggmuller_script(
 		trajectory = trajectory_output_file,
 		population = population_output_file,
 		edges = edges_output_file,
-		output_file = r_script_graph_file,
+		table_filename = muller_table_file,
+		plot_filename = muller_plot_basic_file,
+		script_filename = r_script_file,
 		color_palette = color_palette
 	)
-	r_script_file.write_text(r_script)
+
+	generate_muller_plot(muller_df, workflow_data.trajectories, color_palette, muller_plot_annotated_file, annotate_all)
+
+
 	print("generating muller plot...")
 	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE)

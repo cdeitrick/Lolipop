@@ -3,7 +3,7 @@ import argparse
 import itertools
 import math
 from typing import List, Union, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 try:
 	from muller.order_clusters import ClusterType, OrderClusterParameters
@@ -72,6 +72,7 @@ def parse_workflow_options(program_options):
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# TODO: The background should be 1-sum(other genotypes) at each timepoint
 	# as long as the sum of the other genotypes that inherit from root is less than 1.
+	from pprint import pprint
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
@@ -116,7 +117,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering
 	)
-	format_output.generate_output(workflow_data, output_folder, program_options.fixed_breakpoint)
+	format_output.generate_output(workflow_data, output_folder, program_options.fixed_breakpoint, program_options.annotate_all)
 
 	return genotype_clusters
 
@@ -135,6 +136,7 @@ class ProgramOptions:
 	difference_breakpoint: float = 0.10
 	is_genotype: bool = False
 	use_filter: bool = True
+	annotate_all:bool = False
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
@@ -165,7 +167,8 @@ class ProgramOptions:
 			similarity_breakpoint = parser.similarity_breakpoint,
 			difference_breakpoint = parser.difference_breakpoint,
 			is_genotype = parser.is_genotype,
-			use_filter = parser.use_filter
+			use_filter = parser.use_filter,
+			annotate_all = parser.annotate_all
 		)
 
 	@classmethod
@@ -256,6 +259,12 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Disables genotype filtering.",
 		action = 'store_false',
 		dest = 'use_filter'
+	)
+	parser.add_argument(
+		"--annotate-all",
+		help = "Adds all gene labels to the muller plots, instead of the top three.",
+		action = "store_true",
+		dest = "annotate_all"
 	)
 	return parser
 

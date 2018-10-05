@@ -67,7 +67,7 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			sorted_genotypes.append(sorted_dataframe)
 
 	#sorted_genotypes.append(current_genotypes)
-	df = pandas.concat(sorted_genotypes)
+	df = pandas.concat(sorted_genotypes, sort=False)
 
 	df = genotype_frequencies.reindex(df.index)
 	return df
@@ -100,7 +100,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	combined_df: pandas.DataFrame = pandas.concat(
 		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
-		axis = 1)
+		axis = 1, sort = False)
 
 	df = combined_df[~combined_df['firstFixed'].isna()]
 

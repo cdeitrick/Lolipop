@@ -13,15 +13,17 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 			pass
 	return numeric_columns
 
-def correct_math_scale(data: pandas.DataFrame)->pandas.DataFrame:
+
+def correct_math_scale(data: pandas.DataFrame) -> pandas.DataFrame:
 	numeric = get_numeric_columns(data.columns)
 	for column in numeric:
 		if max(data[column]) > 1.0:
 			data[column] /= 100
 	return data
-def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
-	if filename.suffix in {'.xls', '.xlsx'}:
 
+
+def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
+	if filename.suffix in {'.xls', '.xlsx'}:
 		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
 
 	else:
@@ -34,7 +36,7 @@ def import_table(filename: Path, sheet_name:str = 'Sheet1') -> pandas.DataFrame:
 	return data
 
 
-def import_genotype_table(filename: Path, sheetname:str) -> pandas.DataFrame:
+def import_genotype_table(filename: Path, sheetname: str) -> pandas.DataFrame:
 	data = import_table(filename, sheet_name = sheetname)
 
 	if 'Genotype' in data.columns:
@@ -67,7 +69,6 @@ def import_genotype_table(filename: Path, sheetname:str) -> pandas.DataFrame:
 	data = data[data.max(axis = 1) > 0]
 	data['members'] = [str(i) for i in data['members']]
 	data = correct_math_scale(data)
-	print(data)
 	return data
 
 
@@ -102,22 +103,21 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	# Read in the data table.
 	data = import_table(filename, sheet_name)
 
+
 	key_column = 'Trajectory'
 	# Extract the columns which indicate timepoints of observations. Should be integers.
 	frequency_columns = get_numeric_columns(data.columns)
-
 	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
-	data[key_column] = [str(i) for i in data[key_column].values]
+	data[key_column] = [str(i) for i in data[key_column].tolist()]
 	data = data.set_index(key_column)
 	timeseries = data[frequency_columns]
 	timeseries = correct_math_scale(timeseries)
 
-
 	# Extract metadata for each trajectory.
 	try:
-		potential_columns = ['Population','Position', 'Class', 'Gene', 'Mutation', 'Annotation']
+		potential_columns = ['Population', 'Position', 'Class', 'Gene', 'Mutation', 'Annotation']
 		info = data[[i for i in potential_columns if i in data.columns]]
-		#info = data[potential_columns]
+	# info = data[potential_columns]
 	except ValueError:
 		info = None
 	timeseries = timeseries.rename(columns = int)
