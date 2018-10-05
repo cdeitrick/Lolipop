@@ -1,5 +1,5 @@
 # A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background.
-![muller_plot](./example/B1_muller_try1.muller.png)
+![muller_plot](./example/B1_muller_try1.muller.annotated.png)
 
 # Contents
 - [General Workflow](#general-workflow)
@@ -104,7 +104,7 @@ Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.
 
 The script generates the following files:
 
-####Tables
+#### Tables
 
 -  `input filename`.ggmuller_edges.tsv
 
@@ -171,13 +171,13 @@ The script generates the following files:
 # Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
 Trajectories are colored based on their parent genotype.
-![genotypeplot](./example/example.genotypeplot.png)
+![genotypeplot](./example/B1_muller_try1.filtered.png)
 
 # Mermaid Diagram
 
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
 
-![diagram](./example/sample_mermaid_diagram.png)
+![diagram](./example/B1_muller_try1.mermaid.png)
 
 
 
