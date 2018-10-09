@@ -16,10 +16,11 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 
 def correct_math_scale(data: pandas.DataFrame) -> pandas.DataFrame:
 	numeric = get_numeric_columns(data.columns)
+	new_data = data.copy(deep = True)
 	for column in numeric:
 		if max(data[column]) > 1.0:
-			data[column] /= 100
-	return data
+			new_data[column] = data[column] / 100
+	return new_data
 
 
 def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
@@ -31,7 +32,8 @@ def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
 		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
 
 	if 0 not in data.columns and '0' not in data.columns:
-		print("Warning: Make sure timepoint 0 is included in the table. Current timepoints: ", list(data.columns))
+		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
+		data["0"] = 0
 
 	return data
 
