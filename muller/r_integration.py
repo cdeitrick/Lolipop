@@ -12,8 +12,6 @@ def execute_r_script(path: Path, script: str) -> Path:
 		stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE
 	)
-	print(process.stdout)
-	print(process.stderr)
 	_extra_file = Path.cwd() / "Rplots.pdf"
 	if _extra_file.exists():
 		_extra_file.unlink()

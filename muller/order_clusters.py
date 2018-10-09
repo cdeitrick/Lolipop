@@ -74,7 +74,6 @@ def check_additive_background(left: pandas.Series, right: pandas.Series, double_
 		single_cutoff: float) -> bool:
 	# Want to check if a genotype's sum of frequencies is consistently greater than 1.0
 	trajectorysum = right + left
-
 	double_check = (trajectorysum > double_cutoff).sum() > 1  # Implicit conversion from bool to int.
 	single_check = (trajectorysum > single_cutoff).sum() > 0
 
