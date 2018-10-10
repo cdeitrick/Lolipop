@@ -6,7 +6,7 @@ population <- read.table("/home/cld100/Documents/github/muller_diagrams/example/
 edges <- read.table("/home/cld100/Documents/github/muller_diagrams/example/B1_muller_try1.ggmuller.edges.tsv", header=TRUE)
 
 Muller_df <- get_Muller_df(edges, population)
-write.csv(Muller_df, "example/supplementary_files/B1_muller_try1.muller.tsv", sep = "\t", col.names = NA)
+write.csv(Muller_df, "example/supplementary-files/B1_muller_try1.muller.tsv", sep = "\t", col.names = NA)
 palette <- c("#333333","#e6194b","#3cb44b","#ffe119","#4363d8","#f58231","#911eb4","#46f0f0","#f032e6","#bcf60c")
 
 ggplot(Muller_df, aes_string(x = "Generation", y = "Frequency", group = "Group_id", fill = "Identity", colour = "Identity")) +
