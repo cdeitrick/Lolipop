@@ -6,8 +6,6 @@ from typing import List, Union, Optional
 from dataclasses import dataclass
 
 try:
-	from muller.order_clusters import OrderClusterParameters
-	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
 
 	from muller import calculate_genotypes
@@ -16,10 +14,7 @@ try:
 	from muller import format_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
-
-	from order_clusters import OrderClusterParameters
 	from import_table import import_trajectory_table, import_genotype_table
-	from sort_genotypes import SortOptions
 	import calculate_genotypes
 	import order_clusters
 	import sort_genotypes

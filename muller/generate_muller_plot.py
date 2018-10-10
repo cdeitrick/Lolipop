@@ -99,8 +99,9 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 
 	muller_df['color'] = [colormap[i] for i in muller_df['Identity'].values]
 
-	fig, ax = plt.subplots(figsize = (12, 10))
-	ax: Axes
+	#fig, ax = plt.subplots(figsize = (12, 10))
+	#ax: Axes
+	ax:Axes = plt.subplot(figsize = (12,10))
 	x, y, colors, labels = generate_muller_series(muller_df)
 
 	ax.stackplot(x, y, colors = colors, labels = labels)

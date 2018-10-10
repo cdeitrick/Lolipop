@@ -126,20 +126,4 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 
 
 if __name__ == "__main__":
-	from pathlib import Path
-
-	try:
-		from muller.import_table import import_trajectory_table
-		from muller import calculate_genotypes
-	except ModuleNotFoundError:
-		# noinspection PyUnresolvedReferences
-		from import_table import import_trajectory_table
-		# noinspection PyUnresolvedReferences
-		import calculate_genotypes
-
-	input_filename = Path('/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx')
-
-	timepoints, info = import_trajectory_table(input_filename)
-
-	mean_genotypes = calculate_genotypes.workflow(timepoints, calculate_genotypes.GenotypeOptions.from_breakpoints(0.03))
-	plot_genotypes(timepoints, mean_genotypes)
+	pass

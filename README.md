@@ -2,13 +2,13 @@
 ![muller_plot](./example/B1_muller_try1.muller.annotated.png)
 
 ## Contents
- -  [General Workflow](#general-workflow)
- -  [Script Options](#script-options)
- -  [Input Parameters](#input-parameters)
- -  [Sample Usage](#sample-usage)
- -  [Output Files](#output-files)
- -  [Genotype Plots](#genotype-plots)
- -  [Mermaid Diagram](#mermaid-diagram)
+-  [General Workflow](#general-workflow)
+-  [Script Options](#script-options)
+-  [Input Parameters](#input-parameters)
+-  [Sample Usage](#sample-usage)
+-  [Output Files](#output-files)
+-  [Genotype Plots](#genotype-plots)
+-  [Mermaid Diagram](#mermaid-diagram)
 
 ## General Workflow
 
@@ -46,7 +46,6 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            genes for each genotype. This option forces the scripts to annotate
 	                            all genes associated with each genotype.
 
-
 ## Input Parameters
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
@@ -79,9 +78,6 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 20            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
 | B2         | 21            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
-
-
-
 ## Sample Usage
 
 ```
@@ -97,8 +93,7 @@ Trajectories will be grouped into genotypes and each genotype will be nested usi
 ```
 python --input [filename] --frequencies 0.05 --detected 0.10
 ```
-Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
-
+Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 ## Output Files
 
@@ -178,6 +173,3 @@ Trajectories are colored based on their parent genotype.
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
 
 ![diagram](./example/B1_muller_try1.mermaid.png)
-
-
-
