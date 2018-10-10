@@ -16,23 +16,14 @@ try:
 	from muller import format_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
-	# noinspection PyUnresolvedReferences
-	from order_clusters import OrderClusterParameters
-	# noinspection PyUnresolvedReferences
-	from import_table import import_trajectory_table, import_genotype_table
-	# noinspection PyUnresolvedReferences
-	# noinspection PyUnresolvedReferences
-	from sort_genotypes import SortOptions
 
-	# noinspection PyUnresolvedReferences
+	from order_clusters import OrderClusterParameters
+	from import_table import import_trajectory_table, import_genotype_table
+	from sort_genotypes import SortOptions
 	import get_genotypes
-	# noinspection PyUnresolvedReferences
 	import order_clusters
-	# noinspection PyUnresolvedReferences
 	import sort_genotypes
-	# noinspection PyUnresolvedReferences
 	import format_output
-	# noinspection PyUnresolvedReferences
 	import genotype_filters
 
 

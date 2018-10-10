@@ -47,13 +47,13 @@ class WorkflowData:
 	cluster_options: OrderClusterParameters
 
 
-def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, backgrounds: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
+def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
 	----------
 	mean_genotypes: pandas.DataFrame
-	backgrounds: pandas.DataFrame
+	edges: pandas.DataFrame
 		The output from create_ggmuller_edges()
 	fixed_cutoff: float
 		The cutoff used to identify if/when a genotype fixes.
@@ -70,10 +70,10 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 	modified_genotypes: pandas.DataFrame = mean_genotypes.copy()
 	modified_genotypes.pop('members')
 
-	fixed_genotypes = backgrounds.groupby(by = 'Parent')
+	fixed_genotypes = edges.groupby(by = 'Parent')
 	numeric_columns = get_numeric_columns(mean_genotypes.columns)
 	for genotype_label, row in modified_genotypes.iterrows():
-		if genotype_label in backgrounds['Parent'].values:
+		if genotype_label in edges['Parent'].values:
 			# Find the first timepoint a child genotype fixed.
 
 			background = fixed_genotypes.get_group(genotype_label)
@@ -96,7 +96,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 		else:
 			genotype_timepoint_cutoff = max(modified_genotypes.columns)
 
-		genotype_timepoint_cutoff = max(modified_genotypes.columns)
+		#genotype_timepoint_cutoff = max(modified_genotypes.columns)
 		for column, value in row.items():
 			# if isinstance(column, str): continue
 			if column not in numeric_columns: continue
