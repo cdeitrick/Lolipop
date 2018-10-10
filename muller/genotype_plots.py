@@ -130,16 +130,16 @@ if __name__ == "__main__":
 
 	try:
 		from muller.import_table import import_trajectory_table
-		from muller import get_genotypes
+		from muller import calculate_genotypes
 	except ModuleNotFoundError:
 		# noinspection PyUnresolvedReferences
 		from import_table import import_trajectory_table
 		# noinspection PyUnresolvedReferences
-		import get_genotypes
+		import calculate_genotypes
 
 	input_filename = Path('/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx')
 
 	timepoints, info = import_trajectory_table(input_filename)
 
-	mean_genotypes = get_genotypes.workflow(timepoints, get_genotypes.GenotypeOptions.from_breakpoints(0.03))
+	mean_genotypes = calculate_genotypes.workflow(timepoints, calculate_genotypes.GenotypeOptions.from_breakpoints(0.03))
 	plot_genotypes(timepoints, mean_genotypes)

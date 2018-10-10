@@ -46,10 +46,14 @@ def get_coordinates(muller_df: pandas.DataFrame):
 
 	points = dict()
 	groups = nonzero.groupby(by = 'Group_id')
+
 	for index, name, in enumerate(genotype_order):
 		genotype_label = name[:-1] if name.endswith('a') else name
 		if genotype_label in points: continue
-		group = groups.get_group(name)
+		try:
+			group = groups.get_group(name)
+		except KeyError:
+			continue
 
 		min_x = min(group['Generation'].values)
 		max_x = max(group['Generation'].values)

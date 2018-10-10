@@ -1,9 +1,10 @@
-from typing import Any, Dict, Tuple, List, Union, Optional
-import pandas
-from pathlib import Path
-import subprocess
-from dataclasses import dataclass
 import random
+import subprocess
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import pandas
+from dataclasses import dataclass
 
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
@@ -12,24 +13,18 @@ except ModuleNotFoundError:
 	yaml = None
 
 try:
-	from muller.get_genotypes import GenotypeOptions
+	from muller.calculate_genotypes import GenotypeOptions
 	from muller.sort_genotypes import SortOptions
 	from muller.order_clusters import OrderClusterParameters, ClusterType
 	from muller.genotype_plots import plot_genotypes
 	from muller.generate_muller_plot import generate_muller_plot
 	from muller.r_integration import generate_ggmuller_script
 except ModuleNotFoundError:
-	# noinspection PyUnresolvedReferences
-	from get_genotypes import GenotypeOptions
-	# noinspection PyUnresolvedReferences
+	from calculate_genotypes import GenotypeOptions
 	from sort_genotypes import SortOptions
-	# noinspection PyUnresolvedReferences
 	from order_clusters import OrderClusterParameters, ClusterType
-	# noinspection PyUnresolvedReferences
 	from genotype_plots import plot_genotypes
-
 	from generate_muller_plot import generate_muller_plot
-
 	from r_integration import generate_ggmuller_script
 
 
@@ -45,9 +40,9 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+DETECTION_CUTOFF = 0.03
 
-
-def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
+def convert_population_to_ggmuller_format_obs(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
@@ -96,7 +91,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 		else:
 			genotype_timepoint_cutoff = max(modified_genotypes.columns)
 
-		#genotype_timepoint_cutoff = max(modified_genotypes.columns)
+		# genotype_timepoint_cutoff = max(modified_genotypes.columns)
 		for column, value in row.items():
 			# if isinstance(column, str): continue
 			if column not in numeric_columns: continue
@@ -120,26 +115,92 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 	return fdf.sort_values(by = 'Generation')
 
 
+def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame) -> pandas.DataFrame:
+	"""
+		Converts the genotype frequencies to a population table suitable for ggmuller.
+	Parameters
+	----------
+	mean_genotypes: pandas.DataFrame
+	edges: pandas.DataFrame
+		The output from create_ggmuller_edges()
+	fixed_cutoff: float
+		The cutoff used to identify if/when a genotype fixes.
+
+	Returns
+	-------
+
+	"""
+
+	# "Generation", "Identity" and "Population"
+	# Adjust populations to account for inheritance.
+	# If a child genotype fixed, the parent genotype should be replaced.
+
+	# Use a copy of the dataframe to avoid making changes to the original.
+	modified_genotypes: pandas.DataFrame = mean_genotypes.copy(True)
+	modified_genotypes.pop('members')
+
+	# Generate a list of all genotypes that arise in the background of each genotype.
+	children = dict()
+	for _, row in edges.iterrows():
+		parent = row['Parent']
+		identity = row['Identity']
+
+		children[parent] = children.get(parent, list()) + [identity]
+
+	table = list()
+
+	for genotype_label, genotype in modified_genotypes.iterrows():
+
+		if genotype_label in children:
+
+			genotype_frequencies = genotype[genotype > DETECTION_CUTOFF]
+			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
+			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
+			genotype_frequencies = genotype_frequencies.mask(lambda s: s < DETECTION_CUTOFF, DETECTION_CUTOFF)
+			genotype_frequencies = genotype_frequencies.dropna()
+
+		else:
+			genotype_frequencies = genotype
+
+		# Remove timepoints where the value was 0 or less than 0 due to above line.
+
+
+
+		for timepoint, frequency in genotype_frequencies.items():
+			row = {
+				'Identity':   genotype_label,
+				'Generation': timepoint,
+				'Population': frequency * 100
+			}
+			table.append(row)
+	table.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
+	df = pandas.DataFrame(table)
+	return df
+
+
 def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
+
 	table = list()
 	for genotype_info in genotype_clusters.values():
+		identity = genotype_info.name
 		background = genotype_info.background
 
 		if len(background) == 1:
 			parent = 'genotype-0'
-			identity = background[0]
 		else:
-			parent, identity = background[-2:]
+			parent = background[0]
 
 		row = {
 			'Parent':   parent,
 			'Identity': identity
 		}
 		table.append(row)
-	return pandas.DataFrame(table)[['Parent', 'Identity']]
+	table = pandas.DataFrame(table)[['Parent', 'Identity']]
+
+	return table
 
 
-def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str], fixed_cutoff: float) -> OutputType:
+def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str]) -> OutputType:
 	"""
 		Generates the final output files for the population.
 	Parameters
@@ -160,7 +221,7 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 	print("generating edges...")
 	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
 	print("generating populations...")
-	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table, fixed_cutoff)
+	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table)
 
 	print("generating mermaid diagram...")
 	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
@@ -218,7 +279,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 	return "\n".join(diagram_contents)
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cutoff: float, annotate_all:bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cutoff: float, annotate_all: bool):
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -233,7 +294,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cuto
 	color_map = {i: j for i, j in zip(sorted(workflow_data.genotypes.index), color_palette)}
 	color_map['genotype-0'] = "#333333"
 
-	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map, fixed_cutoff)
+	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map)
 	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map, annotate_all)
 
 
@@ -278,7 +339,7 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 
 
 def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame, edge_table: pandas.DataFrame,
-		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str, str], annotate_all:bool):
+		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str, str], annotate_all: bool):
 	name = workflow_data.filename.stem
 	delimiter = '\t'
 	subfolder = output_folder / "supplementary-files"
@@ -351,7 +412,6 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	)
 
 	generate_muller_plot(muller_df, workflow_data.trajectories, color_palette, muller_plot_annotated_file, annotate_all)
-
 
 	print("generating muller plot...")
 	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
