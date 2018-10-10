@@ -1,3 +1,6 @@
+"""
+	Main script to run the muller workflow.
+"""
 from pathlib import Path
 import argparse
 import itertools

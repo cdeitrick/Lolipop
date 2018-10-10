@@ -1,9 +1,13 @@
-from matplotlib import pyplot as plt
-import pandas
-
-from typing import Dict, Tuple, List, Optional, Any
-from matplotlib.figure import Axes # For autocomplete
+"""
+	Python implementation of the Muller_plot function available from ggmuller.
+"""
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import pandas
+from matplotlib import pyplot as plt
+from matplotlib.figure import Axes  # For autocomplete
+
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -12,6 +16,16 @@ pandas.set_option('display.width', 250)
 
 
 def generate_muller_series(muller_df: pandas.DataFrame) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
+	"""
+		Generates the required inputs for matplotlib to generate a mullerplot.
+	Parameters
+	----------
+	muller_df: pandas.DataFrame
+
+	Returns
+	-------
+	x, y, colors, labels
+	"""
 	genotype_order = list()
 	for _, row in muller_df.iterrows():
 		genotype_label = row['Group_id']
@@ -35,7 +49,19 @@ def generate_muller_series(muller_df: pandas.DataFrame) -> Tuple[List[float], Li
 
 	return x, y, colors, labels
 
-def get_coordinates(muller_df: pandas.DataFrame):
+
+def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]:
+	"""
+		Attempts to find the mean point of the stacked area plot for each genotype.
+	Parameters
+	----------
+	muller_df:pandas.DataFrame
+
+	Returns
+	-------
+	points: Dict[str, Tuple[int, float]]
+	A dictionary mapping each genotype to an estimate of the midpoint of the genotype's area.
+	"""
 	genotype_order = list()
 	for index, row in muller_df.iterrows():
 		genotype_label = row['Group_id']
@@ -75,6 +101,18 @@ def get_coordinates(muller_df: pandas.DataFrame):
 
 
 def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[str, Any]:
+	"""
+		Generates font properties for each annotations. The main difference is font color,
+		which is determined by the background color.
+	Parameters
+	----------
+	genotype_label: str
+	colormap: Dict[str,str]
+
+	Returns
+	-------
+	fontproperties: Dict[str, Any]
+	"""
 	black = [
 		"#FFE119", "#42D4F4", "#BFEF45", "#FABEBE", "#E6BEFF",
 		"FFFAC8", "#AAFFC3", "#FFD8B1", "#FFFFFF", "#BCF60C",
@@ -94,14 +132,30 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	return label_properties
 
 
-def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], colormap: Dict[str, str], output_filename:Path, annotate_all:bool):
+def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], colormap: Dict[str, str], output_filename: Path,
+		annotate_all: bool):
+	"""
+		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
+	Parameters
+	----------
+	muller_df: pandas.DataFrame
+	trajectory_table: pandas.DataFrame
+	colormap: Dict[str,str]
+	output_filename: Path
+	annotate_all:bool
+
+	Returns
+	-------
+	ax: Axes
+		The axes object containing the plot.
+	"""
 	points = get_coordinates(muller_df)
 
 	muller_df['color'] = [colormap[i] for i in muller_df['Identity'].values]
 
-	#fig, ax = plt.subplots(figsize = (12, 10))
-	#ax: Axes
-	ax:Axes = plt.subplot(figsize = (12,10))
+	# fig, ax = plt.subplots(figsize = (12, 10))
+	# ax: Axes
+	ax: Axes = plt.subplot(figsize = (12, 10))
 	x, y, colors, labels = generate_muller_series(muller_df)
 
 	ax.stackplot(x, y, colors = colors, labels = labels)
@@ -121,18 +175,15 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 			if group.empty:
 				continue
 			frequencies = group[[i for i in group.columns if i in muller_df['Generation']]]
-			mean:pandas.Series = frequencies.mean(axis = 1)
-
-
-
+			mean: pandas.Series = frequencies.mean(axis = 1)
 
 			if not annotate_all:
 				largest = mean.nlargest(3)
 
-				#genes = [str(i) for i in group.loc[largest.index]['Gene'].tolist() if str(i) != 'nan']
+				# genes = [str(i) for i in group.loc[largest.index]['Gene'].tolist() if str(i) != 'nan']
 				gene_df = group.loc[largest.index]['Gene']
 			else:
-				#genes = [str(i) for i in group['Gene'].tolist()]
+				# genes = [str(i) for i in group['Gene'].tolist()]
 				gene_df = group['Gene']
 			genes = [str(i) for i in gene_df.tolist()]
 			if not genes:  # No applicable genes found
@@ -149,7 +200,6 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax.set_facecolor("#FFFFFF")
 	ax.set_xlabel("Generation")
 	ax.set_ylabel("Frequency")
-
 
 	# Basic stacked area chart.
 
