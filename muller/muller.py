@@ -10,7 +10,7 @@ try:
 	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
 
-	from muller import get_genotypes
+	from muller import calculate_genotypes
 	from muller import order_clusters
 	from muller import sort_genotypes
 	from muller import format_output
@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 	from order_clusters import OrderClusterParameters
 	from import_table import import_trajectory_table, import_genotype_table
 	from sort_genotypes import SortOptions
-	import get_genotypes
+	import calculate_genotypes
 	import order_clusters
 	import sort_genotypes
 	import format_output
@@ -33,7 +33,7 @@ except ModuleNotFoundError:
 def parse_workflow_options(program_options):
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
-		program_options_genotype = get_genotypes.GenotypeOptions.from_matlab()
+		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
 		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
 	else:
@@ -47,7 +47,7 @@ def parse_workflow_options(program_options):
 			freqs = [math.fsum(itertools.repeat(freqs, i)) for i in range(int(1 / freqs) + 1)]
 			freqs = [round(i, 2) for i in freqs]
 
-		program_options_genotype = get_genotypes.GenotypeOptions.from_parser(program_options)
+		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
 		program_options_sort = sort_genotypes.SortOptions(
 			detection_breakpoint = program_options_genotype.detection_breakpoint,
@@ -76,7 +76,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
 
-		original_genotypes = get_genotypes.workflow(original_timepoints, options = program_options_genotype)
+		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
 
 		if program_options.use_filter:
 			timepoints, mean_genotypes = genotype_filters.workflow(input_filename, program_options.detection_breakpoint,

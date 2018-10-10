@@ -2,11 +2,11 @@ import pandas
 
 pandas.set_option('display.width', 300)
 try:
-	from muller import get_genotypes
+	from muller import calculate_genotypes
 	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
 	# noinspection PyUnresolvedReferences
-	import get_genotypes
+	import calculate_genotypes
 	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table
 from pathlib import Path
@@ -58,9 +58,9 @@ DF = pandas.DataFrame
 def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff: float = None) -> Tuple[DF, DF]:
 	if fixed_cutoff is None: fixed_cutoff = 1 - detection_cutoff
 
-	goptions = get_genotypes.GenotypeOptions.from_breakpoints(0.03)
+	goptions = calculate_genotypes.GenotypeOptions.from_breakpoints(0.03)
 	trajectory_table, _ = import_trajectory_table(trajectories_filename)
-	genotype_table = get_genotypes.workflow(trajectories_filename,
+	genotype_table = calculate_genotypes.workflow(trajectories_filename,
 		options = goptions)
 	# return trajectory_table, genotype_table
 	members = genotype_table.pop('members')
@@ -72,7 +72,7 @@ def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff:
 		else:
 			invalid_members = members.loc[current_invalid_genotype].split('|')
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
-			genotype_table = get_genotypes.workflow(trajectory_table, options = goptions)
+			genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
 			members = genotype_table.pop('members')
 	else:
 		print("Could not filter the genotypes after 20 iterations.")

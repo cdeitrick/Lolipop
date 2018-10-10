@@ -148,7 +148,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	initial_background = sorted_df.iloc[0]
 	_m = initial_background.pop('members')
 	initial_background:pandas.Series = initial_background.astype(float)
-	print(sorted_df)
+
 	nests: Dict[str, Genotype] = {
 		initial_background.name: Genotype(
 			name = initial_background.name,
@@ -170,7 +170,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 
 			if 'members' in test_trajectory:
 				test_trajectory.pop('members')
-			print(genotype_label, test_label)
+
 			test_trajectory = test_trajectory.astype(float)
 			test_background = nests[test_label].background
 			type_genotype = Genotype(
@@ -187,7 +187,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				double_cutoff = options.additive_background_double_cutoff,
 				single_cutoff = options.additive_background_single_cutoff
 			)
-			print("\tadditive check: ", additive_check)
+
 			if additive_check:
 				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 
@@ -198,7 +198,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				single_cutoff = options.subtractive_background_single_cutoff
 
 			)
-			print("\tsubtractive check: ", subtractive_check)
+
 			if subtractive_check:
 				continue
 
@@ -208,7 +208,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				detection_cutoff = options.derivative_detection_cutoff
 			)
 			genotype_deltas.append((test_label, delta))
-			print("\tdelta", delta)
+
 			if delta > options.derivative_check_cutoff:
 
 				# They are probably on the same background.
@@ -263,10 +263,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + genotype_label
 
 				raise ValueError(message)
-	from pprint import pprint
-	for k, v in sorted(nests.items()):
-		print(k)
-		print("\t", v.background)
+
 	return nests
 
 
