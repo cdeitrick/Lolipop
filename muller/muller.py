@@ -137,7 +137,7 @@ class ProgramOptions:
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
-			sup = self.output_folder / "supplementary_files"
+			sup = self.output_folder / "supplementary-files"
 			self.output_folder.mkdir()
 
 			if not sup.exists():
