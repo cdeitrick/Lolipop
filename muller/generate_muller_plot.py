@@ -110,7 +110,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 
 			try:
 				group = groups.get_group(genotype_label)
-			except:
+			except (ValueError, TypeError):
 				continue
 			group = group[~group['Gene'].isnull()]
 			if group.empty:

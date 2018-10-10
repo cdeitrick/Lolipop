@@ -155,27 +155,4 @@ def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matl
 
 
 if __name__ == "__main__":
-	from pathlib import Path
-	from muller import get_genotypes
-	import import_table
-
-	original_filename = Path("../Data files/B1_muller_try1.xlsx")
-	new_filename = Path("./original/B1_muller_try1.genotypes.tsv")
-
-	original_trajectories, _ = import_table.import_trajectory_table(original_filename)
-	original_genotypes = get_genotypes.workflow(original_trajectories,
-		options = get_genotypes.GenotypeOptions.from_breakpoints(0.03))
-	original_genotypes.index.name = 'Genotypes'
-	original_sorted_genotypes = workflow(original_genotypes, options = SortOptions.from_breakpoints(0.03))
-
-	new_table = import_table.import_genotype_table(new_filename)
-	new_table.index.name = 'Genotypes'
-	new_table = new_table[[0, 17, 25, 44, 66, 75, 90, 'members']]
-	new_sorted_genotypes = workflow(new_table, options = SortOptions.from_breakpoints(0.03))
-
-	print(original_sorted_genotypes)
-	print()
-	print(new_sorted_genotypes)
-	print()
-
-	print(new_sorted_genotypes.round(3) == original_sorted_genotypes.round(3))
+	pass
