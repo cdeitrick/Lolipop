@@ -1,10 +1,10 @@
 Parent	Identity
 genotype-0	genotype-1
 genotype-1	genotype-6
-genotype-1	genotype-4
+genotype-6	genotype-4
 genotype-6	genotype-8
-genotype-8	genotype-7
+genotype-6	genotype-7
 genotype-0	genotype-3
 genotype-0	genotype-5
-genotype-6	genotype-9
-genotype-1	genotype-2
+genotype-1	genotype-9
+genotype-6	genotype-2
