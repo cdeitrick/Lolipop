@@ -113,7 +113,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
 
-	for label, group in groups:
+	for _, group in groups:
 		trajectories = genotype_trajectories.loc[group.index]
 		if len(group) < 2:
 			freq_groups.append(trajectories)

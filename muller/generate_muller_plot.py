@@ -13,7 +13,7 @@ pandas.set_option('display.width', 250)
 
 def generate_muller_series(muller_df: pandas.DataFrame) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	genotype_order = list()
-	for index, row in muller_df.iterrows():
+	for _, row in muller_df.iterrows():
 		genotype_label = row['Group_id']
 		if genotype_label not in genotype_order:
 			genotype_order.append(genotype_label)

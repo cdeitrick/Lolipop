@@ -376,7 +376,7 @@ def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: Pairwise
 				all_genotypes.append(new_genotype_1)
 				all_genotypes.append(new_genotype_2)
 				all_genotypes.remove(genotype)
-	return sorted(all_genotypes, key = lambda s: len(s))
+	return sorted(all_genotypes, key = len)
 
 
 def get_genotypes_from_population(timeseries: pandas.DataFrame, options: GenotypeOptions) -> List[Genotype]:
@@ -568,7 +568,7 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 		options = GenotypeOptions.from_breakpoints(detection_breakpoint, fixed_breakpoint)
 
 	if isinstance(io, Path):
-		timepoints, info = import_trajectory_table(io)
+		timepoints, _ = import_trajectory_table(io)
 	else:
 		timepoints = io
 

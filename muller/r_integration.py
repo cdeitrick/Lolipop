@@ -7,7 +7,7 @@ from typing import Dict
 def execute_r_script(path: Path, script: str) -> Path:
 	path.write_text(script)
 	print("generating muller plot...")
-	process = subprocess.run(
+	subprocess.run(
 		['Rscript', '--vanilla', '--silent', path],
 		stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE

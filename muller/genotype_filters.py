@@ -25,7 +25,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	fixed_timepoints = [s.first_valid_index() for _, s in fixed_timepoints.iterrows()]
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
 
-	for background_id, background in backgrounds.iterrows():
+	for _, background in backgrounds.iterrows():
 		fuzzy_fixed_timepoints = background[background > fuzzy_fixed_cutoff]
 		fixed_point: int = fuzzy_fixed_timepoints.first_valid_index()
 
@@ -66,7 +66,7 @@ def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff:
 	# return trajectory_table, genotype_table
 	members = genotype_table.pop('members')
 
-	for index in range(20):
+	for _ in range(20): #arbitrary, used to ensure the program does not encounter an infinite loop.
 		current_invalid_genotype = get_invalid_genotype(genotype_table, detection_cutoff, fixed_cutoff)
 		if current_invalid_genotype is None:
 			break
@@ -82,7 +82,4 @@ def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff:
 
 
 if __name__ == "__main__":
-	from pathlib import Path
-
-	trajectories = Path("/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx")
-	workflow(trajectories, 0.03, 0.97)
+	pass

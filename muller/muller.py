@@ -3,11 +3,10 @@ import argparse
 import itertools
 import math
 from typing import List, Union, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 try:
-	from muller.order_clusters import ClusterType, OrderClusterParameters
-	from muller.get_genotypes import GenotypeOptions
+	from muller.order_clusters import OrderClusterParameters
 	from muller.sort_genotypes import SortOptions
 	from muller.import_table import import_trajectory_table, import_genotype_table
 
@@ -18,11 +17,10 @@ try:
 	from muller import genotype_filters
 except ModuleNotFoundError:
 	# noinspection PyUnresolvedReferences
-	from order_clusters import ClusterType, OrderClusterParameters
+	from order_clusters import OrderClusterParameters
 	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table, import_genotype_table
 	# noinspection PyUnresolvedReferences
-	from get_genotypes import GenotypeOptions
 	# noinspection PyUnresolvedReferences
 	from sort_genotypes import SortOptions
 
@@ -72,7 +70,6 @@ def parse_workflow_options(program_options):
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# TODO: The background should be 1-sum(other genotypes) at each timepoint
 	# as long as the sum of the other genotypes that inherit from root is less than 1.
-	from pprint import pprint
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)

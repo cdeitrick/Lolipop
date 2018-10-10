@@ -1,22 +1,22 @@
-# A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background.
+# A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background
 ![muller_plot](./example/B1_muller_try1.muller.annotated.png)
 
-# Contents
-- [General Workflow](#general-workflow)
-- [Script Options](#script-options)
-- [Input Parameters](#input-parameters)
-- [Sample Usage](#sample-usage)
-- [Output Files](#output-files)
-- [Genotype Plots](#genotype-plots)
-- [Mermaid Diagram](#mermaid-diagram)
+## Contents
+-  [General Workflow](#general-workflow)
+-  [Script Options](#script-options)
+-  [Input Parameters](#input-parameters)
+-  [Sample Usage](#sample-usage)
+-  [Output Files](#output-files)
+-  [Genotype Plots](#genotype-plots)
+-  [Mermaid Diagram](#mermaid-diagram)
 
-# General Workflow
+## General Workflow
 
 Flowcharts for each individual step can be found under docs/flowcharts.
 
 ![overview](./docs/flowcharts/0-overview.png)
 
-# Script Options
+## Script Options
 
 	-h, --help                  Show this help message and exit
 	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
@@ -47,7 +47,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            all genes associated with each genotype.
 
 
-# Input Parameters
+## Input Parameters
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
 The table must have a column named `Trajectory` with labels for each mutational trajectory (or `Genotype` when using `--genotype`) and integer columns for each timepoint. The labels are solely used to identify trajectories belonging to a specific genotype, and must be integers. All other columns will be ignored when calculating genotypes and genotype clusters.
@@ -55,34 +55,34 @@ The frequencies can be represented as either a number between 0 - 1,
 a number between 0 - 100 or as percentage.
 The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype. 
 
-| Population | Trajectory | Chromosome | Position | Class | Mutation | 0 | 17    | 25    | 44    | 66    | 75    | 90    |
-|------------|------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
-| B2         | 1          | 1          | 38102    | SNP   | C>T      | 0 | 0     | 26.1% | 100%  | 100%  | 100%  | 100%  |
-| B2         | 2          | 1          | 62997    | SNP   | T>G      | 0 | 0     | 0     | 52.5% | 45.4% | 91.1% | 91%   |
-| B2         | 3          | 1          | 78671    | SNP   | A>C      | 0 | 0     | 0     | 14.7% | 45%   | 92.4% | 88.7% |
-| B2         | 4          | 1          | 96585    | SNP   | T>G      | 0 | 0     | 0     | 0     | 21.1% | 81.1% | 81.3% |
-| B2         | 5          | 1          | 115010   | SNP   | G>T      | 0 | 0     | 0     | 40.3% | 48.9% | 5.7%  | 8%    |
-| B2         | 6          | 1          | 156783   | SNP   | C>G      | 0 | 0     | 0     | 0     | 0     | 100%  | 100%  |
-| B2         | 7          | 1          | 176231   | SNP   | T>A      | 0 | 0     | 0     | 27.3% | 78.1% | 100%  | 100%  |
-| B2         | 8          | 1          | 205211   | SNP   | C>T      | 0 | 0     | 0     | 0     | 34.5% | 83.3% | 79.3% |
-| B2         | 9          | 1          | 223199   | SNP   | C>G      | 0 | 0     | 0     | 0     | 0     | 26.9% | 34%   |
+| Population | Trajectory   | Chromosome | Position | Class | Mutation | 0 | 17    | 25    | 44    | 66    | 75    | 90    |
+|------------|--------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
+| B2         | 1            | 1          | 38102    | SNP   | C>T      | 0 | 0     | 26.1% | 100%  | 100%  | 100%  | 100%  |
+| B2         | 2            | 1          | 62997    | SNP   | T>G      | 0 | 0     | 0     | 52.5% | 45.4% | 91.1% | 91%   |
+| B2         | 3            | 1          | 78671    | SNP   | A>C      | 0 | 0     | 0     | 14.7% | 45%   | 92.4% | 88.7% |
+| B2         | 4            | 1          | 96585    | SNP   | T>G      | 0 | 0     | 0     | 0     | 21.1% | 81.1% | 81.3% |
+| B2         | 5            | 1          | 115010   | SNP   | G>T      | 0 | 0     | 0     | 40.3% | 48.9% | 5.7%  | 8%    |
+| B2         | 6            | 1          | 156783   | SNP   | C>G      | 0 | 0     | 0     | 0     | 0     | 100%  | 100%  |
+| B2         | 7            | 1          | 176231   | SNP   | T>A      | 0 | 0     | 0     | 27.3% | 78.1% | 100%  | 100%  |
+| B2         | 8            | 1          | 205211   | SNP   | C>T      | 0 | 0     | 0     | 0     | 34.5% | 83.3% | 79.3% |
+| B2         | 9            | 1          | 223199   | SNP   | C>G      | 0 | 0     | 0     | 0     | 0     | 26.9% | 34%   |
 | B2         | trajectory-10| 1          | 262747   | SNP   | T>C      | 0 | 0     | 11.7% | 0     | 0     | 0     | 10.3% |
 | B2         | trajectory-11| 1          | 264821   | SNP   | C>T      | 0 | 0     | 0     | 10.8% | 15.1% | 0     | 0     |
 | B2         | trajectory-12| 1          | 298548   | SNP   | G>A      | 0 | 12.5% | 0     | 15.3% | 18.1% | 17.5% | 19.1% |
 | B2         | trajectory-13| 1          | 299331   | SNP   | G>A      | 0 | 0     | 0     | 0     | 25.8% | 5.7%  | 7.5%  |
 | B2         | trajectory-14| 1          | 299332   | SNP   | C>T      | 0 | 38%   | 43.2% | 0     | 0     | 0     | 0     |
-| B2         | t15         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 6.6%  | 10.4% | 6.2%  | 0     | 0     |
-| B2         | t16         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 0     | 20.9% | 20.9% | 0     |
-| B2         | t17         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 0     | 0     | 26.6% | 31.2% |
-| B2         | t18         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.5% | 0     | 13.1% | 0     |
-| B2         | t19         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 18.8% | 17.1% | 23.2% | 24.4% |
-| B2         | 20         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
-| B2         | 21         | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
+| B2         | t15          | 1          | 299332   | SNP   | C>T      | 0 | 0     | 6.6%  | 10.4% | 6.2%  | 0     | 0     |
+| B2         | t16          | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 0     | 20.9% | 20.9% | 0     |
+| B2         | t17          | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 0     | 0     | 26.6% | 31.2% |
+| B2         | t18          | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.5% | 0     | 13.1% | 0     |
+| B2         | t19          | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 18.8% | 17.1% | 23.2% | 24.4% |
+| B2         | 20           | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
+| B2         | 21           | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
 
 
 
-# Sample Usage
+## Sample Usage
 
 ```
 python muller.py --input [input filename] --output [output folder]
@@ -100,11 +100,11 @@ python --input [filename] --frequencies 0.05 --detected 0.10
 Groups genotypes in groups of 0.05 (i.e. [0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 
-# Output Files
+## Output Files
 
 The script generates the following files:
 
-#### Tables
+### Tables
 
 -  `input filename`.ggmuller_edges.tsv
 
@@ -122,12 +122,12 @@ The script generates the following files:
 
 	A tab-delimited table of the population trajectories used in the analysis. Each trajectory represents the frequency of a single mutation at each timepoint.
 
-- supplementary_files / `input filename`.genotypes.original.tsv
+-  supplementary-files / `input filename`.genotypes.original.tsv
 
     The initial genotypes generated before applying the genotype filters.
 
 
-- supplementary_files / `input filename`.trajectories.original.tsv
+- supplementary-files / `input filename`.trajectories.original.tsv
 
     The unfiltered trajectories.
 
@@ -135,13 +135,13 @@ The script generates the following files:
 
     The table generated by ggmuller and used to generate the muller diagrams.
     
-#### Diagrams
+### Diagrams
 
 - `input filename`.png
 
 	The muller plot generated by the r script. Colors correspond to the same genotypes in the genotype plots.
 
-- `input_filename`.genotypeplot.png
+-  `input_filename`.genotypeplot.png
 
     Plots of all trajectories (colored by parent genotype) and genotypes.
 
@@ -150,30 +150,30 @@ The script generates the following files:
 
     If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
 	
-#### Other
+### Other
 
-- supplementary_files / `input filename`.r
+- supplementary-files / `input filename`.r
 
 	A basic r script to import the `population` and `edges` tables and generate a muller plot.
 
-- supplementary_files / `input filename`.mermaid.md
+-  supplementary-files / `input filename`.mermaid.md
 
 	A script written in the [mermaid](https://mermaidjs.github.io) scripting language. Generates a diagram indicating the hierarchy of genotypes/backgrounds in the current population.
 
 
-- `input filename`.yaml
+-  `input filename`.yaml
 
 	Contains the parameters used for the analysis. See the flowcharts in /docs/flowcharts to see where each parameter is used.
 
 
 
 
-# Genotype Plots
+## Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
 Trajectories are colored based on their parent genotype.
 ![genotypeplot](./example/B1_muller_try1.filtered.png)
 
-# Mermaid Diagram
+## Mermaid Diagram
 
 The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
 

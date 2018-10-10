@@ -122,7 +122,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, back
 
 def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
 	table = list()
-	for genotype_label, genotype_info in genotype_clusters.items():
+	for genotype_info in genotype_clusters.values():
 		background = genotype_info.background
 
 		if len(background) == 1:
@@ -200,7 +200,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 	node_map = {k: "style id{} fill:{}".format(k.split('-')[-1], color_palette[k]) for k in genotype_labels}
 
 	diagram_contents = ["graph TD;"]
-	for index, row in backgrounds.iterrows():
+	for _, row in backgrounds.iterrows():
 		parent = row['Parent']
 		identity = row['Identity']
 		parent_id = parent.split('-')[-1]
@@ -281,7 +281,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		mermaid_diagram: str, parameters: Dict, output_folder: Path, color_palette: Dict[str, str], annotate_all:bool):
 	name = workflow_data.filename.stem
 	delimiter = '\t'
-	subfolder = output_folder / "supplementary_files"
+	subfolder = output_folder / "supplementary-files"
 	if not subfolder.exists():
 		subfolder.mkdir()
 
