@@ -121,23 +121,26 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 
 
 def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
+	for k, v in genotype_clusters.items():
+		print(k, v.background)
 	table = list()
 	for genotype_info in genotype_clusters.values():
+		identity = genotype_info.name
 		background = genotype_info.background
 
 		if len(background) == 1:
 			parent = 'genotype-0'
-			identity = background[0]
 		else:
-			parent, identity = background[-2:]
+			parent = background[0]
 
 		row = {
 			'Parent':   parent,
 			'Identity': identity
 		}
 		table.append(row)
-	return pandas.DataFrame(table)[['Parent', 'Identity']]
-
+	table = pandas.DataFrame(table)[['Parent', 'Identity']]
+	print(table)
+	return table
 
 def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[str, str], fixed_cutoff: float) -> OutputType:
 	"""

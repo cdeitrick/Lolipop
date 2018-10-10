@@ -118,6 +118,15 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	return delta
 
+def add_genotype_bakground(genotype_label:str, type_genotype:Genotype, nests:Dict[str, Genotype], initial_background_label:str):
+	genotype_label = type_genotype.name
+	if genotype_label in nests:
+		nests[genotype_label].background += type_genotype.background
+		if len(nests[genotype_label].background) > 2:
+			nests[genotype_label].background.remove(initial_background_label)
+	else:
+		nests[genotype_label] = type_genotype
+	return nests
 
 def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> ClusterType:
 	"""
@@ -138,7 +147,8 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 
 	initial_background = sorted_df.iloc[0]
 	_m = initial_background.pop('members')
-	initial_background = initial_background.astype(float)
+	initial_background:pandas.Series = initial_background.astype(float)
+	print(sorted_df)
 	nests: Dict[str, Genotype] = {
 		initial_background.name: Genotype(
 			name = initial_background.name,
@@ -179,7 +189,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			)
 			print("\tadditive check: ", additive_check)
 			if additive_check:
-				nests[genotype_label] = type_genotype
+				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 
 			subtractive_check = check_subtractive_background(
 				left = type_trajectory,
@@ -203,7 +213,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
-				nests[genotype_label] = type_genotype
+				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 				break
 
 		is_member = genotype_label in itertools.chain.from_iterable(i.background for i in nests.values())
@@ -253,6 +263,10 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + genotype_label
 
 				raise ValueError(message)
+	from pprint import pprint
+	for k, v in sorted(nests.items()):
+		print(k)
+		print("\t", v.background)
 	return nests
 
 
