@@ -2,7 +2,7 @@ import pandas
 
 pandas.set_option('display.max_columns', 400)
 pandas.set_option('display.width', 400)
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass
 
 
@@ -33,7 +33,15 @@ class SortOptions:
 			fixed_breakpoint = fixed,
 			frequency_breakpoints = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 		)
+@dataclass
+class Genotype:
+	members: List[str]
+	frequency: pandas.Series
+	trajectories: pandas.DataFrame
 
+	detected: int # First timepoint the genotype was detected.
+	significant: int # First significant timepoint
+	fixed: Optional[int] # First fixed timepoint
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
@@ -71,6 +79,8 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 
 	df = genotype_frequencies.reindex(df.index)
 	return df
+
+
 
 
 def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency_breakpoint: float,

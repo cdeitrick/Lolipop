@@ -119,10 +119,10 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 	return delta
 
 def add_genotype_bakground(genotype_label:str, type_genotype:Genotype, nests:Dict[str, Genotype], initial_background_label:str):
-	genotype_label = type_genotype.name
+	#genotype_label = type_genotype.name
 	if genotype_label in nests:
 		nests[genotype_label].background += type_genotype.background
-		if len(nests[genotype_label].background) > 2:
+		if len(nests[genotype_label].background) > 2 and initial_background_label in nests[genotype_label].background:
 			nests[genotype_label].background.remove(initial_background_label)
 	else:
 		nests[genotype_label] = type_genotype
