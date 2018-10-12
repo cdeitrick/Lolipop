@@ -42,78 +42,6 @@ class WorkflowData:
 	cluster_options: OrderClusterParameters
 DETECTION_CUTOFF = 0.03
 
-def convert_population_to_ggmuller_format_obs(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, fixed_cutoff: float) -> pandas.DataFrame:
-	"""
-		Converts the genotype frequencies to a population table suitable for ggmuller.
-	Parameters
-	----------
-	mean_genotypes: pandas.DataFrame
-	edges: pandas.DataFrame
-		The output from create_ggmuller_edges()
-	fixed_cutoff: float
-		The cutoff used to identify if/when a genotype fixes.
-
-	Returns
-	-------
-
-	"""
-	table = list()
-
-	# "Generation", "Identity" and "Population"
-	# Adjust populations to account for inheritance.
-	# If a child genotype fixed, the parent genotype should be replaced.
-	modified_genotypes: pandas.DataFrame = mean_genotypes.copy()
-	modified_genotypes.pop('members')
-
-	fixed_genotypes = edges.groupby(by = 'Parent')
-	numeric_columns = get_numeric_columns(mean_genotypes.columns)
-	for genotype_label, row in modified_genotypes.iterrows():
-		if genotype_label in edges['Parent'].values:
-			# Find the first timepoint a child genotype fixed.
-
-			background = fixed_genotypes.get_group(genotype_label)
-
-			children = modified_genotypes.loc[list(background['Identity'].values)]
-			transposed = children.transpose()
-
-			first_fixed: pandas.Series = (transposed > fixed_cutoff).idxmax(0).sort_values()
-			# noinspection PyTypeChecker
-			first_fixed = first_fixed[first_fixed > 0]
-			if first_fixed.empty:
-				genotype_timepoint_cutoff = max(modified_genotypes.columns)
-			else:
-				# fixed_children = background[background > fixed_cutoff]
-
-				# Get the child that fixed first.
-				successor = first_fixed.idxmin(0)
-
-				genotype_timepoint_cutoff = first_fixed[successor]
-		else:
-			genotype_timepoint_cutoff = max(modified_genotypes.columns)
-
-		# genotype_timepoint_cutoff = max(modified_genotypes.columns)
-		for column, value in row.items():
-			# if isinstance(column, str): continue
-			if column not in numeric_columns: continue
-			if column > genotype_timepoint_cutoff:
-				continue
-			line = {
-				'Generation': column,
-				'Identity':   row.name,
-				'Population': value * 100
-			}
-			table.append(line)
-	df = pandas.DataFrame(table)
-
-	# Add the root background
-	root_genotype_generations = list()
-
-	root_genotype_generations.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
-	fdf = pandas.concat([df, pandas.DataFrame(root_genotype_generations)])
-
-	fdf = fdf[fdf['Population'] != 0]
-	return fdf.sort_values(by = 'Generation')
-
 
 def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame) -> pandas.DataFrame:
 	"""
@@ -156,7 +84,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 			genotype_frequencies = genotype[genotype > DETECTION_CUTOFF]
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
-			genotype_frequencies = genotype_frequencies.mask(lambda s: s < DETECTION_CUTOFF, DETECTION_CUTOFF)
+			genotype_frequencies = genotype_frequencies.mask(lambda s: s < DETECTION_CUTOFF, 0.01)
 			genotype_frequencies = genotype_frequencies.dropna()
 
 		else:

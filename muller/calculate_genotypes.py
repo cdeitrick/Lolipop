@@ -1,20 +1,17 @@
-import pandas
-
+import argparse
 import itertools
 import math
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Tuple, Union
 from pathlib import Path
-import argparse
+from typing import Dict, List, Optional, Tuple, Union
+
+import pandas
+from dataclasses import dataclass
 
 try:
 	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
 	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table
-
-# The data structure of a agenotype
-Genotype = List[str]
 
 
 @dataclass
@@ -29,8 +26,8 @@ class PairArrayValue:
 	difbar: float
 
 
-PairwiseArrayType = Dict[Tuple[str, str], PairArrayValue]
-
+# PairwiseArrayType = Dict[Tuple[str, str], PairArrayValue]
+PairwiseArrayType = Dict[Tuple[str, str], float]
 PAIRWISE_P_VALUES: PairwiseArrayType = None
 REMOVED_P_VALUES: PairwiseArrayType = dict()
 
@@ -85,8 +82,19 @@ class GenotypeOptions:
 			)
 
 
-def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cutoff: float,
-		fixed_cutoff: float, n_binomial: int) -> PairwiseArrayType:
+@dataclass
+class Genotype:
+	members: List[str]
+	frequency: pandas.Series
+	trajectories: pandas.DataFrame
+
+	detected: int  # First timepoint the genotype was detected.
+	significant: int  # First significant timepoint
+	fixed: Optional[int]  # First fixed timepoint
+
+
+# noinspection PyTypeChecker
+def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> float:
 	"""
 		Calculates the relative similarity between all trajectory pairs.
 
@@ -108,95 +116,92 @@ def calculate_pairwise_similarity(trajectories: pandas.DataFrame, detection_cuto
 
         1 - \int_{- \bar{X}/ \sigma_{\bar{X}}}^{\bar{X}/
         \sigma_{\bar{X}}} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx
+	Parameters
+	----------
+	left, right: pandas.Series
+		- index: int
+			Timepoints
+		- values: float
+			Frequencies
+	detected_cutoff: float
+	fixed_cutoff: float
 
 
+	Returns
+	-------
+	float
+	"""
+	# Merge into a dataframe for convienience
+	df = pandas.concat([left, right], axis = 1)
+
+	# Remove timepoints where at least one trajectory was not fixed or undetected.
+	not_fixed_df = df[(df < fixed_cutoff).any(axis = 1)]
+
+	not_detected_fixed_df = not_fixed_df[(not_fixed_df > detected_cutoff).any(axis = 1)]
+
+	if not_detected_fixed_df.empty:
+		left_fixed: pandas.Series = left[left > fixed_cutoff]
+		right_fixed: pandas.Series = right[right > fixed_cutoff]
+
+		if left_fixed.empty and right_fixed.empty:
+			# Both are undetected
+			p_value = 1
+		else:
+			overlap = set(left_fixed.index) and set(right_fixed.index)
+			p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
+
+	else:
+		# Find the mean frequency of each timepoint
+		# index is timepoints,  values are frequencies
+		mean: pandas.Series = not_detected_fixed_df.mean(axis = 1)
+
+		n_binom = len(mean)  # WARNING: is not compatible with matlab scripts for n != 5
+		# Calculate sigma_freq
+		sigma_freq: pandas.Series = (mean * (1 - mean)) / n_binom
+		# Difference of frequencies at each timepoint
+		difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		sigma_pair: float = math.sqrt(sigma_freq.sum()) / len(difference)
+		# Sum of differences
+		difference_mean: float = abs(difference).sum() / len(difference)
+
+		X = difference_mean / (math.sqrt(2) * sigma_pair)
+
+		p_value: float = 1 - math.erf(X)
+
+	return p_value
+
+
+def calculate_trajectory_similarity(trajectories: pandas.DataFrame, detection_cutoff: float,
+		fixed_cutoff: float) -> PairwiseArrayType:
+	"""
 	Parameters
 	----------
 	trajectories: pandas.DataFrame
 		A table of mutational trajectories.
 	detection_cutoff: float
 	fixed_cutoff: float
-	n_binomial: int
 
 	Returns
 	-------
 	dict of PairArrayValue
 	Each key in the dictionary corresponds to a pair of trajectory ids which map to the p-value for that pair.
 	The order of ids does not matter.
-
 	"""
-
-	# get a list of all possible trajectory pairs, ignoring element order.
-	# trajectories = timeseries[[i for i in timeseries.columns if i not in ['Population', 'Position', 'Trajectory']]]
-	combos = sorted(itertools.combinations(trajectories.index, 2))
+	combos: List[Tuple[str, str]] = sorted(itertools.combinations(trajectories.index, 2))
 	pair_array = dict()
-
-	for pair in combos:
-		# Unpack the trajectory labels/ids
-		left, right = pair
-
-		# Extract the trajectory frequencies for both trajectories in the pair.
-		# trajectory indicies start at 1, need to convert to 0-indexed.
-
-		# left_trajectories = trajectories.iloc[left - 1]
-		# print(left, right)
-		# print(trajectories.index)
+	for left, right in combos:
 		left_trajectories = trajectories.loc[left]
 		right_trajectories = trajectories.loc[right]
 
-		# Merge into a dataframe for convienience
-		df = pandas.concat([left_trajectories, right_trajectories], axis = 1)
+		p_value = calculate_p_value(left_trajectories, right_trajectories, detection_cutoff, fixed_cutoff)
 
-		# Calculate similarity
-		# Remove timepoints where at least one trajectory was not fixed or undetected.
-		filtered_df = df[(df < fixed_cutoff).any(axis = 1)]
+		pair_array[(left, right)] = p_value
+		pair_array[(right, left)] = p_value
 
-		filtered_df = filtered_df[(filtered_df > detection_cutoff).any(axis = 1)]
-
-		if filtered_df.empty:
-			left_fixed = left_trajectories[left_trajectories > fixed_cutoff]
-			right_fixed = right_trajectories[right_trajectories > fixed_cutoff]
-
-			if left_fixed.empty and right_fixed.empty:
-				# Both are undetected
-				p_value = 1
-			else:
-				overlap = set(left_fixed.index) & set(right_fixed.index)
-				p_value = int(len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)
-
-			# Both trajectories have no timepoints where they are detected but not yet fixed.
-			# Assign a p-value of 0.0
-		else:
-			# Find the mean frequency of each timepoint
-			# index is timepoints,  values are frequencies
-			mean_frequencies: pandas.Series = filtered_df.mean(axis = 1)
-			# Calculate sigma_total
-			n_binom = n_binomial if n_binomial else len(mean_frequencies)
-
-			# noinspection PyTypeChecker
-			sigma_freq: pandas.Series = (mean_frequencies * (1 - mean_frequencies)) / n_binom
-
-			# Difference of frequencies at each timepoint
-			difference: pandas.Series = filtered_df.iloc[:, 0] - filtered_df.iloc[:, 1]
-			sigmapair: float = math.sqrt(sigma_freq.sum()) / len(difference)
-
-			# Sum of differences
-			difbar: float = abs(difference).sum() / len(difference)
-
-			# Calculates the relative similarity between all trajectory pairs.
-			X = difbar / (math.sqrt(2) * sigmapair)
-			p_value: float = 1 - math.erf(X)
-
-		pair_array_value = PairArrayValue(
-			pair[0], pair[1], p_value, math.nan, math.nan
-		)
-		# Add the p-value information for the forward and reverse pairs (will be the same, no need to do again)
-		pair_array[(left, right)] = pair_array_value
-		pair_array[(right, left)] = pair_array_value
 	return pair_array
 
 
-def _find_genotype_from_trajectory(element: str, all_genotypes: List[Genotype]) -> Optional[Genotype]:
+def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]]) -> Optional[List[str]]:
 	"""
 		Finds the genotype that contains the trajectory.
 	Parameters
@@ -219,7 +224,7 @@ def _find_genotype_from_trajectory(element: str, all_genotypes: List[Genotype]) 
 	return value
 
 
-def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List[Genotype]:
+def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List[List[str]]:
 	"""
 		Clusters all trajectories into related genotypes.
 		By default the first trajectory makes a genotype category
@@ -239,17 +244,18 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 	else:
 		genotype_candidates = []
 	seen = set()
-	for pair in pairs.values():
+	for key, p_value in pairs.items():
+		left, right = key
 		# ignore pairs that have already been sorted into a genotype.
-		if (pair.left, pair.right) in seen or (pair.right, pair.left) in seen:
+		if (left, right) in seen or (right, left) in seen:
 			continue
-		seen.add((pair.left, pair.right))
+		seen.add((left, right))
 
-		if pair.p_value > relative_cutoff:  # are the genotypes related?
+		if p_value > relative_cutoff:  # are the genotypes related?
 			# Check if any of the trajectories are already listed in genotypes.
 			# These will return None if no genotype is found.
-			genotype_left = _find_genotype_from_trajectory(pair.left, genotype_candidates)
-			genotype_right = _find_genotype_from_trajectory(pair.right, genotype_candidates)
+			genotype_left = _find_genotype_from_trajectory(left, genotype_candidates)
+			genotype_right = _find_genotype_from_trajectory(right, genotype_candidates)
 
 			if genotype_left and genotype_right:
 				# they are listed under two different genotypes. Combine them.
@@ -259,22 +265,17 @@ def find_all_genotypes(pairs: PairwiseArrayType, relative_cutoff: float) -> List
 					genotype_candidates.remove(genotype_right)
 
 			elif genotype_left:
-				genotype_left.append(pair.right)
+				genotype_left.append(right)
 			elif genotype_right:
-				genotype_right.append(pair.left)
+				genotype_right.append(left)
 			else:
 				# Neither element is listed. Create a new genotype
-				genotype_candidates.append([pair.left, pair.right])
+				genotype_candidates.append([left, right])
 	return genotype_candidates
 
 
-def get_p_value(left: str, right: str, pairwise_array: PairwiseArrayType) -> Optional[PairArrayValue]:
-	"""	Finds the p-value for a given pair."""
-	return pairwise_array[(left, right)]
-
-
-def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.DataFrame,
-		pair_array: PairwiseArrayType, link_cut: float) -> Tuple[Genotype, Genotype]:
+def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFrame,
+		pair_array: PairwiseArrayType, link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
 		Splits a genotype into smaller genotypes if some members are not related to some other members. This may happen
 		when a member is included into a genotype due to its paired member but ends up not related to some of
@@ -322,18 +323,18 @@ def split_genotype_in_two(genotype: Genotype, unlinked_trajectories: pandas.Data
 		else:
 			# Use the highest p-value to determine which genotype to add the member to.
 			# P-values should correspond to the current member and the base member of the new genotypes.
-			p_value_1 = get_p_value(new_genotype_1_base, genotype_member, pair_array)
-			p_value_2 = get_p_value(new_genotype_2_base, genotype_member, pair_array)
+			p_value_1 = pair_array[new_genotype_1_base, genotype_member]
+			p_value_2 = pair_array[new_genotype_2_base, genotype_member]
 
-			if p_value_1.p_value >= p_value_2.p_value:
+			if p_value_1 >= p_value_2:
 				new_genotype_1.append(genotype_member)
 			else:
 				new_genotype_2.append(genotype_member)
 	return new_genotype_1, new_genotype_2
 
 
-def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
-	Genotype]:
+def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
+	List[str]]:
 	"""
 		Splits each genotype if any of its members are not related enough to the other members. Genotypes will continue
 		to be split until the p-values for all pairwise members are beneath the cutoff.
@@ -358,8 +359,8 @@ def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: Pairwise
 			for combination_pair in itertools.combinations(genotype, 2):
 				left, right = combination_pair
 				# Get the p-value for this pair.
-				p_value = get_p_value(left, right, pair_array)
-				value = [left, right, p_value.p_value]
+				p_value = pair_array[left, right]
+				value = [left, right, p_value]
 				combination_pairs.append(value)
 			# Combine all pairs and p-values into a dataframe for convienience.
 			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
@@ -370,7 +371,7 @@ def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: Pairwise
 
 			if len(unlinked_trajectories) != 0:
 				# Split the current genotype into two smaller but more internally-related all_genotypes.
-				new_genotype_1, new_genotype_2 = split_genotype_in_two(genotype[:], genotype_combinations, pair_array,
+				new_genotype_1, new_genotype_2 = _divide_genotype(genotype[:], genotype_combinations, pair_array,
 					link_cutoff)
 
 				all_genotypes.append(new_genotype_1)
@@ -379,7 +380,7 @@ def split_unlinked_genotypes(all_genotypes: List[Genotype], pair_array: Pairwise
 	return sorted(all_genotypes, key = len)
 
 
-def get_genotypes_from_population(timeseries: pandas.DataFrame, options: GenotypeOptions) -> List[Genotype]:
+def calculate_genotypes_from_population(timeseries: pandas.DataFrame, options: GenotypeOptions) -> List[List[str]]:
 	"""
 		Clusters trajectories into genotypes.
 	Parameters
@@ -416,11 +417,10 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 		pair_array = PAIRWISE_P_VALUES
 
 	else:
-		pair_array = calculate_pairwise_similarity(
+		pair_array = calculate_trajectory_similarity(
 			timeseries,
 			detection_cutoff = options.detection_breakpoint,
-			fixed_cutoff = options.fixed_breakpoint,
-			n_binomial = options.n_binom
+			fixed_cutoff = options.fixed_breakpoint
 		)
 		PAIRWISE_P_VALUES = pair_array
 
@@ -443,7 +443,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 
 	while True:
 		starting_size_of_the_genotype_array = len(population_genotypes)
-		population_genotypes = split_unlinked_genotypes(population_genotypes[:], pair_array,
+		population_genotypes = _unlink_unrelated_trajectories(population_genotypes[:], pair_array,
 			options.difference_breakpoint)
 		if len(population_genotypes) == starting_size_of_the_genotype_array:
 			break
@@ -453,7 +453,7 @@ def get_genotypes_from_population(timeseries: pandas.DataFrame, options: Genotyp
 	return [i for i in population_genotypes if i]  # Only return non-empty lists.
 
 
-def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFrame) -> pandas.DataFrame:
+def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.DataFrame) -> pandas.DataFrame:
 	"""
 		Calculates the mean frequency of each genotype ate every timepoint.
 	Parameters
@@ -486,6 +486,15 @@ def get_mean_genotypes(all_genotypes: List[Genotype], timeseries: pandas.DataFra
 	if 'Position' in mean_genotypes:
 		mean_genotypes.pop('Position')
 
+	if 'members' in mean_genotypes.columns:
+		members = mean_genotypes.pop('members')
+	else:
+		members = None
+
+	mean_genotypes = mean_genotypes[sorted(mean_genotypes.columns)]
+
+	if members is not None:
+		mean_genotypes['members'] = members
 	return mean_genotypes
 
 
@@ -572,17 +581,13 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 	else:
 		timepoints = io
 
-	genotypes = get_genotypes_from_population(timepoints, options)
+	genotypes = calculate_genotypes_from_population(timepoints, options)
 
-	_mean_genotypes = get_mean_genotypes(genotypes, timepoints)
+	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
 
 	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
 	return _mean_genotypes
 
 
 if __name__ == "__main__":
-	cmd_parser = create_parser().parse_args()
-
-	# cmd_options = GenotypeOptions.from_parser(cmd_parser)
-	cmd_options = GenotypeOptions.from_breakpoints(0.03)
-	workflow(Path("../Data files/P1_Final_Muller.csv"), options = cmd_options)
+	pass
