@@ -486,6 +486,15 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	if 'Position' in mean_genotypes:
 		mean_genotypes.pop('Position')
 
+	if 'members' in mean_genotypes.columns:
+		members = mean_genotypes.pop('members')
+	else:
+		members = None
+
+	mean_genotypes = mean_genotypes[sorted(mean_genotypes.columns)]
+
+	if members is not None:
+		mean_genotypes['members'] = members
 	return mean_genotypes
 
 
