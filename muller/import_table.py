@@ -33,8 +33,8 @@ def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
 
 	if 0 not in data.columns and '0' not in data.columns:
 		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
-		data["0"] = 0
-
+		data["0"] = 0.0
+	data = data[sorted(data.columns)]
 	return data
 
 
@@ -104,7 +104,6 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 
 	# Read in the data table.
 	data = import_table(filename, sheet_name)
-
 
 	key_column = 'Trajectory'
 	# Extract the columns which indicate timepoints of observations. Should be integers.
