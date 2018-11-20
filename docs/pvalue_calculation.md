@@ -1,34 +1,31 @@
 ### Some Definitions
 
-- $n_t$: The number of timepoints.
+- $n_t$: The number of time points (cardinality) in the set $\{(f_{ai},f_{bi})|f_{detected}<f<f_{fixed}\}​$.
 - $f_{ai}$: The frequency of mutation $a$ at time point $i$ 
-- $f_i$: The mean of the two mutations at time point $i$
+- $f_i$: The mean of two mutations at time point $i$
 - $\sigma_i^2$: The variance of the paired time series at time $i$
 - $\bar{d}$: The average of the differences between both time series
 - $\sigma_p^2$: Variance for the pair of mutational time series.
 
 ### The Math
 
-The script calculates the relative similarity between all pairs of mutational time series with length $n_t$ containing frequencies $0<=f<=1$. These are consistent with $n$ independent draws from a normal distribution, assuming a variance of
+The script calculates the relative similarity between all pairs of mutational time series with $n_t$ time points with frequencies in the range $f_{detected}\le f \le f_{fixed}$. These are consistent with $n$ independent draws from a normal distribution, assuming a variance of
 
-1. $\sigma_i^2=n_{binom}f_i(1-f_i)$
+1. $\sigma_i^2=\frac{1}{n_t}f_i(1-f_i)$
 
-where $f_i$ is the mean frequency of both mutations at each time point and $n_{binom}$ is picked arbitrarily as a value that gives reasonable uncertainties given our data (in this case, $n_{binom} = 1/5$). A time series with $n_t$ random draws will have a variance of
+where $f_i$ is the mean frequency of both mutations at each time point. The variance $\sigma_{tot}$ for the pair of mutational time series is calculated as the mean of the variance at all time points:
 
-2. $\sigma_{tot}^2 = \sum_{i}^{n_t} \sigma_i^2 = n_{binom} \sum_i^{n_t}f_i(1-f_i)$
+2. $\sigma_{p}^2 = \frac{1}{n_t}\sum_{i}^{n_t} \sigma_i^2 = \frac{1}{n_t^2} \sum_i^{n_t}f_i(1-f_i)$
 
-Since we are interested in the similarity between both mutational time series, let $d_i =|_{ai}-f_{bi}|$ for all time points yielding a mean and variance of
-3. $\bar{d} = \frac{1}{n_t}\sum_i^{n_t}d_i$
-4. $\sigma_p^2 =\frac{ \sigma_{tot}^2}{n_t^2}=\frac{n_{binom}}{n_t^2}\sum_i^{n_t}f_i(1-f_i)$
+Since we are interested in the similarity between both mutational time series, we will compare the differences in values between both time series. Let $d_i =|f_{ai}-f_{bi}|$ for all time points $i$ yielding a mean of
 
-Finally, given $\sigma_d$ and $\bar{d}$ we can calculate the probability that this pair of mutations belong to the same genotype using the cumulative probability distribution  of the normal distribution:
+3. $\bar{d} = \frac{1}{n_t}\sum_i^{n_t}d_i=\frac{1}{n_t}\sum_i^{n_t}|f_{ai}-f_{bi}|$
 
-5. $$
+Finally, given $\sigma_p​$ and $\bar{d}​$ we can calculate the probability that this pair of mutations belong to the same genotype using the cumulative probability distribution of the normal distribution:
+
+4. $$
      p_{pair}=1 - \int_{- \infty}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
      $$
-
-
-
 
 
 
