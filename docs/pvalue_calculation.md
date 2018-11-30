@@ -1,7 +1,7 @@
 ### Some Definitions
 
-- $n_t$: The number of time points (cardinality) in the set $\{(f_{ai},f_{bi})|f_{detected}<f<f_{fixed}\}​$.
-- $f_{ai}$: The frequency of mutation $a$ at time point $i$ 
+- $n_t$: The number of time points (cardinality) in the set $\{(f_{ai},f_{bi})|f_{detected}<f<f_{fixed}\}$.
+- $f_{ai}, f_{bi}$: The frequency of mutation $a|b$ at time point $i$ 
 - $f_i$: The mean of two mutations at time point $i$
 - $\sigma_i^2$: The variance of the paired time series at time $i$
 - $\bar{d}$: The average of the differences between both time series
@@ -9,7 +9,7 @@
 
 ### The Math
 
-The script calculates the relative similarity between all pairs of mutational time series with $n_t$ time points with frequencies in the range $f_{detected}\le f \le f_{fixed}$. These are consistent with $n$ independent draws from a normal distribution, assuming a variance of
+The script calculates the relative similarity between all pairs of mutational time series with $n_t$ time points with frequencies in the range $f_{detected}< f < f_{fixed}$. These are consistent with $n$ independent draws from a normal distribution, assuming a variance of
 
 1. $\sigma_i^2=\frac{1}{n_t}f_i(1-f_i)$
 
@@ -26,6 +26,8 @@ Finally, given $\sigma_p​$ and $\bar{d}​$ we can calculate the probability t
 4. $$
      p_{pair}=1 - \int_{- \infty}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
      $$
+
+
 
 
 

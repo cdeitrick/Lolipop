@@ -6,11 +6,13 @@ from typing import Tuple, List
 def get_numeric_columns(columns: List[str]) -> List[str]:
 	numeric_columns = list()
 	for column in columns:
+		if isinstance(column, str) and column.startswith('X'): col = column[1:]
+		else: col = column
 		try:
-			int(column)
-			numeric_columns.append(column)
-		except ValueError:
-			pass
+			int(col)
+		except (ValueError, TypeError):
+			continue
+		numeric_columns.append(column)
 	return numeric_columns
 
 
@@ -34,7 +36,7 @@ def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
 	if 0 not in data.columns and '0' not in data.columns:
 		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
 		data["0"] = 0.0
-	data = data[sorted(data.columns)]
+	data = data[sorted(data.columns, key = lambda s: str(s))]
 	return data
 
 

@@ -64,6 +64,7 @@ class GenotypeOptions:
 
 	@classmethod
 	def from_parser(cls, parser: argparse.Namespace) -> 'GenotypeOptions':
+		print(parser)
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
 		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
@@ -462,6 +463,7 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 		A list of all genotypes for a given population
 	timeseries: pandas.DataFrame
 		Must have a 'Trajectory' column along with the columns of the original table that represent timepoints.
+		Each row corresponds to a single mutational trajectory.
 
 	Returns
 	-------
@@ -575,6 +577,7 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 			fixed_breakpoint = 1 - detection_breakpoint
 
 		options = GenotypeOptions.from_breakpoints(detection_breakpoint, fixed_breakpoint)
+
 
 	if isinstance(io, Path):
 		timepoints, _ = import_trajectory_table(io)

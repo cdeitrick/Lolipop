@@ -63,20 +63,21 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	if 'members' in current_genotypes:
 		current_genotypes.pop('members')
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
+
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,
 			frequency_breakpoint = frequency,
 			detection_cutoff = options.detection_breakpoint,
-			significant_cutuff = options.significant_breakpoint,
+			significant_cutoff = options.significant_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint
 		)
+
 		if not sorted_dataframe.empty:
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
 
 	#sorted_genotypes.append(current_genotypes)
 	df = pandas.concat(sorted_genotypes, sort=False)
-
 	df = genotype_frequencies.reindex(df.index)
 	return df
 
@@ -84,14 +85,14 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 
 
 def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency_breakpoint: float,
-		detection_cutoff: float, significant_cutuff: float, fixed_cutoff: float) -> pandas.DataFrame:
+		detection_cutoff: float, significant_cutoff: float, fixed_cutoff: float) -> pandas.DataFrame:
 	transposed = genotype_trajectories.transpose()
 
 	# Finds the first timepoint where each genotype exceeded the fixed frequency
 	first_detected: pandas.Series = (transposed > detection_cutoff).idxmax(0).sort_values()
 	first_detected.name = 'firstDetected'
 
-	first_above_threshold: pandas.Series = (transposed > significant_cutuff).idxmax(0).sort_values()
+	first_above_threshold: pandas.Series = (transposed > significant_cutoff).idxmax(0).sort_values()
 	first_above_threshold.name = 'firstThreshold'
 
 	# noinspection PyUnresolvedReferences
@@ -105,8 +106,8 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
 
-	if first_fixed_reduced.empty:
-		first_fixed_reduced = first_fixed
+	#if first_fixed_reduced.empty:
+	#	first_fixed_reduced = first_fixed
 
 	combined_df: pandas.DataFrame = pandas.concat(
 		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
