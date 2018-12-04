@@ -240,9 +240,9 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cuto
 
 
 def generate_random_color() -> str:
-	r = random.randint(100, 255)
-	g = random.randint(100, 255)
-	b = random.randint(100, 255)
+	r = random.randint(50, 200)
+	g = random.randint(50, 200)
+	b = random.randint(50, 200)
 	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
 	return color
 
