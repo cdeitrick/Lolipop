@@ -1,3 +1,4 @@
+import logging
 import random
 import subprocess
 from pathlib import Path
@@ -6,8 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas
 from dataclasses import dataclass
 
-import logging
-logging.basicConfig(level=logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
@@ -44,6 +44,8 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+
+
 DETECTION_CUTOFF = 0.03
 
 
@@ -82,9 +84,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 	table = list()
 
 	for genotype_label, genotype in modified_genotypes.iterrows():
-
 		if genotype_label in children:
-
 			genotype_frequencies = genotype[genotype > DETECTION_CUTOFF]
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
@@ -96,8 +96,6 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 
 		# Remove timepoints where the value was 0 or less than 0 due to above line.
 
-
-
 		for timepoint, frequency in genotype_frequencies.items():
 			row = {
 				'Identity':   genotype_label,
@@ -105,13 +103,18 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 				'Population': frequency * 100
 			}
 			table.append(row)
-	table.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
-	df = pandas.DataFrame(table)
-	return df
+	# table.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
+	temp_df = pandas.DataFrame(table)
+
+	generation_groups = temp_df.groupby(by = 'Generation')
+	for generation, group in generation_groups:
+		population = group['Population'].sum()
+		table.append({'Generation': generation, "Identity": "genotype-0", "Population": 100 - population})
+
+	return pandas.DataFrame(table)
 
 
 def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
-
 	table = list()
 	for genotype_info in genotype_clusters.values():
 		identity = genotype_info.name

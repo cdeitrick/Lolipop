@@ -169,7 +169,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 		p_value: float = 1 - math.erf(X)
 
-	return p_value
+	return p_value#, n_binom, sigma_pair, difference_mean
 
 
 def calculate_trajectory_similarity(trajectories: pandas.DataFrame, detection_cutoff: float,
@@ -471,6 +471,7 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	member trajectories are listed under the 'members' column.
 	every column represents a timepoint.
 	"""
+	timeseries.to_csv("test.csv")
 
 	mean_genotypes = list()
 
@@ -593,4 +594,5 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 
 if __name__ == "__main__":
-	pass
+	print(sum(i * (1 - i) for i in [.278, .8275, .803]) / 9)
+	print((.134 + .022 + .020) / 3)
