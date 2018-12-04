@@ -158,13 +158,16 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 		n_binom = len(mean)  # WARNING: is not compatible with matlab scripts for n != 5
 		# Calculate sigma_freq
-
-		sigma_freq: pandas.Series = (mean * (1 - mean))#/ n_binom
+		n_binom = 1/len(mean)
+		# E(sigma) = (1/n) sum(sigma) = (1/n) sum(np(1-p)) == sum(p(1-p)
+		# E(sigma_p) = (1/n) E(sigma) == 1/n(sum(p(1-p))
+		# E(d_bar) = 1/n(sum(di)) == 1/n (n*sum(di))
+		sigma_freq: pandas.Series = (mean * (1 - mean))
 		# Difference of frequencies at each timepoint
 		difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
-		sigma_pair: float = sigma_freq.sum()/ len(difference)
+		sigma_pair: float = sigma_freq.sum()/len(mean)
 		# Sum of differences
-		difference_mean: float = abs(difference).sum()#/ len(difference)
+		difference_mean: float = abs(difference).sum()#*n_binom
 
 		X = difference_mean / (math.sqrt(2 * sigma_pair))
 
