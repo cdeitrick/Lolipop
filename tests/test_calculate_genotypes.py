@@ -50,7 +50,7 @@ class TestCalculateGenotypes(unittest.TestCase):
 		right = pandas.Series([0, 0.0, 0.0, 0.0, 0.345, 0.833, 0.793], index = index)  # Trajectory 8
 		detected_cutoff = 0.03
 		fixed_cutoff = .97
-		_sigma = sum(i*(1-i)/3 for i in [.278, .8275, .803]) / 27
+		_sigma = sum(i*(1-i) for i in [.278, .8275, .803]) / 9
 		_dif = (.134 + .022 + .020) / 3
 		expected_p_value = 1 - math.erf(_dif / (math.sqrt(2*_sigma)))
 
