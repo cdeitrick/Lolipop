@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas
 from dataclasses import dataclass
 
-logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+#logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
+#logger = logging.getLogger(__name__)
 
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
@@ -155,14 +155,14 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 	"""
 
 	workflow_parameters = get_workflow_parameters(workflow_data)
-	logger.info("generating edges...")
+	#logger.info("generating edges...")
 	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
-	logger.info("generating populations...")
+	#logger.info("generating populations...")
 	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table)
 
-	logger.info("generating mermaid diagram...")
+	#logger.info("generating mermaid diagram...")
 	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
-	logger.info("generating trajectories table...")
+	#logger.info("generating trajectories table...")
 	if workflow_data.info is not None:
 		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
 		trajectory_map = dict()
@@ -322,7 +322,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		workflow_data.trajectories['genotype'] = [trajectory_to_genotype[i] for i in workflow_data.trajectories.index]
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-	logger.info("Plotting trajectories")
+	#logger.info("Plotting trajectories")
 	# plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
@@ -335,7 +335,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	except FileNotFoundError:
 		pass
 
-	logger.info("generating r script")
+	#logger.info("generating r script")
 	muller_df = generate_ggmuller_script(
 		trajectory = trajectory_output_file,
 		population = population_output_file,
@@ -348,7 +348,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	if muller_df is not None:
 		generate_muller_plot(muller_df, workflow_data.trajectories, color_palette, muller_plot_annotated_file, annotate_all)
 
-	logger.info("generating muller plot...")
+	#logger.info("generating muller plot...")
 	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE)
 	_extra_file = Path.cwd() / "Rplots.pdf"

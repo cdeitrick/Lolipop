@@ -72,7 +72,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
-	print("Workflow:", program_options_genotype)
 	print("Importing data...")
 	if program_options.is_genotype:
 		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
