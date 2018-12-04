@@ -109,7 +109,11 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 	generation_groups = temp_df.groupby(by = 'Generation')
 	for generation, group in generation_groups:
 		population = group['Population'].sum()
-		table.append({'Generation': generation, "Identity": "genotype-0", "Population": 100 - population})
+		if population <= 100:
+			p = 100 - population
+		else:
+			p = 0
+		table.append({'Generation': generation, "Identity": "genotype-0", "Population": p})
 
 	return pandas.DataFrame(table)
 
