@@ -1,9 +1,6 @@
 import unittest
 from io import StringIO
 
-import pandas
-import math
-
 from muller.calculate_genotypes import *
 
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
@@ -44,18 +41,28 @@ class TestCalculateGenotypes(unittest.TestCase):
 
 		pandas.testing.assert_frame_equal(expected_mean, output)
 
-	def test_calculate_p_value(self):
+	def test_calculate_p_value_3_values(self):
 		index = [0, 17, 25, 44, 66, 75, 90]
 		left = pandas.Series([0, 0.0, 0.0, 0.0, 0.211, 0.811, 0.813], index = index)  # Trajectory 4
 		right = pandas.Series([0, 0.0, 0.0, 0.0, 0.345, 0.833, 0.793], index = index)  # Trajectory 8
 		detected_cutoff = 0.03
 		fixed_cutoff = .97
-		_sigma = sum(i*(1-i) for i in [.278, .8275, .803]) / 9
-		_dif = (.134 + .022 + .020) / 3
-		expected_p_value = 1 - math.erf(_dif / (math.sqrt(2*_sigma)))
+		_sigma = sum([(.278 * .722) + (.8275 * .1725) + (.803 * .197)]) / 3
+		_dif = (.134 + .022 + .020)
+		expected_p_value = 1 - math.erf(_dif / (math.sqrt(2 * _sigma)))
 
 		output = calculate_p_value(left, right, detected_cutoff, fixed_cutoff)
+		# Slightly different due to floating point arithmetic.
+		self.assertAlmostEqual(expected_p_value, output, places = 2)
 
-		self.assertEqual(expected_p_value, output)
-		#first = 0.803753970079717
-		#second = (0.6680134705503584, 3, 0.13679167724303612, 0.058666666666666596)
+	def test_calculate_p_value_5_values(self):
+		index = [0, 17, 25, 44, 66, 75, 90]
+		left = pandas.Series([0, 0.0, 0.261, 1.0, 1.0, 1.0, 1.0], index = index)  # Trajectory 4
+		right = pandas.Series([0, 0.0, 0.0, 0.525, 0.454, 0.911, 0.91], index = index)  # Trajectory 8
+		detected_cutoff = 0.03
+		fixed_cutoff = .97
+		_sigma = sum([(.1305 * .8695) + (.7625 * .2375) + (.727 * .273) + (.9555 * .0445) + (.955 * .045)]) / 5
+		_dif = (.261 + .475 + .546 + .089 + .09)
+		expected_p_value = 1 - math.erf(_dif / math.sqrt(2 * _sigma))
+		output = calculate_p_value(left, right, detected_cutoff, fixed_cutoff)
+		self.assertAlmostEqual(expected_p_value, output)

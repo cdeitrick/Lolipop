@@ -19,13 +19,14 @@ where $f_i$ is the mean frequency of both mutations at each time point. The vari
 
 Since we are interested in the similarity between both mutational time series, we will compare the differences in values between both time series. Let $d_i =|f_{ai}-f_{bi}|$ for all time points $i$ yielding a mean of
 
-3. $\bar{d} = \frac{1}{n_t}\sum_i^{n_t}d_i=\frac{1}{n_t}\sum_i^{n_t}|f_{ai}-f_{bi}|$
+3. $\bar{d} = \frac{1}{n_t}\sum_i^{n_t}d_i=\frac{1}{n_t}\sum_i^{n_t}|f_{ai}-f_{bi}|​$
 
-Finally, given $\sigma_p​$ and $\bar{d}​$ we can calculate the probability that this pair of mutations belong to the same genotype using the cumulative probability distribution of the normal distribution:
+Finally, given $\sigma_p$ and $\bar{d}$ we can calculate the probability that this pair of mutations belong to the same genotype using the cumulative probability distribution of the normal distribution:
 
 4. $$
      p_{pair}=1 - \int_{- \infty}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
      $$
+
 
 
 
