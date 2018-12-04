@@ -161,12 +161,11 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 		genotype_members = type_trajectory.pop('members')
 		type_trajectory = type_trajectory.astype(float)
 		genotype_deltas = list()
-
-		for test_label, test_trajectory in sorted_df[:genotype_label].iloc[::-1].iterrows():  # iterate in reverse order
+		test_table = sorted_df[:genotype_label].iloc[::-1]
+		for test_label, test_trajectory in test_table.iterrows():  # iterate in reverse order
 
 			if genotype_label == test_label:  # The reduced dataframe still contains the genotype being tested.
 				continue
-
 
 			if 'members' in test_trajectory:
 				test_trajectory.pop('members')
@@ -196,7 +195,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				right = test_trajectory,
 				double_cutoff = options.subtractive_background_double_cutoff,
 				single_cutoff = options.subtractive_background_single_cutoff
-
 			)
 
 			if subtractive_check:

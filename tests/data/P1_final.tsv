@@ -1,0 +1,58 @@
+	X.1	X	Cohort	Description	Gene	Annotation	Position	Mutation	X0	X17	X44	X66	X90
+4	4	4	11	A222A(GCT>GCG)	PA14_RS25505>	PhzF family phenazine biosynthesis protein	5567766	T>G	0	0	9.9	0	13.4
+6	7	7	11	A49P(GCT>CCT)	PA14_RS28130<	hypothetical protein	6155646	C>G	0	0	12	0	12.5
+7	8	8	11	A546A(GCC>GCA)	PA14_RS29095<	hypothetical protein	6361913	G>T	0	0	11.2	0	10.3
+8	9	9	11	A72A(GCT>GCG)	PA14_RS30395<	hypothetical protein	2703392	A>C	0	0	11	0	10.5
+9	10	10	12	A75A(GCA>GCC)	PA14_RS30395<	hypothetical protein	2703383	T>G	0	0	10.5	17.3	16.2
+10	11	11	11	C82G(TGC>GGC)	PA14_RS30395<	hypothetical protein	2703364	A>C	0	0	8.9	0	11.3
+11	12	12	7	coding(30â€‘62/756nt)	PA14_RS07210<	DeoR family transcriptional regulator	1542541	Î”33bp	0	0	0	32	42
+12	13	13	11	D258A(GAC>GCC)	PA14_RS16325<	Igâ€‘like domain repeat protein	3595942	T>G	0	0	13.1	0	10.9
+16	18	18	12	D76A(GAC>GCC)	PA14_RS03910>	PAS domainâ€‘containing sensor histidine kinase	831131	A>C	0	0	0	9.4	14.3
+17	19	19	12	E12A(GAG>GCG)	PA14_RS20530<	histidine kinase	4496257	T>G	0	0	0	11.3	10
+18	20	20	12	E242A(GAG>GCG)	PA14_RS08005>	iron dicitrate transporter FecR	1721465	A>C	0	0	0	18.7	11.8
+19	21	21	12	E268D(GAA>GAC)	PA14_RS21625>	oxidoreductase	4707967	A>C	0	0	11.9	12.8	12.9
+23	25	25	12	G157G(GGC>GGG)	PA14_RS23855>	Lrp/AsnC family transcriptional regulator	5210864	C>G	0	0	15	15.5	14.4
+24	26	26	4	G166D(GGC>GAC)	PA14_RS22760>	inorganic phosphate transporter	4978985	G>A	0	0	53.5	100	100
+25	27	27	4	G220S(GGC>AGC)	PA14_RS21415<	aspartokinase	4661344	C>T	0	0	54.6	100	100
+26	28	28	11	G23G(GGC>GGG)	PA14_RS18220>	allantoinase PuuE	3995195	C>G	0	0	9.6	0	10.2
+28	30	30	12	intergenic(â€‘117/+50)	PA14_RS06835</<map	bifunctional uridylyltransferase/uridylylâ€‘removing protein/type I methionyl aminopeptidase	1462012	A>C	0	0	0	13.7	12.1
+30	32	32	11	intergenic(â€‘138/+31)	PA14_RS08885</<PA14_RS08890	m18 family aminopeptidase/pseudouridine synthase	1913775	T>G	0	0	18.5	0	11.9
+31	33	33	12	intergenic(â€‘188/+29)	PA14_RS23100</<PA14_RS23105	ferrous iron transporter A/ATPase	5051244	T>G	0	0	0	11.2	13.3
+32	34	34	1	intergenic(â€‘193/+26)	PA14_RS26645</<PA14_RS26650	30S ribosomal protein S6/23S rRNA (guanosine(2251)â€‘2'â€‘O)â€‘methyltransferase RlmB	5809307	Î”1bp	0	0	100	100	100
+33	35	35	11	intergenic(â€‘37/+34)	PA14_RS28195</<rho	acyltransferase/transcription termination factor Rho	6171044	C>A	0	0	11	0	10.2
+34	36	36	12	intergenic(â€‘46/+27)	PA14_RS28970</<PA14_RS28975	3â€‘ketoâ€‘5â€‘aminohexanoate cleavage protein/choline ABC transporter substrateâ€‘binding protein	6338747	A>C	0	0	13.2	13.5	11.1
+35	37	37	12	intergenic(â€‘49/+46)	PA14_RS03055</<PA14_RS03060	DUF4136 domainâ€‘containing protein/SpoVR family protein	656583	G>C	0	0	10.7	12.6	10.1
+37	39	39	11	intergenic(â€‘59/+43)	PA14_RS19935</<PA14_RS19940	acylâ€‘CoA dehydrogenase/LLM class flavinâ€‘dependent oxidoreductase	4360335	T>G	0	0	15.6	0	14.8
+41	43	43	11	intergenic(â€‘88/â€‘104)	PA14_RS19605</>PA14_RS19610	AraC family transcriptional regulator/thioredoxin family protein	4299039	T>G	0	0	15.7	0	21.7
+42	44	44	12	intergenic(â€‘97/+24)	PA14_RS05770</<PA14_RS05775	valineâ€‘â€‘tRNA ligase/hypothetical protein	1234530	C>G	0	0	12.1	17.7	16.1
+44	46	46	12	intergenic(+104/+23)	PA14_RS16335>/<PA14_RS16340	hypothetical protein/protease LasA	3599192	C>G	0	0	11.3	12.7	10.1
+46	48	48	11	intergenic(+16/+32)	PA14_RS11510>/<PA14_RS11515	hypothetical protein/alpha/beta hydrolase	2449647	A>C	0	0	19.8	0	19.3
+48	50	50	11	intergenic(+22/â€‘662)	PA14_RS19690>/>PA14_RS19700	transglycosylase/hypothetical protein	4313566	G>C	0	0	10.6	0	10.8
+52	54	54	12	intergenic(+29/+19)	PA14_RS11510>/<PA14_RS11515	hypothetical protein/alpha/beta hydrolase	2449660	T>G	0	0	9.7	13.2	14
+53	55	55	12	intergenic(+307/+38)	PA14_RS08455>/<PA14_RS08460	ATPâ€‘dependent Clp protease proteolytic subunit/hypothetical protein	1818069	C>A	0	0	0	18.9	10.1
+54	56	56	11	intergenic(+42/â€‘147)	PA14_RS22830>/>PA14_RS22835	Flp family type IVb pilin/methylâ€‘accepting chemotaxis protein	4994663	C>A	0	0	14.8	0	10.4
+57	59	59	11	K600T(AAG>ACG)	PA14_RS12210<	NADHâ€‘quinone oxidoreductase subunit NuoG	2592386	T>G	0	0	10.6	0	12.1
+58	60	60	11	L177L(CTC>CTA)	PA14_RS24055>	DUF2786 domainâ€‘containing protein	5255038	C>A	0	0	9.3	0	11.1
+60	62	62	12	L33R(CTG>CGG)	PA14_RS10905>	acylâ€‘CoA thioesterase II	2344945	T>G	0	0	0	13.4	10.5
+61	63	63	11	L45R(CTG>CGG)	PA14_RS07980<	hypothetical protein	1718832	A>C	0	0	10.4	0	17
+62	64	64	11	L81F(TTG>TTT)	PA14_RS10320<	DUF2062 domainâ€‘containing protein	2225908	C>A	0	0	11.2	0	11.2
+66	69	69	12	N44T(AAC>ACC)	PA14_RS09180<	hypothetical protein	1970489	T>G	0	0	0	20.8	23.8
+68	71	71	11	P165T(CCG>ACG)	PA14_RS07385<	alginate Oâ€‘acetyltransferase	1580457	G>T	0	0	8.7	0	10.6
+70	73	73	7	P58S(CCC>TCC)	PA14_RS12495>	DNAâ€‘binding response regulator	2655675	C>T	0	0	11	53.6	42.5
+71	74	74	12	P762T(CCT>ACT)	PA14_RS13395<	sugarâ€‘binding protein	2870820	G>T	0	0	12.4	11.7	12.1
+72	75	75	11	P93Q(CCG>CAG)	PA14_RS18715>	sodium:solute symport protein	4100291	C>A	0	0	9.8	0	13.2
+74	77	77	2	pseudogene(845/1499nt)	PA14_RS00410<	FHA domainâ€‘containing protein	96565	T>G	0	24.6	0	0	35.8
+75	78	78	12	Q206P(CAG>CCG)	PA14_RS07305>	LysR family transcriptional regulator	1561020	A>C	0	0	0	12.8	10.4
+77	80	80	12	Q28P(CAG>CCG)	PA14_RS00900<	methylâ€‘accepting chemotaxis protein	200417	T>G	0	0	0	19.2	16.5
+81	84	84	11	R43R(CGT>CGG)	PA14_RS00900<	methylâ€‘accepting chemotaxis protein	200371	A>C	0	0	8.4	0	10.2
+82	85	85	12	R66R(CGC>CGG)	bioF>	8â€‘aminoâ€‘7â€‘oxononanoate synthase	570978	C>G	0	0	9.1	11.3	10.5
+83	87	87	12	S198*(TCG>TAG)	PA14_RS25330>	iron ABC transporter substrateâ€‘binding protein	5530221	C>A	0	0	8.6	11.4	11
+84	88	88	11	S219R(AGC>CGC)	PA14_RS14490<	glycosyltransferase family 1 protein	3168192	T>G	0	0	15.1	0	15
+88	93	93	7	T169A(ACC>GCC)	PA14_RS21485<	arginine/ornithine transporter AotM	4677317	T>C	0	0	0	50.5	40.1
+89	94	94	12	V163V(GTG>GTT)	PA14_RS10715<	cobaltâ€‘precorrinâ€‘6A reductase	2305010	C>A	0	0	0	12.5	10.9
+90	95	95	12	V32G(GTG>GGG)	PA14_RS29000<	hypothetical protein	6344442	A>C	0	0	8.3	9.1	11.4
+91	96	96	7	V3L(GTA>CTA)	PA14_RS01580<	glutamine synthetase	348574	C>G	0	0	0	48.1	39.1
+92	97	97	7	V608M(GTG>ATG)	PA14_RS08745<	sensor histidine kinase	1885380	C>T	0	0	0	37.8	46.9
+94	99	99	12	V78G(GTC>GGC)â€¡	PA14_RS04145<	alphaâ€‘ketoacid dehydrogenase subunit beta	883046	A>C	0	0	0	10	10.4
+96	101	101	12	W221G(TGG>GGG)	PA14_RS14490<	glycosyltransferase family 1 protein	3168186	A>C	0	0	13.7	16	13.3
+99	104	104	12	W99G(TGG>GGG)	PA14_RS10715<	cobaltâ€‘precorrinâ€‘6A reductase	2305204	A>C	0	0	9.3	8.6	12.2

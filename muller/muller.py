@@ -1,11 +1,12 @@
 """
 	Main script to run the muller workflow.
 """
-from pathlib import Path
 import argparse
 import itertools
 import math
-from typing import List, Union, Optional
+from pathlib import Path
+from typing import List, Optional, Union
+
 from dataclasses import dataclass
 
 try:
@@ -27,6 +28,24 @@ except ModuleNotFoundError:
 
 # For convienience. Helps with autocomplete.
 
+def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
+	if isinstance(frequency, str):
+		if ',' in frequency:
+			frequencies = list(map(float, frequency.split(',')))
+		else:
+			frequencies = float(frequency)
+	elif isinstance(frequency, float):
+		frequencies = frequency
+	else:
+		frequencies = [float(i) for i in frequency]
+	if isinstance(frequencies, float):
+		frequencies = [math.fsum(itertools.repeat(frequencies, i)) for i in range(int(1 / frequencies) + 1)]
+		frequencies = [round(i, 2) for i in frequencies]
+	if 0 not in frequencies:
+		frequencies = [0] + frequencies
+	frequencies = sorted(frequencies, reverse = True)
+	return frequencies
+
 
 def parse_workflow_options(program_options):
 	compatibility_mode = program_options.mode
@@ -35,15 +54,7 @@ def parse_workflow_options(program_options):
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
 		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
 	else:
-		freqs = program_options.frequencies
-		if isinstance(freqs, str):
-			if ',' in freqs:
-				freqs = map(float, freqs.split(','))
-			else:
-				freqs = float(freqs)
-		if isinstance(freqs, float):
-			freqs = [math.fsum(itertools.repeat(freqs, i)) for i in range(int(1 / freqs) + 1)]
-			freqs = [round(i, 2) for i in freqs]
+		freqs = _parse_frequency_option(program_options.frequencies)
 
 		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
@@ -57,15 +68,12 @@ def parse_workflow_options(program_options):
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
-	# TODO: The background should be 1-sum(other genotypes) at each timepoint
 	# as long as the sum of the other genotypes that inherit from root is less than 1.
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
-
 	print("Importing data...")
 	if program_options.is_genotype:
-
 		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
 
 		original_timepoints = timepoints = info = None
@@ -83,10 +91,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
 
-
 	print("sorting genotypes...")
-	sorted_genotypes = sort_genotypes.workflow(mean_genotypes)
-
+	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
 	print("nesting genotypes...")
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
@@ -117,12 +123,12 @@ class ProgramOptions:
 	detection_breakpoint: float = 0.03
 	significant_breakpoint: float = 0.15
 	mode: bool = False
-	frequencies: Union[float, List[float]] = 0.10
+	frequencies: List[float] = 0.10
 	similarity_breakpoint: float = 0.05
 	difference_breakpoint: float = 0.10
 	is_genotype: bool = False
 	use_filter: bool = True
-	annotate_all:bool = False
+	annotate_all: bool = False
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
@@ -134,35 +140,40 @@ class ProgramOptions:
 
 	@classmethod
 	def from_parser(cls, parser: Union['ProgramOptions', argparse.Namespace]) -> 'ProgramOptions':
-		filename = Path(parser.filename) if parser.filename else None
-		output_folder = Path(parser.output_folder) if parser.output_folder else None
+		filename = Path.cwd() / parser.filename
+		output_folder = Path.cwd() / parser.output_folder
 
 		fixed = parser.fixed_breakpoint
 		if fixed is None:
-			fixed = 1 - parser.detection_breakpoint
+			fixed = 1 - float(parser.detection_breakpoint)
+		else:
+			fixed = float(fixed)
+
+		frequencies = _parse_frequency_option(parser.frequencies)
 
 		return cls(
 			filename = filename,
 			output_folder = output_folder,
 			sheetname = parser.sheetname,
 			fixed_breakpoint = fixed,
-			detection_breakpoint = parser.detection_breakpoint,
-			significant_breakpoint = parser.significant_breakpoint,
+			detection_breakpoint = float(parser.detection_breakpoint),
+			significant_breakpoint = float(parser.significant_breakpoint),
 			mode = parser.mode,
-			frequencies = parser.frequencies,
-			similarity_breakpoint = parser.similarity_breakpoint,
-			difference_breakpoint = parser.difference_breakpoint,
+			frequencies = frequencies,
+			similarity_breakpoint = float(parser.similarity_breakpoint),
+			difference_breakpoint = float(parser.difference_breakpoint),
 			is_genotype = parser.is_genotype,
 			use_filter = parser.use_filter,
 			annotate_all = parser.annotate_all
 		)
 
 	@classmethod
-	def debug(cls, parser)->'ProgramOptions':
+	def debug(cls, parser) -> 'ProgramOptions':
 		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx"
-		parser.output_folder ='./output'
+		parser.output_folder = './output'
 		parser.use_filter = True
 		return cls.from_parser(parser)
+
 
 def create_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser()
@@ -258,8 +269,4 @@ def create_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
 	args = create_parser().parse_args()
 	cmd_parser = ProgramOptions.from_parser(args)
-	DEBUG = False
-	if DEBUG:
-		# noinspection PyRedeclaration
-		cmd_parser = ProgramOptions.debug(args)
 	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)

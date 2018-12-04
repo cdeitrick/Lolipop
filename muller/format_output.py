@@ -1,3 +1,4 @@
+import logging
 import random
 import subprocess
 from pathlib import Path
@@ -5,6 +6,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas
 from dataclasses import dataclass
+
+#logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
+#logger = logging.getLogger(__name__)
 
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
@@ -40,6 +44,8 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+
+
 DETECTION_CUTOFF = 0.03
 
 
@@ -78,9 +84,7 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 	table = list()
 
 	for genotype_label, genotype in modified_genotypes.iterrows():
-
 		if genotype_label in children:
-
 			genotype_frequencies = genotype[genotype > DETECTION_CUTOFF]
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
@@ -92,8 +96,6 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 
 		# Remove timepoints where the value was 0 or less than 0 due to above line.
 
-
-
 		for timepoint, frequency in genotype_frequencies.items():
 			row = {
 				'Identity':   genotype_label,
@@ -101,13 +103,18 @@ def convert_population_to_ggmuller_format(mean_genotypes: pandas.DataFrame, edge
 				'Population': frequency * 100
 			}
 			table.append(row)
-	table.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
-	df = pandas.DataFrame(table)
-	return df
+	# table.append({'Generation': 0, "Identity": "genotype-0", "Population": 100})
+	temp_df = pandas.DataFrame(table)
+
+	generation_groups = temp_df.groupby(by = 'Generation')
+	for generation, group in generation_groups:
+		population = group['Population'].sum()
+		table.append({'Generation': generation, "Identity": "genotype-0", "Population": 100 - population})
+
+	return pandas.DataFrame(table)
 
 
 def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
-
 	table = list()
 	for genotype_info in genotype_clusters.values():
 		identity = genotype_info.name
@@ -117,6 +124,8 @@ def create_ggmuller_edges(genotype_clusters: ClusterType) -> pandas.DataFrame:
 			parent = 'genotype-0'
 		else:
 			parent = background[0]
+		if parent == identity:
+			parent = 'genotype-0'
 
 		row = {
 			'Parent':   parent,
@@ -146,14 +155,14 @@ def generate_formatted_output(workflow_data: WorkflowData, color_palette: Dict[s
 	"""
 
 	workflow_parameters = get_workflow_parameters(workflow_data)
-	print("generating edges...")
+	#logger.info("generating edges...")
 	ggmuller_edge_table = create_ggmuller_edges(workflow_data.clusters)
-	print("generating populations...")
+	#logger.info("generating populations...")
 	ggmuller_population_table = convert_population_to_ggmuller_format(workflow_data.genotypes, ggmuller_edge_table)
 
-	print("generating mermaid diagram...")
+	#logger.info("generating mermaid diagram...")
 	mermaid_diagram = generate_mermaid_diagram(ggmuller_edge_table, color_palette)
-	print("generating trajectories table...")
+	#logger.info("generating trajectories table...")
 	if workflow_data.info is not None:
 		genotype_map = {k: v.split('|') for k, v in workflow_data.genotypes['members'].items()}
 		trajectory_map = dict()
@@ -313,13 +322,11 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		workflow_data.trajectories['genotype'] = [trajectory_to_genotype[i] for i in workflow_data.trajectories.index]
 		workflow_data.trajectories.to_csv(str(trajectory_output_file), sep = delimiter)
 
-	print("plotting...")
+	#logger.info("Plotting trajectories")
 	# plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 
-	print("writing muller script")
 	mermaid_diagram_script.write_text(mermaid_diagram)
-	print("generating mermaid plot")
 	try:
 		subprocess.call(
 			["mmdc", "--height", "400", "-i", mermaid_diagram_script, "-o", mermaid_diagram_render],
@@ -328,7 +335,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	except FileNotFoundError:
 		pass
 
-	print("generating r script")
+	#logger.info("generating r script")
 	muller_df = generate_ggmuller_script(
 		trajectory = trajectory_output_file,
 		population = population_output_file,
@@ -338,10 +345,10 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 		script_filename = r_script_file,
 		color_palette = color_palette
 	)
+	if muller_df is not None:
+		generate_muller_plot(muller_df, workflow_data.trajectories, color_palette, muller_plot_annotated_file, annotate_all)
 
-	generate_muller_plot(muller_df, workflow_data.trajectories, color_palette, muller_plot_annotated_file, annotate_all)
-
-	print("generating muller plot...")
+	#logger.info("generating muller plot...")
 	subprocess.call(['Rscript', '--vanilla', '--silent', r_script_file], stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE)
 	_extra_file = Path.cwd() / "Rplots.pdf"

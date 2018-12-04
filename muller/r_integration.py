@@ -1,7 +1,8 @@
 import subprocess
 from pathlib import Path
 import pandas
-from typing import Dict
+from typing import Dict, Optional
+
 
 
 def execute_r_script(path: Path, script: str) -> Path:
@@ -19,7 +20,7 @@ def execute_r_script(path: Path, script: str) -> Path:
 
 
 def generate_ggmuller_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path, script_filename: Path,
-		color_palette: Dict[str, str]) -> pandas.DataFrame:
+		color_palette: Dict[str, str]) -> Optional[Path]:
 	script = """
 	library(ggplot2)
 	library(ggmuller)
@@ -53,5 +54,8 @@ def generate_ggmuller_script(trajectory: Path, population: Path, edges: Path, ta
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
 	execute_r_script(script_filename, script)
-	muller_df = pandas.read_csv(table_filename)
+	if table_filename.exists():
+		muller_df = pandas.read_csv(table_filename)
+	else:
+		muller_df = None
 	return muller_df
