@@ -1,5 +1,7 @@
 
 
+NOTE: This is incorrect. Kept for reference.
+
 The script calculates the relative similarity between all pairs of mutations with frequencies $0<=f_i<=1$. These are consistent with $n$ independent draws from a normal distribution, assuming an average variance of  
 
 1. $$\bar{f_i} = (f_{ai}+f_{bi})/2$$
@@ -21,10 +23,8 @@ where $X$ is the mean frequency of both time series at each time point and $n_X$
 
 $$\sigma_{\bar{X}} = \sigma_{tot}/n_X = \sqrt( \sum_i f_i(1-f_i))/\sqrt{n_X}$$
 
-
-Finally, given $\sigma​$ and $\bar{X}​$ we can construct a p-value for
+Finally, given $\sigma$ and $\bar{X}$ we can construct a p-value for
 the measurement by numerically computing the following integral:
-
 
 $$
 1 - \int_{- \bar{X}/ \sigma_{\bar{X}}}^{\bar{X}/\sigma_{\bar{X}}} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx
