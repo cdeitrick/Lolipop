@@ -55,18 +55,15 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 DF = pandas.DataFrame
 
 
-def workflow(trajectories_filename: Path, detection_cutoff: float, fixed_cutoff: float = None) -> Tuple[DF, DF]:
-	if fixed_cutoff is None: fixed_cutoff = 1 - detection_cutoff
+def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF]:
 
-	goptions = calculate_genotypes.GenotypeOptions.from_breakpoints(0.03)
 	trajectory_table, _ = import_trajectory_table(trajectories_filename)
-	genotype_table = calculate_genotypes.workflow(trajectories_filename,
-		options = goptions)
+	genotype_table = calculate_genotypes.workflow(trajectories_filename, options = goptions)
 	# return trajectory_table, genotype_table
 	members = genotype_table.pop('members')
 
 	for _ in range(20): #arbitrary, used to ensure the program does not encounter an infinite loop.
-		current_invalid_genotype = get_invalid_genotype(genotype_table, detection_cutoff, fixed_cutoff)
+		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint)
 		if current_invalid_genotype is None:
 			break
 		else:

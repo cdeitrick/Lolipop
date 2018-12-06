@@ -7,6 +7,9 @@
 - $\bar{d}$: The average of the differences between both time series
 - $\sigma_p^2$: Variance for the pair of mutational time series.
 
+### Background
+The expected value and variance of $n$ random independant draws from a normal distribution
+
 ### The Math
 
 The script calculates the relative similarity between all pairs of mutational time series with $n_t$ time points with frequencies in the range $f_{detected}< f < f_{fixed}$. These are consistent with $n$ independent draws from a normal distribution, assuming a variance of
@@ -26,6 +29,7 @@ Finally, given $\sigma_p$ and $\bar{d}$ we can calculate the probability that th
 4. $$
      p_{pair}=1 - \int_{- \infty}^{\bar{d}/\sigma_p} \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} dx \equiv 1-erf[\frac{\bar{d}}{\sqrt{2\sigma_p^2}}]
      $$
+
 
 
 

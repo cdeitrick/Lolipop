@@ -136,9 +136,8 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	df = pandas.concat([left, right], axis = 1)
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
-	not_fixed_df = df[(df < fixed_cutoff).any(axis = 1)]
 
-	not_detected_fixed_df = not_fixed_df[(not_fixed_df > detected_cutoff).any(axis = 1)]
+	not_detected_fixed_df = df[(df < fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
 
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left > fixed_cutoff]
@@ -156,18 +155,16 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# index is timepoints,  values are frequencies
 		mean: pandas.Series = not_detected_fixed_df.mean(axis = 1)
 
-		n_binom = len(mean)  # WARNING: is not compatible with matlab scripts for n != 5
 		# Calculate sigma_freq
-		n_binom = 1/len(mean)
 		# E(sigma) = (1/n) sum(sigma) = (1/n) sum(np(1-p)) == sum(p(1-p)
 		# E(sigma_p) = (1/n) E(sigma) == 1/n(sum(p(1-p))
 		# E(d_bar) = 1/n(sum(di)) == 1/n (n*sum(di))
 		sigma_freq: pandas.Series = (mean * (1 - mean))
 		# Difference of frequencies at each timepoint
 		difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
-		sigma_pair: float = sigma_freq.sum()/len(mean)
+		sigma_pair: float = sigma_freq.sum() / len(mean)
 		# Sum of differences
-		difference_mean: float = abs(difference).sum()#*n_binom
+		difference_mean: float = abs(difference).sum()
 
 		X = difference_mean / (math.sqrt(2 * sigma_pair))
 
@@ -359,20 +356,14 @@ def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: P
 	"""
 	for genotype in all_genotypes:
 		if len(genotype) > 1:
-			combination_pairs = list()
 			# Iterate over all possible pairs of genotype members.
-			for combination_pair in itertools.combinations(genotype, 2):
-				left, right = combination_pair
-				# Get the p-value for this pair.
-				p_value = pair_array[left, right]
-				value = [left, right, p_value]
-				combination_pairs.append(value)
+			combination_pairs = [(left, right, pair_array[left, right]) for left, right in itertools.combinations(genotype, 2)]
 			# Combine all pairs and p-values into a dataframe for convienience.
 			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
 			# print(genotype_combinations)
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.
-			unlinked_trajectories = genotype_combinations[genotype_combinations['pvalue'] <= link_cutoff]
+			unlinked_trajectories = genotype_combinations[genotype_combinations['pvalue'] < link_cutoff]
 
 			if len(unlinked_trajectories) != 0:
 				# Split the current genotype into two smaller but more internally-related all_genotypes.
@@ -417,6 +408,7 @@ def calculate_genotypes_from_population(timeseries: pandas.DataFrame, options: G
 	if PAIRWISE_P_VALUES:
 		for key in sorted(PAIRWISE_P_VALUES.keys()):
 			left_key, right_key = key
+
 			if left_key not in timeseries.index or right_key not in timeseries.index:
 				PAIRWISE_P_VALUES.pop(key)
 		pair_array = PAIRWISE_P_VALUES
@@ -583,7 +575,6 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 		options = GenotypeOptions.from_breakpoints(detection_breakpoint, fixed_breakpoint)
 
-
 	if isinstance(io, Path):
 		timepoints, _ = import_trajectory_table(io)
 	else:
@@ -598,5 +589,9 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 
 if __name__ == "__main__":
-	print(sum(i * (1 - i) for i in [.278, .8275, .803]) / 9)
-	print((.134 + .022 + .020) / 3)
+	index = [0,	17,	25,	44,	66,	75,	90]
+	left = pandas.Series([0,0,.2610,1,1,1,1], index = index)
+	right = pandas.Series([0,0,.1170,0,0,0,.103], index = index)
+
+	value = calculate_p_value(left, right, 0.03, 0.97)
+	print(value)

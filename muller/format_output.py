@@ -24,7 +24,7 @@ try:
 	from muller.generate_muller_plot import generate_muller_plot
 	from muller.r_integration import generate_ggmuller_script
 except ModuleNotFoundError:
-	from calculate_genotypes import GenotypeOptions
+	from calculate_genotypes import GenotypeOptions, PairwiseArrayType
 	from sort_genotypes import SortOptions
 	from order_clusters import OrderClusterParameters, ClusterType
 	from genotype_plots import plot_genotypes
@@ -44,6 +44,7 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
+	p_values: PairwiseArrayType
 
 
 DETECTION_CUTOFF = 0.03
@@ -312,6 +313,11 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 
 	# original_genotype_plot_filename = subfolder / (name + '.original.png')
 	genotype_plot_filename = output_folder / (name + '.filtered.png')
+	p_value_filename = subfolder / (name + ".pvalues.yaml")
+
+	with p_value_filename.open('w') as pfile:
+		for (l, r), v in sorted(workflow_data.p_values.items()):
+			pfile.write(f"{l}\t{r}\t{v}\n")
 
 	population_table.to_csv(str(population_output_file), sep = delimiter, index = False)
 	edge_table.to_csv(str(edges_output_file), sep = delimiter, index = False)
