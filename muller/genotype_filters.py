@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	# noinspection PyUnresolvedReferences
 	from import_table import import_trajectory_table
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List, Any
 
 
 # noinspection PyTypeChecker
@@ -55,13 +55,14 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 DF = pandas.DataFrame
 
 
-def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF]:
+def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF, Any]:
 
 	trajectory_table, _ = import_trajectory_table(trajectories_filename)
 	genotype_table = calculate_genotypes.workflow(trajectories_filename, options = goptions)
 	# return trajectory_table, genotype_table
-	members = genotype_table.pop('members')
 
+	cache:List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
+	members = genotype_table.pop('members')
 	for _ in range(20): #arbitrary, used to ensure the program does not encounter an infinite loop.
 		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint)
 		if current_invalid_genotype is None:
@@ -70,11 +71,13 @@ def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeO
 			invalid_members = members.loc[current_invalid_genotype].split('|')
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
 			genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
+
+			cache.append((trajectory_table.copy(), genotype_table.copy()))
 			members = genotype_table.pop('members')
 	else:
 		print("Could not filter the genotypes after 20 iterations.")
 	genotype_table['members'] = members
-	return trajectory_table, genotype_table
+	return trajectory_table, genotype_table, cache
 
 
 if __name__ == "__main__":

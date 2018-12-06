@@ -5,8 +5,8 @@ import argparse
 import itertools
 import math
 from pathlib import Path
-from typing import List, Optional, Union
-
+from typing import List, Optional, Union, Tuple
+import pandas
 from dataclasses import dataclass
 
 try:
@@ -78,16 +78,18 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 		original_timepoints = timepoints = info = None
 		original_genotypes = mean_genotypes
+		filter_cache = list()
 
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
 		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
 
 		if program_options.use_filter:
-			timepoints, mean_genotypes = genotype_filters.workflow(input_filename, program_options_genotype)
+			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(input_filename, program_options_genotype)
 		else:
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
+			filter_cache = list()
 
 	print("sorting genotypes...")
 
@@ -108,7 +110,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotype_options = program_options_genotype,
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering,
-		p_values = calculate_genotypes.PAIRWISE_P_VALUES
+		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
+		filter_cache = filter_cache
 	)
 	format_output.generate_output(workflow_data, output_folder, program_options.fixed_breakpoint, program_options.annotate_all)
 

@@ -45,6 +45,7 @@ class WorkflowData:
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
 	p_values: PairwiseArrayType
+	filter_cache:List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 
 
 DETECTION_CUTOFF = 0.03
@@ -285,6 +286,8 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	name = workflow_data.filename.stem
 	delimiter = '\t'
 	subfolder = output_folder / "supplementary-files"
+	filter_cache_folder = output_folder / "filters"
+
 	if not subfolder.exists():
 		subfolder.mkdir()
 
@@ -304,7 +307,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	edges_output_file = output_folder / (name + '.ggmuller.edges.tsv')
 
 	r_script_file = subfolder / (name + '.r')
-	muller_table_file = subfolder / (name + '.muller.tsv')
+	muller_table_file = subfolder / (name + '.muller.csv')
 	muller_plot_basic_file = output_folder / (name + '.muller.basic.png')
 	muller_plot_annotated_file = output_folder / (name + '.muller.annotated.png')
 
@@ -335,7 +338,12 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	#logger.info("Plotting trajectories")
 	# plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
-
+	if workflow_data.filter_cache:
+		if not filter_cache_folder.exists():
+			filter_cache_folder.mkdir()
+		for index, (_trajectories, _genotypes) in enumerate(workflow_data.filter_cache):
+			_plot_filename = filter_cache_folder / f"iteration-{index}.png"
+			plot_genotypes(_trajectories, _genotypes, _plot_filename, color_palette)
 	mermaid_diagram_script.write_text(mermaid_diagram)
 	try:
 		subprocess.call(

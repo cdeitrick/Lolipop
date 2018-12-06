@@ -2,7 +2,13 @@ import matplotlib.pyplot as plt
 import pandas
 from pathlib import Path
 from typing import Dict, List
-
+import random
+def generate_random_color() -> str:
+	r = random.randint(50, 200)
+	g = random.randint(50, 200)
+	b = random.randint(50, 200)
+	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
+	return color
 def get_numeric_columns(columns):
 	"""
 		Return a list of all columns which can be converted to a number. These columns represent the timepoints for
@@ -38,6 +44,9 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	-------
 
 	"""
+	for genotype_id in mutational_genotypes.index:
+		if genotype_id not in genotype_colors:
+			genotype_colors[genotype_id] = generate_random_color()
 	genotype_members = mutational_genotypes.pop('members')
 	genotype_members = {k: [j for j in v.split('|')] for k, v in sorted(genotype_members.items())}
 	if timeseries is not None:
@@ -71,7 +80,10 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	plt.title('Genotypes')
 
 	for cluster_id, cluster_timeseries in mutational_genotypes.iterrows():
-		cluster_color = genotype_colors[cluster_id]
+		if cluster_id in genotype_colors:
+			cluster_color = genotype_colors[cluster_id]
+		else:
+			cluster_color = generate_random_color()
 
 		plt.plot(
 			cluster_timeseries.index,
