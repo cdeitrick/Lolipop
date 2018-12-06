@@ -335,8 +335,7 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFram
 	return new_genotype_1, new_genotype_2
 
 
-def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[
-	List[str]]:
+def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[List[str]]:
 	"""
 		Splits each genotype if any of its members are not related enough to the other members. Genotypes will continue
 		to be split until the p-values for all pairwise members are beneath the cutoff.
@@ -360,7 +359,7 @@ def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: P
 			combination_pairs = [(left, right, pair_array[left, right]) for left, right in itertools.combinations(genotype, 2)]
 			# Combine all pairs and p-values into a dataframe for convienience.
 			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
-			# print(genotype_combinations)
+
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.
 			unlinked_trajectories = genotype_combinations[genotype_combinations['pvalue'] < link_cutoff]
@@ -449,7 +448,12 @@ def calculate_genotypes_from_population(timeseries: pandas.DataFrame, options: G
 	# TODO Fix so that it returns a genotype for each population
 	return [i for i in population_genotypes if i]  # Only return non-empty lists.
 
+def _calculate_mean_frequencies_of_trajectories(name:str, genotype_timeseries:pandas.DataFrame, genotype:List[str])->pandas.Series:
+	mean_genotype_timeseries = genotype_timeseries.mean()
+	mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
+	mean_genotype_timeseries.name = name
 
+	return mean_genotype_timeseries
 def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.DataFrame) -> pandas.DataFrame:
 	"""
 		Calculates the mean frequency of each genotype ate every timepoint.
@@ -467,15 +471,12 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	member trajectories are listed under the 'members' column.
 	every column represents a timepoint.
 	"""
-	timeseries.to_csv("test.csv")
 
 	mean_genotypes = list()
 
 	for index, genotype in enumerate(all_genotypes, start = 1):
 		genotype_timeseries = timeseries.loc[genotype]
-		mean_genotype_timeseries = genotype_timeseries.mean()
-		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
-		mean_genotype_timeseries.name = "genotype-{}".format(index)
+		mean_genotype_timeseries = _calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)
 		mean_genotypes.append(mean_genotype_timeseries)
 
 	mean_genotypes = pandas.DataFrame(mean_genotypes)

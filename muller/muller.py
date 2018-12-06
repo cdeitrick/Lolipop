@@ -90,7 +90,9 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			mean_genotypes = original_genotypes.copy()
 
 	print("sorting genotypes...")
+
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
+
 	print("nesting genotypes...")
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 

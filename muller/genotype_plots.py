@@ -2,17 +2,6 @@ import matplotlib.pyplot as plt
 import pandas
 from pathlib import Path
 from typing import Dict, List
-import random
-
-#plt.style.use('classic')
-
-def generate_random_color() -> str:
-	r = random.randint(100, 255)
-	g = random.randint(100, 255)
-	b = random.randint(100, 255)
-	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
-	return color
-
 
 def get_numeric_columns(columns):
 	"""
