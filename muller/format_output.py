@@ -345,7 +345,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	missing_genotype.name = 'filtered'
 	missing_genotype['members'] = '|'.join(missing_trajectories_labels)
 	concat_genotypes = workflow_data.genotypes.append(missing_genotype)
-	print(concat_genotypes.to_string())
+	#print(concat_genotypes.to_string())
 	concat_filename = output_folder / (name + f".missing.png")
 	plot_genotypes(concat_trajectories, concat_genotypes, concat_filename, color_palette)
 	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
