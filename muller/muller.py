@@ -5,8 +5,7 @@ import argparse
 import itertools
 import math
 from pathlib import Path
-from typing import List, Optional, Union, Tuple
-import pandas
+from typing import List, Optional, Union
 from dataclasses import dataclass
 
 try:
@@ -15,15 +14,16 @@ try:
 	from muller import calculate_genotypes
 	from muller import order_clusters
 	from muller import sort_genotypes
-	from muller import format_output
+	from muller.generate_output import save_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
 	from import_table import import_trajectory_table, import_genotype_table
 	import calculate_genotypes
 	import order_clusters
 	import sort_genotypes
-	import format_output
+	import generate_output.save_output
 	import genotype_filters
+	from generate_output import save_output
 
 
 # For convienience. Helps with autocomplete.
@@ -99,7 +99,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	print("Generating output...")
-	workflow_data = format_output.WorkflowData(
+	workflow_data = save_output.WorkflowData(
 		filename = input_filename,
 		info = info,
 		original_trajectories = original_timepoints,
@@ -113,7 +113,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
 		filter_cache = filter_cache
 	)
-	format_output.generate_output(workflow_data, output_folder, program_options.fixed_breakpoint, program_options.annotate_all)
+	save_output.generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
 
 	return genotype_clusters
 

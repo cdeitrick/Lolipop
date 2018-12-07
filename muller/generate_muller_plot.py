@@ -15,7 +15,7 @@ pandas.set_option('display.max_columns', 500)
 pandas.set_option('display.width', 250)
 
 
-def generate_muller_series(muller_df: pandas.DataFrame) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
+def generate_muller_series(muller_df: pandas.DataFrame, color_palette:Dict[str,str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	"""
 		Generates the required inputs for matplotlib to generate a mullerplot.
 	Parameters
@@ -42,7 +42,8 @@ def generate_muller_series(muller_df: pandas.DataFrame) -> Tuple[List[float], Li
 		else:
 			labels.append(genotype_label)
 		ddf = muller_df[muller_df['Group_id'] == genotype_label]
-		color = ddf['color'].tolist()[0]
+		_label = genotype_label[:-1] if genotype_label.endswith('a') else genotype_label
+		color = color_palette[_label]
 		colors.append(color)
 		x = ddf['Generation'].tolist()
 		y.append(ddf['Frequency'].tolist())
@@ -132,7 +133,7 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	return label_properties
 
 
-def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], colormap: Dict[str, str], output_filename: Path,
+def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str], output_filename: Path,
 		annotate_all: bool):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
@@ -140,7 +141,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	----------
 	muller_df: pandas.DataFrame
 	trajectory_table: pandas.DataFrame
-	colormap: Dict[str,str]
+	color_palette: Dict[str,str]
 	output_filename: Path
 	annotate_all:bool
 
@@ -151,12 +152,12 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	"""
 	points = get_coordinates(muller_df)
 
-	muller_df['color'] = [colormap[i] for i in muller_df['Identity'].values]
+	#muller_df['color'] = [color_palette[i] for i in muller_df['Identity'].values]
 
 	fig, ax = plt.subplots(figsize = (12, 10))
 	ax: Axes
 	#ax: Axes = plt.subplot(figsize = (12, 10))
-	x, y, colors, labels = generate_muller_series(muller_df)
+	x, y, colors, labels = generate_muller_series(muller_df, color_palette)
 
 	ax.stackplot(x, y, colors = colors, labels = labels)
 
@@ -164,7 +165,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 		groups = trajectory_table.groupby(by = 'genotype')
 
 		for genotype_label, point in points.items():
-			label_properties = get_font_properties(genotype_label, colormap)
+			label_properties = get_font_properties(genotype_label, color_palette)
 			x_loc, y_loc = point
 
 			try:
@@ -193,7 +194,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 			plt.text(
 				x_loc, y_loc,
 				"\n".join(genes),
-				bbox = dict(facecolor = colormap[genotype_label], alpha = 1),
+				bbox = dict(facecolor = color_palette[genotype_label], alpha = 1),
 				fontdict = label_properties
 			)
 
