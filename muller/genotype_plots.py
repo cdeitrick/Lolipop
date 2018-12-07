@@ -44,9 +44,6 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	-------
 
 	"""
-	for genotype_id in mutational_genotypes.index:
-		if genotype_id not in genotype_colors:
-			genotype_colors[genotype_id] = generate_random_color()
 	genotype_members = mutational_genotypes.pop('members')
 	genotype_members = {k: [j for j in v.split('|')] for k, v in sorted(genotype_members.items())}
 	if timeseries is not None:
@@ -79,10 +76,9 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
 	for cluster_id, cluster_timeseries in mutational_genotypes.iterrows():
-		if cluster_id in genotype_colors:
-			cluster_color = genotype_colors[cluster_id]
-		else:
-			cluster_color = generate_random_color()
+
+		cluster_color = genotype_colors[cluster_id]
+
 		#if 'genotype' in cluster_timeseries.index: cluster_timeseries.index.remove('genotype')
 		plt.plot(
 			cluster_timeseries.index,

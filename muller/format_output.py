@@ -235,7 +235,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, fixed_cuto
 
 	color_map = {i: j for i, j in zip(sorted(workflow_data.genotypes.index), color_palette)}
 	color_map['genotype-0'] = "#333333"
-	color_map['filtered'] = '#000000'
+	color_map['removed'] = '#000000'
 	population, edges, mermaid, parameters = generate_formatted_output(workflow_data, color_map)
 	save_output(workflow_data, population, edges, mermaid, parameters, output_folder, color_map, annotate_all)
 
@@ -340,18 +340,18 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	# missing_trajectories = workflow_data.original_trajectories.loc(missing_trajectories_labels)
 	#missing_trajectories['genotype'] = 'filtered'
 	missing_trajectories_labels = missing_trajectories.index
-	concat_trajectories = pandas.concat([workflow_data.trajectories, missing_trajectories])
+	concat_trajectories = pandas.concat([workflow_data.trajectories, missing_trajectories], sort = False)
 	missing_genotype = missing_trajectories.mean()
-	missing_genotype.name = 'filtered'
+	missing_genotype.name = 'removed'
 	missing_genotype['members'] = '|'.join(missing_trajectories_labels)
 	concat_genotypes = workflow_data.genotypes.append(missing_genotype)
 	#print(concat_genotypes.to_string())
-	concat_filename = output_folder / (name + f".missing.png")
+	concat_filename = output_folder / (name + f".removed.png")
 	plot_genotypes(concat_trajectories, concat_genotypes, concat_filename, color_palette)
 	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
-	if workflow_data.filter_cache:
+	if workflow_data.filter_cache and False:
 		if not filter_cache_folder.exists():
 			filter_cache_folder.mkdir()
 		for index, (_trajectories, _genotypes) in enumerate(workflow_data.filter_cache):
