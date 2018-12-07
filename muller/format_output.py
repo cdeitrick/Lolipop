@@ -338,7 +338,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	# missing_trajectories_labels = [i for i in workflow_data.original_trajectories.index if i not in workflow_data.trajectories.index]
 	missing_trajectories = workflow_data.original_trajectories[~workflow_data.original_trajectories.index.isin(workflow_data.trajectories.index)]
 	# missing_trajectories = workflow_data.original_trajectories.loc(missing_trajectories_labels)
-	missing_trajectories['genotype'] = 'filtered'
+	#missing_trajectories['genotype'] = 'filtered'
 	missing_trajectories_labels = missing_trajectories.index
 	concat_trajectories = pandas.concat([workflow_data.trajectories, missing_trajectories])
 	missing_genotype = missing_trajectories.mean()
@@ -348,7 +348,7 @@ def save_output(workflow_data: WorkflowData, population_table: pandas.DataFrame,
 	#print(concat_genotypes.to_string())
 	concat_filename = output_folder / (name + f".missing.png")
 	plot_genotypes(concat_trajectories, concat_genotypes, concat_filename, color_palette)
-	plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
+	#plot_genotypes(workflow_data.original_trajectories, workflow_data.original_genotypes, original_genotype_plot_filename, color_palette)
 
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, genotype_plot_filename, color_palette)
 	if workflow_data.filter_cache:

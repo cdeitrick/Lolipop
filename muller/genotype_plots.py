@@ -78,13 +78,12 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	plt.ylabel('frequency')
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
-
 	for cluster_id, cluster_timeseries in mutational_genotypes.iterrows():
 		if cluster_id in genotype_colors:
 			cluster_color = genotype_colors[cluster_id]
 		else:
 			cluster_color = generate_random_color()
-
+		#if 'genotype' in cluster_timeseries.index: cluster_timeseries.index.remove('genotype')
 		plt.plot(
 			cluster_timeseries.index,
 			cluster_timeseries.values,
