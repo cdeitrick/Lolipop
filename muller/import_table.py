@@ -110,23 +110,24 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 		Indicates which sheet contains the data, if an excel table is given.
 	Returns
 	-------
-	A timeseries dataframe
-		- Index -> str
-			Names unique to each trajectory.
-		- Columns -> int
-			The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
-			Each trajectory/timepoint will include the observed frequency at each timepoint.
-	A metadata dataframe
-		- Index -> str
-			Identical index to the timeseries dataframe.
-		- Columns -> str
-			All columns from the original input table that do no correspond to timepoints.
+	pandas.DataFrame, pandas.DataFrame
+		A timeseries dataframe
+			- Index -> str
+				Names unique to each trajectory.
+			- Columns -> int
+				The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
+				Each trajectory/timepoint will include the observed frequency at each timepoint.
+		A metadata dataframe
+			- Index -> str
+				Identical index to the timeseries dataframe.
+			- Columns -> str
+				All columns from the original input table that do no correspond to timepoints.
 	"""
 
 	# Read in the data table.
-	data = import_table(filename, sheet_name)
+	raw_data = import_table(filename, sheet_name)
 	key_column = 'Trajectory'
-	timeseries, info = _parse_table(data, key_column)
+	timeseries, info = _parse_table(raw_data, key_column)
 	return timeseries, info
 
 
