@@ -98,10 +98,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 
 def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
-		Reads an excel or csv file. Assumes that the file has the following columns:
-		- Population:
-		- Trajectory:
-		- Position:
+		Reads an excel or csv file. Assumes that the file has a `Trajectory` column and a column for each timepoint.
 	Parameters
 	----------
 	filename: Path
