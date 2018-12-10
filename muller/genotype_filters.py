@@ -58,7 +58,7 @@ DF = pandas.DataFrame
 def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF, Any]:
 
 	trajectory_table, _ = import_trajectory_table(trajectories_filename)
-	genotype_table = calculate_genotypes.workflow(trajectories_filename, options = goptions)
+	genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
 	# return trajectory_table, genotype_table
 
 	cache:List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
