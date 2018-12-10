@@ -366,8 +366,7 @@ def _unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: P
 
 			if len(unlinked_trajectories) != 0:
 				# Split the current genotype into two smaller but more internally-related all_genotypes.
-				new_genotype_1, new_genotype_2 = _divide_genotype(genotype[:], genotype_combinations, pair_array,
-					link_cutoff)
+				new_genotype_1, new_genotype_2 = _divide_genotype(genotype[:], genotype_combinations, pair_array, link_cutoff)
 
 				all_genotypes.append(new_genotype_1)
 				all_genotypes.append(new_genotype_2)
@@ -559,7 +558,8 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 	----------
 	io: Union[Path, pandas.DataFrame]
 		Should be either a path to the table of population trajectories or the output of import_timeseries().
-	options
+	options: GenotypeOptions
+		An instance of `GenotypeOptions` with the desired options.
 	matlab
 	detection_breakpoint
 	fixed_breakpoint
@@ -590,9 +590,11 @@ def workflow(io: Union[Path, pandas.DataFrame], options: GenotypeOptions = None,
 
 
 if __name__ == "__main__":
-	index = [0,	17,	25,	44,	66,	75,	90]
-	left = pandas.Series([0,0,.2610,1,1,1,1], index = index)
-	right = pandas.Series([0,0,.1170,0,0,0,.103], index = index)
+	from pprint import pprint
+	from import_table import import_trajectory_table
+	path = Path(__file__).parent.parent / "tests" / "data" / "3_genotypes.timeseries.tsv"
+	data, info = import_trajectory_table(path)
+	options = GenotypeOptions.from_breakpoints(0.03)
+	output = workflow(data, options)
+	print(output.to_string())
 
-	value = calculate_p_value(left, right, 0.03, 0.97)
-	print(value)

@@ -7,13 +7,28 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas
 from matplotlib import pyplot as plt
 from matplotlib.figure import Axes  # For autocomplete
-
+from itertools import filterfalse
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
 pandas.set_option('display.max_columns', 500)
 pandas.set_option('display.width', 250)
-
+def unique_everseen(iterable, key=None):
+    "List unique elements, preserving order. Remember all elements ever seen."
+    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
+    # unique_everseen('ABBCcAD', str.lower) --> A B C D
+    seen = set()
+    seen_add = seen.add
+    if key is None:
+        for element in filterfalse(seen.__contains__, iterable):
+            seen_add(element)
+            yield element
+    else:
+        for element in iterable:
+            k = key(element)
+            if k not in seen:
+                seen_add(k)
+                yield element
 
 def generate_muller_series(muller_df: pandas.DataFrame, color_palette:Dict[str,str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	"""
@@ -26,28 +41,19 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette:Dict[str,s
 	-------
 	x, y, colors, labels
 	"""
-	genotype_order = list()
-	for _, row in muller_df.iterrows():
-		genotype_label = row['Group_id']
-		if genotype_label not in genotype_order:
-			genotype_order.append(genotype_label)
+	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
-	x = list()
-	y = list()
-	colors = list()
-	labels = list()
+	x = list(unique_everseen(muller_df['Generation'].tolist()))
+
+	colors = [color_palette[genotype_label[:-1] if genotype_label.endswith('a') else genotype_label] for genotype_label in genotype_order]
+	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
+	groups = muller_df.groupby(by = 'Group_id')
+	y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
+	"""
 	for genotype_label in genotype_order:
-		if genotype_label.endswith('a'):
-			labels.append(None)
-		else:
-			labels.append(genotype_label)
 		ddf = muller_df[muller_df['Group_id'] == genotype_label]
-		_label = genotype_label[:-1] if genotype_label.endswith('a') else genotype_label
-		color = color_palette[_label]
-		colors.append(color)
-		x = ddf['Generation'].tolist()
 		y.append(ddf['Frequency'].tolist())
-
+	"""
 	return x, y, colors, labels
 
 
@@ -156,7 +162,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 
 	fig, ax = plt.subplots(figsize = (12, 10))
 	ax: Axes
-	#ax: Axes = plt.subplot(figsize = (12, 10))
+
 	x, y, colors, labels = generate_muller_series(muller_df, color_palette)
 
 	ax.stackplot(x, y, colors = colors, labels = labels)

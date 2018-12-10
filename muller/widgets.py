@@ -12,15 +12,17 @@ def generate_random_color() -> str:
 	return color
 
 
-def get_numeric_columns(columns: List) -> List[Union[int, float]]:
-	output_columns = list()
-	for col in columns:
+def get_numeric_columns(columns: List[str]) -> List[str]:
+	numeric_columns = list()
+	for column in columns:
+		if isinstance(column, str) and column.startswith('X'): col = column[1:]
+		else: col = column
 		try:
 			int(col)
-			output_columns.append(col)
-		except ValueError:
-			pass
-	return output_columns
+		except (ValueError, TypeError):
+			continue
+		numeric_columns.append(column)
+	return numeric_columns
 
 
 def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
@@ -34,7 +36,7 @@ def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
 	if len(genotypes) >= len(color_palette):
 		color_palette += [generate_random_color() for _ in genotypes]
 
-	color_map = {i: j for i, j in zip(sorted(genotypes), color_palette)}
+	color_map = {i: j for i, j in zip(sorted(genotypes, key = lambda s:int(s.split('-')[-1])), color_palette)}
 	color_map['genotype-0'] = "#333333"
 	color_map['removed'] = '#000000'
 

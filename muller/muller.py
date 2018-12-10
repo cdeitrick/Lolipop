@@ -27,97 +27,6 @@ except ModuleNotFoundError:
 
 
 # For convienience. Helps with autocomplete.
-
-def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
-	if isinstance(frequency, str):
-		if ',' in frequency:
-			frequencies = list(map(float, frequency.split(',')))
-		else:
-			frequencies = float(frequency)
-	elif isinstance(frequency, float):
-		frequencies = frequency
-	else:
-		frequencies = [float(i) for i in frequency]
-	if isinstance(frequencies, float):
-		frequencies = [math.fsum(itertools.repeat(frequencies, i)) for i in range(int(1 / frequencies) + 1)]
-		frequencies = [round(i, 2) for i in frequencies]
-	if 0 not in frequencies:
-		frequencies = [0] + frequencies
-	frequencies = sorted(frequencies, reverse = True)
-	return frequencies
-
-
-def parse_workflow_options(program_options):
-	compatibility_mode = program_options.mode
-	if compatibility_mode:
-		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
-		program_options_sort = sort_genotypes.SortOptions.from_matlab()
-		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
-	else:
-		freqs = _parse_frequency_option(program_options.frequencies)
-
-		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
-		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
-		program_options_sort = sort_genotypes.SortOptions(
-			detection_breakpoint = program_options_genotype.detection_breakpoint,
-			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
-			significant_breakpoint = program_options.significant_breakpoint,
-			frequency_breakpoints = freqs
-		)
-	return program_options, program_options_genotype, program_options_sort, program_options_clustering
-
-
-def workflow(input_filename: Path, output_folder: Path, program_options):
-	# as long as the sum of the other genotypes that inherit from root is less than 1.
-	print("parsing options...")
-	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
-		program_options)
-	print("Importing data...")
-	if program_options.is_genotype:
-		mean_genotypes = import_genotype_table(input_filename, program_options.sheetname)
-
-		original_timepoints = timepoints = info = None
-		original_genotypes = mean_genotypes
-		filter_cache = list()
-
-	else:
-		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
-		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
-
-		if program_options.use_filter:
-			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(input_filename, program_options_genotype)
-		else:
-			timepoints = original_timepoints.copy()
-			mean_genotypes = original_genotypes.copy()
-			filter_cache = list()
-
-	print("sorting genotypes...")
-
-	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
-
-	print("nesting genotypes...")
-	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
-
-	print("Generating output...")
-	workflow_data = save_output.WorkflowData(
-		filename = input_filename,
-		info = info,
-		original_trajectories = original_timepoints,
-		original_genotypes = original_genotypes,
-		trajectories = timepoints,
-		genotypes = mean_genotypes,
-		clusters = genotype_clusters,
-		genotype_options = program_options_genotype,
-		sort_options = program_options_sort,
-		cluster_options = program_options_clustering,
-		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
-		filter_cache = filter_cache
-	)
-	save_output.generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
-
-	return genotype_clusters
-
-
 @dataclass
 class ProgramOptions:
 	filename: Path
@@ -177,6 +86,97 @@ class ProgramOptions:
 		parser.output_folder = './output'
 		parser.use_filter = False
 		return cls.from_parser(parser)
+
+def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
+	if isinstance(frequency, str):
+		if ',' in frequency:
+			frequencies = list(map(float, frequency.split(',')))
+		else:
+			frequencies = float(frequency)
+	elif isinstance(frequency, float):
+		frequencies = frequency
+	else:
+		frequencies = [float(i) for i in frequency]
+	if isinstance(frequencies, float):
+		frequencies = [math.fsum(itertools.repeat(frequencies, i)) for i in range(int(1 / frequencies) + 1)]
+		frequencies = [round(i, 2) for i in frequencies]
+	if 0 not in frequencies:
+		frequencies = [0] + frequencies
+	frequencies = sorted(frequencies, reverse = True)
+	return frequencies
+
+
+def parse_workflow_options(program_options):
+	compatibility_mode = program_options.mode
+	if compatibility_mode:
+		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
+		program_options_sort = sort_genotypes.SortOptions.from_matlab()
+		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
+	else:
+		freqs = _parse_frequency_option(program_options.frequencies)
+
+		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
+		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
+		program_options_sort = sort_genotypes.SortOptions(
+			detection_breakpoint = program_options_genotype.detection_breakpoint,
+			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
+			significant_breakpoint = program_options.significant_breakpoint,
+			frequency_breakpoints = freqs
+		)
+	return program_options, program_options_genotype, program_options_sort, program_options_clustering
+
+
+def workflow(input_filename: Path, output_folder: Path, program_options):
+	# as long as the sum of the other genotypes that inherit from root is less than 1.
+	print("parsing options...")
+	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
+		program_options)
+	print("Importing data...")
+	if program_options.is_genotype:
+		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
+		mean_genotypes['members'] = genotype_info['members']
+		original_timepoints = timepoints = info = None
+		original_genotypes = mean_genotypes
+		filter_cache = list()
+
+	else:
+		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
+		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
+
+		if program_options.use_filter:
+			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(input_filename, program_options_genotype)
+		else:
+			timepoints = original_timepoints.copy()
+			mean_genotypes = original_genotypes.copy()
+			filter_cache = list()
+
+	print("sorting genotypes...")
+
+	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
+
+	print("nesting genotypes...")
+	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
+
+	print("Generating output...")
+	workflow_data = save_output.WorkflowData(
+		filename = input_filename,
+		info = info,
+		original_trajectories = original_timepoints,
+		original_genotypes = original_genotypes,
+		trajectories = timepoints,
+		genotypes = mean_genotypes,
+		clusters = genotype_clusters,
+		genotype_options = program_options_genotype,
+		sort_options = program_options_sort,
+		cluster_options = program_options_clustering,
+		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
+		filter_cache = filter_cache
+	)
+	save_output.generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
+
+	return genotype_clusters
+
+
 
 
 def create_parser() -> argparse.ArgumentParser:
