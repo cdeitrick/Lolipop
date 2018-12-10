@@ -1,8 +1,9 @@
 import random
-from typing import Dict, List, Union
-
+from typing import Dict, List, Union, Optional
+import re
 import pandas
 
+NUMERIC_REGEX = re.compile(".?(?P<number>[\d]+)")
 
 def generate_random_color() -> str:
 	r = random.randint(50, 200)
@@ -15,8 +16,15 @@ def generate_random_color() -> str:
 def get_numeric_columns(columns: List[str]) -> List[str]:
 	numeric_columns = list()
 	for column in columns:
-		if isinstance(column, str) and column.startswith('X'): col = column[1:]
-		else: col = column
+		if isinstance(column, str):
+			match = NUMERIC_REGEX.search(column)
+			if match:
+				col = match.groupdict()['number']
+			else:
+				continue
+		else:
+			col = column
+
 		try:
 			int(col)
 		except (ValueError, TypeError):
@@ -50,3 +58,4 @@ def map_trajectories_to_genotype(genotypes: pandas.DataFrame) -> Dict[str, str]:
 		for i in items:
 			trajectory_to_genotype[i] = label
 	return trajectory_to_genotype
+
