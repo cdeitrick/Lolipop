@@ -7,6 +7,7 @@ from widgets import get_numeric_columns
 
 
 def correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
+	""" Ensures the time table columns contain values between 0 and 1 and are of type `float`"""
 	new_data = old_data.copy(deep = True)
 	for column in old_data.columns:
 		if max(old_data[column]) > 1.0:
@@ -18,6 +19,8 @@ def correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 
 
 def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
+	""" Imports a file as a pandas.DataFrame. Infers filetype from the filename extension/suffix.
+	"""
 	if filename.suffix in {'.xls', '.xlsx'}:
 		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
 
@@ -30,6 +33,7 @@ def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
 
 
 def import_genotype_table(filename: Path, sheetname: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
 	data = import_table(filename, sheet_name = sheetname)
 
 	if 'Genotype' in data.columns:
@@ -49,6 +53,7 @@ def import_genotype_table(filename: Path, sheetname: str) -> Tuple[pandas.DataFr
 
 
 def _convert_to_integer(value: Any, default: Optional[int] = None) -> int:
+	""" Attempts to convert the input value to an integer. Returns `default` otherwise."""
 	if isinstance(value, str) and (value.startswith('x') or value.startswith('X')):
 		value = value[1:]
 	try:
