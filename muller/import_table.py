@@ -1,27 +1,19 @@
 from pathlib import Path
+from typing import Any, Optional, Tuple
+
 import pandas
-from typing import Tuple, List
+
+from widgets import get_numeric_columns
 
 
-def get_numeric_columns(columns: List[str]) -> List[str]:
-	numeric_columns = list()
-	for column in columns:
-		if isinstance(column, str) and column.startswith('X'): col = column[1:]
-		else: col = column
-		try:
-			int(col)
-		except (ValueError, TypeError):
-			continue
-		numeric_columns.append(column)
-	return numeric_columns
-
-
-def correct_math_scale(data: pandas.DataFrame) -> pandas.DataFrame:
-	numeric = get_numeric_columns(data.columns)
-	new_data = data.copy(deep = True)
-	for column in numeric:
-		if max(data[column]) > 1.0:
-			new_data[column] = data[column] / 100
+def correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
+	new_data = old_data.copy(deep = True)
+	for column in old_data.columns:
+		if max(old_data[column]) > 1.0:
+			new_column = old_data[column] / 100
+		else:
+			new_column = old_data[column].astype(float)
+		new_data[column] = new_column
 	return new_data
 
 
@@ -33,14 +25,11 @@ def import_table(filename: Path, sheet_name: str) -> pandas.DataFrame:
 		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
 		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
 
-	if 0 not in data.columns and '0' not in data.columns:
-		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
-		data["0"] = 0.0
 	data = data[sorted(data.columns, key = lambda s: str(s))]
 	return data
 
 
-def import_genotype_table(filename: Path, sheetname: str) -> pandas.DataFrame:
+def import_genotype_table(filename: Path, sheetname: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	data = import_table(filename, sheet_name = sheetname)
 
 	if 'Genotype' in data.columns:
@@ -48,32 +37,58 @@ def import_genotype_table(filename: Path, sheetname: str) -> pandas.DataFrame:
 	elif 'Unnamed: 0' in data.columns:
 		key_column = 'Unnamed: 0'
 	else:
-		message = "One of the columns needs to be labeled 'Genotype'"
+		message = "One of the columns needs to be labeled `Genotype`"
 		raise ValueError(message)
 
 	if 'members' not in data.columns:
 		message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
 		raise ValueError(message)
 
-	data = data[[key_column, 'members'] + get_numeric_columns(data.columns)]
+	genotype_timeseries, genotype_info = _parse_table(data, key_column)
+	return genotype_timeseries, genotype_info
 
-	data = data.set_index(key_column)
-	data.index.name = 'Genotype'
 
-	def _convert_to_numeric(col):
-		try:
-			return int(col)
-		except ValueError:
-			return col
+def _convert_to_integer(value: Any, default: Optional[int] = None) -> int:
+	if isinstance(value, str) and (value.startswith('x') or value.startswith('X')):
+		value = value[1:]
+	try:
+		result = int(value)
+	except (TypeError, ValueError):
+		result = default
+	return result
 
-	data = data.rename(_convert_to_numeric, axis = 'columns')
 
-	# Remove undetected genotypes.
+def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+	"""
+		Converts column headers to integers and moves all non-integer columns to a separate dataframe.
+	"""
+	# Make sure the column with the series names is the index of the table.
+	raw_table[key_column] = [str(i) for i in raw_table[key_column].tolist()]
+	raw_table.set_index(key_column, inplace = True)
 
-	data = data[data.max(axis = 1) > 0]
-	data['members'] = [str(i) for i in data['members']]
-	data = correct_math_scale(data)
-	return data
+	# Extract the columns which indicate timepoints of observations. Should be integers.
+	frequency_columns = get_numeric_columns(raw_table.columns)
+
+	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
+	time_table = raw_table[frequency_columns]
+	# Convert the columns into integers. Makes them easier to work with if they have a standard raw_table type.
+	converted_frequency_columns = [_convert_to_integer(i) for i in frequency_columns]
+	time_table.columns = converted_frequency_columns
+
+	# Drop any trajectories which are never detected.
+	time_table = time_table[(time_table.T != 0).any()]
+
+	# Make sure the table values are between 0 and 1 and are of type `float`
+	time_table = correct_math_scale(time_table)
+
+	# Make sure the time table contains a column for timepoint `0`.
+	if 0 not in time_table.columns:
+		time_table[0] = 0.0  # Should be a float to match the dtype of the other columns
+		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
+
+	# Extract metadata for each series.
+	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns]]
+	return time_table, info_table
 
 
 def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
@@ -92,12 +107,8 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	-------
 	A timeseries dataframe
 		- Columns
-			- Population: str
-				Name of the population. ex. 'B2'
-			- Trajectory: int
-				Identifies a unique mutation based on population and posiiton. Should be sorted starting from 1
-			- Position: int
-				Position of the mutation.
+			- Trajectory: str
+				Identifies a unique mutation based on population and position.
 			* timeseries
 				The timeseries points will correspond to the timepoints included with the input sheet.
 				Each trajectory/timepoint will include the observed frequency at each timepoint.
@@ -106,26 +117,12 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 
 	# Read in the data table.
 	data = import_table(filename, sheet_name)
-
 	key_column = 'Trajectory'
-	# Extract the columns which indicate timepoints of observations. Should be integers.
-	frequency_columns = get_numeric_columns(data.columns)
-	# Extract the columns with the trajectory identifiers and frequencies at each timepoint.
-	data[key_column] = [str(i) for i in data[key_column].tolist()]
-	data = data.set_index(key_column)
-	timeseries = data[frequency_columns]
-	timeseries = correct_math_scale(timeseries)
-
-	# Extract metadata for each trajectory.
-	try:
-		potential_columns = ['Population', 'Position', 'Class', 'Gene', 'Mutation', 'Annotation']
-		info = data[[i for i in potential_columns if i in data.columns]]
-	# info = data[potential_columns]
-	except ValueError:
-		info = None
-	timeseries = timeseries.rename(columns = int)
+	timeseries, info = _parse_table(data, key_column)
 	return timeseries, info
 
 
 if __name__ == "__main__":
-	pass
+	path = Path(__file__).parent.parent / "tests" / "data" / "2_genotypes_with_string_columns.tsv"
+	data, _ = import_trajectory_table(path)
+	print(data.to_string())
