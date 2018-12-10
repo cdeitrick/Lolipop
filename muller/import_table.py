@@ -106,13 +106,16 @@ def import_trajectory_table(filename: Path, sheet_name = 'Sheet1') -> Tuple[pand
 	Returns
 	-------
 	A timeseries dataframe
-		- Columns
-			- Trajectory: str
-				Identifies a unique mutation based on population and position.
-			* timeseries
-				The timeseries points will correspond to the timepoints included with the input sheet.
-				Each trajectory/timepoint will include the observed frequency at each timepoint.
-	A dataframe with metadata for each trajectory. Includes Population, Class (ex 'SNP'), and Mutation ('C>T')
+		- Index -> str
+			Names unique to each trajectory.
+		- Columns -> int
+			The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
+			Each trajectory/timepoint will include the observed frequency at each timepoint.
+	A metadata dataframe
+		- Index -> str
+			Identical index to the timeseries dataframe.
+		- Columns -> str
+			All columns from the original input table that do no correspond to timepoints.
 	"""
 
 	# Read in the data table.
