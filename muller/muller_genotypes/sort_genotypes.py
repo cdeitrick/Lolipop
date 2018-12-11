@@ -128,8 +128,6 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 			freq_groups.append(trajectories)
 		else:
 			# More than one genotype share this combination of key timepoints. Sort by frequency.
-			#trajectories = genotype_trajectories.drop(
-			#	[gt for gt in genotype_trajectories.index if gt not in group.index])
 			# Sort from highest to lowest
 			trajectories = trajectories.sort_values(by = [ff, fd, ft],ascending = False)
 			freq_groups.append(trajectories)
