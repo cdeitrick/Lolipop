@@ -5,10 +5,8 @@ import pandas
 
 try:
 	from muller.muller_genotypes import calculate_genotypes
-	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
 	from muller_genotypes import calculate_genotypes
-	from import_table import import_trajectory_table
 
 pandas.set_option('display.width', 300)
 
@@ -52,7 +50,6 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	fixed_timepoints: pandas.DataFrame = backgrounds[backgrounds > fuzzy_fixed_cutoff].dropna(how = 'all').transpose()
 	fixed_timepoints = fixed_timepoints.dropna(how = 'all').transpose()
 	fixed_timepoints = [s.first_valid_index() for _, s in fixed_timepoints.iterrows()]
-	print(fixed_timepoints)
 	# We want to iterate over the non-background genotypes to check if they appear both before and after any genotypes that fix.
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
 
@@ -95,28 +92,44 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 DF = pandas.DataFrame
 
 
-def workflow(trajectories_filename: Path, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float]) -> Tuple[DF, DF, Any]:
-	trajectory_table, _ = import_trajectory_table(trajectories_filename)
+def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float]) -> Tuple[DF, DF, Any]:
+	"""
+		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
+	Parameters
+	----------
+	trajectory_table: pandas.DataFrame
+	goptions: GenotypeOptions
+	frequency_cutoffs: List[float]
+
+	Returns
+	-------
+
+	"""
+	trajectory_table = trajectory_table.copy(deep = True) # To avoid any unintended changes to the original table.
 	genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
-	# return trajectory_table, genotype_table
 
 	cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
-	members = genotype_table.pop('members')
-	_iterations = 10
-	for _ in range(_iterations):  # arbitrary, used to ensure the program does not encounter an infinite loop.
+	original_genotype_members = genotype_table.pop('members')
+	_iterations = 10 # arbitrary, used to ensure the program does not encounter an infinite loop.
+	for _ in range(_iterations):
+		# Search for genotypes that do not make sense in the context of an evolved population.
 		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint, frequency_cutoffs)
 		if current_invalid_genotype is None:
 			break
 		else:
-			invalid_members = members.loc[current_invalid_genotype].split('|')
+			# Get a list of the trajectories that form this genotype.
+			invalid_members = original_genotype_members.loc[current_invalid_genotype].split('|')
+			# Remove these trajectories from the trajectories table.
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
+			# Re-calculate the genotypes based on the remaining trajectories.
 			genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
 
 			cache.append((trajectory_table.copy(), genotype_table.copy()))
-			members = genotype_table.pop('members')
+			# Update the trajectories that comprise each genotype.
+			original_genotype_members = genotype_table.pop('members')
 	else:
 		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	genotype_table['members'] = members
+	genotype_table['members'] = original_genotype_members
 	return trajectory_table, genotype_table, cache
 
 
