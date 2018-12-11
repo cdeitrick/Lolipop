@@ -6,7 +6,7 @@ import itertools
 import math
 from pathlib import Path
 from typing import List, Optional, Union
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 try:
 	from muller.import_table import import_trajectory_table, import_genotype_table
@@ -126,8 +126,9 @@ def parse_workflow_options(program_options):
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	print("parsing options...")
-	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
-		program_options)
+	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
+	from pprint import pprint
+	pprint(asdict(program_options))
 	print("Importing data...")
 	if program_options.is_genotype:
 		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
@@ -172,8 +173,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
 
 	return genotype_clusters
-
-
 
 
 def create_parser() -> argparse.ArgumentParser:
