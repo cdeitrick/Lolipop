@@ -4,6 +4,7 @@ pandas.set_option('display.max_columns', 400)
 pandas.set_option('display.width', 400)
 from typing import List, Optional
 from dataclasses import dataclass
+from .calculate_genotypes import Genotype
 
 
 @dataclass
@@ -11,7 +12,7 @@ class SortOptions:
 	detection_breakpoint: float
 	significant_breakpoint: float
 	fixed_breakpoint: float
-	frequency_breakpoints: List[float]  # Used when sorting non-fixed genotypes.
+	frequency_breakpoints: List[float]  # Used when sorting non-fixed muller_genotypes.
 
 	@classmethod
 	def from_matlab(cls) -> 'SortOptions':
@@ -33,19 +34,11 @@ class SortOptions:
 			fixed_breakpoint = fixed,
 			frequency_breakpoints = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 		)
-@dataclass
-class Genotype:
-	members: List[str]
-	frequency: pandas.Series
-	trajectories: pandas.DataFrame
 
-	detected: int # First timepoint the genotype was detected.
-	significant: int # First significant timepoint
-	fixed: Optional[int] # First fixed timepoint
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
-		Sorts the genotypes based on when they were first detected and first fixed.
+		Sorts the muller_genotypes based on when they were first detected and first fixed.
 	Parameters
 	----------
 	genotype_frequencies:pandas.Dataframe
@@ -99,7 +92,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	first_fixed: pandas.Series = (transposed > frequency_breakpoint).idxmax(0).sort_values()
 	first_fixed.name = 'firstFixed'
 
-	# Remove the genotypes which were never detected or never rose above the threshold.
+	# Remove the muller_genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
 	# To replicate the behavior in the matlab script
 	first_above_threshold_reduced = first_above_threshold.replace(0, 13)
@@ -119,7 +112,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 		df = df.dropna()
 	sorted_frequencies = df.sort_values(by = ['firstDetected', 'firstThreshold'])
 
-	# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
+	# Sort muller_genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
 
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
