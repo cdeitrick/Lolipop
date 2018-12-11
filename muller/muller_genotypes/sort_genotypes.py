@@ -2,9 +2,8 @@ import pandas
 
 pandas.set_option('display.max_columns', 400)
 pandas.set_option('display.width', 400)
-from typing import List, Optional
+from typing import List
 from dataclasses import dataclass
-from .calculate_genotypes import Genotype
 
 
 @dataclass
@@ -56,7 +55,6 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	if 'members' in current_genotypes:
 		current_genotypes.pop('members')
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
-
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,
 			frequency_breakpoint = frequency,
@@ -69,12 +67,10 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
 
-	#sorted_genotypes.append(current_genotypes)
-	df = pandas.concat(sorted_genotypes, sort=False)
+	# sorted_genotypes.append(current_genotypes)
+	df = pandas.concat(sorted_genotypes, sort = False)
 	df = genotype_frequencies.reindex(df.index)
 	return df
-
-
 
 
 def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency_breakpoint: float,
@@ -99,7 +95,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
 
-	#if first_fixed_reduced.empty:
+	# if first_fixed_reduced.empty:
 	#	first_fixed_reduced = first_fixed
 
 	combined_df: pandas.DataFrame = pandas.concat(
@@ -113,15 +109,12 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	sorted_frequencies = df.sort_values(by = ['firstDetected', 'firstThreshold'])
 
 	# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
-	if not sorted_frequencies.empty:
-		print()
-		print(sorted_frequencies.to_string())
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
 
 	# Iterate over the conbinations of 'firstFixed', 'firstDetected', and 'firstThreshold' and sort trajectories that belong to the sample combination.
 	for (ff, fd, ft), group in groups:
-		trajectories:pandas.DataFrame = genotype_trajectories.loc[group.index]
+		trajectories: pandas.DataFrame = genotype_trajectories.loc[group.index]
 
 		if len(group) < 2:
 			# There is only one genotype in this combination of timepoints. No need to sort.
@@ -129,7 +122,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 		else:
 			# More than one genotype share this combination of key timepoints. Sort by frequency.
 			# Sort from highest to lowest
-			trajectories = trajectories.sort_values(by = [ff, fd, ft],ascending = False)
+			trajectories = trajectories.sort_values(by = [ff, fd, ft], ascending = False)
 			freq_groups.append(trajectories)
 
 	if freq_groups:  # Make sure freq_groups is not empty
@@ -137,9 +130,6 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	else:
 		freq_df = sorted_frequencies
 
-	if not sorted_frequencies.empty:
-		print(freq_df)
-		print()
 	return freq_df
 
 
