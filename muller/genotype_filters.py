@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any, List, Tuple
 
 import pandas
@@ -55,6 +54,8 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
 		fuzzy_fixed_timepoints = background[background > fuzzy_fixed_cutoff]
+		first_detected_point = background[background > detection_cutoff].first_valid_index()
+
 		first_fixed_point: int = fuzzy_fixed_timepoints.first_valid_index()
 
 		# Iterate over the non-background genotypes.
@@ -72,26 +73,17 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 			first_detected = detected_points.first_valid_index()
 			last_detected = detected_points.last_valid_index()
 
+			# Check if the genotype was detected prior to the background. Skip those that were not.
+			was_detected_before_and_after_background = first_detected < first_detected_point < last_detected
 			# Check if the genotype was detected before and after the timepoint the current backgound fixed.
-			if first_detected < first_fixed_point < last_detected:
+			was_detected_before_and_after_fixed = first_detected < first_fixed_point < last_detected
+
+			if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
 				# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 				# Check to see if it was undetected at the timpont the background fixed.
-				"""
-				first_fixed_points: pandas.Series = genotype[fixed_timepoints]
-				# Check if the genotype was undetected during at least one fixed timepoint.
-				zero_points = first_fixed_points[first_fixed_points <= detection_cutoff]
-				
-				
-				# The genotype was seen both before and after the background fixed.
-				# Check if it was undetected when a genotype fixed.
-				if zero_points.empty:
-					return genotype_label
-				else:
-					# Remove even if undetected at fixed points.
-					#return genotype_label
-					pass
-				"""
+
 				if genotype.loc[first_fixed_point] > detection_cutoff:
+					# The genotype was detected at the first fixed timepoint.
 					return genotype_label
 
 
@@ -111,12 +103,12 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	-------
 
 	"""
-	trajectory_table = trajectory_table.copy(deep = True) # To avoid any unintended changes to the original table.
+	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
 	genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
 
 	cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
 	original_genotype_members = genotype_table.pop('members')
-	_iterations = 10 # arbitrary, used to ensure the program does not encounter an infinite loop.
+	_iterations = 10  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
 		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint, frequency_cutoffs)
