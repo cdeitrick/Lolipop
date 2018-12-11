@@ -147,11 +147,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
 			filter_cache = list()
-
 	print("sorting muller_genotypes...")
-
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
-	print(sorted_genotypes.to_string())
 	print("nesting muller_genotypes...")
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
