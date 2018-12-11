@@ -28,8 +28,6 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	-------
 
 	"""
-	# fuzzy_fixed_cutoff = 0.5
-	# cutoffs = [fixed_cutoff] + [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0.0]
 	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
 	# used when sorting the genotypes.
 	for cutoff in cutoffs:
@@ -57,7 +55,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
 		fuzzy_fixed_timepoints = background[background > fuzzy_fixed_cutoff]
-		fixed_point: int = fuzzy_fixed_timepoints.first_valid_index()
+		first_fixed_point: int = fuzzy_fixed_timepoints.first_valid_index()
 
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
@@ -75,17 +73,25 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 			last_detected = detected_points.last_valid_index()
 
 			# Check if the genotype was detected before and after the timepoint the current backgound fixed.
-			if first_detected < fixed_point < last_detected:
+			if first_detected < first_fixed_point < last_detected:
 				# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 				# Check to see if it was undetected at the timpont the background fixed.
+				"""
 				first_fixed_points: pandas.Series = genotype[fixed_timepoints]
+				# Check if the genotype was undetected during at least one fixed timepoint.
 				zero_points = first_fixed_points[first_fixed_points <= detection_cutoff]
+				
+				
 				# The genotype was seen both before and after the background fixed.
 				# Check if it was undetected when a genotype fixed.
 				if zero_points.empty:
 					return genotype_label
 				else:
 					# Remove even if undetected at fixed points.
+					#return genotype_label
+					pass
+				"""
+				if genotype.loc[first_fixed_point] > detection_cutoff:
 					return genotype_label
 
 
