@@ -10,20 +10,17 @@ from dataclasses import dataclass
 
 try:
 	from muller.import_table import import_trajectory_table, import_genotype_table
-
-	from muller import calculate_genotypes
+	from muller_genotypes import calculate_genotypes, sort_genotypes
 	from muller import order_clusters
-	from muller import sort_genotypes
-	from muller.generate_output import save_output
+	from muller.generate_output import WorkflowData, generate_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
 	from import_table import import_trajectory_table, import_genotype_table
-	import calculate_genotypes
+	from muller_genotypes import calculate_genotypes, sort_genotypes
 	import order_clusters
-	import sort_genotypes
-	import generate_output.save_output
+	import muller_genotypes.sort_genotypes
 	import genotype_filters
-	from generate_output import save_output
+	from generate_output import WorkflowData, generate_output
 
 
 # For convienience. Helps with autocomplete.
@@ -127,7 +124,7 @@ def parse_workflow_options(program_options):
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
-	# as long as the sum of the other genotypes that inherit from root is less than 1.
+	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(
 		program_options)
@@ -150,15 +147,15 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			mean_genotypes = original_genotypes.copy()
 			filter_cache = list()
 
-	print("sorting genotypes...")
+	print("sorting muller_genotypes...")
 
 	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
 
-	print("nesting genotypes...")
+	print("nesting muller_genotypes...")
 	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
 
 	print("Generating output...")
-	workflow_data = save_output.WorkflowData(
+	workflow_data = WorkflowData(
 		filename = input_filename,
 		info = info,
 		original_trajectories = original_timepoints,
@@ -172,7 +169,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
 		filter_cache = filter_cache
 	)
-	save_output.generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
+	generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
 
 	return genotype_clusters
 
@@ -229,14 +226,14 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"-f", "--frequencies",
-		help = 'The frequency cutoff to use when sorting the genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
+		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
 		action = 'store',
 		dest = 'frequencies',
 		default = 0.10
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
-		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
+		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into muller_genotypes.",
 		action = "store",
 		default = 0.05,
 		dest = "similarity_breakpoint"
@@ -244,14 +241,14 @@ def create_parser() -> argparse.ArgumentParser:
 
 	parser.add_argument(
 		"-l", "--difference-cutoff",
-		help = "Minimum p-value to consider a pair of genotypes unrelated. Used when splitting genotypes.",
+		help = "Minimum p-value to consider a pair of muller_genotypes unrelated. Used when splitting muller_genotypes.",
 		action = "store",
 		default = 0.10,
 		dest = "difference_breakpoint"
 	)
 	parser.add_argument(
-		"--genotypes", "--cohorts",
-		help = "Indicates that the input table contains genotypes rather than trajectories.",
+		"--muller_genotypes", "--cohorts",
+		help = "Indicates that the input table contains muller_genotypes rather than trajectories.",
 		action = 'store_true',
 		dest = 'is_genotype'
 	)
