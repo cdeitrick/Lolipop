@@ -49,7 +49,6 @@ class GenotypeOptions:
 
 	@classmethod
 	def from_parser(cls, parser: argparse.Namespace) -> 'GenotypeOptions':
-		print(parser)
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
 		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
