@@ -10,16 +10,16 @@ except ModuleNotFoundError:
 
 def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path, genotype_colors:Dict[str,str], parent_genotypes:Dict[str,str]):
 	"""
-		Plots the clustered genotypes.
+		Plots the clustered muller_genotypes.
 	Parameters
 	----------
 	timeseries: pandas.DataFrame
-		The table with each trajectory used to generate the genotypes.
+		The table with each trajectory used to generate the muller_genotypes.
 	filename: Optional[Path]
 		Path to save the genotype plot.
 	mutational_genotypes: pandas.DataFrame
 	genotype_colors: Dict[str,str]
-		A mapping of genotypes to their corresponding colors.
+		A mapping of muller_genotypes to their corresponding colors.
 	Returns
 	-------
 
@@ -46,7 +46,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 			x_values, y_values = zip(*trajectory_timeseries)
 			plt.plot(x_values, y_values, '-o', color = color, label = trajectory_id, markersize = 2)
 
-	# Plot clustered genotypes. Should be same as above, but colored based on genotype cluster.
+	# Plot clustered muller_genotypes. Should be same as above, but colored based on genotype cluster.
 	# Plot the mean of each cluster
 	if timeseries is not None:
 		plt.subplot(grid[1, :])

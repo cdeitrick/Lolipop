@@ -2,12 +2,10 @@ import pandas
 
 pandas.set_option('display.width', 300)
 try:
-	from muller import calculate_genotypes
+	from muller.muller_genotypes import calculate_genotypes
 	from muller.import_table import import_trajectory_table
 except ModuleNotFoundError:
-	# noinspection PyUnresolvedReferences
-	import calculate_genotypes
-	# noinspection PyUnresolvedReferences
+	from muller_genotypes import calculate_genotypes
 	from import_table import import_trajectory_table
 from pathlib import Path
 from typing import Tuple, List, Any
@@ -55,7 +53,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 DF = pandas.DataFrame
 
 
-def workflow(trajectories_filename: Path, goptions:calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF, Any]:
+def workflow(trajectories_filename: Path, goptions: calculate_genotypes.GenotypeOptions) -> Tuple[DF, DF, Any]:
 
 	trajectory_table, _ = import_trajectory_table(trajectories_filename)
 	genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
