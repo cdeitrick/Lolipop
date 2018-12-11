@@ -142,7 +142,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
 
 		if program_options.use_filter:
-			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(input_filename, program_options_genotype)
+			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(input_filename, program_options_genotype, program_options_sort.frequency_breakpoints)
 		else:
 			timepoints = original_timepoints.copy()
 			mean_genotypes = original_genotypes.copy()
