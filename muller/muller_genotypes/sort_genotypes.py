@@ -95,7 +95,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	# Remove the muller_genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
 	# To replicate the behavior in the matlab script
-	first_above_threshold_reduced = first_above_threshold.replace(0, 13)
+	first_above_threshold_reduced = first_above_threshold.replace(0, 130)
 
 	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
 
@@ -112,18 +112,26 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 		df = df.dropna()
 	sorted_frequencies = df.sort_values(by = ['firstDetected', 'firstThreshold'])
 
-	# Sort muller_genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
-
+	# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
+	if not sorted_frequencies.empty:
+		print()
+		print(sorted_frequencies.to_string())
 	freq_groups = list()
 	groups = sorted_frequencies.groupby(by = list(sorted_frequencies.columns))
 
-	for _, group in groups:
-		trajectories = genotype_trajectories.loc[group.index]
+	# Iterate over the conbinations of 'firstFixed', 'firstDetected', and 'firstThreshold' and sort trajectories that belong to the sample combination.
+	for (ff, fd, ft), group in groups:
+		trajectories:pandas.DataFrame = genotype_trajectories.loc[group.index]
+
 		if len(group) < 2:
+			# There is only one genotype in this combination of timepoints. No need to sort.
 			freq_groups.append(trajectories)
 		else:
-			trajectories = genotype_trajectories.drop(
-				[gt for gt in genotype_trajectories.index if gt not in group.index])
+			# More than one genotype share this combination of key timepoints. Sort by frequency.
+			#trajectories = genotype_trajectories.drop(
+			#	[gt for gt in genotype_trajectories.index if gt not in group.index])
+			# Sort from highest to lowest
+			trajectories = trajectories.sort_values(by = [ff, fd, ft],ascending = False)
 			freq_groups.append(trajectories)
 
 	if freq_groups:  # Make sure freq_groups is not empty
@@ -131,6 +139,9 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	else:
 		freq_df = sorted_frequencies
 
+	if not sorted_frequencies.empty:
+		print(freq_df)
+		print()
 	return freq_df
 
 
