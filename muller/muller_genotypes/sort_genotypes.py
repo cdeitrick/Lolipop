@@ -91,6 +91,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	# Remove the muller_genotypes which were never detected or never rose above the threshold.
 	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
 	# To replicate the behavior in the matlab script
+
 	first_above_threshold_reduced = first_above_threshold.replace(0, 130)
 
 	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
@@ -114,6 +115,8 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Iterate over the conbinations of 'firstFixed', 'firstDetected', and 'firstThreshold' and sort trajectories that belong to the sample combination.
 	for (ff, fd, ft), group in groups:
+		if ft == 130: # dummy value assigned above. Revert back to 0 since '130' isn't a valid timepoint.
+			ft = 0
 		trajectories: pandas.DataFrame = genotype_trajectories.loc[group.index]
 
 		if len(group) < 2:
