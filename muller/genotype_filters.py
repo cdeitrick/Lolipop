@@ -11,7 +11,7 @@ pandas.set_option('display.width', 300)
 
 
 # noinspection PyTypeChecker
-def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, cutoffs: List[float]) -> pandas.DataFrame:
+def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float]) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
 		unrelated diversity and essentially 'resets' the mutation pool. Genotypes which are detected prior to a fixed genotype should, in theory,
 		fall to an undetected frequency. Any genotypes that do not follow this rule (are detected both before and after a genotype fixes) should
@@ -20,9 +20,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	----------
 	genotypes: pands.DataFrame
 	detection_cutoff: float
-	fixed_cutoff: float
 	cutoffs: List[float]
-
 	Returns
 	-------
 
@@ -44,10 +42,6 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, f
 	fuzzy_backgrounds = backgrounds.sum(axis = 1) > (1 + fuzzy_detection_cutoff)
 	backgrounds = backgrounds[fuzzy_backgrounds]
 
-	# Extract the timepoints each background first fixed at.
-	fixed_timepoints: pandas.DataFrame = backgrounds[backgrounds > fuzzy_fixed_cutoff].dropna(how = 'all').transpose()
-	fixed_timepoints = fixed_timepoints.dropna(how = 'all').transpose()
-	fixed_timepoints = [s.first_valid_index() for _, s in fixed_timepoints.iterrows()]
 	# We want to iterate over the non-background genotypes to check if they appear both before and after any genotypes that fix.
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
 
@@ -112,7 +106,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
-		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint, frequency_cutoffs)
+		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, frequency_cutoffs)
 		if current_invalid_genotype is None:
 			break
 		else:

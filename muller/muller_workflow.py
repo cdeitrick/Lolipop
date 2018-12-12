@@ -39,6 +39,7 @@ class ProgramOptions:
 	is_genotype: bool = False
 	use_filter: bool = True
 	annotate_all: bool = False
+	save_pvalue:bool = True
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
@@ -74,14 +75,15 @@ class ProgramOptions:
 			difference_breakpoint = float(parser.difference_breakpoint),
 			is_genotype = parser.is_genotype,
 			use_filter = parser.use_filter,
-			annotate_all = parser.annotate_all
+			annotate_all = parser.annotate_all,
+			save_pvalue= parser.save_pvalue
 		)
 
 	@classmethod
 	def debug(cls, parser) -> 'ProgramOptions':
-		parser.filename = "/home/cld100/Documents/github/muller_diagrams/Data files/B1_muller_try1.xlsx"
+		parser.filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/B1_Muller.xlsx"
 		parser.output_folder = './output'
-		parser.use_filter = False
+		parser.use_filter = True
 		return cls.from_parser(parser)
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
@@ -171,7 +173,13 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		p_values = calculate_genotypes.PAIRWISE_CALCULATIONS,
 		filter_cache = filter_cache
 	)
-	generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
+	generate_output(
+		workflow_data,
+		output_folder,
+		program_options.detection_breakpoint,
+		program_options.annotate_all,
+		program_options.save_pvalue
+	)
 
 	return genotype_clusters
 
@@ -264,11 +272,18 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store_true",
 		dest = "annotate_all"
 	)
+	parser.add_argument(
+		"--save-pvalues",
+		help = "Saves the p-values to a table and generates a heatmap for the population. Disabling saves a large amount of time for large datasets.",
+		action = "store_true",
+		dest = "save_pvalue"
+	)
+
 	return parser
 
 
 if __name__ == "__main__":
 	args = create_parser().parse_args()
 	cmd_parser = ProgramOptions.from_parser(args)
-	#cmd_parser = ProgramOptions.debug(cmd_parser)
+	#cmd_parser = ProgramOptions.debug(args)
 	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)

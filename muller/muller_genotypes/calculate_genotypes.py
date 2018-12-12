@@ -196,7 +196,7 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 		if PAIRWISE_CALCULATIONS is None:
 			PAIRWISE_CALCULATIONS = {k:v for k,v in pair_array.items() if not isinstance(v, float)}
 
-		pair_array = {k:(v if isinstance(v, (float, int)) else v.pvalue) for k,v in pair_array.items()}
+		pair_array = {k:v.pvalue for k,v in pair_array.items()}
 
 		PAIRWISE_P_VALUES = pair_array
 

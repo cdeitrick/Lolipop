@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
+
 plt.switch_backend('agg')
 import pandas
 from pathlib import Path
-from typing import Dict, List
-import random
+from typing import Dict
+
 try:
 	from muller.widgets import generate_random_color, get_numeric_columns
 except ModuleNotFoundError:
 	from widgets import generate_random_color, get_numeric_columns
 
-def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path, genotype_colors:Dict[str,str], parent_genotypes:Dict[str,str]):
+
+def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path, genotype_colors: Dict[str, str],
+		parent_genotypes: Dict[str, str]):
 	"""
 		Plots the clustered muller_genotypes.
 	Parameters
@@ -21,12 +24,14 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	mutational_genotypes: pandas.DataFrame
 	genotype_colors: Dict[str,str]
 		A mapping of muller_genotypes to their corresponding colors.
+	parent_genotypes: Dict[str,str]
+		Maps trajectories to their respective genotypes.
 	Returns
 	-------
 
 	"""
 	if 'members' in mutational_genotypes:
-		genotype_members = mutational_genotypes.pop('members')
+		mutational_genotypes.pop('members')
 
 	if timeseries is not None:
 		numeric_columns = list(get_numeric_columns(timeseries.columns))
@@ -36,7 +41,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	# Plot all trajectories
 	grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3)
 	if timeseries is not None:
-		plt.subplot(grid[0,0:2])
+		plt.subplot(grid[0, 0:2])
 		plt.ylabel('frequency')
 		plt.title('Trajectories')
 
@@ -52,7 +57,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	if timeseries is not None:
 		plt.subplot(grid[1, :])
 	else:
-		plt.subplot(grid[:,:])
+		plt.subplot(grid[:, :])
 	plt.ylabel('frequency')
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
@@ -74,7 +79,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	plt.legend(
 		loc = 'right',
 		ncol = 2,
-		bbox_to_anchor=bbox,
+		bbox_to_anchor = bbox,
 		prop = legend_font_properties,
 		title = 'Genotypes',
 	)
@@ -83,7 +88,6 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 		plt.savefig(str(filename), dpi = 500, format = 'png')
 	else:
 		plt.show()
-
 
 
 if __name__ == "__main__":

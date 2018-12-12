@@ -156,11 +156,4 @@ def import_trajectory_table(filename: IOTYPE, sheet_name = 'Sheet1') -> Tuple[pa
 
 
 if __name__ == "__main__":
-	trajectory_table = """Trajectory,0,1,2,3,4,5
-	trajectory-A1,0.0,0.0,0.0,0.1,0.5,0.5
-	trajectory-B1,0.0,0.1,0.15,0.03,0.0,0.0
-	trajectory-A2,0.0,0.0,0.0,0.06,0.35,0.4
-	trajectory-A3,0.0,0.0,0.0,0.0,0.45,0.5
-	trajectory-B2,0.0,0.07,0.1,0.02,0.01,0.0"""
-	output, info = import_trajectory_table(trajectory_table)
-	print(output.to_string())
+	pass

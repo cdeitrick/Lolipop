@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas
 from dataclasses import dataclass
@@ -21,6 +21,7 @@ class PairCalculation:
 PairwiseArrayType = Dict[Tuple[str, str], Union[float, PairCalculation]]
 
 
+# noinspection PyTypeChecker
 def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> Union[float, PairCalculation]:
 	"""
 		Calculates the relative similarity between all trajectory pairs.
@@ -63,18 +64,19 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
-	not_detected_fixed_df = df[(df < fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
+	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
+	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
 
 	if not_detected_fixed_df.empty:
-		left_fixed: pandas.Series = left[left > fixed_cutoff]
-		right_fixed: pandas.Series = right[right > fixed_cutoff]
+		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
+		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
 
 		if left_fixed.empty and right_fixed.empty:
 			# Both are undetected
 			p_value = 1.0
 		else:
-			overlap = set(left_fixed.index) and set(right_fixed.index)
-			p_value = float(int((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)))
+			overlap = set(left_fixed.index) & set(right_fixed.index)
+			p_value = float((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2))
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
@@ -96,14 +98,15 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# pandas.Series.radd is slow for some reason. Use '-' operator instead.
 		sigma_freq: pandas.Series = mean.mul(1 - mean)
 		# Difference of frequencies at each timepoint
-		difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
 		sigma_pair: float = sigma_freq.sum() / len(mean)
 		# Sum of differences
 		difference_mean: float = abs(difference).sum()
 
 		X = difference_mean / (math.sqrt(2 * sigma_pair))
 
-		p_value: float = 1 - math.erf(X)
+		p_value: float = 1.0 - math.erf(X)
 
 		value = PairCalculation(
 			label = point_label,
@@ -144,3 +147,7 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 		pair_array[right, left] = p_value
 
 	return pair_array
+
+
+if __name__ == "__main__":
+	pass
