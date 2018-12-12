@@ -2,8 +2,8 @@ import pandas
 from typing import Tuple, Dict
 try:
 	from muller.order_clusters import ClusterType
-	from muller_genotypes.calculate_genotypes import PairwiseArrayType
-	from muller.muller_output.save_output import WorkflowData
+	from muller_genotypes import PairwiseArrayType
+	#from muller.muller_output import WorkflowData
 except ModuleNotFoundError:
 	from order_clusters import ClusterType
 
@@ -101,43 +101,16 @@ def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.Data
 	return table
 
 
-def generate_p_value_table_from_values(p_values) -> pandas.DataFrame:
-	rows = [{'leftTrajectory': l, 'rightTrajectory': r, 'pvalue': v} for (l, r), v in sorted(p_values.items())]
-	df = pandas.DataFrame(rows)
-	return df[['leftTrajectory', 'rightTrajectory', 'pvalue']]
-
 
 def generate_p_value_table(p_values, trajectories:pandas.DataFrame, trajectory_genotypes:Dict[str,str]) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-	single_value_table = list()
 	timeseries_table = list()
-	for pair, calculation in p_values.items():
-		left, right = pair
-		single = {
-			'leftTrajectory':  left,
-			'rightTrajectory': right,
-			'pvalue':          calculation.pvalue,
-			'sigma':           calculation.sigma,
-			'differenceMean':  calculation.difference_mean
-		}
-		single_value_table.append(single)
+	for (left, right), calculation in p_values.items():
+		if calculation.mean_series is None:
+			# Assume all tables are None
+			continue
 
-		_pair_series = list()
-		if calculation.mean_series is not None:
-			sigma_series = calculation.sigma_series
-			sigma_series['variable'] = 'sigma'
-			_pair_series.append(sigma_series)
-
-		if calculation.mean_series is not None:
-			mean_series = calculation.mean_series
-			mean_series['variable'] = 'mean'
-			_pair_series.append(mean_series)
-
-		if calculation.difference_series is not None:
-			difference_series = calculation.difference_series
-			difference_series['variable'] = 'difference'
-			_pair_series.append(difference_series)
-
-		pair_df = pandas.DataFrame(_pair_series)
+		pair_df = pandas.DataFrame([calculation.sigma_series, calculation.mean_series, calculation.difference_series])
+		pair_df['variable'] = ['sigma', 'mean', 'difference']
 		pair_df['leftTrajectory'] = left
 		pair_df['rightTrajectory'] = right
 		pair_df['sigmaPair'] = calculation.sigma

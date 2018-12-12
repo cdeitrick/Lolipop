@@ -97,7 +97,7 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 	return parameters
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues:bool):
 	delimiter = '\t'
 	trajectory_genotypes = map_trajectories_to_genotype(workflow_data.genotypes)
 	filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
@@ -106,14 +106,13 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	parameters = get_workflow_parameters(workflow_data)
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff)
-	pvalues_table, pvalues_matrix = generate_p_value_table(workflow_data.p_values, workflow_data.trajectories, trajectory_genotypes)
+
 	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotypes)
 
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)
-	pvalues_table.to_csv(str(filenames.p_value), sep = delimiter, index = False)
-	pvalues_matrix.to_csv(str(filenames.p_value_matrix), sep = delimiter, index = False)
+
 	workflow_data.original_genotypes.to_csv(str(filenames.original_genotype), sep = delimiter)
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 
@@ -140,4 +139,9 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors, parent_genotypes)
 	if muller_df is not None:
 		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, annotate_all)
-	plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)
+
+	if save_pvalues:
+		pvalues_table, pvalues_matrix = generate_p_value_table(workflow_data.p_values, workflow_data.trajectories, trajectory_genotypes)
+		pvalues_table.to_csv(str(filenames.p_value), sep = delimiter, index = False)
+		pvalues_matrix.to_csv(str(filenames.p_value_matrix), sep = delimiter, index = False)
+		plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)
