@@ -12,7 +12,7 @@ try:
 	from muller.import_table import import_trajectory_table, import_genotype_table
 	from muller_genotypes import calculate_genotypes, sort_genotypes
 	from muller import order_clusters
-	from muller.generate_output import WorkflowData, generate_output
+	from muller.muller_output import WorkflowData, generate_output
 	from muller import genotype_filters
 except ModuleNotFoundError:
 	from import_table import import_trajectory_table, import_genotype_table
@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 	import order_clusters
 	import muller_genotypes.sort_genotypes
 	import genotype_filters
-	from generate_output import WorkflowData, generate_output
+	from muller_output import WorkflowData, generate_output
 
 
 # For convienience. Helps with autocomplete.
