@@ -67,8 +67,8 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	#not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
 
 	if not_detected_fixed_df.empty:
-		left_fixed: pandas.Series = left[left > fixed_cutoff]
-		right_fixed: pandas.Series = right[right > fixed_cutoff]
+		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
+		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
 
 		if left_fixed.empty and right_fixed.empty:
 			# Both are undetected
@@ -149,18 +149,10 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 
 if __name__ == "__main__":
 	import time
-	series = pandas.Series([0,0.1,0.15,0.03,0,0])
-	seriesb= pandas.Series([0,0.07,0.1,0.02,0.01,0])
+	series = pandas.Series([0,0.194,0.175,0,0])
+	seriesb= pandas.Series([0,0.186,0.179,0.179,0])
 	df = pandas.DataFrame([series, seriesb]).T
 
-	iterations = 10000
-	start = time.clock()
-	for i in range(iterations):
-		result = df.iloc[:,0] - df.iloc[:,1]
-	print(time.clock() - start)
-	print(result)
-	start = time.clock()
-	for i in range(iterations):
-		result = df.diff(axis = 1).iloc[:,1]
-	print(time.clock() - start)
-	print(result)
+	sigma = df.std(axis = 1).pow(2)
+	print(sigma)
+	print(sigma.sum())

@@ -1,15 +1,14 @@
+import itertools
+from argparse import Namespace
+from typing import Dict, List, Tuple
 
 import pandas
-import itertools
-from typing import List, Dict, Tuple
-
 from dataclasses import dataclass
-from argparse import Namespace
 
 
 @dataclass
 class Genotype:
-	name:str
+	name: str
 	probability: float
 	trajectory: pandas.Series
 	background: List[str]
@@ -61,8 +60,7 @@ class OrderClusterParameters:
 		compatibility_mode = parser.mode
 		detection_breakpoint = float(parser.detection_breakpoint)
 		significant_breakpoint = float(parser.significant_breakpoint)
-		#fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
-
+		# fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
 
 		if compatibility_mode:
 			return cls.from_matlab()
@@ -118,8 +116,9 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	return delta
 
-def add_genotype_bakground(genotype_label:str, type_genotype:Genotype, nests:Dict[str, Genotype], initial_background_label:str):
-	#genotype_label = type_genotype.name
+
+def add_genotype_bakground(genotype_label: str, type_genotype: Genotype, nests: Dict[str, Genotype], initial_background_label: str):
+	# genotype_label = type_genotype.name
 	if genotype_label in nests:
 		nests[genotype_label].background += type_genotype.background
 		if len(nests[genotype_label].background) > 2 and initial_background_label in nests[genotype_label].background:
@@ -127,7 +126,10 @@ def add_genotype_bakground(genotype_label:str, type_genotype:Genotype, nests:Dic
 	else:
 		nests[genotype_label] = type_genotype
 	return nests
-def apply_genotype_checks(type_trajectory:pandas.Series, test_trajectory:pandas.Series, options:OrderClusterParameters)->Tuple[bool,bool,float]:
+
+
+def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: pandas.Series, options: OrderClusterParameters) -> Tuple[
+	bool, bool, float]:
 	""" Applies the three checks to `type_trajectory` and `test_trajectory`."""
 	additive_check = check_additive_background(
 		left = type_trajectory,
@@ -153,6 +155,8 @@ def apply_genotype_checks(type_trajectory:pandas.Series, test_trajectory:pandas.
 		)
 
 	return additive_check, subtractive_check, delta
+
+
 def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> ClusterType:
 	"""
 		Orders genotypes by which background they belong to.
@@ -264,7 +268,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	return nests
 
 
-def workflow(sorted_genotypes: pandas.DataFrame, options: OrderClusterParameters=None, matlab: bool = False,
+def workflow(sorted_genotypes: pandas.DataFrame, options: OrderClusterParameters = None, matlab: bool = False,
 		detection_breakpoint: float = 0.03, significant_breakpoint: float = 0.15) -> ClusterType:
 	"""
 			Generates a hierarchy of genotypes.
@@ -285,10 +289,10 @@ def workflow(sorted_genotypes: pandas.DataFrame, options: OrderClusterParameters
 	if options is None:
 		options = OrderClusterParameters.from_breakpoints(detection_breakpoint, significant_breakpoint)
 
-	#sorted_genotypes = sort_genotypes(sorted_genotypes)
+	# sorted_genotypes = sort_genotypes(sorted_genotypes)
 	clusters = order_clusters(sorted_genotypes, options)
-	#from pprint import pprint
-	#pprint(clusters)
+	# from pprint import pprint
+	# pprint(clusters)
 	return clusters
 
 
