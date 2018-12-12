@@ -1,42 +1,49 @@
 """
 	Python implementation of the Muller_plot function available from ggmuller.
 """
+from itertools import filterfalse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas
 from matplotlib import pyplot as plt
-#plt.switch_backend('agg')
+# plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
-from itertools import filterfalse
+
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
 pandas.set_option('display.max_columns', 500)
 pandas.set_option('display.width', 250)
-def unique_everseen(iterable, key=None):
-    "List unique elements, preserving order. Remember all elements ever seen."
-    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
-    # unique_everseen('ABBCcAD', str.lower) --> A B C D
-    seen = set()
-    seen_add = seen.add
-    if key is None:
-        for element in filterfalse(seen.__contains__, iterable):
-            seen_add(element)
-            yield element
-    else:
-        for element in iterable:
-            k = key(element)
-            if k not in seen:
-                seen_add(k)
-                yield element
 
-def generate_muller_series(muller_df: pandas.DataFrame, color_palette:Dict[str,str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
+
+def unique_everseen(iterable, key = None):
+	"""	List unique elements, preserving order. Remember all elements ever seen."
+		unique_everseen('AAAABBBCCDAABBB') --> A B C D
+		unique_everseen('ABBCcAD', str.lower) --> A B C D
+	"""
+	seen = set()
+	seen_add = seen.add
+	if key is None:
+		for element in filterfalse(seen.__contains__, iterable):
+			seen_add(element)
+			yield element
+	else:
+		for element in iterable:
+			k = key(element)
+			if k not in seen:
+				seen_add(k)
+				yield element
+
+
+def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	"""
 		Generates the required inputs for matplotlib to generate a mullerplot.
 	Parameters
 	----------
 	muller_df: pandas.DataFrame
+	color_palette: Dict[str,str]
+		Maps genotypes to a specific color.
 
 	Returns
 	-------
@@ -140,7 +147,8 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	return label_properties
 
 
-def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str], output_filename: Path,
+def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
+		output_filename: Path,
 		annotate_all: bool):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
@@ -159,8 +167,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	"""
 	points = get_coordinates(muller_df)
 
-	#muller_df['color'] = [color_palette[i] for i in muller_df['Identity'].values]
-
+	# noinspection PyUnusedLocal,PyUnusedLocal
 	fig, ax = plt.subplots(figsize = (12, 10))
 	ax: Axes
 

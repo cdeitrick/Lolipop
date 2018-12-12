@@ -1,9 +1,10 @@
+from typing import Dict, Tuple
+
 import pandas
-from typing import Tuple, Dict
+
 try:
 	from muller.order_clusters import ClusterType
 	from muller_genotypes import PairwiseArrayType
-	#from muller.muller_output import WorkflowData
 except ModuleNotFoundError:
 	from order_clusters import ClusterType
 
@@ -101,8 +102,7 @@ def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.Data
 	return table
 
 
-
-def generate_p_value_table(p_values, trajectories:pandas.DataFrame, trajectory_genotypes:Dict[str,str]) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def generate_p_value_table(p_values, trajectory_genotypes: Dict[str, str]) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	timeseries_table = list()
 	for (left, right), calculation in p_values.items():
 		if calculation.mean_series is None:
@@ -128,12 +128,12 @@ def generate_p_value_table(p_values, trajectories:pandas.DataFrame, trajectory_g
 	return df, matrix
 
 
-def generate_p_value_matrix(p_values, trajectory_genotypes:Dict[str,str]):
+def generate_p_value_matrix(p_values, trajectory_genotypes: Dict[str, str]):
 	""" Converts a dictionary mapping pairs of trajectories with thier respoective p-values into a similarity matrix."""
 	import itertools
 	import math
 
-	p_values = {k:v.pvalue for k,v in p_values.items()}
+	p_values = {k: v.pvalue for k, v in p_values.items()}
 	table = list()
 	all_ids = sorted(
 		set(itertools.chain.from_iterable(p_values.keys())),

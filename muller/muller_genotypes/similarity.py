@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas
 from dataclasses import dataclass
@@ -21,6 +21,7 @@ class PairCalculation:
 PairwiseArrayType = Dict[Tuple[str, str], Union[float, PairCalculation]]
 
 
+# noinspection PyTypeChecker
 def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> Union[float, PairCalculation]:
 	"""
 		Calculates the relative similarity between all trajectory pairs.
@@ -64,7 +65,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
 	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
-	#not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
+	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
 
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
@@ -97,8 +98,8 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# pandas.Series.radd is slow for some reason. Use '-' operator instead.
 		sigma_freq: pandas.Series = mean.mul(1 - mean)
 		# Difference of frequencies at each timepoint
-		#difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
-		difference = not_detected_fixed_df.diff(axis = 1).iloc[:,1]
+		# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
 		sigma_pair: float = sigma_freq.sum() / len(mean)
 		# Sum of differences
 		difference_mean: float = abs(difference).sum()
@@ -147,12 +148,6 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 
 	return pair_array
 
-if __name__ == "__main__":
-	import time
-	series = pandas.Series([0,0.194,0.175,0,0])
-	seriesb= pandas.Series([0,0.186,0.179,0.179,0])
-	df = pandas.DataFrame([series, seriesb]).T
 
-	sigma = df.std(axis = 1).pow(2)
-	print(sigma)
-	print(sigma.sum())
+if __name__ == "__main__":
+	pass

@@ -102,4 +102,5 @@ def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Pa
 				all_genotypes.append(new_genotype_1)
 				all_genotypes.append(new_genotype_2)
 				all_genotypes.remove(genotype)
+	# noinspection PyTypeChecker
 	return sorted(all_genotypes, key = len)
