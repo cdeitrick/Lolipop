@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 	import order_clusters
 	import muller_genotypes.sort_genotypes
 	import genotype_filters
-	from .muller_output import WorkflowData, generate_output
+	from muller_output import WorkflowData, generate_output
 
 
 # For convienience. Helps with autocomplete.
