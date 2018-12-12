@@ -3,7 +3,7 @@ from typing import Dict, List, Union, Optional
 import re
 import pandas
 
-NUMERIC_REGEX = re.compile(".?(?P<number>[\d]+)")
+NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
 def generate_random_color() -> str:
 	r = random.randint(50, 200)

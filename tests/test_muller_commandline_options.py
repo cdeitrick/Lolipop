@@ -1,7 +1,7 @@
 import unittest
 
-from muller.muller import *
-from muller.muller import _parse_frequency_option
+from muller.muller_workflow import *
+from muller.muller_workflow import _parse_frequency_option
 
 
 class TestMullerProgramOptions(unittest.TestCase):

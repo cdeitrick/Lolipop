@@ -103,6 +103,8 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	# Convert the columns into integers. Makes them easier to work with if they have a standard raw_table type.
 	converted_frequency_columns = [_convert_to_integer(i) for i in frequency_columns]
 	time_table.columns = converted_frequency_columns
+	# Sort the table columns
+	time_table = time_table[sorted(time_table.columns)]
 
 	# Drop any trajectories which are never detected.
 	time_table = time_table[(time_table.T != 0).any()]
