@@ -109,7 +109,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 
 	cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
 	original_genotype_members = genotype_table.pop('members')
-	_iterations = 10  # arbitrary, used to ensure the program does not encounter an infinite loop.
+	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
 		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, goptions.fixed_breakpoint, frequency_cutoffs)

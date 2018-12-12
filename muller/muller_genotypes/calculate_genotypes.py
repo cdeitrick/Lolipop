@@ -6,14 +6,14 @@ import pandas
 from dataclasses import dataclass
 
 try:
-	from muller.muller_genotypes.similarity import calculate_pairwise_trajectory_similarity
+	from muller.muller_genotypes.similarity import calculate_pairwise_trajectory_similarity, PairCalculation, PairwiseArrayType
 	from muller.muller_genotypes.difference import unlink_unrelated_trajectories
 except ModuleNotFoundError:
-	from .similarity import calculate_pairwise_trajectory_similarity
+	from .similarity import calculate_pairwise_trajectory_similarity, PairCalculation, PairwiseArrayType
 	from .difference import unlink_unrelated_trajectories
 
-PairwiseArrayType = Dict[Tuple[str, str], float]
 PAIRWISE_P_VALUES: PairwiseArrayType = None
+PAIRWISE_CALCULATIONS: Dict[Tuple[str,str], PairCalculation] = None
 REMOVED_P_VALUES: PairwiseArrayType = dict()
 
 
@@ -182,14 +182,10 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 	# calculate the similarity between all pairs of trajectories in the population.
 	# This is a global variable so that the p-values do not need to be re-computed for every iteration of the genotype filters.
 	global PAIRWISE_P_VALUES
-
+	global PAIRWISE_CALCULATIONS
 	if PAIRWISE_P_VALUES:
-		for key in sorted(PAIRWISE_P_VALUES.keys()):
-			left_key, right_key = key
-
-			if left_key not in timeseries.index or right_key not in timeseries.index:
-				PAIRWISE_P_VALUES.pop(key)
-		pair_array = PAIRWISE_P_VALUES
+		_current_trajectory_labels = set(timeseries.index)
+		pair_array = {k:v for k,v in PAIRWISE_P_VALUES.items() if (k[0] in _current_trajectory_labels and k[1] in _current_trajectory_labels)}
 
 	else:
 		pair_array = calculate_pairwise_trajectory_similarity(
@@ -197,6 +193,11 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 			detection_cutoff = options.detection_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint
 		)
+		if PAIRWISE_CALCULATIONS is None:
+			PAIRWISE_CALCULATIONS = {k:v for k,v in pair_array.items() if not isinstance(v, float)}
+
+		pair_array = {k:(v if isinstance(v, (float, int)) else v.pvalue) for k,v in pair_array.items()}
+
 		PAIRWISE_P_VALUES = pair_array
 
 	population_genotypes = _group_trajectories_into_genotypes(pair_array, options.similarity_breakpoint)
@@ -218,8 +219,7 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 
 	while True:
 		starting_size_of_the_genotype_array = len(population_genotypes)
-		population_genotypes = unlink_unrelated_trajectories(population_genotypes[:], pair_array,
-			options.difference_breakpoint)
+		population_genotypes = unlink_unrelated_trajectories(population_genotypes[:], pair_array, options.difference_breakpoint)
 		if len(population_genotypes) == starting_size_of_the_genotype_array:
 			break
 

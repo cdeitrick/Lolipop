@@ -168,7 +168,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotype_options = program_options_genotype,
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering,
-		p_values = calculate_genotypes.PAIRWISE_P_VALUES,
+		p_values = calculate_genotypes.PAIRWISE_CALCULATIONS,
 		filter_cache = filter_cache
 	)
 	generate_output(workflow_data, output_folder, program_options.detection_breakpoint, program_options.annotate_all)
