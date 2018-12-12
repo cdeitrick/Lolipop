@@ -63,7 +63,8 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
-	not_detected_fixed_df = df[(df < fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
+	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
+	#not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
 
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left > fixed_cutoff]
@@ -73,8 +74,8 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 			# Both are undetected
 			p_value = 1.0
 		else:
-			overlap = set(left_fixed.index) and set(right_fixed.index)
-			p_value = float(int((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2)))
+			overlap = set(left_fixed.index) & set(right_fixed.index)
+			p_value = float((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2))
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
@@ -96,14 +97,15 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# pandas.Series.radd is slow for some reason. Use '-' operator instead.
 		sigma_freq: pandas.Series = mean.mul(1 - mean)
 		# Difference of frequencies at each timepoint
-		difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		#difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+		difference = not_detected_fixed_df.diff(axis = 1).iloc[:,1]
 		sigma_pair: float = sigma_freq.sum() / len(mean)
 		# Sum of differences
 		difference_mean: float = abs(difference).sum()
 
 		X = difference_mean / (math.sqrt(2 * sigma_pair))
 
-		p_value: float = 1 - math.erf(X)
+		p_value: float = 1.0 - math.erf(X)
 
 		value = PairCalculation(
 			label = point_label,
@@ -144,3 +146,21 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 		pair_array[right, left] = p_value
 
 	return pair_array
+
+if __name__ == "__main__":
+	import time
+	series = pandas.Series([0,0.1,0.15,0.03,0,0])
+	seriesb= pandas.Series([0,0.07,0.1,0.02,0.01,0])
+	df = pandas.DataFrame([series, seriesb]).T
+
+	iterations = 10000
+	start = time.clock()
+	for i in range(iterations):
+		result = df.iloc[:,0] - df.iloc[:,1]
+	print(time.clock() - start)
+	print(result)
+	start = time.clock()
+	for i in range(iterations):
+		result = df.diff(axis = 1).iloc[:,1]
+	print(time.clock() - start)
+	print(result)
