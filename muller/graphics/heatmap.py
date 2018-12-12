@@ -1,6 +1,6 @@
 
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+#plt.switch_backend('agg')
 import pandas
 from pathlib import Path
 try:

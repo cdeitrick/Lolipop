@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas
 from matplotlib import pyplot as plt
-plt.switch_backend('agg')
+#plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
 from itertools import filterfalse
 plt.style.use('seaborn-white')
