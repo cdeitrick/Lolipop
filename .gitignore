@@ -64,7 +64,6 @@ target/
 *.json
 *.eps
 *.pptx
-*output/
 # Ignore the folders used for testing
 *1/
 #example/
