@@ -32,7 +32,6 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	# Use a copy of the dataframe to avoid making changes to the original.
 	modified_genotypes: pandas.DataFrame = mean_genotypes.copy(True)
 	modified_genotypes = modified_genotypes[modified_genotypes.index.isin(edges['Identity'])]
-	modified_genotypes.pop('members')
 
 	# Generate a list of all muller_genotypes that arise in the background of each genotype.
 	children = dict()
@@ -161,18 +160,12 @@ def generate_missing_trajectories_table(trajectories: pandas.DataFrame, original
 	return concat_trajectories
 
 
-def generate_trajectory_table(trajectories: pandas.DataFrame, genotypes: pandas.DataFrame, info: pandas.DataFrame) -> pandas.DataFrame:
+def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: pandas.Series, info: pandas.DataFrame) -> pandas.DataFrame:
 	# Sorts the trajectory table and adds additional columns from the original table.
 	trajectories = trajectories[sorted(trajectories.columns, key = lambda s: int(s))]
 	if info is not None:
-		genotype_map = {k: v.split('|') for k, v in genotypes['members'].items()}
-		trajectory_map = dict()
-		for g, v in genotype_map.items():
-			for t in v:
-				trajectory_map[t] = g
 		trajectory_table: pandas.DataFrame = trajectories.copy()
-
-		trajectory_table['genotype'] = [trajectory_map[k] for k in trajectory_table.index]
+		trajectory_table['genotype'] = [parent_genotypes[k] for k in trajectory_table.index]
 		trajectory_table = trajectory_table.join(info).sort_values(by = ['genotype'])
 		return trajectory_table
 

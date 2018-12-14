@@ -157,13 +157,15 @@ def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: panda
 	return additive_check, subtractive_check, delta
 
 
-def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> ClusterType:
+def order_clusters(sorted_df: pandas.DataFrame, genotype_members:pandas.Series, options: OrderClusterParameters) -> ClusterType:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
 	----------
 	sorted_df: pandas.DataFrame
 		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
+	genotype_members: pandas.Series
+		maps genotypes to their respective members
 	options: OrderClusterParameters
 		Parameters for the program to use.
 
@@ -171,7 +173,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	-------
 	ClusterType
 	"""
-	genotype_members = sorted_df.pop('members')
 	initial_background = sorted_df.iloc[0]
 
 	nests: Dict[str, Genotype] = {
@@ -266,34 +267,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				raise ValueError(message)
 
 	return nests
-
-
-def workflow(sorted_genotypes: pandas.DataFrame, options: OrderClusterParameters = None, matlab: bool = False,
-		detection_breakpoint: float = 0.03, significant_breakpoint: float = 0.15) -> ClusterType:
-	"""
-			Generates a hierarchy of genotypes.
-	Parameters
-	----------
-	sorted_genotypes
-	options
-	matlab
-	detection_breakpoint
-	significant_breakpoint
-
-	Returns
-	-------
-
-	"""
-	if matlab:
-		options = OrderClusterParameters.from_matlab()
-	if options is None:
-		options = OrderClusterParameters.from_breakpoints(detection_breakpoint, significant_breakpoint)
-
-	# sorted_genotypes = sort_genotypes(sorted_genotypes)
-	clusters = order_clusters(sorted_genotypes, options)
-	# from pprint import pprint
-	# pprint(clusters)
-	return clusters
 
 
 if __name__ == "__main__":

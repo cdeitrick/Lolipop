@@ -42,6 +42,7 @@ class WorkflowData:
 	original_genotypes: Optional[pandas.DataFrame]
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
+	genotype_members: pandas.Series
 	clusters: ClusterType
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
@@ -101,16 +102,15 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues:bool):
 	delimiter = '\t'
-	trajectory_genotypes = map_trajectories_to_genotype(workflow_data.genotypes)
+	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
 	filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
-	trajectories = generate_trajectory_table(workflow_data.trajectories, workflow_data.genotypes, workflow_data.info)
+	trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 	genotype_colors = generate_genotype_palette(workflow_data.original_genotypes.index)
 	parameters = get_workflow_parameters(workflow_data)
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff)
 
 	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
-	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotypes)
 
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)

@@ -1,8 +1,6 @@
-import pandas
-
-pandas.set_option('display.max_columns', 400)
-pandas.set_option('display.width', 400)
 from typing import List
+
+import pandas
 from dataclasses import dataclass
 
 
@@ -49,11 +47,8 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	-------
 	sorted_genotype: pandas.DataFrame
 	"""
-	# sorted_dataframe = sort_genotype_frequencies(genotype_frequencies, FIXED_THRESHOLD)
 	sorted_genotypes = list()
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
-	if 'members' in current_genotypes:
-		current_genotypes.pop('members')
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
 		sorted_dataframe = sort_genotype_frequencies(
 			genotype_trajectories = current_genotypes,
@@ -67,7 +62,6 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
 
-	# sorted_genotypes.append(current_genotypes)
 	df = pandas.concat(sorted_genotypes, sort = False)
 	df = genotype_frequencies.reindex(df.index)
 	return df
@@ -115,7 +109,7 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 
 	# Iterate over the conbinations of 'firstFixed', 'firstDetected', and 'firstThreshold' and sort trajectories that belong to the sample combination.
 	for (ff, fd, ft), group in groups:
-		if ft == 130: # dummy value assigned above. Revert back to 0 since '130' isn't a valid timepoint.
+		if ft == 130:  # dummy value assigned above. Revert back to 0 since '130' isn't a valid timepoint.
 			ft = 0
 		trajectories: pandas.DataFrame = genotype_trajectories.loc[group.index]
 

@@ -97,6 +97,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
 	# used when sorting the genotypes.
 	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = get_fuzzy_backgrounds(genotypes, cutoffs)
+	print(backgrounds)
 	# Make sure the selected detection cutoff is a valid float.
 	fuzzy_detected_cutoff = max(detection_cutoff, fuzzy_detected_cutoff)
 
@@ -139,10 +140,9 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 
 	"""
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
-	genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
+	genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
 
-	cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
-	original_genotype_members = genotype_table.pop('members')
+	#cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
@@ -151,19 +151,17 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 			break
 		else:
 			# Get a list of the trajectories that form this genotype.
-			invalid_members = original_genotype_members.loc[current_invalid_genotype].split('|')
+			invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
 			# Remove these trajectories from the trajectories table.
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
 			# Re-calculate the genotypes based on the remaining trajectories.
-			genotype_table = calculate_genotypes.workflow(trajectory_table, options = goptions)
+			genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
 
-			cache.append((trajectory_table.copy(), genotype_table.copy()))
+			#cache.append((trajectory_table.copy(), genotype_table.copy()))
 			# Update the trajectories that comprise each genotype.
-			original_genotype_members = genotype_table.pop('members')
 	else:
 		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	genotype_table['members'] = original_genotype_members
-	return trajectory_table, genotype_table, cache
+	return trajectory_table, genotype_table, genotype_members
 
 
 if __name__ == "__main__":

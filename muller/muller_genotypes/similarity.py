@@ -154,27 +154,4 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 
 
 if __name__ == "__main__":
-	from import_table import import_table_from_string
-	string = """
-	Trajectory	0	1	2	3	4	5
-	trajectory-A1	0	0	0	0.1	0.5	0.5
-	trajectory-B1	0	0.1	0.15	0.03	0	0
-	trajectory-A2	0	0	0	0.06	0.35	0.4
-	trajectory-C1	0	0	0	0.3	0.7	1
-	trajectory-A3	0	0	0	0	0.45	0.5
-	trajectory-B2	0	0.07	0.1	0.02	0.01	0
-	trajectory-F1	0	0	1	1	1	1
-	trajectory-F2	0	1	0	0	0	0
-	trajectory-F3	0	1	1	1	1	1
-	trajectory-U1	0	0	0	0	0	0
-	trajectory-U2	0	0.02	0.01	0.01	0.02	0
-	"""
-	table = import_table_from_string(string, index = 'Trajectory')
-	left = table.loc['trajectory-F1']
-	right = table.loc['trajectory-F3']
-
-	print(calculate_p_value(left, right, .05, .95))
-
-	def selection(s:pandas.Series):
-		return s.sum()
-	print(table.apply(selection, axis = 1))
+	pass

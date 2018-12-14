@@ -51,11 +51,10 @@ def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
 	return color_map
 
 
-def map_trajectories_to_genotype(genotypes: pandas.DataFrame) -> Dict[str, str]:
+def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
 	trajectory_to_genotype = dict()
-	for label, genotype in genotypes.iterrows():
-		items = genotype['members'].split('|')
-		for i in items:
-			trajectory_to_genotype[i] = label
+	for genotype_label, members in genotype_members.items():
+		for member in members.split('|'):
+			trajectory_to_genotype[member] = genotype_label
 	return trajectory_to_genotype
 

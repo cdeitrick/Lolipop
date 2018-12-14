@@ -264,7 +264,7 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	return mean_genotypes
 
 
-def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> pandas.DataFrame:
+def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series]:
 	"""
 
 	Parameters
@@ -281,15 +281,17 @@ def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> pandas.D
 
 	Returns
 	-------
-	pandas.DataFrame
+	pandas.DataFrame, pandas.Series
+		- The genotype table
+		- A map of genotypes to members.
 	"""
 
 	genotypes = calculate_population_genotypes(timepoints, options)
 
 	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
-
+	genotype_members = _mean_genotypes.pop('members')
 	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
-	return _mean_genotypes
+	return _mean_genotypes, genotype_members
 
 
 if __name__ == "__main__":
