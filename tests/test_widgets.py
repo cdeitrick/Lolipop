@@ -32,7 +32,7 @@ class TestWidgets(unittest.TestCase):
 		)
 		table = table.set_index('genotype')
 		expected_map = {'A1': 'A', 'A2': 'A', 'A3': 'A', 'B1':'B', 'B2': 'B', 'C1': 'C'	}
-		output = map_trajectories_to_genotype(table)
+		output = map_trajectories_to_genotype(table['members'])
 		self.assertDictEqual(expected_map, output)
 
 
