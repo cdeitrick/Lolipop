@@ -1,6 +1,6 @@
 import unittest
 from io import StringIO
-
+from import_table import import_table_from_string
 from muller_genotypes.calculate_genotypes import *
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
@@ -25,19 +25,27 @@ class TestCalculateGenotypes(unittest.TestCase):
 		]
 		trajectories = pandas.read_csv(StringIO(trajectory_csv))
 		trajectories['Trajectory'] = trajectories['Trajectory'].astype(str)
+		trajectories = trajectories.set_index('Trajectory')
 
-		trajectories.set_index('Trajectory', inplace = True)
-
-		expected_csv = "Genotype	0	17	25	44	66	75	90	members\n" \
-					   "genotype-1	0	0.0	0.0	0.273	0.781	1.0	1.0	7\n" \
-					   "genotype-2	0	0	0	0	0.278	0.822	0.803	4|8\n" \
-					   "genotype-3	0	0	0	0.336	0.452	0.9175	0.8985	3|2\n" \
-					   "genotype-4	0	0	0	0.082	0.234666666666667	0.019	0.052	13|20|11"
-		expected_mean = pandas.read_csv(StringIO(expected_csv), sep = '\t', index_col = 'Unnamed:0')
-		expected_mean['0'] = expected_mean['0'].astype(float)
-
+		expected_csv = """
+			Genotype	0	17	25	44	66	75	90	members
+			genotype-1	0.0	0.0	0.0	0.273	0.781	1.0	1.0	7
+			genotype-2	0	0	0	0	0.278	0.822	0.803	4|8
+			genotype-3	0	0	0	0.336	0.452	0.9175	0.8985	3|2
+			genotype-4	0	0	0	0.082	0.234666666666667	0.019	0.052	13|20|11
+			"""
+		expected_mean = import_table_from_string(expected_csv, index = 'Genotype')
 		output = calculate_mean_genotype(test_genotypes, trajectories)
 
 		pandas.testing.assert_frame_equal(expected_mean, output)
+
+	def test_calculate_mean_of_trajectories(self):
+		pass
+
+	def test_find_trajectory_from_genotype(self):
+		pass
+
+	def test_group_trajectories_into_genotypes(self):
+		pass
 
 

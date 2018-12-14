@@ -121,14 +121,13 @@ def _group_trajectories_into_genotypes(pairs: PairwiseArrayType, relative_cutoff
 	else:
 		genotype_candidates = []
 	seen = set()
-	for key, p_value in pairs.items():
-		left, right = key
+	for (left,right), p_value in pairs.items():
 		# ignore pairs that have already been sorted into a genotype.
 		if (left, right) in seen or (right, left) in seen:
 			continue
 		seen.add((left, right))
-
-		if p_value > relative_cutoff:  # are the genotypes related?
+		# are the genotypes related?
+		if p_value > relative_cutoff:
 			# Check if any of the trajectories are already listed in genotypes.
 			# These will return None if no genotype is found.
 			genotype_left = _find_genotype_from_trajectory(left, genotype_candidates)
@@ -261,6 +260,8 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 		mean_genotypes.append(mean_genotype_timeseries)
 
 	mean_genotypes = pandas.DataFrame(mean_genotypes)
+	# For consistency
+	mean_genotypes.index.name = 'Genotype'
 	return mean_genotypes
 
 
@@ -285,7 +286,6 @@ def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pa
 		- The genotype table
 		- A map of genotypes to members.
 	"""
-
 	genotypes = calculate_population_genotypes(timepoints, options)
 
 	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)

@@ -7,8 +7,6 @@ try:
 except ModuleNotFoundError:
 	from muller_genotypes import calculate_genotypes
 
-pandas.set_option('display.width', 300)
-
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
 	""" Extracts the backgrounds using a list of frequency breakpoints."""
@@ -97,7 +95,6 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
 	# used when sorting the genotypes.
 	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = get_fuzzy_backgrounds(genotypes, cutoffs)
-	print(backgrounds)
 	# Make sure the selected detection cutoff is a valid float.
 	fuzzy_detected_cutoff = max(detection_cutoff, fuzzy_detected_cutoff)
 
@@ -139,6 +136,8 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	-------
 
 	"""
+	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
+	frequency_cutoffs = [i for i in frequency_cutoffs if i<goptions.fixed_breakpoint]
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
 	genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
 
