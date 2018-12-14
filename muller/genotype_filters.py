@@ -10,6 +10,75 @@ except ModuleNotFoundError:
 pandas.set_option('display.width', 300)
 
 
+def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
+	""" Extracts the backgrounds using a list of frequency breakpoints."""
+	for cutoff in cutoffs:
+		backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
+		if not backgrounds.empty:
+			fuzzy_fixed_cutoff = cutoff
+			fuzzy_detected_cutoff = 1 - cutoff
+			break
+	else:
+		raise ValueError("The filters cannot be applied since no backgrounds can be detected.")
+	return backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff)
+
+
+def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float) -> bool:
+	"""
+		Checks if a genotype does not adhere to certain assumptions related to the background.
+		1. The genotype should not be present both before and after a background fixes, and should be nonzero when the background fixes.
+	Parameters
+	----------
+	genotype: pandas.Series
+		The genotype being tested.
+	background_detected: int
+		The first timepoint the background was detected.
+	background_fixed: int
+		The first timepoint the background qualifies as 'fixed'
+	detection_cutoff: float
+		The cutoff to determine whether a trajectory counts as 'detected'. It is based on the frequency cutoff used to identify the backgrounds.
+
+	Returns
+	-------
+	bool
+	"""
+	# get the nonzero timepoints for the genotype.
+	detected_points = genotype[genotype > detection_cutoff]
+
+	if len(detected_points) < 2:
+		# The genotype is either undetected at all timepoints or is detected once.
+		return False
+
+	first_detected = detected_points.first_valid_index()
+	last_detected = detected_points.last_valid_index()
+
+	# Check if the genotype was detected prior to the background. Skip those that were not.
+	was_detected_before_and_after_background = first_detected < background_detected < last_detected
+	# Check if the genotype was detected before and after the timepoint the current backgound fixed.
+	was_detected_before_and_after_fixed = first_detected < background_fixed < last_detected
+
+	if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
+		# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
+		# Check to see if it was undetected at the timpont the background fixed.
+
+		if genotype.loc[background_detected] > detection_cutoff:
+			# The genotype was detected at the first fixed timepoint.
+			return True
+	return False
+
+def get_first_timpoint(series:pandas.Series, cutoff:float)->int:
+	""" Extracts the first timepoint that exceeds the cutoff."""
+	return series[series > cutoff].idxmin()
+
+def _get_backgrounds_present_at_multiple_timepoints(backgrounds:pandas.DataFrame, detection_cutoff:float)->pandas.DataFrame:
+	""" Filters out backgrounds that only appeared at one timepoint.
+		We want to exclude 'backgrounds' which are only present at one timepoint. This is more likely to be a measurement error.
+		Since the fixed threshold is almost 1 (ex. 0.97), a simple test to check for detection at multiple timepoints is to see if the sum
+		of the background frequencies is greater than 1."""
+	fuzzy_backgrounds = backgrounds.sum(axis = 1) > (1 + detection_cutoff)
+	backgrounds = backgrounds[fuzzy_backgrounds]
+	return backgrounds
+
 # noinspection PyTypeChecker
 def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float]) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
@@ -27,20 +96,12 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	"""
 	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
 	# used when sorting the genotypes.
-	for cutoff in cutoffs:
-		backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
-		if not backgrounds.empty:
-			fuzzy_fixed_cutoff = cutoff
-			fuzzy_detected_cutoff = 1 - cutoff
-			break
-	else:
-		raise ValueError("The filters cannot be applied since no backgrounds can be detected.")
-	fuzzy_detection_cutoff = max(detection_cutoff, fuzzy_detected_cutoff)
-	# We want to exclude 'backgrounds' which are only present at one timepoint. This is more likely to be a measurement error.
-	# Since the fixed threshold is almost 1 (ex. 0.97), a simple test to check for detection at multiple timepoints is to see if the sum
-	# of the background frequencies is greater than 1.
-	fuzzy_backgrounds = backgrounds.sum(axis = 1) > (1 + fuzzy_detection_cutoff)
-	backgrounds = backgrounds[fuzzy_backgrounds]
+	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = get_fuzzy_backgrounds(genotypes, cutoffs)
+	# Make sure the selected detection cutoff is a valid float.
+	fuzzy_detected_cutoff = max(detection_cutoff, fuzzy_detected_cutoff)
+
+	# Filter out backgrounds that are only detected at one timepoint.
+	backgrounds = _get_backgrounds_present_at_multiple_timepoints(backgrounds, fuzzy_detected_cutoff)
 
 	# We want to iterate over the non-background genotypes to check if they appear both before and after any genotypes that fix.
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
@@ -48,38 +109,17 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	# Iterate over the detected backgrounds.
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
-		fuzzy_fixed_timepoints = background[background > fuzzy_fixed_cutoff]
-		first_detected_point = background[background > fuzzy_detection_cutoff].first_valid_index()
-
-		first_fixed_point: int = fuzzy_fixed_timepoints.first_valid_index()
+		first_detected_point:int = get_first_timpoint(background, fuzzy_detected_cutoff)
+		first_fixed_point: int = get_first_timpoint(background, fuzzy_fixed_cutoff)
 
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background
 			if genotype_label in backgrounds.index: continue
-
-			# get the nonzero timepoints for the genotype.
-			detected_points = genotype[genotype > fuzzy_detection_cutoff]
-
-			if len(detected_points) < 2:
-				# The genotype is either undetected at all timepoints or is detected once.
-				continue
-
-			first_detected = detected_points.first_valid_index()
-			last_detected = detected_points.last_valid_index()
-
-			# Check if the genotype was detected prior to the background. Skip those that were not.
-			was_detected_before_and_after_background = first_detected < first_detected_point < last_detected
-			# Check if the genotype was detected before and after the timepoint the current backgound fixed.
-			was_detected_before_and_after_fixed = first_detected < first_fixed_point < last_detected
-
-			if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
-				# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
-				# Check to see if it was undetected at the timpont the background fixed.
-
-				if genotype.loc[first_fixed_point] > fuzzy_detection_cutoff:
-					# The genotype was detected at the first fixed timepoint.
-					return genotype_label
+			# Check if it is invalid.
+			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, fuzzy_detected_cutoff)
+			if is_invalid:
+				return genotype_label
 
 
 DF = pandas.DataFrame
