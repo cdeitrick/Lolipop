@@ -1,6 +1,6 @@
 import json
-from typing import Any, Dict, Tuple
-
+from typing import Any, Dict, Tuple, Optional, List
+from pathlib import Path
 import pandas
 from dataclasses import dataclass
 
@@ -18,15 +18,15 @@ try:
 	from graphics.generate_muller_plot import generate_muller_plot
 	from graphics.heatmap import plot_heatmap
 	from muller.muller_output.generate_tables import *
-	from muller.muller_output.generate_scripts import *
-	from muller.widgets import *
+	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller.widgets import generate_genotype_palette, map_trajectories_to_genotype
 except ModuleNotFoundError:
 	from graphics.genotype_plots import plot_genotypes
 	from graphics.generate_muller_plot import generate_muller_plot
 	from graphics.heatmap import plot_heatmap
 	from muller_output.generate_tables import *
-	from muller_output.generate_scripts import *
-	from widgets import *
+	from muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
+	from widgets import generate_genotype_palette, map_trajectories_to_genotype
 
 	GenotypeOptions = Any
 	PairwiseArrayType = Any
