@@ -64,9 +64,13 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
-	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
+	#not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
+	selection = lambda s: any(detected_cutoff < i <fixed_cutoff for i in s.values)
+	not_detected_fixed_df = df[df.apply(selection, axis = 1)]
 	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
-
+	#
+	# Remove timepoints where at least one trajectory was not fixed or undetected.
+	#not_detected_fixed_df = df.
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
 		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
@@ -150,4 +154,27 @@ def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, det
 
 
 if __name__ == "__main__":
-	pass
+	from import_table import import_table_from_string
+	string = """
+	Trajectory	0	1	2	3	4	5
+	trajectory-A1	0	0	0	0.1	0.5	0.5
+	trajectory-B1	0	0.1	0.15	0.03	0	0
+	trajectory-A2	0	0	0	0.06	0.35	0.4
+	trajectory-C1	0	0	0	0.3	0.7	1
+	trajectory-A3	0	0	0	0	0.45	0.5
+	trajectory-B2	0	0.07	0.1	0.02	0.01	0
+	trajectory-F1	0	0	1	1	1	1
+	trajectory-F2	0	1	0	0	0	0
+	trajectory-F3	0	1	1	1	1	1
+	trajectory-U1	0	0	0	0	0	0
+	trajectory-U2	0	0.02	0.01	0.01	0.02	0
+	"""
+	table = import_table_from_string(string, index = 'Trajectory')
+	left = table.loc['trajectory-F1']
+	right = table.loc['trajectory-F3']
+
+	print(calculate_p_value(left, right, .05, .95))
+
+	def selection(s:pandas.Series):
+		return s.sum()
+	print(table.apply(selection, axis = 1))
