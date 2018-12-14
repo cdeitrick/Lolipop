@@ -27,11 +27,13 @@ except ModuleNotFoundError:
 	from muller_output.generate_tables import *
 	from muller_output.generate_scripts import *
 	from widgets import *
+
 	GenotypeOptions = Any
 	PairwiseArrayType = Any
 	SortOptions = Any
 	OrderClusterParameters = Any
 	ClusterType = Any
+
 
 @dataclass
 class WorkflowData:
@@ -66,7 +68,7 @@ class OutputFilenames:
 		self.population: Path = output_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.edges: Path = output_folder / (name + f'.ggmuller.edges.{suffix}')
 		self.r_script: Path = subfolder / (name + '.r')
-		self.muller_table: Path = subfolder / (name + f'.muller.csv') # This is generated in r.
+		self.muller_table: Path = subfolder / (name + f'.muller.csv')  # This is generated in r.
 		self.muller_plot_basic: Path = output_folder / (name + '.muller.basic.png')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
 		self.mermaid_script: Path = subfolder / (name + '.mermaid.md')
@@ -74,12 +76,12 @@ class OutputFilenames:
 		self.genotype_plot: Path = output_folder / (name + '.png')
 		self.genotype_plot_filtered: Path = output_folder / (name + f".filtered.png")
 		self.p_value: Path = subfolder / (name + ".pvalues.tsv")
-		self.p_value_matrix:Path = subfolder / (name + f".pvalues.matrix.{suffix}")
-		self.p_value_heatmap:Path = subfolder / (name + ".pvalues.heatmap.png")
+		self.p_value_matrix: Path = subfolder / (name + f".pvalues.matrix.{suffix}")
+		self.p_value_heatmap: Path = subfolder / (name + ".pvalues.heatmap.png")
 		self.parameters: Path = output_folder / (name + '.json')
 
 
-def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
+def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
 	parameters = {
 		# get_genotype_options
 		'detectionCutoff':                        workflow_data.genotype_options.detection_breakpoint,
@@ -95,18 +97,23 @@ def get_workflow_parameters(workflow_data: WorkflowData) -> Dict[str, float]:
 		'subtractiveBackgroundDoubleCheckCutoff': workflow_data.cluster_options.subtractive_background_double_cutoff,
 		'subtractiveBackgroundSingleCheckCutoff': workflow_data.cluster_options.subtractive_background_single_cutoff,
 		'derivativeDetectionCutoff':              workflow_data.cluster_options.derivative_detection_cutoff,
-		'derivativeCheckCutoff':                  workflow_data.cluster_options.derivative_check_cutoff
+		'derivativeCheckCutoff':                  workflow_data.cluster_options.derivative_check_cutoff,
+		# Palette
+		'genotypePalette':                        genotype_colors
 	}
 	return parameters
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues:bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool):
 	delimiter = '\t'
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
+
 	filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 	trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
+
 	genotype_colors = generate_genotype_palette(workflow_data.original_genotypes.index)
-	parameters = get_workflow_parameters(workflow_data)
+	parameters = get_workflow_parameters(workflow_data, genotype_colors)
+
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff)
 
@@ -131,7 +138,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		table_filename = filenames.muller_table,
 		plot_filename = filenames.muller_plot_basic,
 		script_filename = filenames.r_script,
-		color_palette = genotype_colors
+		color_palette = genotype_colors,
+		genotype_labels = population_table['Identity'].unique().tolist()
 	)
 	mermaid_diagram = generate_mermaid_diagram(edges_table, genotype_colors)
 	excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
