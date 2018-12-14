@@ -136,29 +136,5 @@ def sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequency
 	return freq_df
 
 
-def workflow(mean_genotypes: pandas.DataFrame, options: SortOptions = None, matlab: bool = False,
-		detection_cutoff: float = 0.03,
-		fixed_cutoff: float = None, significant_cutoff: float = 0.15, frequency_breakpoint: float = None):
-	if matlab:
-		options = SortOptions.from_matlab()
-	if not options:
-		if frequency_breakpoint is None:
-			frequency_breakpoint = [0.90, 0.80, 0.70, 0.60, 0.50, 0.40, 0.30, 0.20, 0.10, 0.00]
-		else:
-			frequency_breakpoint = [frequency_breakpoint * i for i in range(int(1 / frequency_breakpoint) + 1)]
-		if fixed_cutoff is None:
-			fixed_cutoff = 1 - detection_cutoff
-		options = SortOptions(
-			detection_breakpoint = detection_cutoff,
-			fixed_breakpoint = fixed_cutoff,
-			significant_breakpoint = significant_cutoff,
-			frequency_breakpoints = frequency_breakpoint
-		)
-
-	sorted_genotypes = sort_genotypes(mean_genotypes, options)
-
-	return sorted_genotypes
-
-
 if __name__ == "__main__":
 	pass
