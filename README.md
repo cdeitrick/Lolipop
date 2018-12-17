@@ -21,9 +21,6 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	-h, --help                  Show this help message and exit
 	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
 	-o,  --output               The folder to save the files to.
-	--genotypes                 Indicates that the input table contains genotypes rather
-	                            than mutational trajectories.
-	--no-filter                 Skips the genotype filtering step.
 	-u, --uncertainty           The uncertainty to apply when performing
 	                            frequency-based calculations. For
 	                            example, a frequency at a given timepoint
@@ -34,7 +31,6 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            1 - `uncertainty`
 	-s, --significant           [0.15] The frequency at which to consider a genotype
 	                            significantly greater than zero.
-	--matlab                    Mimics the output of the original matlab script.
 	-f, --frequencies           [0.10] The frequency cutoff to use when sorting genotypes.
 	                            May be a comma-separated string of frequencies, or a set inverval
 	                            to use when generating the frequency breakpoints.
@@ -42,9 +38,16 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	-r --similarity-cutoff      [0.05] Maximum p-value difference to consider trajectories related.
 	                            Used when grouping trajectories into genotypes.
 	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype.
+	--genotypes                 Indicates that the input table contains genotypes rather
+	                            than mutational trajectories.
+	--matlab                    Mimics the output of the original matlab script.
+	--no-filter                 Skips the genotype filtering step.
 	--annotate-all              By default, the muller diagrams only annotate the top 3 (by frequency)
 	                            genes for each genotype. This option forces the scripts to annotate
 	                            all genes associated with each genotype.
+    --save-pvalues              Saves the p-values to a table and generates a heatmap
+                                for the population. Disabling saves a large amount of
+                                time for large datasets.
 
 ## Input Parameters
 
@@ -81,17 +84,17 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 ## Sample Usage
 
 ```
-python muller.py --input [input filename] --output [output folder]
+python muller_workflow.py --input [input filename] --output [output folder]
 ```
 
 Run with default parameters.
 
 ```
-python --input [filename] --output [folder] --matlab
+python muller_workflow.py --input [filename] --output [folder] --matlab
 ```
 Trajectories will be grouped into genotypes and each genotype will be nested using the same parameters the original matlab script used. The original script used different values in each script when performing frequency detection/significance. The improved version of the script (without the --matlab flag) harmonized these parameters so that similar calculations use the same parameter rather than re-defining the value to use.
 ```
-python --input [filename] --frequencies 0.05 --detected 0.10
+python muller_workflow.py --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
@@ -101,14 +104,6 @@ The script generates the following files:
 
 ### Tables
 
--  `input filename`.ggmuller_edges.tsv
-
-	Used as the `edges` input to ggmuller.
-
-- `input filename`.ggmuller_populations.tsv
-
-	Used as the `population` input to ggmuller.
-
 - `input filename`.genotypes.tsv
 
 	A tab-delimited table with the mean frequency of each genotype at each timepoint. The mean is calculated from the trajectories that comprise each genotype.
@@ -117,38 +112,61 @@ The script generates the following files:
 
 	A tab-delimited table of the population trajectories used in the analysis. Each trajectory represents the frequency of a single mutation at each timepoint.
 
+-  `input filename`.ggmuller.edges.tsv
+
+	Used as the `edges` input to ggmuller.
+
+- `input filename`.ggmuller.populations.tsv
+
+	Used as the `population` input to ggmuller.
+
 -  supplementary-files / `input filename`.genotypes.original.tsv
 
     The initial genotypes generated before applying the genotype filters.
-
 
 - supplementary-files / `input filename`.trajectories.original.tsv
 
     The unfiltered trajectories.
 
-- supplementary-files / `input filename`.muller.tsv
+- supplementary-files / `input filename`.muller.csv
 
     The table generated by ggmuller and used to generate the muller diagrams.
 
 - supplementary-files / `input filename`.pvalues.tsv
 
-    A tab-delimited file listing the calculated p-value for each pair of mutational trajectories.
+    A tab-delimited file listing the calculated p-value for each pair of mutational trajectories. Only created
+    if `--save-pvalues` is provided.
+    
+- supplementary-files / `input filename`.pvalues.matrix.tsv
+    
+    A table with all pairwise p-values for all trajectories. 
+    Rows/ columns are sorted by genotype and share the same order.
+    Requires `--save-pvalues`
     
 ### Diagrams
 
-- `input filename`.png
+- `input filename`.muller.basic.png
 
 	The muller plot generated by the r script. Colors correspond to the same genotypes in the genotype plots.
 
--  `input_filename`.genotypeplot.png
+- `input filename`.muller.annotated.png, `input filename`.muller.annotated.pdf
+    
+    A muller plot annotated with relevant mutations. Only the top 3 mutations (by frequency) are included if
+    `--annotate-all` is not given.
+
+-  `input_filename`.png
 
     Plots of all trajectories (colored by parent genotype) and genotypes.
 
+- `input filename`.filtered.png
+    Plot of all trajectories and genotypes with filtered mutations included. Identical to the above if `--no-filter` is provided.
 
 - `input filename`.mermaid.png
 
     If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
-	
+
+- supplementary-files / `input filename`.pvalues.heatmap.png
+    A heatmap of the p-value matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
 ### Other
 
 - supplementary-files / `input filename`.r
@@ -159,13 +177,9 @@ The script generates the following files:
 
 	A script written in the [mermaid](https://mermaidjs.github.io) scripting language. Generates a diagram indicating the hierarchy of genotypes/backgrounds in the current population.
 
-
--  `input filename`.yaml
+-  `input filename`.json
 
 	Contains the parameters used for the analysis. See the flowcharts in /docs/flowcharts to see where each parameter is used.
-
-
-
 
 ## Genotype Plots
 The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.

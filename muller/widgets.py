@@ -2,6 +2,7 @@ import random
 from typing import Dict, List
 import re
 import pandas
+from collections import OrderedDict
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
@@ -34,6 +35,7 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 
 
 def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
+	""" Assigns a unique color to each genotype."""
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -43,19 +45,21 @@ def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
 
 	if len(genotypes) >= len(color_palette):
 		color_palette += [generate_random_color() for _ in genotypes]
-
-	color_map = {i: j for i, j in zip(sorted(genotypes, key = lambda s:int(s.split('-')[-1])), color_palette)}
+	genotype_labels = sorted(genotypes, key = lambda s:int(s.split('-')[-1]))
+	# Use an OrderedDict to help with providing the correct order for the r script.
+	color_map = OrderedDict()
 	color_map['genotype-0'] = "#333333"
+	for label, color in zip(genotype_labels, color_palette):
+		color_map[label] = color
 	color_map['removed'] = '#000000'
 
 	return color_map
 
 
-def map_trajectories_to_genotype(genotypes: pandas.DataFrame) -> Dict[str, str]:
+def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
 	trajectory_to_genotype = dict()
-	for label, genotype in genotypes.iterrows():
-		items = genotype['members'].split('|')
-		for i in items:
-			trajectory_to_genotype[i] = label
+	for genotype_label, members in genotype_members.items():
+		for member in members.split('|'):
+			trajectory_to_genotype[member] = genotype_label
 	return trajectory_to_genotype
 

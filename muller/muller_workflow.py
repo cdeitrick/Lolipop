@@ -5,8 +5,9 @@ import argparse
 import itertools
 import math
 from pathlib import Path
-from typing import List, Optional, Union
-from dataclasses import dataclass, asdict
+from typing import Any, List, Optional, Union
+
+from dataclasses import asdict, dataclass
 
 try:
 	from muller.import_table import import_trajectory_table, import_genotype_table
@@ -39,7 +40,7 @@ class ProgramOptions:
 	is_genotype: bool = False
 	use_filter: bool = True
 	annotate_all: bool = False
-	save_pvalue:bool = True
+	save_pvalue: bool = True
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
@@ -76,7 +77,7 @@ class ProgramOptions:
 			is_genotype = parser.is_genotype,
 			use_filter = parser.use_filter,
 			annotate_all = parser.annotate_all,
-			save_pvalue= parser.save_pvalue
+			save_pvalue = parser.save_pvalue
 		)
 
 	@classmethod
@@ -85,6 +86,7 @@ class ProgramOptions:
 		parser.output_folder = './output'
 		parser.use_filter = True
 		return cls.from_parser(parser)
+
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):
@@ -125,6 +127,32 @@ def parse_workflow_options(program_options):
 	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
 
+def extract_genotypes_from_path(input_filename: Path, sheetname: str):
+	mean_genotypes, genotype_info = import_genotype_table(input_filename, sheetname)
+	genotype_members = genotype_info['members']
+	original_timepoints = timepoints = info = None
+	original_genotypes = mean_genotypes
+	return original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info
+
+
+def extract_genotypes_from_trajectories(input_filename: Path, program_options: ProgramOptions, program_options_genotype: Any,
+		frequency_breakpoints: List[float]):
+	original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
+	original_genotypes, genotype_members = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
+
+	if program_options.use_filter:
+		timepoints, mean_genotypes, genotype_members = genotype_filters.workflow(
+			original_timepoints,
+			program_options_genotype,
+			frequency_breakpoints
+		)
+	else:
+		timepoints = original_timepoints.copy()
+		mean_genotypes = original_genotypes.copy()
+
+	return original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info
+
+
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	print("parsing options...")
@@ -133,30 +161,18 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	pprint(asdict(program_options))
 	print("Importing data...")
 	if program_options.is_genotype:
-		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
-		mean_genotypes['members'] = genotype_info['members']
-		original_timepoints = timepoints = info = None
-		original_genotypes = mean_genotypes
-		filter_cache = list()
-
+		original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info = extract_genotypes_from_path(input_filename, program_options.sheetname)
 	else:
-		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
-		original_genotypes = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
+		original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info = extract_genotypes_from_trajectories(
+			input_filename,
+			program_options,
+			program_options_genotype,
+			program_options_sort.frequency_breakpoints)
 
-		if program_options.use_filter:
-			timepoints, mean_genotypes, filter_cache = genotype_filters.workflow(
-				original_timepoints,
-				program_options_genotype,
-				program_options_sort.frequency_breakpoints
-			)
-		else:
-			timepoints = original_timepoints.copy()
-			mean_genotypes = original_genotypes.copy()
-			filter_cache = list()
 	print("sorting muller_genotypes...")
-	sorted_genotypes = sort_genotypes.workflow(mean_genotypes, options = program_options_sort)
+	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	print("nesting muller_genotypes...")
-	genotype_clusters = order_clusters.workflow(sorted_genotypes, options = program_options_clustering)
+	genotype_clusters = order_clusters.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
 
 	print("Generating output...")
 	workflow_data = WorkflowData(
@@ -166,12 +182,13 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		original_genotypes = original_genotypes,
 		trajectories = timepoints,
 		genotypes = mean_genotypes,
+		genotype_members = genotype_members,
 		clusters = genotype_clusters,
 		genotype_options = program_options_genotype,
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering,
 		p_values = calculate_genotypes.PAIRWISE_CALCULATIONS,
-		filter_cache = filter_cache
+		filter_cache = []
 	)
 	generate_output(
 		workflow_data,
@@ -285,5 +302,5 @@ def create_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
 	args = create_parser().parse_args()
 	cmd_parser = ProgramOptions.from_parser(args)
-	#cmd_parser = ProgramOptions.debug(args)
+	# cmd_parser = ProgramOptions.debug(args)
 	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)

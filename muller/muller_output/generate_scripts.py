@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import pandas
 
@@ -45,10 +45,11 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 
 
 def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path, script_filename: Path,
-		color_palette: Dict[str, str]) -> Optional[pandas.DataFrame]:
+		color_palette: Dict[str, str], genotype_labels:List[str]) -> Optional[pandas.DataFrame]:
 
-	_items = sorted(filter( lambda s: '-' in s[0],color_palette.items()), key = lambda s: int(s[0].split('-')[-1]))
-	script_colors = ",".join(['"{}"'.format(v) for k, v in _items])
+	# `color_palette` should be an OrderedDict.
+	genotype_labels = sorted(genotype_labels)
+	script_colors = ",".join(['"{}"'.format(color_palette[k]) for k in genotype_labels])
 
 	script = """
 	library(ggplot2)

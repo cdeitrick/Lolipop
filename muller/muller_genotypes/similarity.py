@@ -65,8 +65,12 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
 	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
+	#selection = lambda s: any(detected_cutoff < i <fixed_cutoff for i in s.values)
+	#not_detected_fixed_df = df[df.apply(selection, axis = 1)]
 	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
-
+	#
+	# Remove timepoints where at least one trajectory was not fixed or undetected.
+	#not_detected_fixed_df = df.
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
 		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]

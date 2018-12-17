@@ -65,7 +65,6 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFram
 				new_genotype_2.append(genotype_member)
 	return new_genotype_1, new_genotype_2
 
-
 def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[List[str]]:
 	"""
 		Splits each genotype if any of its members are not related enough to the other members. Genotypes will continue
@@ -90,7 +89,6 @@ def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Pa
 			combination_pairs = [(left, right, pair_array[left, right]) for left, right in itertools.combinations(genotype, 2)]
 			# Combine all pairs and p-values into a dataframe for convienience.
 			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
-
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.
 			unlinked_trajectories = genotype_combinations[genotype_combinations['pvalue'] < link_cutoff]
