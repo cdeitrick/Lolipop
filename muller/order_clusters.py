@@ -1,5 +1,4 @@
 import itertools
-from argparse import Namespace
 from typing import Dict, List, Tuple
 
 import pandas
@@ -55,36 +54,22 @@ class OrderClusterParameters:
 			new_background_significant_cutoff = 1 + significant_breakpoint
 		)
 
-	@classmethod
-	def from_parser(cls, parser: Namespace) -> 'OrderClusterParameters':
-		compatibility_mode = parser.mode
-		detection_breakpoint = float(parser.detection_breakpoint)
-		significant_breakpoint = float(parser.significant_breakpoint)
-		# fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
-
-		if compatibility_mode:
-			return cls.from_matlab()
-		else:
-			return cls.from_breakpoints(detection_breakpoint, significant_breakpoint)
-
 
 def check_additive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float,
 		single_cutoff: float) -> bool:
 	# Want to check if a genotype's sum of frequencies is consistently greater than 1.0
 	trajectorysum = right + left
-	double_check = (trajectorysum > double_cutoff).sum() > 1  # Implicit conversion from bool to int.
+	double_check = (trajectorysum > double_cutoff).sum() > 0  # Implicit conversion from bool to int.
 	single_check = (trajectorysum > single_cutoff).sum() > 0
-
 	return double_check or single_check
 
 
 def check_subtractive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float,
 		single_cutoff: float) -> bool:
-	# Check if the current genoty is over 15% larger than the other.
+	# Check if the current genotype is over 15% larger than the other.
 	diff_trajectory = right - left
 	double_diff_trajectory = (diff_trajectory < double_cutoff).sum() > 1
 	single_diff_trajectory = (diff_trajectory < single_cutoff).sum() > 0  # implicit conversion from bool to int
-
 	return double_diff_trajectory or single_diff_trajectory
 
 
@@ -100,7 +85,6 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	# Convert the index labels to their corresponding integer position in the index.
 	# Pandas can't use labels to get a slice of a series.
-
 	start_index = left.index.get_loc(startpoint)
 	end_index = left.index.get_loc(endpoint)
 	# The matlab script uses the difference of the following timepoint versus the curent one,
@@ -111,7 +95,6 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	right_window = right_derivative[start_index:end_index] * -1
 	left_window = left_derivative[start_index:end_index] * -1
-
 	delta = left_window.dot(right_window)
 
 	return delta
@@ -157,7 +140,7 @@ def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: panda
 	return additive_check, subtractive_check, delta
 
 
-def order_clusters(sorted_df: pandas.DataFrame, genotype_members:pandas.Series, options: OrderClusterParameters) -> ClusterType:
+def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series, options: OrderClusterParameters) -> ClusterType:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
@@ -183,7 +166,6 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members:pandas.Series, 
 			background = [initial_background.name],
 			members = genotype_members.loc[initial_background.name])
 	}
-
 	for genotype_label, type_trajectory in sorted_df[1:].iterrows():
 		type_members = genotype_members.loc[genotype_label]
 
@@ -202,7 +184,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members:pandas.Series, 
 				members = type_members
 			)
 			additive_check, subtractive_check, delta = apply_genotype_checks(type_trajectory, test_trajectory, options)
-
+			# print(genotype_label, test_label, additive_check, subtractive_check, delta)
 			if additive_check:
 				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 				continue

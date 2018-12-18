@@ -58,9 +58,12 @@ class OutputFilenames:
 	def __init__(self, output_folder: Path, name: str, delimiter = '\t'):
 		if delimiter == '\t': suffix = 'tsv'
 		else: suffix = 'csv'
+		if not output_folder.exists():
+			output_folder.mkdir()
 		subfolder = output_folder / "supplementary-files"
 		if not subfolder.exists():
 			subfolder.mkdir()
+
 		self.original_trajectory: Path = subfolder / (name + f'.trajectories.original.{suffix}')
 		self.original_genotype: Path = subfolder / (name + f'.muller_genotypes.original.{suffix}')
 		self.trajectory: Path = output_folder / (name + f'.trajectories.{suffix}')
@@ -103,8 +106,10 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 	}
 	return parameters
 
-
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool):
+def _make_folder(folder:Path):
+	if not folder.exists():
+		folder.mkdir()
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool, adjust_populations:bool):
 	delimiter = '\t'
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
 
@@ -115,7 +120,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
 
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
-	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff)
+	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 
 	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
 

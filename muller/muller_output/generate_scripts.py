@@ -107,9 +107,12 @@ def execute_r_script(path: Path, script: str) -> Path:
 def excecute_mermaid_script(path: Path, script:str, mermaid_render: Path):
 	path.write_text(script)
 	try:
-		subprocess.call(
-			["mmdc", "--height", "400", "-i", path, "-o", mermaid_render],
+		process = subprocess.run(
+			["mmdc", "--height", "1000","--width", "1000", "--input", path, "--output", mermaid_render],
 			stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE)
+		if process.stderr:
+			print("Warning encountered when generating mermaid diagram:")
+			print(process.stderr)
 	except FileNotFoundError:
 		pass

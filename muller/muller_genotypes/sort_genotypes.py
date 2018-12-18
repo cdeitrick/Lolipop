@@ -20,18 +20,6 @@ class SortOptions:
 			frequency_breakpoints = [0.90, 0.75, 0.60, 0.45, 0.30, 0.15, 0.00]
 		)
 
-	@classmethod
-	def from_breakpoints(cls, detection: float, significant: float = 0.15, fixed: float = None) -> 'SortOptions':
-		if fixed is None:
-			fixed = 1 - detection
-
-		return SortOptions(
-			detection_breakpoint = detection,
-			significant_breakpoint = significant,
-			fixed_breakpoint = fixed,
-			frequency_breakpoints = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-		)
-
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
