@@ -21,7 +21,7 @@ def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> 
 	return backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff)
 
 
-def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float) -> bool:
+def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float, use_strict_filter:bool) -> bool:
 	"""
 		Checks if a genotype does not adhere to certain assumptions related to the background.
 		1. The genotype should not be present both before and after a background fixes, and should be nonzero when the background fixes.
@@ -59,7 +59,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 		# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 		# Check to see if it was undetected at the timpont the background fixed.
 
-		if genotype.loc[background_detected] > detection_cutoff:
+		if use_strict_filter or genotype.loc[background_detected] > detection_cutoff:
 			# The genotype was detected at the first fixed timepoint.
 			return True
 	return False
@@ -78,7 +78,7 @@ def _get_backgrounds_present_at_multiple_timepoints(backgrounds:pandas.DataFrame
 	return backgrounds
 
 # noinspection PyTypeChecker
-def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float]) -> str:
+def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float], use_strict_filter:bool) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
 		unrelated diversity and essentially 'resets' the mutation pool. Genotypes which are detected prior to a fixed genotype should, in theory,
 		fall to an undetected frequency. Any genotypes that do not follow this rule (are detected both before and after a genotype fixes) should
@@ -115,7 +115,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 			# Double check that it is not a background
 			if genotype_label in backgrounds.index: continue
 			# Check if it is invalid.
-			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, fuzzy_detected_cutoff)
+			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, fuzzy_detected_cutoff, use_strict_filter)
 			if is_invalid:
 				return genotype_label
 
@@ -123,7 +123,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 DF = pandas.DataFrame
 
 
-def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float]) -> Tuple[DF, DF, Any]:
+def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float], use_strict_filter:bool) -> Tuple[DF, DF, Any]:
 	"""
 		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
 	Parameters
@@ -145,7 +145,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
-		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, frequency_cutoffs)
+		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, frequency_cutoffs, use_strict_filter)
 		if current_invalid_genotype is None:
 			break
 		else:

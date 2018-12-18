@@ -262,6 +262,7 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	mean_genotypes = pandas.DataFrame(mean_genotypes)
 	# For consistency
 	mean_genotypes.index.name = 'Genotype'
+
 	return mean_genotypes
 
 
@@ -290,6 +291,7 @@ def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pa
 
 	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
 	genotype_members = _mean_genotypes.pop('members')
+	_mean_genotypes = _mean_genotypes[sorted(_mean_genotypes.columns)]
 	# _mean_genotypes.to_csv(str(filename.with_suffix('.mean.tsv')), sep = '\t')
 	return _mean_genotypes, genotype_members
 

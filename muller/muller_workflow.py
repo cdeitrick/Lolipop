@@ -41,6 +41,7 @@ class ProgramOptions:
 	use_filter: bool = True
 	annotate_all: bool = False
 	save_pvalue: bool = True
+	use_strict_filter: bool = False
 
 	def __post_init__(self):
 		if self.output_folder and not self.output_folder.exists():
@@ -77,7 +78,8 @@ class ProgramOptions:
 			is_genotype = parser.is_genotype,
 			use_filter = parser.use_filter,
 			annotate_all = parser.annotate_all,
-			save_pvalue = parser.save_pvalue
+			save_pvalue = parser.save_pvalue,
+			use_strict_filter = parser.use_strict_filter
 		)
 
 	@classmethod
@@ -144,7 +146,8 @@ def extract_genotypes_from_trajectories(input_filename: Path, program_options: P
 		timepoints, mean_genotypes, genotype_members = genotype_filters.workflow(
 			original_timepoints,
 			program_options_genotype,
-			frequency_breakpoints
+			frequency_breakpoints,
+			program_options.use_strict_filter
 		)
 	else:
 		timepoints = original_timepoints.copy()
@@ -268,11 +271,11 @@ def create_parser() -> argparse.ArgumentParser:
 		"-l", "--difference-cutoff",
 		help = "Minimum p-value to consider a pair of muller_genotypes unrelated. Used when splitting muller_genotypes.",
 		action = "store",
-		default = 0.10,
+		default = 0.25,
 		dest = "difference_breakpoint"
 	)
 	parser.add_argument(
-		"--muller_genotypes", "--cohorts",
+		"--genotypes", "--cohorts",
 		help = "Indicates that the input table contains muller_genotypes rather than trajectories.",
 		action = 'store_true',
 		dest = 'is_genotype'
@@ -294,6 +297,12 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Saves the p-values to a table and generates a heatmap for the population. Disabling saves a large amount of time for large datasets.",
 		action = "store_true",
 		dest = "save_pvalue"
+	)
+	parser.add_argument(
+		"--strict-filter",
+		help = "",
+		action = "store_true",
+		dest = "use_strict_filter"
 	)
 
 	return parser

@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import pandas
 
@@ -7,6 +7,61 @@ try:
 	from muller_genotypes import PairwiseArrayType
 except ModuleNotFoundError:
 	from order_clusters import ClusterType
+
+
+def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
+	""" Maps a genotype to a list of all genotypes that inherit from it"""
+	children = dict()
+	for _, row in edges.iterrows():
+		parent = row['Parent']
+		identity = row['Identity']
+
+		children[parent] = children.get(parent, list()) + [identity]
+	return children
+
+
+def _subtract_children_from_parent(modified_genotypes: pandas.DataFrame, children: Dict[str, List[str]], detection_cutoff: float) -> pandas.DataFrame:
+	children_table = list()
+	for genotype_label, genotype in modified_genotypes.iterrows():
+		if genotype_label in children and False:
+			genotype_frequencies = genotype[genotype > detection_cutoff]
+			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
+			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
+			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.01)  # 0.01 so there is still a visible slice.
+			genotype_frequencies = genotype_frequencies.dropna()
+		else:
+			genotype_frequencies = genotype
+		children_table.append(genotype_frequencies)
+	return pandas.DataFrame(children_table)
+
+
+def _convert_genotype_table_to_population_table(genotype_table: pandas.DataFrame) -> pandas.DataFrame:
+	table = list()
+	for genotype_label, genotype_frequencies in genotype_table.iterrows():
+		# Remove timepoints where the value was 0 or less than 0 due to above line.
+		for timepoint, frequency in genotype_frequencies.items():
+			row = {
+				'Identity':   genotype_label,
+				'Generation': timepoint,
+				'Population': frequency * 100
+			}
+			table.append(row)
+
+	temp_df = pandas.DataFrame(table)
+	return temp_df
+
+
+def _append_genotype_0(population_table: pandas.DataFrame) -> pandas.DataFrame:
+	generation_groups = population_table.groupby(by = 'Generation')
+	modified_population = population_table
+	for generation, group in generation_groups:
+		population = group['Population'].sum()
+		if population <= 100:
+			p = 100 - population
+		else:
+			p = 0
+		modified_population = modified_population.append({'Generation': generation, "Identity": "genotype-0", "Population": p}, ignore_index = True)
+	return modified_population
 
 
 def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, detection_cutoff: float) -> pandas.DataFrame:
@@ -22,7 +77,7 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 		The cutoff to determine whether a trajectory or genotype counts as being nonzero at a given timepoint.
 	Returns
 	-------
-
+	pandas.DataFrame
 	"""
 
 	# "Generation", "Identity" and "Population"
@@ -31,51 +86,21 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 
 	# Use a copy of the dataframe to avoid making changes to the original.
 	modified_genotypes: pandas.DataFrame = mean_genotypes.copy(True)
+	# Incase the genotype table includes genotypes that the edges table does not have.
 	modified_genotypes = modified_genotypes[modified_genotypes.index.isin(edges['Identity'])]
 
-	# Generate a list of all muller_genotypes that arise in the background of each genotype.
-	children = dict()
-	for _, row in edges.iterrows():
-		parent = row['Parent']
-		identity = row['Identity']
+	# Generate a list of all genotypes that arise in the background of each genotype.
+	# Should ba a dict mapping parent -> list[children]
+	children = _compile_parent_linkage(edges)
 
-		children[parent] = children.get(parent, list()) + [identity]
+	child_df = _subtract_children_from_parent(modified_genotypes, children, detection_cutoff)
 
-	table = list()
+	temp_df = _convert_genotype_table_to_population_table(child_df)
 
-	for genotype_label, genotype in modified_genotypes.iterrows():
-		if genotype_label in children:
-			genotype_frequencies = genotype[genotype > detection_cutoff]
-			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
-			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
-			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.01)
-			genotype_frequencies = genotype_frequencies.dropna()
+	population_table = _append_genotype_0(temp_df)
+	print(population_table.to_string())
 
-		else:
-			genotype_frequencies = genotype
-
-		# Remove timepoints where the value was 0 or less than 0 due to above line.
-
-		for timepoint, frequency in genotype_frequencies.items():
-			row = {
-				'Identity':   genotype_label,
-				'Generation': timepoint,
-				'Population': frequency * 100
-			}
-			table.append(row)
-
-	temp_df = pandas.DataFrame(table)
-
-	generation_groups = temp_df.groupby(by = 'Generation')
-	for generation, group in generation_groups:
-		population = group['Population'].sum()
-		if population <= 100:
-			p = 100 - population
-		else:
-			p = 0
-		table.append({'Generation': generation, "Identity": "genotype-0", "Population": p})
-
-	return pandas.DataFrame(table)
+	return population_table
 
 
 def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.DataFrame:
@@ -96,7 +121,7 @@ def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.Data
 			'Identity': identity
 		}
 		table.append(row)
-	table = pandas.DataFrame(table)[['Parent', 'Identity']]
+	table = pandas.DataFrame(table)[['Parent', 'Identity']] # Reorder columns
 
 	return table
 
@@ -171,4 +196,6 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 
 
 if __name__ == "__main__":
-	pass
+	series = pandas.Series([12.3, 14.4, 99, 11], index = [1, 2, 3, 5], name = 'testseries')
+	print(series)
+	print(series.to_frame().to_string())
