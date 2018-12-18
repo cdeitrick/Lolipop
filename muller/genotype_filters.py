@@ -1,7 +1,6 @@
 from typing import Any, List, Tuple
 
 import pandas
-
 try:
 	from muller.muller_genotypes import calculate_genotypes
 except ModuleNotFoundError:

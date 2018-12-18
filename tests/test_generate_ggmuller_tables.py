@@ -1,6 +1,6 @@
 import unittest
 from import_table import import_table_from_string
-from muller_output.generate_tables import _subtract_children_from_parent, _append_genotype_0, _convert_genotype_table_to_population_table
+from muller_output.generate_tables import _subtract_children_from_parent, _append_genotype_0, _convert_genotype_table_to_population_table, _compile_parent_linkage
 import pandas
 edges_table = """
 	Parent	Identity
@@ -12,7 +12,17 @@ edges_table = """
 """
 
 class TestEdgesTable(unittest.TestCase):
-	pass
+	def test_compile_parent_linkage(self):
+		edges = import_table_from_string(edges_table)
+		expected_linkage = {
+			'genotype-1': ['genotype-4', 'genotype-3'],
+			'genotype-4': ['genotype-5'],
+			'genotype-0':['genotype-1', 'genotype-2']
+		}
+		output = _compile_parent_linkage(edges)
+		self.assertDictEqual(expected_linkage, output)
+	def test_generate_edges_table(self):
+		pass
 
 class TestPopulationTable(unittest.TestCase):
 	def test_subtract_children_from_parent(self):

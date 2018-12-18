@@ -212,14 +212,17 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 
 
 if __name__ == "__main__":
+	from pprint import pprint
 	from import_table import import_table_from_string
 	test_table = import_table_from_string(
 		"""
-		Genotype	0	1	22	33
-		genotype-1	0	.12	.5	0
-		genotype-2	0	.23	.5	.7
-		""", index = 'Genotype'
+			Parent	Identity
+			genotype-0	genotype-1
+			genotype-1	genotype-4
+			genotype-4	genotype-5
+			genotype-0	genotype-2
+			genotype-1	genotype-3
+		"""
 	)
-	output = _convert_genotype_table_to_population_table(test_table)
-	print(output.to_string())
-	print(output.info())
+	output = _compile_parent_linkage(test_table)
+	pprint(output)
