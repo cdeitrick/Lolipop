@@ -195,7 +195,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 				members = type_members
 			)
 			additive_check, subtractive_check, delta = apply_genotype_checks(type_trajectory, test_trajectory, options)
-			print(genotype_label, test_label, additive_check, subtractive_check, delta)
+			#print(genotype_label, test_label, additive_check, subtractive_check, delta)
 			if additive_check:
 				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 				continue

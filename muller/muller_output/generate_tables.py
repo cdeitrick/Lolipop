@@ -23,14 +23,15 @@ def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
 def _subtract_children_from_parent(modified_genotypes: pandas.DataFrame, children: Dict[str, List[str]], detection_cutoff: float) -> pandas.DataFrame:
 	children_table = list()
 	for genotype_label, genotype in modified_genotypes.iterrows():
-		if genotype_label in children and False:
+		if genotype_label in children:
 			genotype_frequencies = genotype[genotype > detection_cutoff]
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
 			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.01)  # 0.01 so there is still a visible slice.
-			genotype_frequencies = genotype_frequencies.dropna()
+			genotype_frequencies = genotype_frequencies.fillna(0) #Otherwise plotting the muller diagram will fail.
 		else:
 			genotype_frequencies = genotype
+		genotype_frequencies.name = genotype_label
 		children_table.append(genotype_frequencies)
 	return pandas.DataFrame(children_table)
 
@@ -86,19 +87,15 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 
 	# Use a copy of the dataframe to avoid making changes to the original.
 	modified_genotypes: pandas.DataFrame = mean_genotypes.copy(True)
-	# Incase the genotype table includes genotypes that the edges table does not have.
+	# In case the genotype table includes genotypes that the edges table does not have.
 	modified_genotypes = modified_genotypes[modified_genotypes.index.isin(edges['Identity'])]
 
 	# Generate a list of all genotypes that arise in the background of each genotype.
 	# Should ba a dict mapping parent -> list[children]
 	children = _compile_parent_linkage(edges)
-
 	child_df = _subtract_children_from_parent(modified_genotypes, children, detection_cutoff)
-
 	temp_df = _convert_genotype_table_to_population_table(child_df)
-
 	population_table = _append_genotype_0(temp_df)
-	print(population_table.to_string())
 
 	return population_table
 
