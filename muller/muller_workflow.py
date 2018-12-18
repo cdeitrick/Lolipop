@@ -51,7 +51,7 @@ def extract_genotypes_from_trajectories(input_filename: Path, program_options: P
 	return original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info
 
 def parse_workflow_options(program_options:argparse.Namespace):
-	program_options = ProgramOptions.from_parser(program_options)
+	#program_options = ProgramOptions.from_parser(program_options)
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
 		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
@@ -59,7 +59,8 @@ def parse_workflow_options(program_options:argparse.Namespace):
 		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
 	else:
 		#freqs = _parse_frequency_option(program_options.frequencies)
-
+		if program_options.fixed_breakpoint is None:
+			program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
 		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
 		program_options_sort = sort_genotypes.SortOptions(
@@ -75,7 +76,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
 	from pprint import pprint
-	pprint(asdict(program_options))
+	#pprint(asdict(program_options))
+	print(program_options)
 	print("Importing data...")
 	if program_options.is_genotype:
 		original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info = extract_genotypes_from_path(input_filename,
@@ -122,6 +124,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 if __name__ == "__main__":
 	args = create_parser().parse_args()
-	cmd_parser = ProgramOptions.from_parser(args)
+	#cmd_parser = ProgramOptions.from_parser(args)
 	# cmd_parser = ProgramOptions.debug(args)
-	workflow(cmd_parser.filename, cmd_parser.output_folder, program_options = cmd_parser)
+	workflow(args.filename, args.output_folder, program_options = args)

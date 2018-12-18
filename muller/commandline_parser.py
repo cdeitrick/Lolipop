@@ -26,53 +26,6 @@ class ProgramOptions:
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 
-	def __post_init__(self):
-		if self.output_folder and not self.output_folder.exists():
-			sup = self.output_folder / "supplementary-files"
-			self.output_folder.mkdir()
-
-			if not sup.exists():
-				sup.mkdir()
-
-	@classmethod
-	def from_parser(cls, parser: Union['ProgramOptions', argparse.Namespace]) -> 'ProgramOptions':
-		filename = Path.cwd() / parser.filename
-		output_folder = Path.cwd() / parser.output_folder
-
-		fixed = parser.fixed_breakpoint
-		if fixed is None:
-			fixed = 1 - float(parser.detection_breakpoint)
-		else:
-			fixed = float(fixed)
-
-		frequencies = _parse_frequency_option(parser.frequencies)
-
-		return cls(
-			filename = filename,
-			output_folder = output_folder,
-			sheetname = parser.sheetname,
-			fixed_breakpoint = fixed,
-			detection_breakpoint = float(parser.detection_breakpoint),
-			significant_breakpoint = float(parser.significant_breakpoint),
-			mode = parser.mode,
-			frequencies = frequencies,
-			similarity_breakpoint = float(parser.similarity_breakpoint),
-			difference_breakpoint = float(parser.difference_breakpoint),
-			is_genotype = parser.is_genotype,
-			use_filter = parser.use_filter,
-			annotate_all = parser.annotate_all,
-			save_pvalue = parser.save_pvalue,
-			use_strict_filter = parser.use_strict_filter
-		)
-
-	@classmethod
-	def debug(cls, parser) -> 'ProgramOptions':
-		parser.filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/B1_Muller.xlsx"
-		parser.output_folder = './output'
-		parser.use_filter = True
-		return cls.from_parser(parser)
-
-
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):
 		if ',' in frequency:
@@ -91,6 +44,20 @@ def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	frequencies = sorted(frequencies, reverse = True)
 	return frequencies
 
+class FrequencyParser(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string = None):
+		if not values:
+			parsed_frequencies = self.default
+		else:
+			parsed_frequencies = _parse_frequency_option(values)
+		setattr(namespace, self.dest, parsed_frequencies)
+
+class FixedBreakpointParser(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string = None):
+		detected = namespace.detection_breakpoint
+		if not values:
+			values = 1 - detected
+		setattr(namespace, self.dest, values)
 
 def create_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
@@ -102,7 +69,8 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "The table of trajectories to cluster.",
 		action = 'store',
 		dest = 'filename',
-		type = Path
+		type = Path,
+		required = True
 	)
 	parser.add_argument(
 		"--sheetname",
@@ -117,12 +85,13 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "The folder to save the files to.",
 		action = 'store',
 		dest = 'output_folder',
-		type = Path
+		type = Path,
+		required = True
 	)
 	parser.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
-		action = 'store',
+		action = FixedBreakpointParser,
 		dest = 'fixed_breakpoint',
 		type = float
 	)
@@ -152,10 +121,9 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"-f", "--frequencies",
 		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
-		action = 'store',
+		action = FrequencyParser,
 		dest = 'frequencies',
-		default = 0.10,
-		type = float
+		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.6, 0.2, 0.1, 0.0]
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
