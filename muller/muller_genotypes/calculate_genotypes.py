@@ -1,4 +1,3 @@
-import argparse
 import itertools
 from typing import Dict, List, Optional, Tuple
 
@@ -13,7 +12,7 @@ except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
 
 PAIRWISE_P_VALUES: PairwiseArrayType = None
-PAIRWISE_CALCULATIONS: Dict[Tuple[str,str], PairCalculation] = None
+PAIRWISE_CALCULATIONS: Dict[Tuple[str, str], PairCalculation] = None
 REMOVED_P_VALUES: PairwiseArrayType = dict()
 
 
@@ -36,35 +35,6 @@ class GenotypeOptions:
 			similarity_breakpoint = 0.05,
 			difference_breakpoint = 0.10
 		)
-
-	@classmethod
-	def from_breakpoints(cls, detection_cutoff: float, fixed_cutoff: float = None) -> 'GenotypeOptions':
-		return GenotypeOptions(
-			detection_breakpoint = detection_cutoff,
-			fixed_breakpoint = fixed_cutoff if fixed_cutoff else (1 - detection_cutoff),
-			n_binom = None,
-			similarity_breakpoint = 0.05,
-			difference_breakpoint = 0.10
-		)
-
-	@classmethod
-	def from_parser(cls, parser: argparse.Namespace) -> 'GenotypeOptions':
-		compatibility_mode = parser.mode
-		detection_breakpoint = float(parser.detection_breakpoint)
-		fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
-		nbinom = int(parser.n_binomial) if hasattr(parser, 'n_binomial') and parser.n_binomial else None
-		if fixed_breakpoint is None:
-			fixed_breakpoint = 1 - detection_breakpoint
-		if compatibility_mode:
-			return cls.from_matlab()
-		else:
-			return GenotypeOptions(
-				detection_breakpoint = detection_breakpoint,
-				fixed_breakpoint = fixed_breakpoint,
-				n_binom = nbinom,
-				similarity_breakpoint = parser.similarity_breakpoint,
-				difference_breakpoint = parser.difference_breakpoint
-			)
 
 
 @dataclass
@@ -121,7 +91,7 @@ def _group_trajectories_into_genotypes(pairs: PairwiseArrayType, relative_cutoff
 	else:
 		genotype_candidates = []
 	seen = set()
-	for (left,right), p_value in pairs.items():
+	for (left, right), p_value in pairs.items():
 		# ignore pairs that have already been sorted into a genotype.
 		if (left, right) in seen or (right, left) in seen:
 			continue
@@ -184,7 +154,7 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 	global PAIRWISE_CALCULATIONS
 	if PAIRWISE_P_VALUES:
 		_current_trajectory_labels = set(timeseries.index)
-		pair_array = {k:v for k,v in PAIRWISE_P_VALUES.items() if (k[0] in _current_trajectory_labels and k[1] in _current_trajectory_labels)}
+		pair_array = {k: v for k, v in PAIRWISE_P_VALUES.items() if (k[0] in _current_trajectory_labels and k[1] in _current_trajectory_labels)}
 
 	else:
 		pair_array = calculate_pairwise_trajectory_similarity(
@@ -193,9 +163,9 @@ def calculate_population_genotypes(timeseries: pandas.DataFrame, options: Genoty
 			fixed_cutoff = options.fixed_breakpoint
 		)
 		if PAIRWISE_CALCULATIONS is None:
-			PAIRWISE_CALCULATIONS = {k:v for k,v in pair_array.items() if not isinstance(v, float)}
+			PAIRWISE_CALCULATIONS = {k: v for k, v in pair_array.items() if not isinstance(v, float)}
 
-		pair_array = {k:v.pvalue for k,v in pair_array.items()}
+		pair_array = {k: v.pvalue for k, v in pair_array.items()}
 
 		PAIRWISE_P_VALUES = pair_array
 

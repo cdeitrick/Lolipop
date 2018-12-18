@@ -1,5 +1,4 @@
 import itertools
-from argparse import Namespace
 from typing import Dict, List, Tuple
 
 import pandas
@@ -55,18 +54,6 @@ class OrderClusterParameters:
 			new_background_significant_cutoff = 1 + significant_breakpoint
 		)
 
-	@classmethod
-	def from_parser(cls, parser: Namespace) -> 'OrderClusterParameters':
-		compatibility_mode = parser.mode
-		detection_breakpoint = float(parser.detection_breakpoint)
-		significant_breakpoint = float(parser.significant_breakpoint)
-		# fixed_breakpoint = float(parser.fixed_breakpoint) if parser.fixed_breakpoint else None
-
-		if compatibility_mode:
-			return cls.from_matlab()
-		else:
-			return cls.from_breakpoints(detection_breakpoint, significant_breakpoint)
-
 
 def check_additive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float,
 		single_cutoff: float) -> bool:
@@ -76,6 +63,7 @@ def check_additive_background(left: pandas.Series, right: pandas.Series, double_
 	single_check = (trajectorysum > single_cutoff).sum() > 0
 	return double_check or single_check
 
+
 def check_subtractive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float,
 		single_cutoff: float) -> bool:
 	# Check if the current genotype is over 15% larger than the other.
@@ -83,6 +71,7 @@ def check_subtractive_background(left: pandas.Series, right: pandas.Series, doub
 	double_diff_trajectory = (diff_trajectory < double_cutoff).sum() > 1
 	single_diff_trajectory = (diff_trajectory < single_cutoff).sum() > 0  # implicit conversion from bool to int
 	return double_diff_trajectory or single_diff_trajectory
+
 
 # noinspection PyTypeChecker
 def check_derivative_background(left: pandas.Series, right: pandas.Series, detection_cutoff: float) -> float:
@@ -195,7 +184,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 				members = type_members
 			)
 			additive_check, subtractive_check, delta = apply_genotype_checks(type_trajectory, test_trajectory, options)
-			#print(genotype_label, test_label, additive_check, subtractive_check, delta)
+			# print(genotype_label, test_label, additive_check, subtractive_check, delta)
 			if additive_check:
 				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
 				continue
@@ -264,8 +253,8 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 
 if __name__ == "__main__":
 	index = [0, 1, 3, 4, 6, 7, 9, 10, 12]
-	left = pandas.Series([0,0,0.47,1,1,1,1,0.173,0.169], index = index)
-	right = pandas.Series([0,0,0,0,0,0.347,0.449,0,0.097], index = index)
+	left = pandas.Series([0, 0, 0.47, 1, 1, 1, 1, 0.173, 0.169], index = index)
+	right = pandas.Series([0, 0, 0, 0, 0, 0.347, 0.449, 0, 0.097], index = index)
 	additive_check = check_additive_background(left, right, .03, .15)
 	subtractive_check = check_subtractive_background(left, right, -.03, -.15)
 	derivative_check = check_derivative_background(left, right, .03)

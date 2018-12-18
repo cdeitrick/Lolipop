@@ -1,11 +1,8 @@
 """
 	Main script to run the muller workflow.
 """
-import argparse
 from pathlib import Path
 from typing import Any, List
-
-from dataclasses import asdict
 
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions
@@ -50,19 +47,30 @@ def extract_genotypes_from_trajectories(input_filename: Path, program_options: P
 
 	return original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info
 
-def parse_workflow_options(program_options:argparse.Namespace):
-	#program_options = ProgramOptions.from_parser(program_options)
+
+def parse_workflow_options(program_options: ProgramOptions):
+	# program_options = ProgramOptions.from_parser(program_options)
+	if program_options.fixed_breakpoint is None:
+		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
 		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
 		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
 	else:
-		#freqs = _parse_frequency_option(program_options.frequencies)
-		if program_options.fixed_breakpoint is None:
-			program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
-		program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
-		program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
+		program_options_genotype = calculate_genotypes.GenotypeOptions(
+			detection_breakpoint = program_options.detection_breakpoint,
+			fixed_breakpoint = program_options.fixed_breakpoint,
+			similarity_breakpoint = program_options.similarity_breakpoint,
+			difference_breakpoint = program_options.difference_breakpoint,
+			n_binom = None
+		)
+		program_options_clustering = order_clusters.OrderClusterParameters.from_breakpoints(
+			program_options.detection_breakpoint,
+			program_options.significant_breakpoint
+		)
+		# program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
+		# program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
 		program_options_sort = sort_genotypes.SortOptions(
 			detection_breakpoint = program_options_genotype.detection_breakpoint,
 			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
@@ -71,12 +79,11 @@ def parse_workflow_options(program_options:argparse.Namespace):
 		)
 	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
+
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	print("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
-	from pprint import pprint
-	#pprint(asdict(program_options))
 	print(program_options)
 	print("Importing data...")
 	if program_options.is_genotype:
@@ -124,6 +131,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 if __name__ == "__main__":
 	args = create_parser().parse_args()
-	#cmd_parser = ProgramOptions.from_parser(args)
+	# cmd_parser = ProgramOptions.from_parser(args)
 	# cmd_parser = ProgramOptions.debug(args)
 	workflow(args.filename, args.output_folder, program_options = args)

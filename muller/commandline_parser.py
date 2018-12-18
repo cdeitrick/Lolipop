@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 # For convienience. Helps with autocomplete.
 @dataclass
-class ProgramOptions:
+class ProgramOptions(argparse.Namespace):
 	filename: Path
 	output_folder: Path
 	sheetname: str = "Sheet1"
@@ -25,6 +25,7 @@ class ProgramOptions:
 	annotate_all: bool = False
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
+
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):
@@ -44,6 +45,7 @@ def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	frequencies = sorted(frequencies, reverse = True)
 	return frequencies
 
+
 class FrequencyParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
 		if not values:
@@ -52,12 +54,17 @@ class FrequencyParser(argparse.Action):
 			parsed_frequencies = _parse_frequency_option(values)
 		setattr(namespace, self.dest, parsed_frequencies)
 
+
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
+		print("PARSING FIXED BREAKPOINT", values)
 		detected = namespace.detection_breakpoint
-		if not values:
+		if values == "1":
 			values = 1 - detected
+		else:
+			values = float(values)
 		setattr(namespace, self.dest, values)
+
 
 def create_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
@@ -92,8 +99,7 @@ def create_parser() -> argparse.ArgumentParser:
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
-		dest = 'fixed_breakpoint',
-		type = float
+		dest = 'fixed_breakpoint'
 	)
 	parser.add_argument(
 		"-u", "--uncertainty",
