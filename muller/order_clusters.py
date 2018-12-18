@@ -252,11 +252,4 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 
 
 if __name__ == "__main__":
-	index = [0, 1, 3, 4, 6, 7, 9, 10, 12]
-	left = pandas.Series([0, 0, 0.47, 1, 1, 1, 1, 0.173, 0.169], index = index)
-	right = pandas.Series([0, 0, 0, 0, 0, 0.347, 0.449, 0, 0.097], index = index)
-	additive_check = check_additive_background(left, right, .03, .15)
-	subtractive_check = check_subtractive_background(left, right, -.03, -.15)
-	derivative_check = check_derivative_background(left, right, .03)
-
-	print(additive_check, subtractive_check, derivative_check)
+	pass
