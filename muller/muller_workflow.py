@@ -206,31 +206,38 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 
 def create_parser() -> argparse.ArgumentParser:
-	parser = argparse.ArgumentParser()
+	parser = argparse.ArgumentParser(
+		description = "Generates muller diagrams based on a set of mutational trajectories.",
+		formatter_class=argparse.ArgumentDefaultsHelpFormatter
+	)
 	parser.add_argument(
 		'-i', '--input',
 		help = "The table of trajectories to cluster.",
 		action = 'store',
-		dest = 'filename'
+		dest = 'filename',
+		type = Path
 	)
 	parser.add_argument(
 		"--sheetname",
 		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
 		action = 'store',
 		dest = 'sheetname',
-		default = 'Sheet1'
+		default = 'Sheet1',
+		type = str
 	)
 	parser.add_argument(
 		'-o', '--output',
 		help = "The folder to save the files to.",
 		action = 'store',
-		dest = 'output_folder'
+		dest = 'output_folder',
+		type = Path
 	)
 	parser.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = 'store',
-		dest = 'fixed_breakpoint'
+		dest = 'fixed_breakpoint',
+		type = float
 	)
 	parser.add_argument(
 		"-u", "--uncertainty",
@@ -238,14 +245,16 @@ def create_parser() -> argparse.ArgumentParser:
 			For example, a frequency at a given timepoint is considered undetected if it falls below 0 + `uncertainty`.",
 		action = 'store',
 		default = 0.03,
-		dest = 'detection_breakpoint'
+		dest = 'detection_breakpoint',
+		type = float
 	)
 	parser.add_argument(
 		"-s", "--significant",
 		help = "The frequency at which to consider a genotype significantly greater than zero.",
 		action = 'store',
 		default = 0.15,
-		dest = "significant_breakpoint"
+		dest = "significant_breakpoint",
+		type = float
 	)
 	parser.add_argument(
 		"--matlab",
@@ -258,14 +267,16 @@ def create_parser() -> argparse.ArgumentParser:
 		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
 		action = 'store',
 		dest = 'frequencies',
-		default = 0.10
+		default = 0.10,
+		type = float
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
 		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into muller_genotypes.",
 		action = "store",
 		default = 0.05,
-		dest = "similarity_breakpoint"
+		dest = "similarity_breakpoint",
+		type = float
 	)
 
 	parser.add_argument(
