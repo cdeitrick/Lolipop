@@ -37,13 +37,27 @@ def _subtract_children_from_parent(modified_genotypes: pandas.DataFrame, childre
 
 
 def _convert_genotype_table_to_population_table(genotype_table: pandas.DataFrame) -> pandas.DataFrame:
+	""" Pivots a genotype table into a long-form table.
+		Parameters
+		----------
+		genotype_table: pandas.DataFrame
+			 The genotype table to pivot.
+
+		Returns
+		-------
+		pandas.DatFrame
+			- columns
+				`Generation`: int
+				`Identity`: str
+				`Population`: float
+	"""
 	table = list()
 	for genotype_label, genotype_frequencies in genotype_table.iterrows():
 		# Remove timepoints where the value was 0 or less than 0 due to above line.
 		for timepoint, frequency in genotype_frequencies.items():
 			row = {
 				'Identity':   genotype_label,
-				'Generation': timepoint,
+				'Generation': int(timepoint),
 				'Population': frequency * 100
 			}
 			table.append(row)
@@ -193,6 +207,14 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 
 
 if __name__ == "__main__":
-	series = pandas.Series([12.3, 14.4, 99, 11], index = [1, 2, 3, 5], name = 'testseries')
-	print(series)
-	print(series.to_frame().to_string())
+	from import_table import import_table_from_string
+	test_table = import_table_from_string(
+		"""
+		Genotype	0	1	22	33
+		genotype-1	0	.12	.5	0
+		genotype-2	0	.23	.5	.7
+		""", index = 'Genotype'
+	)
+	output = _convert_genotype_table_to_population_table(test_table)
+	print(output.to_string())
+	print(output.info())
