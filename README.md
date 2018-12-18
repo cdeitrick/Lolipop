@@ -151,8 +151,8 @@ The script generates the following files:
 
 - `input filename`.muller.annotated.png, `input filename`.muller.annotated.pdf
     
-    A muller plot annotated with relevant mutations. Only the top 3 mutations (by frequency) are included if
-    `--annotate-all` is not given.
+    A muller plot annotated with relevant mutations listed in the `Gene` column of the trajectory table. 
+    Only the top 3 mutations (by frequency) are included if `--annotate-all` is not given.
 
 -  `input_filename`.png
 
