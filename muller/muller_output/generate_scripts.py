@@ -108,7 +108,7 @@ def excecute_mermaid_script(path: Path, script:str, mermaid_render: Path):
 	path.write_text(script)
 	try:
 		process = subprocess.run(
-			["mmdc", "--height", "1000","--width", "1000", "--input", path, "-output", mermaid_render],
+			["mmdc", "--height", "1000","--width", "1000", "--input", path, "--output", mermaid_render],
 			stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE)
 		if process.stderr:
