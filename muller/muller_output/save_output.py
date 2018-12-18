@@ -104,7 +104,7 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 	return parameters
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool, adjust_populations:bool):
 	delimiter = '\t'
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
 
@@ -115,7 +115,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
 
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
-	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff)
+	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 
 	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
 

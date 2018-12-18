@@ -79,7 +79,7 @@ def _append_genotype_0(population_table: pandas.DataFrame) -> pandas.DataFrame:
 	return modified_population
 
 
-def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, detection_cutoff: float) -> pandas.DataFrame:
+def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, detection_cutoff: float, adjust_populations:bool) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
@@ -90,6 +90,8 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 		The output from create_ggmuller_edges()
 	detection_cutoff: float
 		The cutoff to determine whether a trajectory or genotype counts as being nonzero at a given timepoint.
+	adjust_populations:bool
+		If true, subtracts any children genotypes from the parent's frequency. Used to make the muller diagrams more intuitive.
 	Returns
 	-------
 	pandas.DataFrame
@@ -107,7 +109,10 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	# Generate a list of all genotypes that arise in the background of each genotype.
 	# Should ba a dict mapping parent -> list[children]
 	children = _compile_parent_linkage(edges)
-	child_df = _subtract_children_from_parent(modified_genotypes, children, detection_cutoff)
+	if adjust_populations:
+		child_df = _subtract_children_from_parent(modified_genotypes, children, detection_cutoff)
+	else:
+		child_df = modified_genotypes
 	temp_df = _convert_genotype_table_to_population_table(child_df)
 	population_table = _append_genotype_0(temp_df)
 

@@ -198,7 +198,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		output_folder,
 		program_options.detection_breakpoint,
 		program_options.annotate_all,
-		program_options.save_pvalue
+		program_options.save_pvalue,
+		adjust_populations = True
 	)
 
 	return genotype_clusters
