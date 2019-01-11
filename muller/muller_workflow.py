@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 	import genotype_filters
 	from muller_output import WorkflowData, generate_output
 
-
+ACCEPTED_METHODS = ["matlab", "hierarchy"]
 def extract_genotypes_from_path(input_filename: Path, sheetname: str):
 	mean_genotypes, genotype_info = import_genotype_table(input_filename, sheetname)
 	genotype_members = genotype_info['members']
@@ -63,20 +63,24 @@ def parse_workflow_options(program_options: ProgramOptions):
 			fixed_breakpoint = program_options.fixed_breakpoint,
 			similarity_breakpoint = program_options.similarity_breakpoint,
 			difference_breakpoint = program_options.difference_breakpoint,
-			n_binom = None
+			n_binom = None,
+			method = program_options.method
 		)
 		program_options_clustering = order_clusters.OrderClusterParameters.from_breakpoints(
 			program_options.detection_breakpoint,
 			program_options.significant_breakpoint
 		)
-		# program_options_genotype = calculate_genotypes.GenotypeOptions.from_parser(program_options)
-		# program_options_clustering = order_clusters.OrderClusterParameters.from_parser(program_options)
+
 		program_options_sort = sort_genotypes.SortOptions(
 			detection_breakpoint = program_options_genotype.detection_breakpoint,
 			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
 			significant_breakpoint = program_options.significant_breakpoint,
 			frequency_breakpoints = program_options.frequencies
 		)
+	cluster_method = program_options.method
+	if cluster_method not in ACCEPTED_METHODS:
+		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
+		raise ValueError(message)
 	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
 

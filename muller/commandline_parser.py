@@ -25,6 +25,7 @@ class ProgramOptions(argparse.Namespace):
 	annotate_all: bool = False
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
+	method: str = 'matlab'
 
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
@@ -176,6 +177,13 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "",
 		action = "store_true",
 		dest = "use_strict_filter"
+	)
+	parser.add_argument(
+		'-m', '--method',
+		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
+		action = "store",
+		default = "matlab",
+		dest = "method"
 	)
 
 	return parser

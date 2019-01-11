@@ -156,7 +156,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, annotate_all)
 
 	if save_pvalues:
+		print("Saving p-value calculations...")
 		pvalues_table, pvalues_matrix = generate_p_value_table(workflow_data.p_values, parent_genotypes)
 		pvalues_table.to_csv(str(filenames.p_value), sep = delimiter, index = False)
-		pvalues_matrix.to_csv(str(filenames.p_value_matrix), sep = delimiter, index = False)
+		pvalues_matrix.to_csv(str(filenames.p_value_matrix), sep = delimiter, index = True)
 		plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)

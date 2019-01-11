@@ -156,6 +156,7 @@ def generate_p_value_table(p_values, trajectory_genotypes: Dict[str, str]) -> Tu
 		pair_df['sigmaPair'] = calculation.sigma
 		pair_df['differencePair'] = calculation.difference_mean
 		pair_df['pvalue'] = calculation.pvalue
+		pair_df['X'] = calculation.X
 
 		timeseries_table.append(pair_df)
 

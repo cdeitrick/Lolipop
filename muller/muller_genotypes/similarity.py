@@ -11,6 +11,7 @@ class PairCalculation:
 	# Holds the values used to calculate the p-value for every pair.
 	label: str
 	pvalue: float
+	X: float
 	sigma: float
 	difference_mean: float
 	mean_series: Optional[pandas.Series]
@@ -18,7 +19,7 @@ class PairCalculation:
 	sigma_series: Optional[pandas.Series]
 
 
-PairwiseArrayType = Dict[Tuple[str, str], Union[float, PairCalculation]]
+PairwiseArrayType = Dict[Tuple[str, str], PairCalculation]
 
 
 # noinspection PyTypeChecker
@@ -59,18 +60,18 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	-------
 	"""
 	# Merge into a dataframe for convienience
+	if not isinstance(left, pandas.Series):
+		left = pandas.Series(left)
+	if not isinstance(right, pandas.Series):
+		right = pandas.Series(right)
 	point_label = f"{left.name} - {right.name}"
 	df = pandas.concat([left, right], axis = 1)
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
 	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
-	#selection = lambda s: any(detected_cutoff < i <fixed_cutoff for i in s.values)
-	#not_detected_fixed_df = df[df.apply(selection, axis = 1)]
-	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
-	#
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
-	#not_detected_fixed_df = df.
+
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
 		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
@@ -79,11 +80,15 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 			# Both are undetected
 			p_value = 1.0
 		else:
+			# Check if the trajectories overlap
 			overlap = set(left_fixed.index) & set(right_fixed.index)
+			# the p_value should be 1 if the fixed trajectories overlapped, and 0 otherwise.
 			p_value = float((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2))
+
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
+			X = 0 if p_value else math.inf,
 			sigma = math.nan,
 			difference_mean = math.nan,
 			mean_series = None,
@@ -104,7 +109,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# Difference of frequencies at each timepoint
 		# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
 		difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
-		sigma_pair: float = sigma_freq.sum() / len(mean)
+		sigma_pair: float = sigma_freq.sum()/ len(mean)
 		# Sum of differences
 		difference_mean: float = abs(difference).sum()
 
@@ -115,6 +120,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
+			X = X,
 			sigma = sigma_pair,
 			difference_mean = difference_mean,
 			mean_series = mean,

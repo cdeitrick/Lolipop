@@ -13,7 +13,7 @@ def plot_heatmap(data:pandas.DataFrame, filename:Path):
 	font = {
 		'size':   20
 	}
-
+	use_annotations = len(data) < 30 # So the annotations are actually visible
 	matplotlib.rc('font', **font)
 	figsize = (20, 20)
 	fig, ax = plt.subplots(figsize = figsize)
@@ -21,5 +21,5 @@ def plot_heatmap(data:pandas.DataFrame, filename:Path):
 	ax.set_xlabel("Trajectory Label")
 	ax.set_title("p-values of all mutational trajectories")
 	if seaborn is not None:
-		seaborn.heatmap(data, ax = ax, annot = True)
+		seaborn.heatmap(data, ax = ax, annot = use_annotations)
 		fig.savefig(str(filename), format = 'png')
