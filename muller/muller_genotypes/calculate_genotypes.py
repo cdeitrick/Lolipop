@@ -1,16 +1,16 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import pandas
 from dataclasses import dataclass
 
 try:
-	from muller.muller_genotypes.similarity import calculate_pairwise_trajectory_similarity, PairCalculation, PairwiseArrayType
-	from muller.muller_genotypes.difference import unlink_unrelated_trajectories
-	from muller.muller_genotypes.cluster_trajectories import matlab_method, hierarchical_method
+	from muller_genotypes.metrics.similarity import PairwiseArrayType, PairCalculation, calculate_pairwise_trajectory_similarity
+	from muller.muller_genotypes.methods import matlab_method, hierarchical_method
+	from muller.muller_genotypes.genotype_average import calculate_mean_genotype
 except ModuleNotFoundError:
-	from .similarity import calculate_pairwise_trajectory_similarity, PairCalculation, PairwiseArrayType
-	from .difference import unlink_unrelated_trajectories
-	from .cluster_trajectories import matlab_method, hierarchical_method
+	from .metrics.similarity import PairwiseArrayType, PairCalculation, calculate_pairwise_trajectory_similarity
+	from .methods import matlab_method, hierarchical_method
+	from .genotype_average import calculate_mean_genotype
 
 PAIRWISE_P_VALUES: PairwiseArrayType = None
 PAIRWISE_CALCULATIONS: Dict[Tuple[str, str], PairCalculation] = None
@@ -26,7 +26,7 @@ class GenotypeOptions:
 	# The cutoff indicating two trajectories that were originally sorted into the same genotype are not
 	# actually related.
 	difference_breakpoint: float
-	method:str
+	method: str
 
 	@classmethod
 	def from_matlab(cls) -> 'GenotypeOptions':
@@ -35,7 +35,8 @@ class GenotypeOptions:
 			fixed_breakpoint = 0.97,
 			n_binom = 5,
 			similarity_breakpoint = 0.05,
-			difference_breakpoint = 0.10
+			difference_breakpoint = 0.10,
+			method = 'matlab'
 		)
 
 
@@ -61,45 +62,6 @@ def generate_pair_array(timeseries: pandas.DataFrame, detection_cutoff: float, f
 		PAIRWISE_P_VALUES = pair_array
 
 	return pair_array
-
-
-def _calculate_mean_frequencies_of_trajectories(name: str, genotype_timeseries: pandas.DataFrame, genotype: List[str]) -> pandas.Series:
-	mean_genotype_timeseries = genotype_timeseries.mean()
-	mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
-	mean_genotype_timeseries.name = name
-
-	return mean_genotype_timeseries
-
-
-def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.DataFrame) -> pandas.DataFrame:
-	"""
-		Calculates the mean frequency of each genotype ate every timepoint.
-	Parameters
-	----------
-	all_genotypes: List[List[str]
-		A list of all muller_genotypes for a given population
-	timeseries: pandas.DataFrame
-		Must have a 'Trajectory' column along with the columns of the original table that represent timepoints.
-		Each row corresponds to a single mutational trajectory.
-
-	Returns
-	-------
-	A dataframe where every row corresponds to a genotype.
-	member trajectories are listed under the 'members' column.
-	every column represents a timepoint.
-	"""
-	mean_genotypes = list()
-
-	for index, genotype in enumerate(all_genotypes, start = 1):
-		genotype_timeseries = timeseries.loc[genotype]
-		mean_genotype_timeseries = _calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)
-		mean_genotypes.append(mean_genotype_timeseries)
-
-	mean_genotypes = pandas.DataFrame(mean_genotypes)
-	# For consistency
-	mean_genotypes.index.name = 'Genotype'
-
-	return mean_genotypes
 
 
 def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series]:

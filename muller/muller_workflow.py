@@ -6,18 +6,17 @@ from typing import Any, List
 
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions
-	from muller.import_table import import_trajectory_table, import_genotype_table
-	from muller_genotypes import calculate_genotypes, sort_genotypes
+	from muller.import_data import import_trajectory_table, import_genotype_table
+	from muller_genotypes import calculate_genotypes, sort_genotypes, genotype_filters
 	from muller import order_clusters
 	from muller.muller_output import WorkflowData, generate_output
-	from muller import genotype_filters
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions
-	from import_table import import_trajectory_table, import_genotype_table
+	from import_data import import_trajectory_table, import_genotype_table
 	from muller_genotypes import calculate_genotypes, sort_genotypes
 	import order_clusters
 	import muller_genotypes.sort_genotypes
-	import genotype_filters
+	import muller_genotypes.genotype_filters
 	from muller_output import WorkflowData, generate_output
 
 ACCEPTED_METHODS = ["matlab", "hierarchy"]
