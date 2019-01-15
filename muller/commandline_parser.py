@@ -26,9 +26,11 @@ class ProgramOptions(argparse.Namespace):
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 	method: str = 'matlab'
+
 	def show(self):
 		for field in fields(self):
 			print(field)
+
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):

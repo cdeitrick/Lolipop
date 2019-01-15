@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 import pandas
 
@@ -45,8 +45,7 @@ def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[
 
 
 def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path, script_filename: Path,
-		color_palette: Dict[str, str], genotype_labels:List[str]) -> Optional[pandas.DataFrame]:
-
+		color_palette: Dict[str, str], genotype_labels: List[str]) -> Optional[pandas.DataFrame]:
 	# `color_palette` should be an OrderedDict.
 	genotype_labels = sorted(genotype_labels)
 	script_colors = ",".join(['"{}"'.format(color_palette[k]) for k in genotype_labels])
@@ -104,11 +103,11 @@ def execute_r_script(path: Path, script: str) -> Path:
 	return path
 
 
-def excecute_mermaid_script(path: Path, script:str, mermaid_render: Path):
+def excecute_mermaid_script(path: Path, script: str, mermaid_render: Path):
 	path.write_text(script)
 	try:
 		process = subprocess.run(
-			["mmdc", "--height", "1000","--width", "1000", "--input", path, "--output", mermaid_render],
+			["mmdc", "--height", "1000", "--width", "1000", "--input", path, "--output", mermaid_render],
 			stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE)
 		if process.stderr:

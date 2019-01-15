@@ -3,6 +3,7 @@ from typing import Any, List, Tuple
 
 from commandline_parser import ProgramOptions
 from . import filters, generate
+
 try:
 	from import_data import import_trajectory_table, import_genotype_table
 except ModuleNotFoundError:

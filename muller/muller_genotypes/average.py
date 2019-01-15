@@ -1,5 +1,8 @@
 from typing import List
+
 import pandas
+
+
 def _calculate_mean_frequencies_of_trajectories(name: str, genotype_timeseries: pandas.DataFrame, genotype: List[str]) -> pandas.Series:
 	mean_genotype_timeseries = genotype_timeseries.mean()
 	mean_genotype_timeseries['members'] = "|".join(map(str, genotype))

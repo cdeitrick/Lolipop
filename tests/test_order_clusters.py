@@ -1,5 +1,5 @@
 import unittest
-from muller.order_clusters import *
+from inheritance.order import *
 
 class TestOrderClusters(unittest.TestCase):
 	def test_additie_check(self):

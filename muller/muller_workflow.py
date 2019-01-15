@@ -2,19 +2,19 @@
 	Main script to run the muller workflow.
 """
 from pathlib import Path
-from typing import Any, List, Tuple
 from pprint import pprint
+
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions
 	from muller.import_data import import_trajectory_table, import_genotype_table
 	from muller_genotypes import generate, sort_genotypes, filters, extract
-	from muller import order_clusters
+	from inheritance import order
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions
 	from import_data import import_trajectory_table, import_genotype_table
 	from muller_genotypes import generate, sort_genotypes, filters, extract
-	import order_clusters
+	from inheritance import order
 	import muller_genotypes.sort_genotypes
 	from muller_output import WorkflowData, generate_output
 
@@ -29,7 +29,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 	if compatibility_mode:
 		program_options_genotype = generate.GenotypeOptions.from_matlab()
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
-		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
+		program_options_clustering = order.OrderClusterParameters.from_matlab()
 	else:
 		program_options_genotype = generate.GenotypeOptions(
 			detection_breakpoint = program_options.detection_breakpoint,
@@ -39,7 +39,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 			n_binom = None,
 			method = program_options.method
 		)
-		program_options_clustering = order_clusters.OrderClusterParameters.from_breakpoints(
+		program_options_clustering = order.OrderClusterParameters.from_breakpoints(
 			program_options.detection_breakpoint,
 			program_options.significant_breakpoint
 		)
@@ -69,12 +69,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		input_filename,
 		program_options,
 		program_options_genotype,
-		program_options_sort.frequency_breakpoints
+		[program_options.fixed_breakpoint] + program_options_sort.frequency_breakpoints
 	)
 	print("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	print("nesting muller_genotypes...")
-	genotype_clusters = order_clusters.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
+	genotype_clusters = order.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
 
 	print("Generating output...")
 	workflow_data = WorkflowData(
