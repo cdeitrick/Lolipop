@@ -1,8 +1,8 @@
 import unittest
 
-from genotype_filters import *
-from genotype_filters import _get_backgrounds_present_at_multiple_timepoints
-from import_table import import_table_from_string
+from muller_genotypes.filters import *
+from muller_genotypes.filters import _get_backgrounds_present_at_multiple_timepoints
+from import_data import import_table_from_string
 
 
 class TestGenotypeFilters(unittest.TestCase):

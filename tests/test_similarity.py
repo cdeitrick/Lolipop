@@ -1,7 +1,6 @@
 import unittest
-from import_table import import_table_from_string
-import math
-from muller_genotypes.similarity import *
+from import_data import import_table_from_string
+from muller_genotypes.metrics.similarity import *
 class TestSimilarity(unittest.TestCase):
 	def test_calculate_p_value(self):
 		string = """

@@ -9,6 +9,17 @@ from widgets import get_numeric_columns
 IOTYPE = Union[str, Path]
 
 
+def _convert_to_integer(value: Any, default: Optional[int] = None) -> int:
+	""" Attempts to convert the input value to an integer. Returns `default` otherwise."""
+	if isinstance(value, str) and (value.startswith('x') or value.startswith('X')):
+		value = value[1:]
+	try:
+		result = int(value)
+	except (TypeError, ValueError):
+		result = default
+	return result
+
+
 def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 	""" Ensures the time table columns contain values between 0 and 1 and are of type `float`"""
 	new_data = old_data.copy(deep = True)
@@ -20,72 +31,6 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 			new_column = old_data[column].astype(float)
 		new_data[column] = new_column
 	return new_data
-
-
-def import_table_from_string(string: str, delimiter: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
-	""" Imports a table represented as a basic string object."""
-	# Remove unwanted whitespace.
-	string = '\n'.join(i.strip() for i in string.split('\n') if i)
-	if not delimiter:
-		delimiter = '\t' if '\t' in string else ','
-	result = pandas.read_table(io.StringIO(string), sep = delimiter, index_col = False)
-	if index:
-		# Using `index_col` in `read_table()` doesn't work for some reason.
-		result[index] = result[index].astype(str)
-		result.set_index(index, inplace = True)
-	return result
-
-
-def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None) -> pandas.DataFrame:
-	if isinstance(input_table, Path) or '/' in input_table:
-		data = import_table_from_path(input_table, sheet_name)
-	else:
-		data = import_table_from_string(input_table)
-	data = data[sorted(data.columns, key = lambda s: str(s))]
-	return data
-
-
-def import_table_from_path(filename: Path, sheet_name: Optional[str] = None) -> pandas.DataFrame:
-	""" Imports a file as a pandas.DataFrame. Infers filetype from the filename extension/suffix.
-	"""
-	if filename.suffix in {'.xls', '.xlsx'}:
-		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
-	else:
-		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
-		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
-
-	return data
-
-
-def import_genotype_table(filename: Path, sheeta_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
-	data = import_table(filename, sheet_name = sheeta_name)
-
-	if 'Genotype' in data.columns:
-		key_column = 'Genotype'
-	elif 'Unnamed: 0' in data.columns:
-		key_column = 'Unnamed: 0'
-	else:
-		message = "One of the columns needs to be labeled `Genotype`"
-		raise ValueError(message)
-
-	if 'members' not in data.columns:
-		message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
-		raise ValueError(message)
-
-	genotype_timeseries, genotype_info = _parse_table(data, key_column)
-	return genotype_timeseries, genotype_info
-
-
-def _convert_to_integer(value: Any, default: Optional[int] = None) -> int:
-	""" Attempts to convert the input value to an integer. Returns `default` otherwise."""
-	if isinstance(value, str) and (value.startswith('x') or value.startswith('X')):
-		value = value[1:]
-	try:
-		result = int(value)
-	except (TypeError, ValueError):
-		result = default
-	return result
 
 
 def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
@@ -120,6 +65,61 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	# Extract metadata for each series.
 	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns]]
 	return time_table, info_table
+
+
+def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
+	data = import_table(filename, sheet_name = sheet_name)
+
+	if 'Genotype' in data.columns:
+		key_column = 'Genotype'
+	elif 'Unnamed: 0' in data.columns:
+		key_column = 'Unnamed: 0'
+	else:
+		message = "One of the columns needs to be labeled `Genotype`"
+		raise ValueError(message)
+
+	if 'members' not in data.columns:
+		message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
+		raise ValueError(message)
+
+	genotype_timeseries, genotype_info = _parse_table(data, key_column)
+	return genotype_timeseries, genotype_info
+
+
+def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None) -> pandas.DataFrame:
+	if isinstance(input_table, Path) or '/' in input_table:
+		data = import_table_from_path(input_table, sheet_name)
+	else:
+		data = import_table_from_string(input_table)
+	data = data[sorted(data.columns, key = lambda s: str(s))]
+	return data
+
+
+def import_table_from_path(filename: Path, sheet_name: Optional[str] = None) -> pandas.DataFrame:
+	""" Imports a file as a pandas.DataFrame. Infers filetype from the filename extension/suffix.
+	"""
+	if filename.suffix in {'.xls', '.xlsx'}:
+		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
+	else:
+		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
+		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
+
+	return data
+
+
+def import_table_from_string(string: str, delimiter: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
+	""" Imports a table represented as a basic string object."""
+	# Remove unwanted whitespace.
+	string = '\n'.join(i.strip() for i in string.split('\n') if i)
+	if not delimiter:
+		delimiter = '\t' if '\t' in string else ','
+	result = pandas.read_table(io.StringIO(string), sep = delimiter, index_col = False)
+	if index:
+		# Using `index_col` in `read_table()` doesn't work for some reason.
+		result[index] = result[index].astype(str)
+		result.set_index(index, inplace = True)
+	return result
 
 
 def import_trajectory_table(filename: IOTYPE, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:

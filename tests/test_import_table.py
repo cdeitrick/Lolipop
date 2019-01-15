@@ -1,7 +1,7 @@
 import unittest
 
-from muller.import_table import *
-from muller.import_table import _convert_to_integer, _correct_math_scale
+from muller.import_data import *
+from muller.import_data import _convert_to_integer, _correct_math_scale
 
 DATA_FOLDER = Path(__file__).parent / "data"
 trajectory_table = """Trajectory	X0	X1	X2	X3	X4	X5

@@ -1,10 +1,11 @@
 from typing import Any, List, Tuple
 
 import pandas
+
 try:
-	from muller.muller_genotypes import calculate_genotypes
+	from muller.muller_genotypes import generate
 except ModuleNotFoundError:
-	from muller_genotypes import calculate_genotypes
+	from muller_genotypes import generate
 
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
@@ -20,7 +21,9 @@ def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> 
 	return backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff)
 
 
-def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float, use_strict_filter:bool) -> bool:
+# noinspection PyTypeChecker
+def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float,
+		use_strict_filter: bool) -> bool:
 	"""
 		Checks if a genotype does not adhere to certain assumptions related to the background.
 		1. The genotype should not be present both before and after a background fixes, and should be nonzero when the background fixes.
@@ -34,6 +37,8 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 		The first timepoint the background qualifies as 'fixed'
 	detection_cutoff: float
 		The cutoff to determine whether a trajectory counts as 'detected'. It is based on the frequency cutoff used to identify the backgrounds.
+	use_strict_filter: bool
+		Whether to eliminate every genotype detected before and after a fixed point, or to allow these genotypes if they have frequency 0 at the fixed timepoint.
 
 	Returns
 	-------
@@ -63,11 +68,14 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 			return True
 	return False
 
-def get_first_timpoint(series:pandas.Series, cutoff:float)->int:
+
+# noinspection PyTypeChecker
+def get_first_timpoint(series: pandas.Series, cutoff: float) -> int:
 	""" Extracts the first timepoint that exceeds the cutoff."""
 	return series[series > cutoff].idxmin()
 
-def _get_backgrounds_present_at_multiple_timepoints(backgrounds:pandas.DataFrame, detection_cutoff:float)->pandas.DataFrame:
+
+def _get_backgrounds_present_at_multiple_timepoints(backgrounds: pandas.DataFrame, detection_cutoff: float) -> pandas.DataFrame:
 	""" Filters out backgrounds that only appeared at one timepoint.
 		We want to exclude 'backgrounds' which are only present at one timepoint. This is more likely to be a measurement error.
 		Since the fixed threshold is almost 1 (ex. 0.97), a simple test to check for detection at multiple timepoints is to see if the sum
@@ -76,8 +84,9 @@ def _get_backgrounds_present_at_multiple_timepoints(backgrounds:pandas.DataFrame
 	backgrounds = backgrounds[fuzzy_backgrounds]
 	return backgrounds
 
+
 # noinspection PyTypeChecker
-def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float], use_strict_filter:bool) -> str:
+def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float], use_strict_filter: bool) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
 		unrelated diversity and essentially 'resets' the mutation pool. Genotypes which are detected prior to a fixed genotype should, in theory,
 		fall to an undetected frequency. Any genotypes that do not follow this rule (are detected both before and after a genotype fixes) should
@@ -87,6 +96,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	genotypes: pands.DataFrame
 	detection_cutoff: float
 	cutoffs: List[float]
+	use_strict_filter: bool
 	Returns
 	-------
 
@@ -106,7 +116,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	# Iterate over the detected backgrounds.
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
-		first_detected_point:int = get_first_timpoint(background, fuzzy_detected_cutoff)
+		first_detected_point: int = get_first_timpoint(background, fuzzy_detected_cutoff)
 		first_fixed_point: int = get_first_timpoint(background, fuzzy_fixed_cutoff)
 
 		# Iterate over the non-background genotypes.
@@ -122,7 +132,8 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 DF = pandas.DataFrame
 
 
-def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float], use_strict_filter:bool) -> Tuple[DF, DF, Any]:
+def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOptions, frequency_cutoffs: List[float],
+		use_strict_filter: bool) -> Tuple[DF, DF, Any, Any]:
 	"""
 		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
 	Parameters
@@ -130,17 +141,18 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	trajectory_table: pandas.DataFrame
 	goptions: GenotypeOptions
 	frequency_cutoffs: List[float]
+	use_strict_filter: bool
 
 	Returns
 	-------
 
 	"""
 	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
-	frequency_cutoffs = [i for i in frequency_cutoffs if i<goptions.fixed_breakpoint]
+	frequency_cutoffs = [i for i in frequency_cutoffs if i < goptions.fixed_breakpoint]
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
-	genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
+	genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
 
-	#cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
+	# cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for _ in range(_iterations):
 		# Search for genotypes that do not make sense in the context of an evolved population.
@@ -153,13 +165,13 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 			# Remove these trajectories from the trajectories table.
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
 			# Re-calculate the genotypes based on the remaining trajectories.
-			genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
+			genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
 
-			#cache.append((trajectory_table.copy(), genotype_table.copy()))
-			# Update the trajectories that comprise each genotype.
+	# cache.append((trajectory_table.copy(), genotype_table.copy()))
+	# Update the trajectories that comprise each genotype.
 	else:
 		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	return trajectory_table, genotype_table, genotype_members
+	return trajectory_table, genotype_table, genotype_members, linkage_table
 
 
 if __name__ == "__main__":

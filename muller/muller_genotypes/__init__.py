@@ -1,1 +1,1 @@
-from .calculate_genotypes import GenotypeOptions, PairwiseArrayType
+from .generate import GenotypeOptions, generate_genotypes

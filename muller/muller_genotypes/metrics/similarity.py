@@ -1,6 +1,5 @@
-import itertools
 import math
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import pandas
 from dataclasses import dataclass
@@ -11,14 +10,12 @@ class PairCalculation:
 	# Holds the values used to calculate the p-value for every pair.
 	label: str
 	pvalue: float
+	X: float
 	sigma: float
 	difference_mean: float
 	mean_series: Optional[pandas.Series]
 	difference_series: Optional[pandas.Series]
 	sigma_series: Optional[pandas.Series]
-
-
-PairwiseArrayType = Dict[Tuple[str, str], Union[float, PairCalculation]]
 
 
 # noinspection PyTypeChecker
@@ -59,18 +56,18 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	-------
 	"""
 	# Merge into a dataframe for convienience
+	if not isinstance(left, pandas.Series):
+		left = pandas.Series(left)
+	if not isinstance(right, pandas.Series):
+		right = pandas.Series(right)
 	point_label = f"{left.name} - {right.name}"
 	df = pandas.concat([left, right], axis = 1)
 
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
 	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
-	#selection = lambda s: any(detected_cutoff < i <fixed_cutoff for i in s.values)
-	#not_detected_fixed_df = df[df.apply(selection, axis = 1)]
-	# not_detected_fixed_df = df[(df > fixed_cutoff).any(axis = 1) & (df > detected_cutoff).any(axis = 1)]
-	#
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
-	#not_detected_fixed_df = df.
+
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
 		right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
@@ -79,11 +76,15 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 			# Both are undetected
 			p_value = 1.0
 		else:
+			# Check if the trajectories overlap
 			overlap = set(left_fixed.index) & set(right_fixed.index)
+			# the p_value should be 1 if the fixed trajectories overlapped, and 0 otherwise.
 			p_value = float((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2))
+
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
+			X = 0 if p_value else math.inf,
 			sigma = math.nan,
 			difference_mean = math.nan,
 			mean_series = None,
@@ -115,6 +116,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		value = PairCalculation(
 			label = point_label,
 			pvalue = p_value,
+			X = X,
 			sigma = sigma_pair,
 			difference_mean = difference_mean,
 			mean_series = mean,
@@ -123,34 +125,6 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		)
 
 	return value
-
-
-def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float) -> PairwiseArrayType:
-	"""
-	Parameters
-	----------
-	trajectories: pandas.DataFrame
-		A table of mutational trajectories. Should be a normal trajectory table.
-	detection_cutoff: float
-	fixed_cutoff: float
-
-	Returns
-	-------
-	dict of PairArrayValue
-	Each key in the dictionary corresponds to a pair of trajectory ids which map to the p-value for that pair.
-	The order of ids does not matter.
-	"""
-	pair_combinations: List[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
-	pair_array = dict()
-	for left, right in pair_combinations:
-		left_trajectory = trajectories.loc[left]
-		right_trajectory = trajectories.loc[right]
-
-		p_value = calculate_p_value(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff)
-		pair_array[left, right] = p_value
-		pair_array[right, left] = p_value
-
-	return pair_array
 
 
 if __name__ == "__main__":

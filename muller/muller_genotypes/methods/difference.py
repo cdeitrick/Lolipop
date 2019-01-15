@@ -1,14 +1,9 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 import itertools
 import pandas
 
-try:
-	from muller.muller_genotypes.similarity import PairwiseArrayType
-except ModuleNotFoundError:
-	from .similarity import PairwiseArrayType
-
 def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFrame,
-		pair_array: PairwiseArrayType, link_cut: float) -> Tuple[List[str], List[str]]:
+		pair_array: Dict[Tuple[str,str], float], link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
 		Splits a genotype into smaller muller_genotypes if some members are not related to some other members. This may happen
 		when a member is included into a genotype due to its paired member but ends up not related to some of
@@ -65,7 +60,7 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFram
 				new_genotype_2.append(genotype_member)
 	return new_genotype_1, new_genotype_2
 
-def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: PairwiseArrayType, link_cutoff: float) -> List[List[str]]:
+def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Dict[Tuple[str,str], float], link_cutoff: float) -> List[List[str]]:
 	"""
 		Splits each genotype if any of its members are not related enough to the other members. Genotypes will continue
 		to be split until the p-values for all pairwise members are beneath the cutoff.
