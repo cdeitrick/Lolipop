@@ -2,13 +2,13 @@ import pandas
 from typing import List, Optional, Dict, Tuple
 import itertools
 try:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
 	from muller_genotypes.methods.difference import unlink_unrelated_trajectories
+	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
 except ModuleNotFoundError:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
 	from .difference import unlink_unrelated_trajectories
+	from ..metrics.pairwise_calculation import PairwiseCalculation
 
-def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str,str], float], relative_cutoff: float) -> List[List[str]]:
+def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str,str], float], relative_cutoff: float, base_genotypes:List[List] = None) -> List[List[str]]:
 	"""
 		Clusters all trajectories into related muller_genotypes.
 		By default the first trajectory makes a genotype category
@@ -23,7 +23,9 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str,str], float], relat
 	-------
 		A list of all muller_genotypes (each of which is a list of ints)
 	"""
-	if pairs:
+	if base_genotypes:
+		genotype_candidates = base_genotypes
+	elif pairs:
 		genotype_candidates = [[min(pairs.keys())[0]]]  # by default the first trajectory forms the first genotype.
 	else:
 		genotype_candidates = []
@@ -79,7 +81,7 @@ def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]])
 	return value
 
 
-def matlab_method(timeseries: pandas.DataFrame, pair_array: PairwiseArrayType, similarity_breakpoint: float, difference_breakpoint: float) -> List[
+def matlab_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation, similarity_breakpoint: float, difference_breakpoint: float) -> List[
 	List[str]]:
 	"""
 		Clusters trajectories into muller_genotypes.
@@ -108,7 +110,7 @@ def matlab_method(timeseries: pandas.DataFrame, pair_array: PairwiseArrayType, s
 
 	# Trajectories represent the population frequencies at each timepoint
 	# Each row represents a single timepoint, each column represents a mutation.
-	numerical_array = {k:v.pvalue for k,v in pair_array.items()}
+	numerical_array = pair_array.asitem('pvalue')
 	population_genotypes = _group_trajectories_into_genotypes(numerical_array, similarity_breakpoint)
 
 	# at the end, look at all trajectories that are not listed and

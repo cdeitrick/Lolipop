@@ -3,9 +3,9 @@ from typing import Any, List, Tuple
 import pandas
 
 try:
-	from muller.muller_genotypes import calculate_genotypes
+	from muller.muller_genotypes import generate
 except ModuleNotFoundError:
-	from muller_genotypes import calculate_genotypes
+	from muller_genotypes import generate
 
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
@@ -21,6 +21,7 @@ def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> 
 	return backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff)
 
 
+# noinspection PyTypeChecker
 def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float,
 		use_strict_filter: bool) -> bool:
 	"""
@@ -68,6 +69,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 	return False
 
 
+# noinspection PyTypeChecker
 def get_first_timpoint(series: pandas.Series, cutoff: float) -> int:
 	""" Extracts the first timepoint that exceeds the cutoff."""
 	return series[series > cutoff].idxmin()
@@ -130,7 +132,7 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 DF = pandas.DataFrame
 
 
-def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.GenotypeOptions, frequency_cutoffs: List[float],
+def workflow(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOptions, frequency_cutoffs: List[float],
 		use_strict_filter: bool) -> Tuple[DF, DF, Any]:
 	"""
 		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
@@ -148,7 +150,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
 	frequency_cutoffs = [i for i in frequency_cutoffs if i < goptions.fixed_breakpoint]
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
-	genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
+	genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
 
 	# cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
@@ -163,7 +165,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: calculate_genotypes.G
 			# Remove these trajectories from the trajectories table.
 			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
 			# Re-calculate the genotypes based on the remaining trajectories.
-			genotype_table, genotype_members = calculate_genotypes.workflow(trajectory_table, options = goptions)
+			genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
 
 	# cache.append((trajectory_table.copy(), genotype_table.copy()))
 	# Update the trajectories that comprise each genotype.

@@ -11,7 +11,8 @@ FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
-	from muller.muller_genotypes.calculate_genotypes import GenotypeOptions
+	from muller.muller_genotypes.generate import GenotypeOptions
+	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
 	from muller_genotypes.sort_genotypes import SortOptions
 	from muller.order_clusters import OrderClusterParameters, ClusterType
 	from graphics.genotype_plots import plot_genotypes
@@ -21,6 +22,7 @@ try:
 	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
 	from muller.widgets import generate_genotype_palette, map_trajectories_to_genotype
 except ModuleNotFoundError:
+	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
 	from graphics.genotype_plots import plot_genotypes
 	from graphics.generate_muller_plot import generate_muller_plot
 	from graphics.heatmap import plot_heatmap
@@ -29,7 +31,6 @@ except ModuleNotFoundError:
 	from widgets import generate_genotype_palette, map_trajectories_to_genotype
 
 	GenotypeOptions = Any
-	PairwiseArrayType = Any
 	SortOptions = Any
 	OrderClusterParameters = Any
 	ClusterType = Any
@@ -49,7 +50,7 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
-	p_values: PairwiseArrayType
+	p_values: PairwiseCalculation
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 
 
@@ -157,7 +158,6 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 	if save_pvalues:
 		print("Saving p-value calculations...")
-		pvalues_table, pvalues_matrix = generate_p_value_table(workflow_data.p_values, parent_genotypes)
-		pvalues_table.to_csv(str(filenames.p_value), sep = delimiter, index = False)
+		pvalues_matrix = workflow_data.p_values.squareform('pvalue')
 		pvalues_matrix.to_csv(str(filenames.p_value_matrix), sep = delimiter, index = True)
 		plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)

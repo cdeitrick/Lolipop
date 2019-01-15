@@ -26,7 +26,6 @@ def calculate_mean_genotype(all_genotypes: List[List[str]], timeseries: pandas.D
 	every column represents a timepoint.
 	"""
 	mean_genotypes = list()
-
 	for index, genotype in enumerate(all_genotypes, start = 1):
 		genotype_timeseries = timeseries.loc[genotype]
 		mean_genotype_timeseries = _calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)

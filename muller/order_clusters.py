@@ -100,7 +100,7 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 	return delta
 
 
-def add_genotype_bakground(genotype_label: str, type_genotype: Genotype, nests: Dict[str, Genotype], initial_background_label: str):
+def add_genotype_background(genotype_label: str, type_genotype: Genotype, nests: Dict[str, Genotype], initial_background_label: str):
 	# genotype_label = type_genotype.name
 	if genotype_label in nests:
 		nests[genotype_label].background += type_genotype.background
@@ -186,7 +186,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 			additive_check, subtractive_check, delta = apply_genotype_checks(type_trajectory, test_trajectory, options)
 			# print(genotype_label, test_label, additive_check, subtractive_check, delta)
 			if additive_check:
-				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
+				nests = add_genotype_background(genotype_label, type_genotype, nests, initial_background.name)
 				continue
 
 			if subtractive_check:
@@ -197,7 +197,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 			if delta > options.derivative_check_cutoff:
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
-				nests = add_genotype_bakground(genotype_label, type_genotype, nests, initial_background.name)
+				nests = add_genotype_background(genotype_label, type_genotype, nests, initial_background.name)
 				break
 
 		is_member = genotype_label in itertools.chain.from_iterable(i.background for i in nests.values())

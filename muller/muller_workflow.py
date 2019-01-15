@@ -7,19 +7,20 @@ from typing import Any, List
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions
 	from muller.import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import calculate_genotypes, sort_genotypes, genotype_filters
+	from muller_genotypes import generate, sort_genotypes, filters
 	from muller import order_clusters
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions
 	from import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import calculate_genotypes, sort_genotypes
+	from muller_genotypes import generate, sort_genotypes, filters
 	import order_clusters
 	import muller_genotypes.sort_genotypes
-	import muller_genotypes.genotype_filters
 	from muller_output import WorkflowData, generate_output
 
 ACCEPTED_METHODS = ["matlab", "hierarchy"]
+
+
 def extract_genotypes_from_path(input_filename: Path, sheetname: str):
 	mean_genotypes, genotype_info = import_genotype_table(input_filename, sheetname)
 	genotype_members = genotype_info['members']
@@ -31,10 +32,10 @@ def extract_genotypes_from_path(input_filename: Path, sheetname: str):
 def extract_genotypes_from_trajectories(input_filename: Path, program_options: ProgramOptions, program_options_genotype: Any,
 		frequency_breakpoints: List[float]):
 	original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
-	original_genotypes, genotype_members = calculate_genotypes.workflow(original_timepoints, options = program_options_genotype)
+	original_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(original_timepoints, options = program_options_genotype)
 
 	if program_options.use_filter:
-		timepoints, mean_genotypes, genotype_members = genotype_filters.workflow(
+		timepoints, mean_genotypes, genotype_members = filters.workflow(
 			original_timepoints,
 			program_options_genotype,
 			frequency_breakpoints,
@@ -53,11 +54,11 @@ def parse_workflow_options(program_options: ProgramOptions):
 		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
 	compatibility_mode = program_options.mode
 	if compatibility_mode:
-		program_options_genotype = calculate_genotypes.GenotypeOptions.from_matlab()
+		program_options_genotype = generate.GenotypeOptions.from_matlab()
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
 		program_options_clustering = order_clusters.OrderClusterParameters.from_matlab()
 	else:
-		program_options_genotype = calculate_genotypes.GenotypeOptions(
+		program_options_genotype = generate.GenotypeOptions(
 			detection_breakpoint = program_options.detection_breakpoint,
 			fixed_breakpoint = program_options.fixed_breakpoint,
 			similarity_breakpoint = program_options.similarity_breakpoint,
@@ -117,7 +118,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotype_options = program_options_genotype,
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering,
-		p_values = calculate_genotypes.PAIRWISE_CALCULATIONS,
+		p_values = generate.PAIRWISE_CALCULATIONS,
 		filter_cache = []
 	)
 	generate_output(

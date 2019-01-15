@@ -1,7 +1,7 @@
 import unittest
 
-from muller_genotypes.genotype_filters import *
-from muller_genotypes.genotype_filters import _get_backgrounds_present_at_multiple_timepoints
+from muller_genotypes.filters import *
+from muller_genotypes.filters import _get_backgrounds_present_at_multiple_timepoints
 from import_data import import_table_from_string
 
 

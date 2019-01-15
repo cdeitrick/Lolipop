@@ -1,6 +1,5 @@
-import itertools
 import math
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import pandas
 from dataclasses import dataclass
@@ -17,9 +16,6 @@ class PairCalculation:
 	mean_series: Optional[pandas.Series]
 	difference_series: Optional[pandas.Series]
 	sigma_series: Optional[pandas.Series]
-
-
-PairwiseArrayType = Dict[Tuple[str, str], PairCalculation]
 
 
 # noinspection PyTypeChecker
@@ -109,7 +105,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		# Difference of frequencies at each timepoint
 		# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
 		difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
-		sigma_pair: float = sigma_freq.sum()/ len(mean)
+		sigma_pair: float = sigma_freq.sum() / len(mean)
 		# Sum of differences
 		difference_mean: float = abs(difference).sum()
 
@@ -129,34 +125,6 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 		)
 
 	return value
-
-
-def calculate_pairwise_trajectory_similarity(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float) -> PairwiseArrayType:
-	"""
-	Parameters
-	----------
-	trajectories: pandas.DataFrame
-		A table of mutational trajectories. Should be a normal trajectory table.
-	detection_cutoff: float
-	fixed_cutoff: float
-
-	Returns
-	-------
-	dict of PairArrayValue
-	Each key in the dictionary corresponds to a pair of trajectory ids which map to the p-value for that pair.
-	The order of ids does not matter.
-	"""
-	pair_combinations: List[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
-	pair_array = dict()
-	for left, right in pair_combinations:
-		left_trajectory = trajectories.loc[left]
-		right_trajectory = trajectories.loc[right]
-
-		p_value = calculate_p_value(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff)
-		pair_array[left, right] = p_value
-		pair_array[right, left] = p_value
-
-	return pair_array
 
 
 if __name__ == "__main__":

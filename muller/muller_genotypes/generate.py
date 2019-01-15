@@ -1,21 +1,20 @@
-from typing import Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import pandas
 from dataclasses import dataclass
 
 try:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType, PairCalculation, calculate_pairwise_trajectory_similarity
+	from muller_genotypes.metrics.similarity import PairCalculation
 	from muller.muller_genotypes.methods import matlab_method, hierarchical_method
-	from muller.muller_genotypes.genotype_average import calculate_mean_genotype
+	from muller.muller_genotypes.average import calculate_mean_genotype
+	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
 except ModuleNotFoundError:
-	from .metrics.similarity import PairwiseArrayType, PairCalculation, calculate_pairwise_trajectory_similarity
+	from .metrics.similarity import PairCalculation
 	from .methods import matlab_method, hierarchical_method
-	from .genotype_average import calculate_mean_genotype
+	from .average import calculate_mean_genotype
+	from .metrics.pairwise_calculation import PairwiseCalculation
 
-PAIRWISE_P_VALUES: PairwiseArrayType = None
-PAIRWISE_CALCULATIONS: Dict[Tuple[str, str], PairCalculation] = None
-REMOVED_P_VALUES: PairwiseArrayType = dict()
-
+PAIRWISE_CALCULATIONS = PairwiseCalculation()
 
 @dataclass
 class GenotypeOptions:
@@ -40,31 +39,7 @@ class GenotypeOptions:
 		)
 
 
-def generate_pair_array(timeseries: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float) -> PairwiseArrayType:
-	# This is a global variable so that the p-values do not need to be re-computed for every iteration of the genotype filters.
-	global PAIRWISE_P_VALUES
-	global PAIRWISE_CALCULATIONS
-	if PAIRWISE_P_VALUES:
-		_current_trajectory_labels = set(timeseries.index)
-		pair_array = {k: v for k, v in PAIRWISE_P_VALUES.items() if (k[0] in _current_trajectory_labels and k[1] in _current_trajectory_labels)}
-
-	else:
-		pair_array = calculate_pairwise_trajectory_similarity(
-			timeseries,
-			detection_cutoff = detection_cutoff,
-			fixed_cutoff = fixed_cutoff
-		)
-		if PAIRWISE_CALCULATIONS is None:
-			PAIRWISE_CALCULATIONS = {k: v for k, v in pair_array.items() if not isinstance(v, float)}
-
-		pair_array = {k: v for k, v in pair_array.items()}
-
-		PAIRWISE_P_VALUES = pair_array
-
-	return pair_array
-
-
-def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series]:
+def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series, Any]:
 	"""
 
 	Parameters
@@ -86,12 +61,13 @@ def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pa
 		- A map of genotypes to members.
 	"""
 	# calculate the similarity between all pairs of trajectories in the population.
-	pair_array = generate_pair_array(timepoints, options.detection_breakpoint, options.fixed_breakpoint)
+	PAIRWISE_CALCULATIONS.update_values(timepoints, options.detection_breakpoint, options.fixed_breakpoint)
 
 	if options.method == "matlab":
-		genotypes = matlab_method(timepoints, pair_array, options.similarity_breakpoint, options.difference_breakpoint)
+		genotypes = matlab_method(timepoints, PAIRWISE_CALCULATIONS, options.similarity_breakpoint, options.difference_breakpoint)
+		linkage_matrix = None
 	elif options.method == "hierarchy":
-		genotypes = hierarchical_method(pair_array, options.similarity_breakpoint)
+		genotypes, linkage_matrix = hierarchical_method(PAIRWISE_CALCULATIONS, options.similarity_breakpoint)
 	else:
 		raise ValueError(f"Invalid clustering method: {options.method}")
 
@@ -99,7 +75,7 @@ def workflow(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pa
 	genotype_members = _mean_genotypes.pop('members')
 	_mean_genotypes = _mean_genotypes[sorted(_mean_genotypes.columns)]
 
-	return _mean_genotypes, genotype_members
+	return _mean_genotypes, genotype_members, linkage_matrix
 
 
 if __name__ == "__main__":

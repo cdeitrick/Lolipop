@@ -1,34 +1,27 @@
-import itertools
-from typing import List
+from typing import Any, List, Tuple
 
-import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
 try:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
+	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
 except ModuleNotFoundError:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
+	from ..metrics.pairwise_calculation import PairwiseCalculation
 
+def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: float, cluster_method:str = 'monocrit') -> Tuple[List[List[str]], Any]:
+	"""
 
-def convert_dictionary_to_squareform(pairs: PairwiseArrayType) -> pandas.DataFrame:
-	""" Converts a dictionary with all pairwise values for a set of points into a square matrix representation."""
-	keys = sorted(set(itertools.chain.from_iterable(pairs.keys())))
-	_square_map = dict()
-	for left in keys:
-		series = dict()
-		for right in keys:
-			value = pairs.get((left, right), 0)
-			series[right] = value
+	Parameters
+	----------
+	pair_array
+	similarity_cutoff
+	cluster_method: {'distance;, 'monocrit'}; default 'monocrit'
+		The method to cluster leafs by.
+	Returns
+	-------
 
-		_square_map[left] = series
-
-	return pandas.DataFrame(_square_map)
-
-
-def hierarchical_method(pair_array: PairwiseArrayType, similarity_cutoff: float) -> List[List[str]]:
-	numerical_pairs = {k: v.X for k, v in pair_array.items()}
-	squaremap = convert_dictionary_to_squareform(numerical_pairs)
+	"""
+	squaremap = pair_array.squareform('X')
 	condensed_squaremap = distance.squareform(squaremap.values)
 
 	Z = hierarchy.linkage(condensed_squaremap)
@@ -47,14 +40,16 @@ def hierarchical_method(pair_array: PairwiseArrayType, similarity_cutoff: float)
 		labels = squaremap.index
 	)
 	plt.savefig("clusterimage.png")
-	if False:
+	if cluster_method == 'distance':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
-	else:
+	elif cluster_method == 'monocrit':
 		inconsistent = hierarchy.inconsistent(Z)
 		MR = hierarchy.maxRstat(Z, inconsistent, 1)
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'monocrit', monocrit = MR)
-
+	else:
+		message = f"'{cluster_method}' is not a currently supported clustering method when using hierarchical clustering."
+		raise ValueError(message)
 	cluster_map = {i: list() for i in clusters}
 	for i, j in zip(clusters, squaremap.index):
 		cluster_map[i].append(j)
-	return list(cluster_map.values())
+	return list(cluster_map.values()), Z

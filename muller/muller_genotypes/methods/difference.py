@@ -2,11 +2,6 @@ from typing import List, Tuple, Dict
 import itertools
 import pandas
 
-try:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
-except ModuleNotFoundError:
-	from muller_genotypes.metrics.similarity import PairwiseArrayType
-
 def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.DataFrame,
 		pair_array: Dict[Tuple[str,str], float], link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
