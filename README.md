@@ -21,6 +21,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	-h, --help                  Show this help message and exit
 	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
 	-o,  --output               The folder to save the files to.
+	--method                    The clustering method to use when grouping mutatoinal trajectories into genotypes.
+                                Available methods: 'matlab', 'hierarchy'
 	-u, --uncertainty           The uncertainty to apply when performing
 	                            frequency-based calculations. For
 	                            example, a frequency at a given timepoint
@@ -37,7 +39,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
 	-r --similarity-cutoff      [0.05] Maximum p-value difference to consider trajectories related.
 	                            Used when grouping trajectories into genotypes.
-	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype.
+	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype. Is not used
+	                            when using hierarchical clustering.
 	--genotypes                 Indicates that the input table contains genotypes rather
 	                            than mutational trajectories.
 	--matlab                    Mimics the output of the original matlab script.
@@ -137,10 +140,15 @@ The script generates the following files:
     A tab-delimited file listing the calculated p-value for each pair of mutational trajectories. Only created
     if `--save-pvalues` is provided.
     
-- supplementary-files / `input filename`.pvalues.matrix.tsv
+- supplementary-files / `input filename`.calculation.matrix.pvalues.tsv
     
     A table with all pairwise p-values for all trajectories. 
-    Rows/ columns are sorted by genotype and share the same order.
+    Rows/columns are sorted by genotype and share the same order.
+    Requires `--save-pvalues`
+
+- supplementary-files / `input filename`.calculation.matrix.distance.tsv
+    A table with all pairwise distances for all trajectories. 
+    Rows/columns are sorted by genotype and share the same order.
     Requires `--save-pvalues`
     
 ### Diagrams
@@ -165,8 +173,12 @@ The script generates the following files:
 
     If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
 
-- supplementary-files / `input filename`.pvalues.heatmap.png
+- supplementary-files / `input filename`.heatmap.pvalues.png
     A heatmap of the p-value matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
+
+- supplementary-files / `input filename`.heatmap.distance.png
+        A heatmap of the distance matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
+
 ### Other
 
 - supplementary-files / `input filename`.r

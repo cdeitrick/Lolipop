@@ -81,7 +81,7 @@ class OutputFilenames:
 		self.genotype_plot_filtered: Path = output_folder / (name + f".filtered.png")
 		self.p_value: Path = subfolder / (name + ".pvalues.tsv")
 		self.calculation_matrix_p: Path = subfolder / (name + f".calculation.matrix.pvalues.{suffix}")
-		self.calculation_matrix_X = subfolder / (name + f".calculation.matrix.X.{suffix}")
+		self.calculation_matrix_X = subfolder / (name + f".calculation.matrix.distance.{suffix}")
 		self.p_value_heatmap: Path = subfolder / (name + ".heatmap.pvalues.png")
 		self.distance_heatmap: Path = subfolder / (name + f".heatmap.distance.png")
 		self.parameters: Path = output_folder / (name + '.json')
