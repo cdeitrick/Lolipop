@@ -173,6 +173,12 @@ The script generates the following files:
 
     If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
 
+- supplementary-file / `input filename`.linkagematrix.png
+    The linkage table produced by the hierarchical clustering.
+
+- supplementary-files / `input filename`.dendrogram.png
+    A tree plot of the distances between mutational trajectories. Only available if `--method` is `hierarchy`
+
 - supplementary-files / `input filename`.heatmap.pvalues.png
     A heatmap of the p-value matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
 
