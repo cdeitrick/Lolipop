@@ -1,10 +1,9 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import pandas
 
 try:
 	from muller.order_clusters import ClusterType
-	from muller_genotypes import PairwiseArrayType
 except ModuleNotFoundError:
 	from order_clusters import ClusterType
 
@@ -202,7 +201,7 @@ def generate_missing_trajectories_table(trajectories: pandas.DataFrame, original
 	return concat_trajectories
 
 
-def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: pandas.Series, info: pandas.DataFrame) -> pandas.DataFrame:
+def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: Union[pandas.Series, Dict[str,str]], info: pandas.DataFrame) -> pandas.DataFrame:
 	# Sorts the trajectory table and adds additional columns from the original table.
 	trajectories = trajectories[sorted(trajectories.columns, key = lambda s: int(s))]
 	if info is not None:

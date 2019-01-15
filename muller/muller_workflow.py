@@ -2,7 +2,6 @@
 	Main script to run the muller workflow.
 """
 from pathlib import Path
-from typing import Any, List, Tuple
 from pprint import pprint
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions

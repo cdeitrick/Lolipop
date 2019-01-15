@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Tuple, Optional, List
+from typing import Any, Dict, Tuple, Optional
 from pathlib import Path
 import pandas
 from dataclasses import dataclass
