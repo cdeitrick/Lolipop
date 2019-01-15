@@ -1,9 +1,9 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 
 import pandas
-from dataclasses import dataclass
 
 try:
+	from muller_genotypes.options import GenotypeOptions
 	from muller_genotypes.metrics.similarity import PairCalculation
 	from muller.muller_genotypes.methods import matlab_method, hierarchical_method
 	from muller.muller_genotypes.average import calculate_mean_genotype
@@ -15,28 +15,6 @@ except ModuleNotFoundError:
 	from .metrics.pairwise_calculation import PairwiseCalculation
 
 PAIRWISE_CALCULATIONS = PairwiseCalculation()
-
-@dataclass
-class GenotypeOptions:
-	detection_breakpoint: float  # Minimum frequency to be considered detected.
-	fixed_breakpoint: float  # Frequency at which a mutation is considered fixed.
-	n_binom: Optional[int]
-	similarity_breakpoint: float  # The cutoff indicating two trajectories are related.
-	# The cutoff indicating two trajectories that were originally sorted into the same genotype are not
-	# actually related.
-	difference_breakpoint: float
-	method: str
-
-	@classmethod
-	def from_matlab(cls) -> 'GenotypeOptions':
-		return GenotypeOptions(
-			detection_breakpoint = 0.03,
-			fixed_breakpoint = 0.97,
-			n_binom = 5,
-			similarity_breakpoint = 0.05,
-			difference_breakpoint = 0.10,
-			method = 'matlab'
-		)
 
 
 def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series, Any]:

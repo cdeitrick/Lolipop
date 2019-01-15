@@ -8,7 +8,8 @@ try:
 except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation import PairwiseCalculation
 
-def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: float, cluster_method:str = 'monocrit') -> Tuple[List[List[str]], Any]:
+
+def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: float, cluster_method: str = 'monocrit') -> Tuple[List[List[str]], Any]:
 	"""
 
 	Parameters
@@ -26,20 +27,6 @@ def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: floa
 
 	Z = hierarchy.linkage(condensed_squaremap)
 
-	import matplotlib.pyplot as plt
-	plt.figure(figsize = (10, 10))
-	plt.title('Hierarchical Clustering Dendrogram')
-	plt.xlabel('sample index')
-	plt.ylabel('distance')
-
-	hierarchy.dendrogram(
-		Z,
-		color_threshold = similarity_cutoff,
-		leaf_rotation = 90,  # rotates the x axis labels
-		leaf_font_size = 8,  # font size for the x axis labels,
-		labels = squaremap.index
-	)
-	plt.savefig("clusterimage.png")
 	if cluster_method == 'distance':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
 	elif cluster_method == 'monocrit':

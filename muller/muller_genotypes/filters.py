@@ -132,8 +132,8 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 DF = pandas.DataFrame
 
 
-def workflow(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOptions, frequency_cutoffs: List[float],
-		use_strict_filter: bool) -> Tuple[DF, DF, Any]:
+def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOptions, frequency_cutoffs: List[float],
+		use_strict_filter: bool) -> Tuple[DF, DF, Any, Any]:
 	"""
 		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
 	Parameters
@@ -171,7 +171,7 @@ def workflow(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOpti
 	# Update the trajectories that comprise each genotype.
 	else:
 		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	return trajectory_table, genotype_table, genotype_members
+	return trajectory_table, genotype_table, genotype_members, linkage_table
 
 
 if __name__ == "__main__":

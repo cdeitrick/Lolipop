@@ -83,7 +83,7 @@ class PairwiseCalculation:
 
 	def get(self, left, right, itemtype:str = None, default = None)->Union[PairCalculation, float]:
 		result = self.pairwise_values.get((left, right), default)
-		if itemtype:
+		if result != default and itemtype:
 			result = getattr(result, itemtype)
 		return result
 

@@ -1,24 +1,6 @@
-from typing import List
-
 import pandas
-from dataclasses import dataclass
 
-
-@dataclass
-class SortOptions:
-	detection_breakpoint: float
-	significant_breakpoint: float
-	fixed_breakpoint: float
-	frequency_breakpoints: List[float]  # Used when sorting non-fixed muller_genotypes.
-
-	@classmethod
-	def from_matlab(cls) -> 'SortOptions':
-		return SortOptions(
-			detection_breakpoint = 0.03,
-			significant_breakpoint = 0.15,
-			fixed_breakpoint = 0.85,
-			frequency_breakpoints = [0.90, 0.75, 0.60, 0.45, 0.30, 0.15, 0.00]
-		)
+from .options import SortOptions
 
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:

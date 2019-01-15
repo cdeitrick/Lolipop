@@ -67,9 +67,9 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	return time_table, info_table
 
 
-def import_genotype_table(filename: Path, sheeta_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
-	data = import_table(filename, sheet_name = sheeta_name)
+	data = import_table(filename, sheet_name = sheet_name)
 
 	if 'Genotype' in data.columns:
 		key_column = 'Genotype'
