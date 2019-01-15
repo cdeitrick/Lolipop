@@ -22,12 +22,13 @@ class PairwiseCalculation:
 		pair_array = calculation.update_values(timeseries, detection_cutoff, fixed_cutoff)
 
 	"""
+
 	def __init__(self):
 		self.pairwise_values: PairwiseArrayType = None
 
-	def asitem(self, itemtype:str)->Dict[Tuple[str,str], float]:
+	def asitem(self, itemtype: str) -> Dict[Tuple[str, str], float]:
 		""" Returns a pairwise dictionary mapping all key to the attribute in PairCalculation defined by `itemtype`."""
-		return {(left, right):self.get(left, right ,itemtype = itemtype) for left, right in self.pairwise_values}
+		return {(left, right): self.get(left, right, itemtype = itemtype) for left, right in self.pairwise_values}
 
 	def update_values(self, timeseries, detection_cutoff: float, fixed_cutoff: float, metric: str = 'similarity'):
 		"""
@@ -63,7 +64,7 @@ class PairwiseCalculation:
 			self.pairwise_values = pair_array.copy()
 		return pair_array
 
-	def squareform(self, itemtype:str):
+	def squareform(self, itemtype: str):
 		""" Converts a dictionary with all pairwise values for a set of points into a square matrix representation.
 
 		Parameters
@@ -81,11 +82,12 @@ class PairwiseCalculation:
 			_square_map[left] = series
 		return pandas.DataFrame(_square_map)
 
-	def get(self, left, right, itemtype:str = None, default = None)->Union[PairCalculation, float]:
+	def get(self, left, right, itemtype: str = None, default = None) -> Union[PairCalculation, float]:
 		result = self.pairwise_values.get((left, right), default)
 		if result != default and itemtype:
 			result = getattr(result, itemtype)
 		return result
+
 
 def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> PairwiseArrayType:
 	"""

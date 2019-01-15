@@ -1,6 +1,8 @@
-import pandas
-from typing import List, Optional, Dict, Tuple
 import itertools
+from typing import Dict, List, Optional, Tuple
+
+import pandas
+
 try:
 	from muller_genotypes.methods.difference import unlink_unrelated_trajectories
 	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
@@ -8,7 +10,9 @@ except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
 	from ..metrics.pairwise_calculation import PairwiseCalculation
 
-def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str,str], float], relative_cutoff: float, base_genotypes:List[List] = None) -> List[List[str]]:
+
+def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List] = None) -> List[
+	List[str]]:
 	"""
 		Clusters all trajectories into related muller_genotypes.
 		By default the first trajectory makes a genotype category
@@ -57,6 +61,7 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str,str], float], relat
 				# Neither element is listed. Create a new genotype
 				genotype_candidates.append([left, right])
 	return genotype_candidates
+
 
 def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]]) -> Optional[List[str]]:
 	"""

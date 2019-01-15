@@ -1,5 +1,8 @@
+from typing import List, Optional
+
 from dataclasses import dataclass
-from typing import Optional, List
+
+
 @dataclass
 class GenotypeOptions:
 	detection_breakpoint: float  # Minimum frequency to be considered detected.
@@ -22,6 +25,7 @@ class GenotypeOptions:
 			method = 'matlab'
 		)
 
+
 @dataclass
 class SortOptions:
 	detection_breakpoint: float
@@ -37,5 +41,3 @@ class SortOptions:
 			fixed_breakpoint = 0.85,
 			frequency_breakpoints = [0.90, 0.75, 0.60, 0.45, 0.30, 0.15, 0.00]
 		)
-
-

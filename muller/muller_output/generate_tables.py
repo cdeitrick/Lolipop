@@ -3,9 +3,9 @@ from typing import Dict, List, Tuple, Union
 import pandas
 
 try:
-	from muller.order_clusters import ClusterType
+	from inheritance.order import ClusterType
 except ModuleNotFoundError:
-	from order_clusters import ClusterType
+	from inheritance.order import ClusterType
 
 
 def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
@@ -27,7 +27,7 @@ def _subtract_children_from_parent(modified_genotypes: pandas.DataFrame, childre
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
 			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.01)  # 0.01 so there is still a visible slice.
-			genotype_frequencies = genotype_frequencies.fillna(0) #Otherwise plotting the muller diagram will fail.
+			genotype_frequencies = genotype_frequencies.fillna(0)  # Otherwise plotting the muller diagram will fail.
 		else:
 			genotype_frequencies = genotype
 		genotype_frequencies.name = genotype_label
@@ -78,7 +78,8 @@ def _append_genotype_0(population_table: pandas.DataFrame) -> pandas.DataFrame:
 	return modified_population
 
 
-def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, detection_cutoff: float, adjust_populations:bool) -> pandas.DataFrame:
+def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: pandas.DataFrame, detection_cutoff: float,
+		adjust_populations: bool) -> pandas.DataFrame:
 	"""
 		Converts the genotype frequencies to a population table suitable for ggmuller.
 	Parameters
@@ -136,7 +137,7 @@ def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.Data
 			'Identity': identity
 		}
 		table.append(row)
-	table = pandas.DataFrame(table)[['Parent', 'Identity']] # Reorder columns
+	table = pandas.DataFrame(table)[['Parent', 'Identity']]  # Reorder columns
 
 	return table
 
@@ -201,7 +202,8 @@ def generate_missing_trajectories_table(trajectories: pandas.DataFrame, original
 	return concat_trajectories
 
 
-def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: Union[pandas.Series, Dict[str,str]], info: pandas.DataFrame) -> pandas.DataFrame:
+def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: Union[pandas.Series, Dict[str, str]],
+		info: pandas.DataFrame) -> pandas.DataFrame:
 	# Sorts the trajectory table and adds additional columns from the original table.
 	trajectories = trajectories[sorted(trajectories.columns, key = lambda s: int(s))]
 	if info is not None:
@@ -214,6 +216,7 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 if __name__ == "__main__":
 	from pprint import pprint
 	from import_data import import_table_from_string
+
 	test_table = import_table_from_string(
 		"""
 			Parent	Identity

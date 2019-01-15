@@ -148,7 +148,7 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.Geno
 
 	"""
 	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
-	frequency_cutoffs = [i for i in frequency_cutoffs if i < goptions.fixed_breakpoint]
+	frequency_cutoffs = [i for i in frequency_cutoffs if i <= goptions.fixed_breakpoint]
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
 	genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
 

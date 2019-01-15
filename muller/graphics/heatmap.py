@@ -1,19 +1,22 @@
-
-import matplotlib.pyplot as plt
-import matplotlib
-#plt.switch_backend('agg')
-import pandas
 from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+# plt.switch_backend('agg')
+import pandas
+
 try:
 	import seaborn
 except ModuleNotFoundError:
 	# Seaborn is not installed. Skip plotting
 	seaborn = None
-def plot_heatmap(data:pandas.DataFrame, filename:Path):
+
+
+def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	font = {
-		'size':   20
+		'size': 20
 	}
-	use_annotations = len(data) < 30 # So the annotations are actually visible
+	use_annotations = len(data) < 30  # So the annotations are actually visible
 	matplotlib.rc('font', **font)
 	figsize = (20, 20)
 	fig, ax = plt.subplots(figsize = figsize)

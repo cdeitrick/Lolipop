@@ -1,10 +1,12 @@
 import random
-from typing import Dict, List
 import re
-import pandas
 from collections import OrderedDict
+from typing import Dict, List
+
+import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
+
 
 def generate_random_color() -> str:
 	r = random.randint(50, 200)
@@ -45,7 +47,7 @@ def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
 
 	if len(genotypes) >= len(color_palette):
 		color_palette += [generate_random_color() for _ in genotypes]
-	genotype_labels = sorted(genotypes, key = lambda s:int(s.split('-')[-1]))
+	genotype_labels = sorted(genotypes, key = lambda s: int(s.split('-')[-1]))
 	# Use an OrderedDict to help with providing the correct order for the r script.
 	color_map = OrderedDict()
 	color_map['genotype-0'] = "#333333"
@@ -62,4 +64,3 @@ def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, s
 		for member in members.split('|'):
 			trajectory_to_genotype[member] = genotype_label
 	return trajectory_to_genotype
-
