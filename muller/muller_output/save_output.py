@@ -165,7 +165,9 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	if muller_df is not None:
 		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, annotate_all)
 
+
 	if workflow_data.linkage_matrix is not None:
+		pandas.DataFrame(workflow_data.linkage_matrix).to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
 		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
 
 	if save_pvalues:
