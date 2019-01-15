@@ -12,6 +12,7 @@ def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> 
 	""" Extracts the backgrounds using a list of frequency breakpoints."""
 	for cutoff in cutoffs:
 		backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
+		backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2] # Check if background appears at multiple timepoints.
 		if not backgrounds.empty:
 			fuzzy_fixed_cutoff = cutoff
 			fuzzy_detected_cutoff = 1 - cutoff
