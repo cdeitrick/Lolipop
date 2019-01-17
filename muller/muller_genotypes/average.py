@@ -4,6 +4,22 @@ import pandas
 
 
 def _calculate_mean_frequencies_of_trajectories(name: str, genotype_timeseries: pandas.DataFrame, genotype: List[str]) -> pandas.Series:
+	"""
+		Generates a mean timeseries for a genotype given the timeseries of member trajectories.
+	Parameters
+	----------
+	name: str
+		The name to assign to this genotype. Usually just 'genotype-' forllowed by an integer.
+	genotype_timeseries: pandas.DataFrame
+		A dataframe of member trajectory timeseries.
+	genotype: List[str]
+		A list of the labels of all member trajectories. Used to track the which trajectories belong to this genotype.
+
+	Returns
+	-------
+	pandas.DataFrame
+		The calculated mean of all member trajectories at each timepoint.
+	"""
 	mean_genotype_timeseries = genotype_timeseries.mean()
 	mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
 	mean_genotype_timeseries.name = name

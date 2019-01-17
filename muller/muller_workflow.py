@@ -5,64 +5,17 @@ from pathlib import Path
 from pprint import pprint
 
 try:
-	from muller.commandline_parser import create_parser, ProgramOptions
+	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from muller.import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, sort_genotypes, filters, extract
+	from muller_genotypes import generate, sort_genotypes, filters
 	from inheritance import order
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
-	from commandline_parser import create_parser, ProgramOptions
+	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, sort_genotypes, filters, extract
+	from muller_genotypes import generate, sort_genotypes, filters
 	from inheritance import order
-	import muller_genotypes.sort_genotypes
 	from muller_output import WorkflowData, generate_output
-
-ACCEPTED_METHODS = ["matlab", "hierarchy"]
-
-
-def parse_workflow_options(program_options: ProgramOptions):
-	# program_options = ProgramOptions.from_parser(program_options)
-	if program_options.fixed_breakpoint is None:
-		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
-	compatibility_mode = program_options.mode
-	if compatibility_mode:
-		program_options_genotype = generate.GenotypeOptions.from_matlab()
-		program_options_sort = sort_genotypes.SortOptions.from_matlab()
-		program_options_clustering = order.OrderClusterParameters.from_matlab()
-	else:
-		if program_options.known_genotypes:
-			program_options.known_genotypes = Path(program_options.known_genotypes)
-			starting_genotypes = program_options.known_genotypes.read_text().split('\n')
-			starting_genotypes = [i.split(',') for i in starting_genotypes if i]
-		else:
-			starting_genotypes = None
-		program_options_genotype = generate.GenotypeOptions(
-			detection_breakpoint = program_options.detection_breakpoint,
-			fixed_breakpoint = program_options.fixed_breakpoint,
-			similarity_breakpoint = program_options.similarity_breakpoint,
-			difference_breakpoint = program_options.difference_breakpoint,
-			n_binom = None,
-			method = program_options.method,
-			starting_genotypes = starting_genotypes
-		)
-		program_options_clustering = order.OrderClusterParameters.from_breakpoints(
-			program_options.detection_breakpoint,
-			program_options.significant_breakpoint
-		)
-
-		program_options_sort = sort_genotypes.SortOptions(
-			detection_breakpoint = program_options_genotype.detection_breakpoint,
-			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
-			significant_breakpoint = program_options.significant_breakpoint,
-			frequency_breakpoints = program_options.frequencies
-		)
-	cluster_method = program_options.method
-	if cluster_method not in ACCEPTED_METHODS:
-		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
-		raise ValueError(message)
-
-	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
@@ -72,13 +25,20 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	pprint(vars(program_options))
 
 	print("Importing data...")
+	if program_options.is_genotype:
+		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
+		genotype_members = genotype_info['members']
+		original_timepoints = timepoints = info = linkage_matrix = None
+		original_genotypes = mean_genotypes
+	else:
+		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
+		original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
+			original_timepoints,
+			program_options_genotype,
+			[program_options.fixed_breakpoint] + program_options.frequencies,
+			program_options.use_strict_filter
+		)
 
-	original_timepoints, original_genotypes, timepoints, mean_genotypes, genotype_members, info, linkage_matrix = extract.extract_genotypes(
-		input_filename,
-		program_options,
-		program_options_genotype,
-		[program_options.fixed_breakpoint] + program_options_sort.frequency_breakpoints
-	)
 	print("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	print("nesting muller_genotypes...")

@@ -1,2 +1,3 @@
 from .hierarchical_method import hierarchical_method
-from .twostep_method import matlab_method
+from .twostep_method import twostep_method
+from .calculate import calculate_genotypes_from_given_method

@@ -87,7 +87,7 @@ def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]])
 	return value
 
 
-def matlab_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation, similarity_breakpoint: float, difference_breakpoint: float,
+def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation, similarity_breakpoint: float, difference_breakpoint: float,
 		starting_genotypes: List[List[str]]) -> List[List[str]]:
 	"""
 		Clusters trajectories into muller_genotypes.
@@ -103,10 +103,12 @@ def matlab_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation,
 	pair_array: PairwiseArrayType
 	similarity_breakpoint: float
 	difference_breakpoint: float
+	starting_genotypes: List[List[str]]
+		A list of trajectories to use as the initial genotypes. Each sub-list represents a single genotype.
 	Returns
 	-------
 	List[List[str]]
-		A list of the muller_genotypes, where each genotype is itself a list of the name of each member trajectory.
+		A list of the genotypes, where each genotype is itself a list of the name of each member trajectory.
 		Ex. [
 			[A1, A2, A3],
 			[B1, B2],
