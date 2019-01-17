@@ -9,7 +9,7 @@ try:
 	from muller.options import OrderClusterParameters
 except ModuleNotFoundError:
 	from .checks import check_additive_background, check_subtractive_background, check_derivative_background
-	from ..options import OrderClusterParameters
+	from options import OrderClusterParameters
 
 
 @dataclass

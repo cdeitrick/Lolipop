@@ -14,7 +14,7 @@ class GenotypeOptions:
 	difference_breakpoint: float
 	method: str
 
-	starting_genotypes = None
+	starting_genotypes:List[List[str]] = None
 
 	@classmethod
 	def from_matlab(cls) -> 'GenotypeOptions':

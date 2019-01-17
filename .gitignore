@@ -72,3 +72,4 @@ P*/
 b6/
 *.ipynb
 ~*
+tests/data
