@@ -1,20 +1,35 @@
-from typing import Any, Tuple
+from typing import Any, Tuple, List
 
 import pandas
-
+from options import GenotypeOptions
 try:
-	from muller_genotypes.options import GenotypeOptions
-	from muller_genotypes.metrics.similarity import PairCalculation
-	from muller.muller_genotypes.methods import matlab_method, hierarchical_method
 	from muller.muller_genotypes.average import calculate_mean_genotype
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from muller_genotypes.metrics import PairwiseCalculation, calculate_pairwise_metric
+	from muller_genotypes.methods import calculate_genotypes_from_given_method
+	from muller_genotypes.filters import filter_genotypes
 except ModuleNotFoundError:
-	from .metrics.similarity import PairCalculation
-	from .methods import matlab_method, hierarchical_method
 	from .average import calculate_mean_genotype
-	from .metrics.pairwise_calculation import PairwiseCalculation
+	from .metrics import PairwiseCalculation, calculate_pairwise_metric
+	from .methods import calculate_genotypes_from_given_method
+	from .filters import filter_genotypes
 
 PAIRWISE_CALCULATIONS = PairwiseCalculation()
+
+
+def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOptions):
+	global PAIRWISE_CALCULATIONS
+	if PAIRWISE_CALCULATIONS:
+		# PAIRWISE_CALCULATIONS already contains previous calcuations.
+		PAIRWISE_CALCULATIONS = PAIRWISE_CALCULATIONS.reduce(timepoints.index)
+	else:
+		pair_array = calculate_pairwise_metric(
+			timepoints,
+			detection_cutoff = options.detection_breakpoint,
+			fixed_cutoff = options.fixed_breakpoint,
+			metric = 'similarity'
+		)
+		PAIRWISE_CALCULATIONS.update(pair_array.copy())
+	return PAIRWISE_CALCULATIONS
 
 
 def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series, Any]:
@@ -39,21 +54,34 @@ def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -
 		- A map of genotypes to members.
 	"""
 	# calculate the similarity between all pairs of trajectories in the population.
-	PAIRWISE_CALCULATIONS.update_values(timepoints, options.detection_breakpoint, options.fixed_breakpoint)
 
-	if options.method == "matlab":
-		genotypes = matlab_method(timepoints, PAIRWISE_CALCULATIONS, options.similarity_breakpoint, options.difference_breakpoint)
-		linkage_matrix = None
-	elif options.method == "hierarchy":
-		genotypes, linkage_matrix = hierarchical_method(PAIRWISE_CALCULATIONS, options.similarity_breakpoint)
-	else:
-		raise ValueError(f"Invalid clustering method: {options.method}")
-
+	pairwise_calculations = _update_pairwise_array(timepoints,options)
+	genotypes, linkage_matrix = calculate_genotypes_from_given_method(
+		timepoints,
+		pairwise_calculations,
+		options.method,
+		options.similarity_breakpoint,
+		options.difference_breakpoint,
+		options.starting_genotypes
+	)
 	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
 	genotype_members = _mean_genotypes.pop('members')
 	_mean_genotypes = _mean_genotypes[sorted(_mean_genotypes.columns)]
 
 	return _mean_genotypes, genotype_members, linkage_matrix
+
+def generate_genotypes_with_filter(original_timepoints:pandas.DataFrame, options:GenotypeOptions, frequency_breakpoints:List[float], strict_filter:bool):
+	original_genotypes, genotype_members, linkage_matrix = generate_genotypes(original_timepoints, options)
+
+	timepoints, mean_genotypes, genotype_members, linkage_matrix = filter_genotypes(
+		original_timepoints,
+		options,
+		frequency_breakpoints,
+		strict_filter
+	)
+
+	return original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix
+
 
 
 if __name__ == "__main__":

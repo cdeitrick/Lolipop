@@ -167,7 +167,11 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 
 	if workflow_data.linkage_matrix is not None:
-		pandas.DataFrame(workflow_data.linkage_matrix).to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
+		num_trajectories = len(workflow_data.trajectories)
+		linkage_table = pandas.DataFrame(workflow_data.linkage_matrix)
+		linkage_table.columns = ['clusterA', 'clusterB', 'distance', 'observations']
+		linkage_table['resultingCluster'] = list(num_trajectories + i for i in range(len(linkage_table)))
+		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
 		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
 
 	if save_pvalues:

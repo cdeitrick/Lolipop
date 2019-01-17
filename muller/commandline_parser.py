@@ -4,8 +4,12 @@ import math
 from pathlib import Path
 from typing import List, Optional, Union
 
-from dataclasses import dataclass, fields
+try:
+	from muller.options import GenotypeOptions, SortOptions, OrderClusterParameters
+except ModuleNotFoundError:
+	from options import GenotypeOptions, SortOptions, OrderClusterParameters
 
+from dataclasses import dataclass, fields
 
 # For convienience. Helps with autocomplete.
 @dataclass
@@ -26,11 +30,56 @@ class ProgramOptions(argparse.Namespace):
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 	method: str = 'matlab'
+	known_genotypes: Optional[Path] = None
 
 	def show(self):
 		for field in fields(self):
 			print(field)
 
+ACCEPTED_METHODS = ["matlab", "hierarchy"]
+
+
+def parse_workflow_options(program_options: ProgramOptions):
+	# program_options = ProgramOptions.from_parser(program_options)
+	if program_options.fixed_breakpoint is None:
+		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
+	compatibility_mode = program_options.mode
+	if compatibility_mode:
+		program_options_genotype = GenotypeOptions.from_matlab()
+		program_options_sort = SortOptions.from_matlab()
+		program_options_clustering = OrderClusterParameters.from_matlab()
+	else:
+		if program_options.known_genotypes:
+			program_options.known_genotypes = Path(program_options.known_genotypes)
+			starting_genotypes = program_options.known_genotypes.read_text().split('\n')
+			starting_genotypes = [i.split(',') for i in starting_genotypes if i]
+		else:
+			starting_genotypes = None
+		program_options_genotype = GenotypeOptions(
+			detection_breakpoint = program_options.detection_breakpoint,
+			fixed_breakpoint = program_options.fixed_breakpoint,
+			similarity_breakpoint = program_options.similarity_breakpoint,
+			difference_breakpoint = program_options.difference_breakpoint,
+			n_binom = None,
+			method = program_options.method,
+			starting_genotypes = starting_genotypes
+		)
+		program_options_clustering = OrderClusterParameters.from_breakpoints(
+			program_options.detection_breakpoint,
+			program_options.significant_breakpoint
+		)
+
+		program_options_sort = SortOptions(
+			detection_breakpoint = program_options_genotype.detection_breakpoint,
+			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
+			significant_breakpoint = program_options.significant_breakpoint,
+			frequency_breakpoints = program_options.frequencies
+		)
+	cluster_method = program_options.method
+	if cluster_method not in ACCEPTED_METHODS:
+		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
+		raise ValueError(message)
+	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):
@@ -104,7 +153,8 @@ def create_parser() -> argparse.ArgumentParser:
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
-		dest = 'fixed_breakpoint'
+		dest = 'fixed_breakpoint',
+		type = float
 	)
 	parser.add_argument(
 		"-u", "--uncertainty",
@@ -134,7 +184,7 @@ def create_parser() -> argparse.ArgumentParser:
 		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
 		action = FrequencyParser,
 		dest = 'frequencies',
-		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.6, 0.2, 0.1, 0.0]
+		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
@@ -150,7 +200,8 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Minimum p-value to consider a pair of muller_genotypes unrelated. Used when splitting muller_genotypes.",
 		action = "store",
 		default = 0.25,
-		dest = "difference_breakpoint"
+		dest = "difference_breakpoint",
+		type = float
 	)
 	parser.add_argument(
 		"--genotypes", "--cohorts",
@@ -188,6 +239,13 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store",
 		default = "matlab",
 		dest = "method"
+	)
+	parser.add_argument(
+		"-g", "--known-genotypes",
+		help = "A file with trajectories known to be in the same genotypes. Each genotype is defined by a comma-delimited line with the labels of the member trajectories.",
+		action = "store",
+		default = None,
+		dest = "known_genotypes"
 	)
 
 	return parser

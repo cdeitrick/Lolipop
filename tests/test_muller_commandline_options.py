@@ -1,15 +1,15 @@
 import unittest
 
-from muller.muller_workflow import *
-from muller.muller_workflow import _parse_frequency_option
+from muller.commandline_parser import *
+from muller.commandline_parser import _parse_frequency_option
 
 
 class TestMullerProgramOptions(unittest.TestCase):
 	def test_parse_commandline_options_set_all_manually(self):
 		commandline_parser = create_parser()
 		arguments = [
-			"--input", "test_table",
-			"--output", "output_files",
+			"--input", str(Path.cwd() / "test_table"),
+			"--output", str(Path.cwd() / "output_files"),
 			"--fixed", "0.4",
 			"--uncertainty", "0.04",
 			"--significant", "1.11",
@@ -18,7 +18,7 @@ class TestMullerProgramOptions(unittest.TestCase):
 			"-l", "0.15"
 		]
 
-		args = ProgramOptions.from_parser(commandline_parser.parse_args(arguments))
+		args = commandline_parser.parse_args(arguments)
 		program_options, genotype_options, sort_options, cluster_options = parse_workflow_options(args)
 		expected_frequencies = [.9, .6, .3, 0]
 		self.assertEqual(Path.cwd() / "test_table", program_options.filename)
@@ -29,8 +29,8 @@ class TestMullerProgramOptions(unittest.TestCase):
 		self.assertEqual(1.11, program_options.significant_breakpoint)
 		self.assertFalse(program_options.mode)
 		self.assertListEqual(expected_frequencies, program_options.frequencies)
-		self.assertEqual(.11, program_options.similarity_breakpoint)
-		self.assertEqual(.15, program_options.difference_breakpoint)
+		self.assertEqual(0.11, program_options.similarity_breakpoint)
+		self.assertEqual(0.15, program_options.difference_breakpoint)
 		self.assertFalse(program_options.is_genotype)
 		self.assertTrue(program_options.use_filter)
 		self.assertFalse(program_options.annotate_all)
@@ -64,9 +64,9 @@ class TestMullerProgramOptions(unittest.TestCase):
 			"--output", "output_files",
 			"--uncertainty", str(detection_cutoff)
 		]
-		args = ProgramOptions.from_parser(commandline_parser.parse_args(arguments))
+		args = commandline_parser.parse_args(arguments)
 		program_options, genotype_options, sort_options, cluster_options = parse_workflow_options(args)
-		expected_frequencies = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0]
+		expected_frequencies = [1.0, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0.0]
 		self.assertEqual(detection_cutoff, program_options.detection_breakpoint)
 		self.assertEqual(1 - detection_cutoff, program_options.fixed_breakpoint)
 		self.assertEqual(.15, program_options.significant_breakpoint)
@@ -106,7 +106,7 @@ class TestMullerProgramOptions(unittest.TestCase):
 			"-l", str(difference),
 			"--fixed", str(fixed_cutoff)
 		]
-		args = ProgramOptions.from_parser(commandline_parser.parse_args(arguments))
+		args = commandline_parser.parse_args(arguments)
 		program_options, genotype_options, sort_options, cluster_options = parse_workflow_options(args)
 
 		self.assertEqual(.03, program_options.detection_breakpoint)
