@@ -1,6 +1,6 @@
 import pandas
 
-from .options import SortOptions
+from options import SortOptions
 
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:

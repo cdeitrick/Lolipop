@@ -26,6 +26,7 @@ class ProgramOptions(argparse.Namespace):
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 	method: str = 'matlab'
+	known_genotypes: Optional[Path] = None
 
 	def show(self):
 		for field in fields(self):
@@ -188,6 +189,13 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store",
 		default = "matlab",
 		dest = "method"
+	)
+	parser.add_argument(
+		"-g", "--known-genotypes",
+		help = "A file with trajectories known to be in the same genotypes. Each genotype is defined by a comma-delimited line with the labels of the member trajectories.",
+		action = "store",
+		default = None,
+		dest = "known_genotypes"
 	)
 
 	return parser

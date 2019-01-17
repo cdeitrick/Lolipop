@@ -31,13 +31,20 @@ def parse_workflow_options(program_options: ProgramOptions):
 		program_options_sort = sort_genotypes.SortOptions.from_matlab()
 		program_options_clustering = order.OrderClusterParameters.from_matlab()
 	else:
+		if program_options.known_genotypes:
+			program_options.known_genotypes = Path(program_options.known_genotypes)
+			starting_genotypes = program_options.known_genotypes.read_text().split('\n')
+			starting_genotypes = [i.split(',') for i in starting_genotypes if i]
+		else:
+			starting_genotypes = None
 		program_options_genotype = generate.GenotypeOptions(
 			detection_breakpoint = program_options.detection_breakpoint,
 			fixed_breakpoint = program_options.fixed_breakpoint,
 			similarity_breakpoint = program_options.similarity_breakpoint,
 			difference_breakpoint = program_options.difference_breakpoint,
 			n_binom = None,
-			method = program_options.method
+			method = program_options.method,
+			starting_genotypes = starting_genotypes
 		)
 		program_options_clustering = order.OrderClusterParameters.from_breakpoints(
 			program_options.detection_breakpoint,
@@ -54,6 +61,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 	if cluster_method not in ACCEPTED_METHODS:
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
 		raise ValueError(message)
+
 	return program_options, program_options_genotype, program_options_sort, program_options_clustering
 
 

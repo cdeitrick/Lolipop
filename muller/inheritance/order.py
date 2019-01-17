@@ -1,13 +1,15 @@
 import itertools
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import pandas
 from dataclasses import dataclass
 
 try:
-	from inheritance.checks import check_additive_background, check_subtractive_background, check_derivative_background
+	from muller.inheritance.checks import check_additive_background, check_subtractive_background, check_derivative_background
+	from muller.options import OrderClusterParameters
 except ModuleNotFoundError:
 	from .checks import check_additive_background, check_subtractive_background, check_derivative_background
+	from ..options import OrderClusterParameters
 
 
 @dataclass
@@ -22,44 +24,6 @@ class Genotype:
 ClusterType = Dict[str, Genotype]
 
 
-@dataclass
-class OrderClusterParameters:
-	additive_background_double_cutoff: float
-	additive_background_single_cutoff: float
-	subtractive_background_double_cutoff: float
-	subtractive_background_single_cutoff: float
-	derivative_detection_cutoff: float
-	derivative_check_cutoff: float
-	new_background_base_cutoff: float
-	new_background_significant_cutoff: float
-
-	@classmethod
-	def from_matlab(cls) -> 'OrderClusterParameters':
-		return OrderClusterParameters(
-			additive_background_double_cutoff = 1.03,
-			additive_background_single_cutoff = 1.15,
-			subtractive_background_double_cutoff = -0.02,
-			subtractive_background_single_cutoff = -0.15,
-			derivative_detection_cutoff = 0.02,
-			derivative_check_cutoff = 0.01,
-			new_background_base_cutoff = 1.0,
-			new_background_significant_cutoff = 1.15
-		)
-
-	@classmethod
-	def from_breakpoints(cls, detection_breakpoint: float, significant_breakpoint: float) -> 'OrderClusterParameters':
-		return OrderClusterParameters(
-			additive_background_double_cutoff = 1 + detection_breakpoint,
-			additive_background_single_cutoff = 1 + significant_breakpoint,
-			subtractive_background_double_cutoff = -detection_breakpoint,
-			subtractive_background_single_cutoff = -significant_breakpoint,
-			derivative_check_cutoff = 0.01,
-			derivative_detection_cutoff = detection_breakpoint,
-			new_background_base_cutoff = 1 + detection_breakpoint,
-			new_background_significant_cutoff = 1 + significant_breakpoint
-		)
-
-
 def add_genotype_background(genotype_label: str, type_genotype: Genotype, nests: Dict[str, Genotype], initial_background_label: str):
 	# genotype_label = type_genotype.name
 	if genotype_label in nests:
@@ -72,7 +36,7 @@ def add_genotype_background(genotype_label: str, type_genotype: Genotype, nests:
 
 
 def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: pandas.Series, options: OrderClusterParameters) -> Tuple[
-	bool, bool, float]:
+	bool, bool, Optional[float]]:
 	""" Applies the three checks to `type_trajectory` and `test_trajectory`."""
 	additive_check = check_additive_background(
 		left = type_trajectory,

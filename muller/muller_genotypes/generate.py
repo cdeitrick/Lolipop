@@ -3,7 +3,7 @@ from typing import Any, Tuple
 import pandas
 
 try:
-	from muller_genotypes.options import GenotypeOptions
+	from options import GenotypeOptions
 	from muller_genotypes.metrics.similarity import PairCalculation
 	from muller.muller_genotypes.methods import matlab_method, hierarchical_method
 	from muller.muller_genotypes.average import calculate_mean_genotype
@@ -42,7 +42,7 @@ def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -
 	PAIRWISE_CALCULATIONS.update_values(timepoints, options.detection_breakpoint, options.fixed_breakpoint)
 
 	if options.method == "matlab":
-		genotypes = matlab_method(timepoints, PAIRWISE_CALCULATIONS, options.similarity_breakpoint, options.difference_breakpoint)
+		genotypes = matlab_method(timepoints, PAIRWISE_CALCULATIONS, options.similarity_breakpoint, options.difference_breakpoint, options.starting_genotypes)
 		linkage_matrix = None
 	elif options.method == "hierarchy":
 		genotypes, linkage_matrix = hierarchical_method(PAIRWISE_CALCULATIONS, options.similarity_breakpoint)
