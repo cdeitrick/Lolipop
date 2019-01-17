@@ -16,7 +16,7 @@ def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	font = {
 		'size': 20
 	}
-	use_annotations = len(data) < 30  # So the annotations are actually visible
+	use_annotations = len(data) < 20  # So the annotations are actually visible
 	matplotlib.rc('font', **font)
 	figsize = (20, 20)
 	fig, ax = plt.subplots(figsize = figsize)

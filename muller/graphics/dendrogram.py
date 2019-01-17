@@ -17,4 +17,4 @@ def plot_dendrogram(Z: Any, pair_array: Any, filename: Path):
 		labels = pair_array.squareform('X').index
 	)
 
-	plt.savefig(filename)
+	plt.savefig(filename, dpi = 500)
