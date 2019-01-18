@@ -5,10 +5,10 @@ import pandas
 
 try:
 	from muller_genotypes.methods.difference import unlink_unrelated_trajectories
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
-	from ..metrics.pairwise_calculation import PairwiseCalculation
+	from ..metrics.pairwise_calculation_cache import PairwiseCalculation
 
 
 def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List[str]] = None) -> List[

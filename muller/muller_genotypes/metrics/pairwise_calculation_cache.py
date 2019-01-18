@@ -1,7 +1,10 @@
 import itertools
-from typing import Dict, Iterable, Tuple, Union
+import json
+from pathlib import Path
+from typing import Dict, Iterable, Optional, Tuple, Union, List
 
 import pandas
+from dataclasses import asdict
 
 try:
 	from muller_genotypes.metrics.similarity import PairCalculation
@@ -74,3 +77,30 @@ class PairwiseCalculation:
 	def update(self, pair_array: PairwiseArrayType) -> 'PairwiseCalculation':
 		self.pairwise_values.update(pair_array)
 		return self
+
+	def unique(self)->List[Tuple[str,str]]:
+		seen = set()
+		for key in self.pairwise_values.keys():
+			if key in seen or key[::-1] in seen:
+				continue
+			else:
+				yield key
+	def save(self, filename: Optional[Path]):
+		with filename.open('w') as output:
+			for key in self.unique():
+				value = self.get(*key)
+				line = f"{key[0]}\t{key[1]}\t{value.pvalue}\t{value.X}\n"
+				output.write(line)
+	@classmethod
+	def read(cls, filename: Path) -> 'PairwiseCalculation':
+		contents = filename.read_text().split('\n')
+		contents = [i.split('\t') for i in contents]
+		data = dict()
+		for line in contents:
+			left, right, p, x = line
+			value = PairCalculation(
+				pvalue = p,
+				X = x
+			)
+			data[left, right] = value
+			data[right,left] = value

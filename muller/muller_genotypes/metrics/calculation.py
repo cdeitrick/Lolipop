@@ -3,8 +3,10 @@ from typing import Dict, Tuple, List
 import itertools
 try:
 	from muller_genotypes.metrics.similarity import PairCalculation, calculate_p_value
+	from muller_genotypes.metrics.dynamic_time_warping import calculate_dtw
 except ModuleNotFoundError:
 	from .similarity import PairCalculation, calculate_p_value
+	from .dynamic_time_warping import calculate_dtw
 
 def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[Tuple[str,str], PairCalculation]:
 	"""
@@ -14,7 +16,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		A table of mutational trajectories. Should be a normal trajectory table.
 	detection_cutoff: float
 	fixed_cutoff: float
-	metric: str
+	metric: {'similarity', 'dtw'}
 
 	Returns
 	-------
@@ -29,6 +31,9 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		right_trajectory = trajectories.loc[right]
 		if metric == "similarity":
 			calculation = calculate_p_value(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff)
+		elif metric == 'dtw':
+			calculation, *_ = calculate_dtw(left_trajectory, right_trajectory)
+			calculation = PairCalculation(label = f"{left_trajectory.name} - {right_trajectory.name}", pvalue = None, X = calculation)
 		else:
 			message = f"'{metric}' is not an available metric."
 			raise ValueError(message)

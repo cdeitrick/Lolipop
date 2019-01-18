@@ -7,11 +7,13 @@ try:
 	from muller_genotypes.metrics import PairwiseCalculation, calculate_pairwise_metric
 	from muller_genotypes.methods import calculate_genotypes_from_given_method
 	from muller_genotypes.filters import filter_genotypes
+	from muller.widgets import map_trajectories_to_genotype
 except ModuleNotFoundError:
 	from .average import calculate_mean_genotype
 	from .metrics import PairwiseCalculation, calculate_pairwise_metric
 	from .methods import calculate_genotypes_from_given_method
 	from .filters import filter_genotypes
+	from widgets import map_trajectories_to_genotype
 
 PAIRWISE_CALCULATIONS = PairwiseCalculation()
 
@@ -26,7 +28,7 @@ def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOption
 			timepoints,
 			detection_cutoff = options.detection_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint,
-			metric = 'similarity'
+			metric = 'dtw'
 		)
 		PAIRWISE_CALCULATIONS.update(pair_array.copy())
 	return PAIRWISE_CALCULATIONS
@@ -71,7 +73,7 @@ def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -
 	return _mean_genotypes, genotype_members, linkage_matrix
 
 def generate_genotypes_with_filter(original_timepoints:pandas.DataFrame, options:GenotypeOptions, frequency_breakpoints:List[float], strict_filter:bool):
-	original_genotypes, genotype_members, linkage_matrix = generate_genotypes(original_timepoints, options)
+	original_genotypes, original_genotype_members, linkage_matrix = generate_genotypes(original_timepoints, options)
 
 	timepoints, mean_genotypes, genotype_members, linkage_matrix = filter_genotypes(
 		original_timepoints,
@@ -80,6 +82,9 @@ def generate_genotypes_with_filter(original_timepoints:pandas.DataFrame, options
 		strict_filter
 	)
 
+	original_genotypes['members'] = genotype_members
+	_tm = map_trajectories_to_genotype(original_genotype_members)
+	original_timepoints['genotype'] = [_tm.get(i) for i in original_timepoints.index]
 	return original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix
 
 

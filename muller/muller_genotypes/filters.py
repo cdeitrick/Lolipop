@@ -119,7 +119,6 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 		# Find the timepoint where the background first fixes.
 		first_detected_point: int = get_first_timpoint(background, fuzzy_detected_cutoff)
 		first_fixed_point: int = get_first_timpoint(background, fuzzy_fixed_cutoff)
-
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background

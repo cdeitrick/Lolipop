@@ -13,7 +13,7 @@ OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
 	from muller.muller_genotypes.generate import GenotypeOptions
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
 	from muller_genotypes.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters, ClusterType
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
@@ -21,7 +21,7 @@ try:
 	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
 	from muller.widgets import generate_genotype_palette, map_trajectories_to_genotype
 except ModuleNotFoundError:
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller_output.generate_tables import *
 	from muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
@@ -88,6 +88,8 @@ class OutputFilenames:
 
 		self.linkage_matrix_table = subfolder / (name + f".linkagematrix.tsv")
 		self.linkage_plot = subfolder / (name + f".dendrogram.png")
+
+		self.calculation_json = subfolder / (name + f".calculations.json")
 
 
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
@@ -173,6 +175,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		linkage_table['resultingCluster'] = list(num_trajectories + i for i in range(len(linkage_table)))
 		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
 		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
+
+	workflow_data.p_values.save(filenames.calculation_json)
 
 	if save_pvalues:
 		print("Saving p-value calculations...")

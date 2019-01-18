@@ -11,11 +11,11 @@ class PairCalculation:
 	label: str
 	pvalue: float
 	X: float
-	sigma: float
-	difference_mean: float
-	mean_series: Optional[pandas.Series]
-	difference_series: Optional[pandas.Series]
-	sigma_series: Optional[pandas.Series]
+	sigma: float=math.nan
+	difference_mean: float=math.nan
+	mean_series: Optional[pandas.Series]=None
+	difference_series: Optional[pandas.Series]=None
+	sigma_series: Optional[pandas.Series]=None
 
 
 # noinspection PyTypeChecker
@@ -66,7 +66,7 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 	# Remove timepoints where at least one trajectory was not fixed or undetected.
 
 	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
-	# Remove timepoints where at least one trajectory was not fixed or undetected.
+	# Remove timepoints where at least one trajectory was not fixed or was undetected.
 
 	if not_detected_fixed_df.empty:
 		left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
@@ -128,4 +128,16 @@ def calculate_p_value(left: pandas.Series, right: pandas.Series, detected_cutoff
 
 
 if __name__ == "__main__":
-	pass
+	from dtw import dtw
+
+	# Here, we use L2 norm as the element comparison distance
+	l2_norm = lambda x, y: (x - y) ** 2
+	series = pandas.Series([1,1])
+	print(series.mean())
+	print(series.std())
+	dist, cost_matrix, acc_cost_matrix, path = dtw([1], [.055], dist = l2_norm)
+	import matplotlib.pyplot as plt
+	print(dist)
+	plt.imshow(acc_cost_matrix.T, origin = 'lower', cmap = 'gray', interpolation = 'nearest')
+	plt.plot(path[0], path[1], 'w')
+	plt.show()

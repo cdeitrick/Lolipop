@@ -4,9 +4,9 @@ from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
 try:
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
 except ModuleNotFoundError:
-	from ..metrics.pairwise_calculation import PairwiseCalculation
+	from ..metrics.pairwise_calculation_cache import PairwiseCalculation
 
 
 def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: float, cluster_method: str = 'monocrit') -> Tuple[List[List[str]], Any]:
@@ -23,15 +23,14 @@ def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: floa
 
 	"""
 	squaremap = pair_array.squareform('X')
+	#print(squaremap)
 	condensed_squaremap = distance.squareform(squaremap.values)
 
-	Z = hierarchy.linkage(condensed_squaremap, method = 'single')
-
+	Z = hierarchy.linkage(condensed_squaremap, method = 'complete')
 	if cluster_method == 'distance':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
 	elif cluster_method == 'monocrit':
 		inconsistent = hierarchy.inconsistent(Z)
-
 		MR = hierarchy.maxRstat(Z, inconsistent, 1)
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'monocrit', monocrit = MR)
 	else:
