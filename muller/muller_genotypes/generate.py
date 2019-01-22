@@ -28,7 +28,7 @@ def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOption
 			timepoints,
 			detection_cutoff = options.detection_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint,
-			metric = 'dtw'
+			metric = options.metric
 		)
 		PAIRWISE_CALCULATIONS.update(pair_array.copy())
 	return PAIRWISE_CALCULATIONS

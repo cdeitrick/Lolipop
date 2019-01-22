@@ -23,10 +23,9 @@ def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: floa
 
 	"""
 	squaremap = pair_array.squareform('X')
-	#print(squaremap)
 	condensed_squaremap = distance.squareform(squaremap.values)
 
-	Z = hierarchy.linkage(condensed_squaremap, method = 'complete')
+	Z = hierarchy.linkage(condensed_squaremap, method = 'ward')
 	if cluster_method == 'distance':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
 	elif cluster_method == 'monocrit':

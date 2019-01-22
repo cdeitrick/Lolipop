@@ -54,7 +54,7 @@ class TestGenotypeFilters(unittest.TestCase):
 		"""
 		table = import_table_from_string(string, index = 'Genotype')
 		table.pop('members')
-		output = get_invalid_genotype(table, .05, [1, .9, .8, .7, .6])
+		output = find_invalid_genotype(table, .05, [1, .9, .8, .7, .6])
 		self.assertEqual('Trajectory-D', output)
 
 	def test_get_backgrounds_present_at_multiple_timepoints(self):

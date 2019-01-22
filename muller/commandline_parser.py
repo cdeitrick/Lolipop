@@ -30,6 +30,7 @@ class ProgramOptions(argparse.Namespace):
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 	method: str = 'matlab'
+	metric:str = "similarity"
 	known_genotypes: Optional[Path] = None
 
 	def show(self):
@@ -62,6 +63,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 			difference_breakpoint = program_options.difference_breakpoint,
 			n_binom = None,
 			method = program_options.method,
+			metric = program_options.metric,
 			starting_genotypes = starting_genotypes
 		)
 		program_options_clustering = OrderClusterParameters.from_breakpoints(
@@ -239,6 +241,13 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store",
 		default = "matlab",
 		dest = "method"
+	)
+	parser.add_argument(
+		"--metric",
+		help = "Either 'similarity' or 'dtw'",
+		action = "store",
+		default = "similarity",
+		dest = "metric"
 	)
 	parser.add_argument(
 		"-g", "--known-genotypes",

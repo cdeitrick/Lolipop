@@ -128,7 +128,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 	trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 
-	genotype_colors = generate_genotype_palette(workflow_data.original_genotypes.index)
+	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
+	genotype_colors = generate_genotype_palette(_all_genotype_labels)
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
 
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)

@@ -13,6 +13,7 @@ class GenotypeOptions:
 	# actually related.
 	difference_breakpoint: float
 	method: str
+	metric: str
 
 	starting_genotypes:List[List[str]] = None
 

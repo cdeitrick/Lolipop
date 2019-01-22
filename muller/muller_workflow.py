@@ -43,7 +43,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	print("nesting muller_genotypes...")
 	genotype_clusters = order.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
-
 	print("Generating output...")
 	workflow_data = WorkflowData(
 		filename = input_filename,

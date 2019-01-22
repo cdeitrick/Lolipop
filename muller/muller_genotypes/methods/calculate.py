@@ -33,8 +33,7 @@ def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise
 	Tuple[pandas.DataFrame, Any]
 	"""
 	if method == "matlab":
-		genotypes = twostep_method(timepoints, pairwise_calculations, similarity_breakpoint, difference_breakpoint,
-			starting_genotypes)
+		genotypes = twostep_method(timepoints, pairwise_calculations, similarity_breakpoint, difference_breakpoint, starting_genotypes)
 		linkage_matrix = None
 	elif method == "hierarchy":
 		genotypes, linkage_matrix = hierarchical_method(pairwise_calculations, similarity_breakpoint)
