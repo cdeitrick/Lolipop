@@ -71,7 +71,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 
 
 # noinspection PyTypeChecker
-def get_first_timpoint(series: pandas.Series, cutoff: float) -> int:
+def get_first_timpoint_above_cutoff(series: pandas.Series, cutoff: float) -> int:
 	""" Extracts the first timepoint that exceeds the cutoff."""
 	return series[series > cutoff].idxmin()
 
@@ -87,7 +87,7 @@ def _get_backgrounds_present_at_multiple_timepoints(backgrounds: pandas.DataFram
 
 
 # noinspection PyTypeChecker
-def find_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float,
+def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float,
 		use_strict_filter: bool) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
 		unrelated diversity and essentially 'resets' the mutation pool. Genotypes which are detected prior to a fixed genotype should, in theory,
@@ -114,8 +114,8 @@ def find_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas.DataF
 	# Iterate over the detected backgrounds.
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
-		first_detected_point: int = get_first_timpoint(background, detection_cutoff)
-		first_fixed_point: int = get_first_timpoint(background, fixed_cutoff)
+		first_detected_point: int = get_first_timpoint_above_cutoff(background, detection_cutoff)
+		first_fixed_point: int = get_first_timpoint_above_cutoff(background, fixed_cutoff)
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background
@@ -153,7 +153,11 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 		Filters out individual trajectories that fail certain filters.
 	Parameters
 	----------
-	trajectory_table
+	trajectory_table:pandas.DataFrame
+	dlimit: float
+		The detection limit
+	flimit: float
+		The value above which a genotype is considered 'fixed'
 
 	Returns
 	-------
@@ -184,6 +188,8 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.Geno
 	frequency_cutoffs = [i for i in frequency_cutoffs if i <= goptions.fixed_breakpoint]
 	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
 	filtered_trajectory_table = filter_trajectories(trajectory_table, goptions.detection_breakpoint, goptions.fixed_breakpoint)
+
+	# Generate the initial genotypes.
 	genotype_table, genotype_members, linkage_table = generate.generate_genotypes(filtered_trajectory_table, options = goptions)
 
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
@@ -194,7 +200,7 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.Geno
 
 		# Search for genotypes that do not make sense in the context of an evolved population.
 		fuzzy_detected_cutoff = max(goptions.detection_breakpoint, dlimit)
-		current_invalid_genotype = find_invalid_genotype(genotype_table, current_backgrounds, fuzzy_detected_cutoff, flimit, use_strict_filter)
+		current_invalid_genotype = find_first_invalid_genotype(genotype_table, current_backgrounds, fuzzy_detected_cutoff, flimit, use_strict_filter)
 		if current_invalid_genotype is None:
 			break
 		else:

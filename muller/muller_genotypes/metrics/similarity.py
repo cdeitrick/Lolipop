@@ -1,5 +1,5 @@
 import math
-from typing import Optional, Union
+from typing import Union
 
 import pandas
 from dataclasses import dataclass
@@ -19,6 +19,8 @@ def filter_out_invalid_timepoints(df: pandas.DataFrame, detected_cutoff: float, 
 	----------
 	df:pandas.DataFrame
 		A table with two series aligned along their timepoints.
+	detected_cutoff: float
+	fixed_cutoff: float
 
 	Returns
 	-------
@@ -97,6 +99,7 @@ def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: f
 	----------
 	left:pandas.Series
 	right:pandas.Series
+	fixed_cutoff: float
 
 	Returns
 	-------
@@ -128,6 +131,7 @@ def calculate_similarity(not_detected_fixed_df: pandas.DataFrame):
 	# E(sigma_p) = (1/n) E(sigma) == 1/n(sum(p(1-p))
 	# E(d_bar) = 1/n(sum(di)) == 1/n (n*sum(di))
 	# pandas.Series.radd is slow for some reason. Use '-' operator instead.
+	# noinspection PyTypeChecker
 	sigma_freq: pandas.Series = mean.mul(1 - mean)
 	# Difference of frequencies at each timepoint
 	#difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]

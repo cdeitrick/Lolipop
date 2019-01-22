@@ -27,8 +27,8 @@ class TestGenotypeFilters(unittest.TestCase):
 
 	def test_get_first_timepoint(self):
 		series = pandas.Series([0, 0, 0.1, 0.3, 0.7, 0.92], index = [0, 11, 65, 400, 401, 402])
-		self.assertEqual(400, get_first_timpoint(series, .15))
-		self.assertEqual(401, get_first_timpoint(series, .5))
+		self.assertEqual(400, get_first_timpoint_above_cutoff(series, .15))
+		self.assertEqual(401, get_first_timpoint_above_cutoff(series, .5))
 
 	def test_check_if_genotype_is_invalid(self):
 		background_detected_point = 7
@@ -54,7 +54,7 @@ class TestGenotypeFilters(unittest.TestCase):
 		"""
 		table = import_table_from_string(string, index = 'Genotype')
 		table.pop('members')
-		output = find_invalid_genotype(table, .05, [1, .9, .8, .7, .6])
+		output = find_first_invalid_genotype(table, .05, [1, .9, .8, .7, .6])
 		self.assertEqual('Trajectory-D', output)
 
 	def test_get_backgrounds_present_at_multiple_timepoints(self):

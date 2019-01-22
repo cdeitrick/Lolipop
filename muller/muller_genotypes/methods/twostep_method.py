@@ -118,7 +118,7 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 
 	# Trajectories represent the population frequencies at each timepoint
 	# Each row represents a single timepoint, each column represents a mutation.
-	numerical_array = pair_array.asitem('pvalue')
+	numerical_array = pair_array.asdict()
 	population_genotypes = _group_trajectories_into_genotypes(numerical_array, similarity_breakpoint, starting_genotypes)
 
 	# at the end, look at all trajectories that are not listed and

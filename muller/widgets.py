@@ -1,7 +1,7 @@
 import random
 import re
 from collections import OrderedDict
-from typing import Dict, List
+from typing import Dict, List, Collection
 
 import pandas
 
@@ -36,7 +36,7 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 	return numeric_columns
 
 
-def generate_genotype_palette(genotypes: pandas.Index) -> Dict[str, str]:
+def generate_genotype_palette(genotypes: Collection) -> Dict[str, str]:
 	""" Assigns a unique color to each genotype."""
 	color_palette = [
 		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',

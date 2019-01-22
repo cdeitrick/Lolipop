@@ -25,7 +25,8 @@ class GenotypeOptions:
 			n_binom = 5,
 			similarity_breakpoint = 0.05,
 			difference_breakpoint = 0.10,
-			method = 'matlab'
+			method = 'matlab',
+			metric = 'binomialp'
 		)
 
 

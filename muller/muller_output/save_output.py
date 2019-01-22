@@ -14,7 +14,7 @@ OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 try:
 	from muller.muller_genotypes.generate import GenotypeOptions
 	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
-	from muller_genotypes.sort_genotypes import SortOptions
+	from inheritance.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters, ClusterType
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller.muller_output.generate_tables import *
@@ -181,10 +181,6 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 	if save_pvalues:
 		print("Saving p-value calculations...")
-		pvalues_matrix = workflow_data.p_values.squareform('pvalue')
-		pvalues_matrix.to_csv(str(filenames.calculation_matrix_p), sep = delimiter, index = True)
-
-		distance_matrix = workflow_data.p_values.squareform('X')
-		distance_matrix.to_csv(str(filenames.calculation_matrix_X), sep = delimiter, index = True)
+		workflow_data.p_values.save(filenames.calculation_matrix_p)
+		pvalues_matrix = workflow_data.p_values.squareform()
 		plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)
-		plot_heatmap(distance_matrix, filenames.distance_heatmap)

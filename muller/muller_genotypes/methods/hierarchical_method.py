@@ -22,7 +22,7 @@ def hierarchical_method(pair_array: PairwiseCalculation, similarity_cutoff: floa
 	-------
 
 	"""
-	squaremap = pair_array.squareform('X')
+	squaremap = pair_array.squareform()
 	condensed_squaremap = distance.squareform(squaremap.values)
 
 	Z = hierarchy.linkage(condensed_squaremap, method = 'ward')
