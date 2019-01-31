@@ -71,6 +71,9 @@ def check_derivative_background(left: pandas.Series, right: pandas.Series, detec
 
 	return delta
 
+def check_derivative_background(left: pandas.Series, right: pandas.Series, detection_cutoff: float) -> float:
+	# Pandas implementation of the derivative check, since it basically just checks for covariance.
+	return left.cov(right)
 
 def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: pandas.Series, options: Any) -> Tuple[bool, bool, Optional[float]]:
 	""" Applies the three checks to `type_trajectory` and `test_trajectory`."""
