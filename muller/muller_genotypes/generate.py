@@ -1,7 +1,11 @@
-from typing import Any, Tuple, List
+import logging
+from typing import Any, List, Tuple
 
 import pandas
+
 from options import GenotypeOptions
+
+logger = logging.getLogger(__name__)
 try:
 	from muller.muller_genotypes.average import calculate_mean_genotype
 	from muller_genotypes.metrics import PairwiseCalculation, calculate_pairwise_metric
@@ -20,9 +24,13 @@ PAIRWISE_CALCULATIONS = PairwiseCalculation()
 
 def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOptions):
 	global PAIRWISE_CALCULATIONS
+	logger.info(f"Pairwise calculations already exist: {bool(PAIRWISE_CALCULATIONS)}")
 	if PAIRWISE_CALCULATIONS:
 		# PAIRWISE_CALCULATIONS already contains previous calcuations.
+		_before = len(PAIRWISE_CALCULATIONS)
 		PAIRWISE_CALCULATIONS = PAIRWISE_CALCULATIONS.reduce(timepoints.index)
+		_after = len(PAIRWISE_CALCULATIONS)
+		logging.info(f"Reduced Pairwise calculations from {_before} to {_after}")
 	else:
 		pair_array = calculate_pairwise_metric(
 			timepoints,
@@ -36,7 +44,6 @@ def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOption
 
 def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series, Any]:
 	"""
-
 	Parameters
 	----------
 	timepoints: pandas.DataFrame
@@ -57,7 +64,7 @@ def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -
 	"""
 	# calculate the similarity between all pairs of trajectories in the population.
 
-	pairwise_calculations = _update_pairwise_array(timepoints,options)
+	pairwise_calculations = _update_pairwise_array(timepoints, options)
 	genotypes, linkage_matrix = calculate_genotypes_from_given_method(
 		timepoints,
 		pairwise_calculations,
@@ -72,7 +79,9 @@ def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -
 
 	return _mean_genotypes, genotype_members, linkage_matrix
 
-def generate_genotypes_with_filter(original_timepoints:pandas.DataFrame, options:GenotypeOptions, frequency_breakpoints:List[float], strict_filter:bool):
+
+def generate_genotypes_with_filter(original_timepoints: pandas.DataFrame, options: GenotypeOptions, frequency_breakpoints: List[float],
+		strict_filter: bool):
 	original_genotypes, original_genotype_members, linkage_matrix = generate_genotypes(original_timepoints, options)
 
 	timepoints, mean_genotypes, genotype_members, linkage_matrix = filter_genotypes(
@@ -86,7 +95,6 @@ def generate_genotypes_with_filter(original_timepoints:pandas.DataFrame, options
 	_tm = map_trajectories_to_genotype(original_genotype_members)
 	original_timepoints['genotype'] = [_tm.get(i) for i in original_timepoints.index]
 	return original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix
-
 
 
 if __name__ == "__main__":

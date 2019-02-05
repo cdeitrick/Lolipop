@@ -1,13 +1,23 @@
 import itertools
 from typing import Dict, List, Tuple
-
+import logging
+logger = logging.getLogger(__file__)
 import pandas
+import math
 
 try:
 	from muller_genotypes.metrics import distance
 except ModuleNotFoundError:
 	from . import distance
 
+def normalize(series: pandas.Series) -> pandas.Series:
+	mean = series.mean()
+	sigma = series.var()
+	if math.isnan(sigma) or len(series) < 2:
+		normalized_series = None
+	else:
+		normalized_series = (series - mean) / sigma
+	return normalized_series
 
 def filter_out_invalid_timepoints(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> Tuple[
 	pandas.Series, pandas.Series]:
@@ -58,8 +68,7 @@ def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: f
 	return p_value
 
 
-def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[
-	Tuple[str, str], float]:
+def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[Tuple[str, str], float]:
 	"""
 	Parameters
 	----------
@@ -75,30 +84,35 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	Each key in the dictionary corresponds to a pair of trajectory ids which map to the p-value for that pair.
 	The order of ids does not matter.
 	"""
+	logger.info("Calculating the pairwise values...")
+	logger.info(f"\t detection limit: {detection_cutoff}")
+	logger.info(f"\t fixed limit: {fixed_cutoff}")
+	logger.info(f"\t metric: {metric}")
+
 	pair_combinations: List[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
 	pair_array = dict()
 	for left, right in pair_combinations:
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
-		# point_label = f"{left_trajectory.name} - {right_trajectory.name}"
+
 		left_trajectory, right_trajectory = filter_out_invalid_timepoints(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff)
 		if left_trajectory.empty:
-			calculation = calculate_overlap(left_trajectory, right_trajectory, fixed_cutoff)
+			distance_between_series = calculate_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		elif metric == "similarity":
-			calculation = distance.binomial_probability(left_trajectory, right_trajectory)
+			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
 		elif metric == 'pearson':
-			calculation = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
+			distance_between_series = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
 		elif metric == 'minkowski':
-			calculation = distance.minkowski_distance(left_trajectory, right_trajectory, 2)
+			distance_between_series = distance.minkowski_distance(left_trajectory, right_trajectory, 2)
 		elif metric == 'binomial':
-			calculation = distance.binomial_distance(left_trajectory, right_trajectory)
+			distance_between_series = distance.binomial_distance(left_trajectory, right_trajectory)
 		elif metric == 'binomialp':
-			calculation = distance.binomial_probability(left_trajectory, right_trajectory)
+			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
 		elif metric == 'dtw':
-			calculation= distance.dynamic_time_warping(left_trajectory, right_trajectory)
+			distance_between_series= distance.dynamic_time_warping(left_trajectory, right_trajectory)
 		else:
 			message = f"'{metric}' is not an available metric."
 			raise ValueError(message)
-		pair_array[left, right] = pair_array[right, left] = calculation
+		pair_array[left, right] = pair_array[right, left] = distance_between_series
 
 	return pair_array
