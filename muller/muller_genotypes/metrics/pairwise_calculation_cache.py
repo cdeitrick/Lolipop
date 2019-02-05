@@ -27,6 +27,9 @@ class PairwiseCalculation:
 	def __bool__(self) -> bool:
 		return bool(self.pairwise_values)
 
+	def __len__(self) -> int:
+		return len(self.pairwise_values)
+
 	def asdict(self) -> PairwiseArrayType:
 		return self.pairwise_values
 

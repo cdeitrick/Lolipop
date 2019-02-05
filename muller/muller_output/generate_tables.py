@@ -3,9 +3,9 @@ from typing import Dict, List, Tuple, Union
 import pandas
 
 try:
-	from inheritance.order import ClusterType
+	from inheritance.cluster import Cluster
 except ModuleNotFoundError:
-	from inheritance.order import ClusterType
+	from inheritance.cluster import Cluster
 
 
 def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
@@ -119,7 +119,7 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.DataFrame:
+def generate_ggmuller_edges_table(genotype_clusters: Cluster) -> pandas.DataFrame:
 	table = list()
 	for genotype_info in genotype_clusters.values():
 		identity = genotype_info.name
