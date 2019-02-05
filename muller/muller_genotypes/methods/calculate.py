@@ -26,7 +26,7 @@ def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise
 		Specifies the clustering method to use.
 	similarity_breakpoint: float
 	difference_breakpoint:float
-	starting_genotypes:List[List[str
+	starting_genotypes:List[List[str]]
 
 	Returns
 	-------
