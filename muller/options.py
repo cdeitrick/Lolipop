@@ -78,7 +78,7 @@ class OrderClusterParameters:
 			additive_background_single_cutoff = 1 + significant_breakpoint,
 			subtractive_background_double_cutoff = -detection_breakpoint,
 			subtractive_background_single_cutoff = -significant_breakpoint,
-			derivative_check_cutoff = 0.01,
+			derivative_check_cutoff = 0.01, # Just checking if it's nonnegative
 			derivative_detection_cutoff = detection_breakpoint,
 			new_background_base_cutoff = 1 + detection_breakpoint,
 			new_background_significant_cutoff = 1 + significant_breakpoint
