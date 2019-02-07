@@ -1,6 +1,7 @@
 import itertools
-from typing import Dict, List, Tuple
 import logging
+from typing import Dict, List, Tuple
+
 logger = logging.getLogger(__file__)
 import pandas
 import math
@@ -10,6 +11,7 @@ try:
 except ModuleNotFoundError:
 	from . import distance
 
+
 def normalize(series: pandas.Series) -> pandas.Series:
 	mean = series.mean()
 	sigma = series.var()
@@ -18,6 +20,7 @@ def normalize(series: pandas.Series) -> pandas.Series:
 	else:
 		normalized_series = (series - mean) / sigma
 	return normalized_series
+
 
 def filter_out_invalid_timepoints(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> Tuple[
 	pandas.Series, pandas.Series]:
@@ -68,7 +71,8 @@ def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: f
 	return p_value
 
 
-def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[Tuple[str, str], float]:
+def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[
+	Tuple[str, str], float]:
 	"""
 	Parameters
 	----------
@@ -109,7 +113,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		elif metric == 'binomialp':
 			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
 		elif metric == 'dtw':
-			distance_between_series= distance.dynamic_time_warping(left_trajectory, right_trajectory)
+			distance_between_series = distance.dynamic_time_warping(left_trajectory, right_trajectory)
 		else:
 			message = f"'{metric}' is not an available metric."
 			raise ValueError(message)

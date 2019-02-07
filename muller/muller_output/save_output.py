@@ -42,7 +42,7 @@ class WorkflowData:
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
-	clusters: Dict[str,List[str]]
+	clusters: Dict[str, List[str]]
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
@@ -166,7 +166,6 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors, parent_genotypes)
 	if muller_df is not None:
 		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, annotate_all)
-
 
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)

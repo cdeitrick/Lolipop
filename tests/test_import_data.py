@@ -58,7 +58,9 @@ def truth_genotype_table():
 	genotype-14	0	0	0	0	0	0.2675	0.326
 	genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	table = import_table_from_string(genotype_table)
+	table = import_table_from_string(genotype_table, index = 'Genotype')
+	table.columns = [int(i) for i in table.columns]
+	table = table.astype(float)
 	return table
 
 
@@ -68,7 +70,10 @@ def test_import_trajectory_table(filename, truth_trajectory_table):
 	pandas.testing.assert_frame_equal(truth_trajectory_table, test_table)
 
 
-@pytest.mark.parametrize('filename', list((DATA_FOLDER / "test_genotype_tables").iterdir()))
+@pytest.mark.parametrize(
+	'filename',
+	[i for i in (DATA_FOLDER / "test_genotype_tables").iterdir() if 'genotype' in i.name]
+)
 def test_import_genotype_tables(filename, truth_genotype_table):
 	test_table, info = import_genotype_table(filename)
 	pandas.testing.assert_frame_equal(truth_genotype_table, test_table)

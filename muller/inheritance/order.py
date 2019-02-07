@@ -1,7 +1,8 @@
+import logging
 from typing import Dict, List, Tuple
 
 import pandas
-import logging
+
 logger = logging.getLogger(__file__)
 try:
 	from muller.inheritance.checks import apply_genotype_checks
@@ -32,7 +33,6 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 	ClusterType
 	"""
 	# By default the backgrounds should occupy the first n lines of the dataframe
-	DETECTION_CUTOFF = 0.03
 	initial_background = sorted_df.iloc[0]
 	genotype_nests = Cluster(initial_background, timepoints = sorted_df)
 	for unnested_label, unnested_trajectory in sorted_df[1:].iterrows():
@@ -46,7 +46,7 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 		for nested_label, row in table_of_checks.iterrows():
 			if nested_label == unnested_label: continue
 			additive_check, subtractive_check, delta, area_ratio = row
-			#logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
+			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
 			area_check = area_ratio > 0.97
 			derivative_check = delta > options.derivative_check_cutoff
 			full_check = area_check and derivative_check and additive_check
@@ -55,12 +55,10 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")
 			logging.info(f"{unnested_label}|{nested_label} Derivative check: {derivative_check}")
 			if area_check and delta > options.derivative_check_cutoff and additive_check:
-
 				# Most likely the background of the current genotype.
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 				break
 			if area_check:
-
 				# A candidate background
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 				continue
@@ -69,10 +67,9 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 			genotype_deltas.append((nested_label, delta))
-			#if subtractive_check:
+			# if subtractive_check:
 			#	continue
 			if delta > options.derivative_check_cutoff:
-
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
@@ -91,9 +88,8 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 			print(result)
 			if result:
 				genotype_nests.add_genotype_to_background(unnested_label, result)
-	from pprint import pprint
 	logger.info("The final backgrounds:")
-	for k,v in genotype_nests.nests.items():
+	for k, v in genotype_nests.nests.items():
 		vv = "|".join(v)
 		logger.info(f"{k}\t{vv}")
 	return genotype_nests.nests
@@ -142,26 +138,4 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 
 
 if __name__ == "__main__":
-	from pprint import pprint
-	from import_data import import_table_from_string
-	string = """
-		Genotype	0	17	25	44	66	75	90
-		genotype-1	0	0	0.261	1	1	1	1
-		genotype-6	0	0	0	0.273	0.781	1	1
-		genotype-3	0	0	0	0	0	1	1
-		genotype-4	0	0	0	0.525	0.454	0.911	0.91
-		genotype-5	0	0	0	0.147	0.45	0.924	0.887
-		genotype-11	0	0	0	0	0.278	0.822	0.803
-		genotype-2	0	0.38	0.432	0	0	0	0
-		genotype-8	0	0	0	0.403	0.489	0.057	0.08
-		genotype-14	0	0	0	0	0	0.2675	0.326
-		genotype-10	0	0	0	0.138	0.295	0	0.081
-		genotype-12	0	0	0	0	0.2335	0.133	0.0375
-		genotype-7	0	0	0	0.188	0.171	0.232	0.244
-		genotype-9	0	0	0.117	0	0	0	0.103
-		genotype-13	0	0	0.033	0.106	0.1065	0	0
-		genotype-15	0	0	0	0.1145	0	0.1205	0.0615
-	"""
-	table = import_table_from_string(string, index = 'Genotype')
-	result = order_clusters(table, None, OrderClusterParameters.from_breakpoints(.03, .97))
-	pprint(result)
+	pass

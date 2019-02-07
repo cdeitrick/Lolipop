@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pandas
 from dataclasses import dataclass

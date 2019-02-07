@@ -27,6 +27,28 @@ def table() -> pandas.DataFrame:
 	t = import_table_from_string(trajectory_table, index = 'Trajectory')
 	return t
 
+@pytest.fixture
+def mouse_table()->pandas.DataFrame:
+	table = """
+	Genotype	0	1	2	3	4	5	6	7	8	9	10
+	genotype-1	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
+	genotype-2	0.01	0.279	0.341	0.568	0.708	0.913	0.756	0.455	0.399	0.13	0.041
+	genotype-3	0	0.056	0.101	0.174	0	0	0	0	0	0	0
+	genotype-4	0.278	0.277	0.224	0.195	0	0	0	0	0	0	0
+	genotype-5	0	0	0	0	0	0.247	0.388	0.215	0.403	0.141	0.028
+	genotype-6	0	0	0	0	0.148	0.384	0.344	0.289	0.333	0.146	0.031
+	genotype-7	0	0	0	0	0	0	0.084	0.12	0.124	0.343	0.398
+	genotype-8	0	0	0	0	0	0	0	0.077	0.018	0.239	0.308
+	genotype-9	0	0.088	0.036	0.046	0	0.059	0.052	0	0.073	0	0
+	genotype-10	0	0	0	0	0.072	0.047	0.057	0	0	0	0
+	genotype-11	0.027	0.059	0.0325	0.008	0	0	0	0	0	0	0
+	genotype-12	0.149	0.1885	0.172	0	0	0	0	0	0	0	0
+	genotype-13	0	0.00525	0.0065	0.005	0.00775	0	0.01275	0.051	0.032	0.0195	0.02175
+	genotype-14	0	0	0	0	0	0	0	0.0172	0.1156	0.112	0.0948
+	genotype-15	0.001857	0	0.003714	0.001143	0	0	0.003286	0.006571	0.034	0.040286	0.038143
+	"""
+	t = import_table_from_string(table, index = 'Genotype')
+	return t
 
 @pytest.fixture
 def smalltable() -> pandas.DataFrame:
@@ -105,3 +127,34 @@ def test_sort_genotypes(table):
 	result = sort_genotypes(table, TestOptions())
 	expected_result.index.name = None
 	pandas.testing.assert_frame_equal(result, expected_result)
+
+def test_sort_genotypes_with_initial_values(mouse_table):
+	expected = """
+		Genotype	0	1	2	3	4	5	6	7	8	9	10
+		genotype-1	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
+		genotype-2	0.01	0.279	0.341	0.568	0.708	0.913	0.756	0.455	0.399	0.13	0.041
+		genotype-5	0	0	0	0	0	0.247	0.388	0.215	0.403	0.141	0.028
+		genotype-8	0	0	0	0	0	0	0	0.077	0.018	0.239	0.308
+		genotype-6	0	0	0	0	0.148	0.384	0.344	0.289	0.333	0.146	0.031
+		genotype-7	0	0	0	0	0	0	0.084	0.12	0.124	0.343	0.398
+		genotype-4	0.278	0.277	0.224	0.195	0	0	0	0	0	0	0
+		genotype-12	0.149	0.1885	0.172	0	0	0	0	0	0	0	0
+		genotype-3	0	0.056	0.101	0.174	0	0	0	0	0	0	0
+		genotype-14	0	0	0	0	0	0	0	0.0172	0.1156	0.112	0.0948
+		genotype-11	0.027	0.059	0.0325	0.008	0	0	0	0	0	0	0
+		genotype-15	0.001857	0	0.003714	0.001143	0	0	0.003286	0.006571	0.034	0.040286	0.038143
+		genotype-9	0	0.088	0.036	0.046	0	0.059	0.052	0	0.073	0	0
+		genotype-13	0	0.00525	0.0065	0.005	0.00775	0	0.01275	0.051	0.032	0.0195	0.02175
+		genotype-10	0	0	0	0	0.072	0.047	0.057	0	0	0	0
+	"""
+	expected_result = import_table_from_string(expected, index = 'Genotype')
+	expected_result.index.name = None
+	class TestOptions:
+		def __init__(self):
+			self.detection_breakpoint = 0.03
+			self.fixed_breakpoint = 0.97
+			self.significant_breakpoint = 0.15
+			self.frequency_breakpoints = [1,.9,.8,.7,.6,.5,.4,.3,.2,.1,0.0]
+	result = sort_genotypes(mouse_table, TestOptions())
+	pandas.testing.assert_frame_equal(expected_result, result)
+

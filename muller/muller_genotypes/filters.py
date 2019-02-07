@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 import pandas
 
@@ -169,8 +169,6 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 	failed_single_point_test = _remove_single_point_series(trajectory_table, dlimit, flimit)
 	logger.info("These trajectories did not pass the trajectory filters: " + str(list(failed_single_point_test)))
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
-
-
 
 
 if __name__ == "__main__":

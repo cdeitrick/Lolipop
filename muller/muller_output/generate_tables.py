@@ -122,7 +122,6 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 def generate_ggmuller_edges_table(genotype_clusters: Cluster) -> pandas.DataFrame:
 	table = list()
 	for identity, background in genotype_clusters.items():
-
 		parent = background[0]
 		if parent == identity:
 			parent = 'genotype-0'

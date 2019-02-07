@@ -4,10 +4,12 @@ import pandas
 
 logger = logging.getLogger(__name__)
 from options import SortOptions
+
 try:
 	from inheritance import timepoint_detection
 except ModuleNotFoundError:
 	from . import timepoint_detection
+
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
@@ -52,6 +54,7 @@ def _remove_low_frequency_series(df: pandas.DataFrame, threshold: float) -> pand
 	return result
 
 
+# noinspection PyUnresolvedReferences
 def _get_timepoint_above_threshold(transposed_timepoints: pandas.DataFrame, cutoff: float, name: str = None) -> pandas.Series:
 	"""
 		Calculates when a genotype was first fixed based on `cutoff`. The resulting series will be named `name`, if given.

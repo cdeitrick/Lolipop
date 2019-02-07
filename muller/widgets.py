@@ -1,7 +1,7 @@
 import random
 import re
 from collections import OrderedDict
-from typing import Dict, List, Collection
+from typing import Collection, Dict, List
 
 import pandas
 

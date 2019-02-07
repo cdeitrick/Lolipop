@@ -96,6 +96,7 @@ def generate_genotypes_with_filter(original_timepoints: pandas.DataFrame, option
 	original_timepoints['genotype'] = [_tm.get(i) for i in original_timepoints.index]
 	return original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix
 
+
 def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptions, frequency_cutoffs: List[float],
 		use_strict_filter: bool) -> Tuple[pandas.DataFrame, pandas.DataFrame, Any, Any]:
 	"""
@@ -150,6 +151,7 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptio
 	else:
 		print(f"Could not filter the genotypes after {_iterations} iterations.")
 	return filtered_trajectory_table, genotype_table, genotype_members, linkage_table
+
 
 if __name__ == "__main__":
 	pass

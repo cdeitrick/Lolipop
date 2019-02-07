@@ -12,6 +12,7 @@ class PairCalculation:
 	pvalue: float
 	X: float
 
+
 def filter_out_invalid_timepoints(df: pandas.DataFrame, detected_cutoff: float, fixed_cutoff: float) -> pandas.DataFrame:
 	"""
 		Removes all timepoints from the dataframe where both values were either undetected or fixed.
@@ -134,7 +135,7 @@ def calculate_similarity(not_detected_fixed_df: pandas.DataFrame):
 	# noinspection PyTypeChecker
 	sigma_freq: pandas.Series = mean.mul(1 - mean)
 	# Difference of frequencies at each timepoint
-	#difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
+	# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
 	difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
 	sigma_pair: float = sigma_freq.sum() / len(mean)
 	# Sum of differences

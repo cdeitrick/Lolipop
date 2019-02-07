@@ -1,5 +1,6 @@
 import pandas
 
+
 def _get_timepoint_above_threshold(transposed_timepoints: pandas.DataFrame, cutoff: float, name: str = None) -> pandas.Series:
 	"""
 		Calculates when a genotype was first fixed based on `cutoff`. The resulting series will be named `name`, if given.
@@ -22,7 +23,7 @@ def _get_timepoint_above_threshold(transposed_timepoints: pandas.DataFrame, cuto
 	return threshold_series
 
 
-def get_first_detected_timepoint(transposed_genotypes:pandas.DataFrame, cutoff:float)->pandas.Series:
+def get_first_detected_timepoint(transposed_genotypes: pandas.DataFrame, cutoff: float) -> pandas.Series:
 	"""
 
 	Parameters
@@ -41,7 +42,8 @@ def get_first_detected_timepoint(transposed_genotypes:pandas.DataFrame, cutoff:f
 
 	return first_detected_reduced
 
-def get_first_significant_timepoint(transposed_genotypes:pandas.DataFrame, cutoff:float)->pandas.Series:
+
+def get_first_significant_timepoint(transposed_genotypes: pandas.DataFrame, cutoff: float) -> pandas.Series:
 	"""
 		Retrieves the first timepoint in each genotye that exceeds the significant cutoff.
 	Parameters
@@ -57,17 +59,18 @@ def get_first_significant_timepoint(transposed_genotypes:pandas.DataFrame, cutof
 	first_above_threshold = _get_timepoint_above_threshold(transposed_genotypes, cutoff, 'firstSignificant')
 	first_above_threshold_reduced_dict = dict()
 	for key, value in first_above_threshold.items():
-		if value == 0:
-			initial_value = initial_genotype_values[key]
-			value = value if initial_value > cutoff else 130
+		initial_value = initial_genotype_values[key]
+		if value == transposed_genotypes.index[0]:
+			value = value if initial_value > cutoff else transposed_genotypes.index[-1]
 		first_above_threshold_reduced_dict[key] = value
 
 	first_above_threshold_reduced = pandas.Series(first_above_threshold_reduced_dict, name = 'firstThreshold')
 	return first_above_threshold_reduced
 
-def get_first_fixed_timepoint(transposed_genotypes:pandas.DataFrame, cutoff:float)->pandas.DataFrame:
-	"""
 
+def get_first_fixed_timepoint(transposed_genotypes: pandas.DataFrame, cutoff: float) -> pandas.DataFrame:
+	"""
+		Retrives the first timepoint every genotype exceeded the cutoff value.
 	Parameters
 	----------
 	transposed_genotypes
@@ -77,7 +80,7 @@ def get_first_fixed_timepoint(transposed_genotypes:pandas.DataFrame, cutoff:floa
 	-------
 
 	"""
-	first_fixed =  _get_timepoint_above_threshold(transposed_genotypes, cutoff, 'firstFixed')
+	first_fixed = _get_timepoint_above_threshold(transposed_genotypes, cutoff, 'firstFixed')
 	if cutoff != 0:
 		# If we are checking for the lowest frequency breakpoint, ignore this check.
 		first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]

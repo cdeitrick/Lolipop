@@ -1,9 +1,9 @@
 """
 	Main script to run the muller workflow.
 """
-from pathlib import Path
-from pprint import pprint
 import logging
+from pathlib import Path
+
 logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__file__)
 try:
@@ -25,7 +25,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
 	logger.info("Program options:")
-	for k,v in vars(program_options).items():
+	for k, v in vars(program_options).items():
 		logger.info(f"\t{k:<20}{v}")
 
 	logger.info("Importing data...")

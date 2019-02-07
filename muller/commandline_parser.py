@@ -11,6 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
+
 # For convienience. Helps with autocomplete.
 @dataclass
 class ProgramOptions(argparse.Namespace):
@@ -30,12 +31,13 @@ class ProgramOptions(argparse.Namespace):
 	save_pvalue: bool = True
 	use_strict_filter: bool = False
 	method: str = 'matlab'
-	metric:str = "similarity"
+	metric: str = "similarity"
 	known_genotypes: Optional[Path] = None
 
 	def show(self):
 		for field in fields(self):
 			print(field)
+
 
 ACCEPTED_METHODS = ["matlab", "hierarchy"]
 
@@ -82,6 +84,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
 		raise ValueError(message)
 	return program_options, program_options_genotype, program_options_sort, program_options_clustering
+
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	if isinstance(frequency, str):
