@@ -128,9 +128,9 @@ def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas
 				return genotype_label
 
 
-def _remove_single_point_series(genotypes: pandas.DataFrame, dlimit: float, flimit: float) -> List[str]:
+def _remove_single_point_background(genotypes: pandas.DataFrame, dlimit: float, flimit: float) -> List[str]:
 	"""
-		Identifies backgrounds which are only detected at a only single timepoint.
+		Identifies backgrounds which are only detected at a only single timepoint. Returns a list of labels that fail the filter.
 	Parameters
 	----------
 	genotypes: pandas.DataFrame
@@ -166,7 +166,7 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 
 	"""
 	# Remove trajectories that only exist at one timepoint and exceed the fixed cutoff limit.
-	failed_single_point_test = _remove_single_point_series(trajectory_table, dlimit, flimit)
+	failed_single_point_test = _remove_single_point_background(trajectory_table, dlimit, flimit)
 	logger.info("These trajectories did not pass the trajectory filters: " + str(list(failed_single_point_test)))
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 

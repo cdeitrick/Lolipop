@@ -14,10 +14,16 @@ def get_detected_points(left: pandas.Series, right: pandas.Series, dlimit: float
 	df.columns = ['left', 'right']  # Prevent an IndexError when `left` and `right` refer to the same series.
 	at_least_one_detected = df.sum(axis = 1) > dlimit
 	at_least_one_detected = at_least_one_detected[at_least_one_detected]
+	at_least_one_detected = at_least_one_detected[at_least_one_detected]
 	if len(at_least_one_detected) == 1:
 		result = df.loc[at_least_one_detected.index[0]]
 	else:
-		result = df.loc[at_least_one_detected.index]
+		position_index_min = df.index.get_loc(min(at_least_one_detected.index))
+		position_index_max = df.index.get_loc(max(at_least_one_detected.index))
+		if position_index_max < len(df.index):
+			#Slicing only retrieves items up to, but not including, the final element.
+			position_index_max +=1
+		result = df.iloc[position_index_min:position_index_max]
 
 	if exclude_fixed:
 		not_fixed = (result['left'] < 0.97) & (result['right'] < 0.97)
