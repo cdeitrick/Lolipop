@@ -42,9 +42,11 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			[program_options.fixed_breakpoint] + program_options.frequencies,
 			program_options.use_strict_filter
 		)
-
 	logger.info("sorting muller_genotypes...")
+	print(mean_genotypes.to_string())
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
+	print()
+	print(sorted_genotypes.to_string())
 	logger.info("nesting muller_genotypes...")
 	genotype_clusters = order.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
 	logger.info("Generating output...")

@@ -15,7 +15,7 @@ try:
 	from muller.muller_genotypes.generate import GenotypeOptions
 	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
 	from inheritance.sort_genotypes import SortOptions
-	from inheritance.order import OrderClusterParameters, ClusterType
+	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
@@ -30,7 +30,6 @@ except ModuleNotFoundError:
 	GenotypeOptions = Any
 	SortOptions = Any
 	OrderClusterParameters = Any
-	ClusterType = Any
 
 
 @dataclass
@@ -43,7 +42,7 @@ class WorkflowData:
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
-	clusters: ClusterType
+	clusters: Dict[str,List[str]]
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters

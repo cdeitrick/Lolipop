@@ -35,7 +35,6 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 	DETECTION_CUTOFF = 0.03
 	initial_background = sorted_df.iloc[0]
 	genotype_nests = Cluster(initial_background, timepoints = sorted_df)
-	print(sorted_df.to_string())
 	for unnested_label, unnested_trajectory in sorted_df[1:].iterrows():
 		logger.info(f"Nesting {unnested_label}")
 		genotype_deltas = list()
@@ -43,10 +42,6 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 		test_table = sorted_df[:unnested_label].iloc[::-1]
 		table_of_checks = checks.apply_genotype_checks_to_table(unnested_trajectory, test_table, options)
 		table_of_checks = table_of_checks.drop(unnested_label)
-		if unnested_label == 'genotype-3':
-			print()
-			print(unnested_label)
-			print(table_of_checks.to_string())
 
 		for nested_label, row in table_of_checks.iterrows():
 			if nested_label == unnested_label: continue

@@ -146,33 +146,4 @@ def calculate_similarity(not_detected_fixed_df: pandas.DataFrame):
 
 
 if __name__ == "__main__":
-	from import_data import import_table_from_string
-
-	trajectory_table = """
-			Trajectory	0	17	25	44	66	75	90
-			1	0	0	0.261	1	1	1	1
-			20	0	0	0	0.138	0.295	0	0.081
-			4	0	0	0	0	0.211	0.811	0.813
-			8	0	0	0	0	0.345	0.833	0.793
-			16	0	0	0	0	0.209	0.209	0
-			13	0	0	0	0	0.258	0.057	0.075
-			15	0	0	0.066	0.104	0.062	0	0
-			11	0	0	0	0.108	0.151	0	0
-			17	0	0	0	0	0	0.266	0.312
-			9	0	0	0	0	0	0.269	0.34
-			18	0	0	0	0.115	0	0.131	0
-			21	0	0	0	0.114	0	0.11	0.123
-			14	0	0.38	0.432	0	0	0	0
-			6	0	0	0	0	0	1	1
-			2	0	0	0	0.525	0.454	0.911	0.91
-			3	0	0	0	0.147	0.45	0.924	0.887
-			7	0	0	0	0.273	0.781	1	1
-			19	0	0	0	0.188	0.171	0.232	0.244
-			5	0	0	0	0.403	0.489	0.057	0.08
-			10	0	0	0.117	0	0	0	0.103
-		"""
-	table = import_table_from_string(trajectory_table, index = 'Trajectory')
-	left = table.loc['4']
-	right = table.loc['8']
-	value = calculate_p_value(left, right, .03, .97)
-	print(value)
+	pass

@@ -4,7 +4,10 @@ import pandas
 
 logger = logging.getLogger(__name__)
 from options import SortOptions
-
+try:
+	from inheritance import timepoint_detection
+except ModuleNotFoundError:
+	from . import timepoint_detection
 
 def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
 	"""
@@ -34,11 +37,10 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 			significant_cutoff = options.significant_breakpoint,
 			fixed_cutoff = options.fixed_breakpoint
 		)
-
 		if sorted_dataframe is not None:
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
-
+	print(current_genotypes.to_string())
 	df = pandas.concat(sorted_genotypes, sort = False)
 	df = genotype_frequencies.reindex(df.index)
 	return df
@@ -87,26 +89,20 @@ def _sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequenc
 	Returns
 	-------
 	"""
-
+	# Get the values for each genotype at the first timepoint. This will be used to check if the genotype existed at the first timepoint
+	# or has an initial detected timepoint of 0 due to the way pandas returns indicies.
+	detection_cutoff = min(detection_cutoff, frequency_breakpoint)
 	transposed = genotype_trajectories.transpose()
 
-	first_detected = _get_timepoint_above_threshold(transposed, detection_cutoff, 'firstDetected')
-	first_above_threshold = _get_timepoint_above_threshold(transposed, significant_cutoff, 'firstThreshold')
+	first_detected_reduced = timepoint_detection.get_first_detected_timepoint(transposed, detection_cutoff)
+	first_above_threshold_reduced = timepoint_detection.get_first_significant_timepoint(transposed, significant_cutoff)
 	# Use the frequency breakpoint rather than the fixed cutoff.
-	first_fixed = _get_timepoint_above_threshold(transposed, frequency_breakpoint, 'firstFixed')
-
-	# Remove the genotypes which were never detected or never rose above the threshold.
-	first_detected_reduced = first_detected.iloc[first_detected.nonzero()]
-	# To replicate the behavior in the matlab script
-	first_above_threshold_reduced = first_above_threshold.replace(0, 130)
-	first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
+	first_fixed_reduced = timepoint_detection.get_first_fixed_timepoint(transposed, frequency_breakpoint)
 	# if first_fixed_reduced.empty:
 	#	first_fixed_reduced = first_fixed
-
 	combined_df: pandas.DataFrame = pandas.concat(
 		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
 		axis = 1, sort = False)
-
 	df = combined_df[~combined_df['firstFixed'].isna()]
 
 	if frequency_breakpoint == fixed_cutoff:

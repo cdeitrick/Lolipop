@@ -26,10 +26,6 @@ def filter_invalid_timepoints(df: pandas.DataFrame) -> pandas.DataFrame:
 
 def calculate_dtw(left: pandas.Series, right: pandas.Series, normal = False) -> float:
 	full = pandas.DataFrame([left, right]).T
-	if left.name == right.name:
-		reduced_df = full
-	else:
-		reduced_df = filter_invalid_timepoints(full)
 	reduced_df = full
 	left_series = reduced_df.iloc[:, 0]
 	right_series = reduced_df.iloc[:, 1]
