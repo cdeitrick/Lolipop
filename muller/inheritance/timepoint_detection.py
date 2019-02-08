@@ -1,6 +1,7 @@
 import pandas
 
 
+# noinspection PyTypeChecker,PyUnresolvedReferences
 def _get_timepoint_above_threshold(transposed_timepoints: pandas.DataFrame, cutoff: float, name: str = None) -> pandas.Series:
 	"""
 		Calculates when a genotype was first fixed based on `cutoff`. The resulting series will be named `name`, if given.

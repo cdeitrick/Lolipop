@@ -2,11 +2,6 @@ from typing import Dict, List, Tuple, Union
 
 import pandas
 
-try:
-	from inheritance.cluster import Cluster
-except ModuleNotFoundError:
-	from inheritance.cluster import Cluster
-
 
 def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
 	""" Maps a genotype to a list of all genotypes that inherit from it"""
@@ -119,7 +114,7 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_ggmuller_edges_table(genotype_clusters: Cluster) -> pandas.DataFrame:
+def generate_ggmuller_edges_table(genotype_clusters: Dict[str,List[str]]) -> pandas.DataFrame:
 	table = list()
 	for identity, background in genotype_clusters.items():
 		parent = background[0]

@@ -48,7 +48,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	print()
 	print(sorted_genotypes.to_string())
 	logger.info("nesting muller_genotypes...")
-	genotype_clusters = order.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
+	genotype_clusters = order.order_clusters(sorted_genotypes, options = program_options_clustering)
 	logger.info("Generating output...")
 	workflow_data = WorkflowData(
 		filename = input_filename,

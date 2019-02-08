@@ -7,24 +7,22 @@ logger = logging.getLogger(__file__)
 try:
 	from muller.inheritance.checks import apply_genotype_checks
 	from muller.inheritance import checks
-	from muller.inheritance.cluster import Cluster, Genotype
+	from muller.inheritance.cluster import Cluster
 	from muller.options import OrderClusterParameters
 except ModuleNotFoundError:
 	from . import checks
 	from .checks import apply_genotype_checks
-	from .cluster import Cluster, Genotype
+	from .cluster import Cluster
 	from options import OrderClusterParameters
 
 
-def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series, options: OrderClusterParameters) -> Dict[str, Genotype]:
+def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> Dict[str, List[str]]:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
 	----------
 	sorted_df: pandas.DataFrame
 		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
-	genotype_members: pandas.Series
-		maps genotypes to their respective members
 	options: OrderClusterParameters
 		Parameters for the program to use.
 

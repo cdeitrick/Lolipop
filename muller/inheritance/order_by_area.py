@@ -12,7 +12,7 @@ def area_of_series(series: pandas.Series) -> float:
 	return total
 
 
-def calculate_noncommon_area(left: pandas.Series, right: pandas.Series, dlimit: float) -> float:
+def calculate_noncommon_area(left: pandas.Series, right: pandas.Series) -> float:
 	""" Calculates the area not contained by bboth `left` and `right`"""
 	difference = abs(left - right)
 	noncommon_area = area_of_series(difference)
@@ -37,13 +37,11 @@ def calculate_common_area(left: pandas.Series, right: pandas.Series, dlimit: flo
 	if not overlap_index:
 		overlap = 0
 	else:
-		overlap_left_series = left.loc[overlap_index]
-		overlap_right_series = right.loc[overlap_index]
-
 		overlap = area_of_series(left.where(left < right, right))
 	return overlap
 
 
+# noinspection PyTypeChecker
 def get_overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> Set[int]:
 	detected_left = left[left > dlimit]
 	detected_right = right[right > dlimit]
@@ -52,6 +50,7 @@ def get_overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> Set
 	return overlap_index
 
 
+# noinspection PyTypeChecker
 def compare_to_table(left: pandas.Series, table: pandas.DataFrame, dlimit: float) -> pandas.DataFrame:
 	area = area_of_series(left)
 	axis = 1

@@ -1,13 +1,6 @@
 from typing import Dict, List
 
 import pandas
-from dataclasses import dataclass
-
-
-@dataclass
-class Genotype:
-	name: str
-	background: List[str]
 
 
 class Cluster:
@@ -24,7 +17,7 @@ class Cluster:
 		else:
 			self.nests[unnested_label] = [nested_label]
 
-	def get(self, label: str) -> Genotype:
+	def get(self, label: str) -> List[str]:
 		return self.nests[label]
 
 	def is_a_member(self, label: str) -> bool:
