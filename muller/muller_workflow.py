@@ -4,7 +4,7 @@
 import logging
 from pathlib import Path
 
-logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename = "muller_log.txt", level = logging.DEBUG, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__file__)
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
