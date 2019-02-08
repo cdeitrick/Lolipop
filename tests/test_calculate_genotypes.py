@@ -1,7 +1,7 @@
 import unittest
 from io import StringIO
 from import_data import import_table_from_string
-from muller_genotypes.generate import *
+from clustering.generate import *
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
 				 "2,0,0.0,0.0,0.525,0.454,0.911,0.91\n" \

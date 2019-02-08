@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Tuple
 import pandas
 
 try:
-	from muller_genotypes.methods.difference import unlink_unrelated_trajectories
-	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.methods.difference import unlink_unrelated_trajectories
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculation

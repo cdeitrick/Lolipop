@@ -7,7 +7,7 @@ import pandas
 import math
 
 try:
-	from muller_genotypes.metrics import distance
+	from clustering.metrics import distance
 except ModuleNotFoundError:
 	from . import distance
 

@@ -7,10 +7,10 @@ from options import GenotypeOptions
 
 logger = logging.getLogger(__name__)
 try:
-	from muller.muller_genotypes.average import calculate_mean_genotype
-	from muller_genotypes.metrics import PairwiseCalculation, calculate_pairwise_metric
-	from muller_genotypes.methods import calculate_genotypes_from_given_method
-	from muller_genotypes.filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
+	from muller.clustering.average import calculate_mean_genotype
+	from clustering.metrics import PairwiseCalculation, calculate_pairwise_metric
+	from clustering.methods import calculate_genotypes_from_given_method
+	from clustering.filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
 	from muller.widgets import map_trajectories_to_genotype
 except ModuleNotFoundError:
 	from .average import calculate_mean_genotype

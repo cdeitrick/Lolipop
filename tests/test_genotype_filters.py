@@ -1,6 +1,6 @@
 import pytest
 import pandas
-from muller_genotypes import filters
+from clustering import filters
 from import_data import import_table_from_string
 
 @pytest.fixture

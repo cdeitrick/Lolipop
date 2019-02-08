@@ -1,5 +1,5 @@
 import pytest
-from muller_genotypes.metrics import PairwiseCalculation
+from clustering.metrics import PairwiseCalculation
 import itertools
 
 @pytest.fixture

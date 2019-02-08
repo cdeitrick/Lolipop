@@ -106,11 +106,7 @@ def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tupl
 def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[str, float]], unnested_trajectory: pandas.Series,
 		options: OrderClusterParameters):
 	unnested_label = unnested_trajectory.name
-	back = Genotype(
-		name = unnested_label,
-		background = [unnested_label]
-	)
-
+	back = [unnested_label]
 	correlated_label, correlated_delta = get_maximum_genotype_delta(genotype_deltas)
 	current_background_total = genotype_nests.get_sum_of_backgrounds()
 
@@ -126,13 +122,13 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 		# add as background
 		result = back
 	elif correlated_delta > 0:
-		back.background = correlated_background + [back.background]
+		back = correlated_background + back
 		result = back
 	else:
 		# message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + unnested_label
 		result = None
 
-	return result.background[-1]
+	return result[-1]
 
 
 if __name__ == "__main__":

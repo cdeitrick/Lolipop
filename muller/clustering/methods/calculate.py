@@ -3,9 +3,9 @@ from typing import Any, List, Tuple
 import pandas
 
 try:
-	from muller_genotypes.metrics.pairwise_calculation_cache import PairwiseCalculation
-	from muller_genotypes.methods.hierarchical_method import hierarchical_method
-	from muller_genotypes.methods.twostep_method import twostep_method
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.methods.hierarchical_method import hierarchical_method
+	from clustering.methods.twostep_method import twostep_method
 except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculation
 	from .hierarchical_method import hierarchical_method

@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller_genotypes.metrics import distance
+from clustering.metrics import distance
 
 
 @pytest.mark.parametrize("left,right,expected",

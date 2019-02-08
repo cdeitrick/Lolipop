@@ -9,13 +9,13 @@ logger = logging.getLogger(__file__)
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from muller.import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, filters
+	from clustering import generate, filters
 	from inheritance import order, sort_genotypes
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, filters
+	from clustering import generate, filters
 	from inheritance import order, sort_genotypes
 	from muller_output import WorkflowData, generate_output
 
