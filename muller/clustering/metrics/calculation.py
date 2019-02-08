@@ -1,7 +1,7 @@
 import itertools
 import logging
 from typing import Dict, List, Tuple
-
+import math
 logger = logging.getLogger(__file__)
 import pandas
 import math
@@ -119,4 +119,10 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 			raise ValueError(message)
 		pair_array[left, right] = pair_array[right, left] = distance_between_series
 
+	# Assume that any pair with NAN values are the maximum possible distance from each other.
+	maximum_distance = max(pair_array.values())
+	pair_array = {k:(v if not math.isnan(v) else maximum_distance) for k,v in pair_array.items()}
+
+	for (l,r), v in sorted(pair_array.items()):
+		logger.debug(f"{l}\t{r}\t{v:.2E}")
 	return pair_array
