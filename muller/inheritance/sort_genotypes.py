@@ -42,7 +42,6 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 		if sorted_dataframe is not None:
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
 			sorted_genotypes.append(sorted_dataframe)
-	print(current_genotypes.to_string())
 	df = pandas.concat(sorted_genotypes, sort = False)
 	df = genotype_frequencies.reindex(df.index)
 	return df
