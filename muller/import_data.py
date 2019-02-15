@@ -65,7 +65,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
 
 	# Extract metadata for each series.
-	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns]]
+	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns or i == key_column]]
 	return time_table, info_table
 
 
