@@ -65,7 +65,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
 
 	# Extract metadata for each series.
-	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns]]
+	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns or i == key_column]]
 	return time_table, info_table
 
 
@@ -78,14 +78,24 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 	elif 'Unnamed: 0' in data.columns:
 		key_column = 'Unnamed: 0'
 	else:
-		message = "One of the columns needs to be labeled `Genotype`"
+		message = f"One of the columns needs to be labeled `Genotype`. Got {data.columns} instead from {filename}."
 		raise ValueError(message)
 
-	if 'members' not in data.columns:
-		message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
-		raise ValueError(message)
+	#if 'members' not in data.columns:
+	#	data['members'] = [f'trajectory-{i}' for i in data.index]
+		#message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
+		#raise ValueError(message)
 
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
+
+	# Try to sort the genotypes by label, if posible.
+	# Note: designed to sort labels of the form `genotype-[\d]+`
+	try:
+		sorted_index = sorted(genotype_timeseries.index, key = lambda s: float(s.split('-')[-1]))
+	except ValueError:
+		sorted_index = genotype_timeseries.index
+
+	genotype_timeseries = genotype_timeseries.loc[sorted_index]
 	return genotype_timeseries, genotype_info
 
 

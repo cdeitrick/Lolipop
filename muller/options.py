@@ -13,8 +13,9 @@ class GenotypeOptions:
 	# actually related.
 	difference_breakpoint: float
 	method: str
+	metric: str
 
-	starting_genotypes:List[List[str]] = None
+	starting_genotypes: List[List[str]] = None
 
 	@classmethod
 	def from_matlab(cls) -> 'GenotypeOptions':
@@ -24,7 +25,8 @@ class GenotypeOptions:
 			n_binom = 5,
 			similarity_breakpoint = 0.05,
 			difference_breakpoint = 0.10,
-			method = 'matlab'
+			method = 'matlab',
+			metric = 'binomialp'
 		)
 
 
@@ -76,7 +78,7 @@ class OrderClusterParameters:
 			additive_background_single_cutoff = 1 + significant_breakpoint,
 			subtractive_background_double_cutoff = -detection_breakpoint,
 			subtractive_background_single_cutoff = -significant_breakpoint,
-			derivative_check_cutoff = 0.01,
+			derivative_check_cutoff = 0.01,  # Just checking if it's nonnegative
 			derivative_detection_cutoff = detection_breakpoint,
 			new_background_base_cutoff = 1 + detection_breakpoint,
 			new_background_significant_cutoff = 1 + significant_breakpoint

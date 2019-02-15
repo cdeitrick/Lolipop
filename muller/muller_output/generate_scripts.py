@@ -48,7 +48,8 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, table_fil
 		color_palette: Dict[str, str], genotype_labels: List[str]) -> Optional[pandas.DataFrame]:
 	# `color_palette` should be an OrderedDict.
 	genotype_labels = sorted(genotype_labels)
-	script_colors = ",".join(['"{}"'.format(color_palette[k]) for k in genotype_labels])
+
+	script_colors = ",".join(['"{}"'.format(color_palette.get(k, "#333333")) for k in genotype_labels])
 
 	script = """
 	library(ggplot2)

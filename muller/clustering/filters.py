@@ -1,18 +1,20 @@
-from typing import Any, List, Tuple
+import logging
+from typing import List, Tuple
 
 import pandas
 
+logger = logging.getLogger(__file__)
 try:
-	from muller.muller_genotypes import generate
+	from muller.options import GenotypeOptions
 except ModuleNotFoundError:
-	from muller_genotypes import generate
+	from options import GenotypeOptions
 
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
 	""" Extracts the backgrounds using a list of frequency breakpoints."""
 	for cutoff in cutoffs:
 		backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
-		backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2] # Check if background appears at multiple timepoints.
+		backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2]  # Check if background appears at multiple timepoints.
 		if not backgrounds.empty:
 			fuzzy_fixed_cutoff = cutoff
 			fuzzy_detected_cutoff = 1 - cutoff
@@ -71,7 +73,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 
 
 # noinspection PyTypeChecker
-def get_first_timpoint(series: pandas.Series, cutoff: float) -> int:
+def get_first_timepoint_above_cutoff(series: pandas.Series, cutoff: float) -> int:
 	""" Extracts the first timepoint that exceeds the cutoff."""
 	return series[series > cutoff].idxmin()
 
@@ -87,7 +89,8 @@ def _get_backgrounds_present_at_multiple_timepoints(backgrounds: pandas.DataFram
 
 
 # noinspection PyTypeChecker
-def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, cutoffs: List[float], use_strict_filter: bool) -> str:
+def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float,
+		use_strict_filter: bool) -> str:
 	"""	Invalid genotypes are those that don't make sense in the context of evolved populations. For example, when a genotype fixes it wipes out all
 		unrelated diversity and essentially 'resets' the mutation pool. Genotypes which are detected prior to a fixed genotype should, in theory,
 		fall to an undetected frequency. Any genotypes that do not follow this rule (are detected both before and after a genotype fixes) should
@@ -95,84 +98,75 @@ def get_invalid_genotype(genotypes: pandas.DataFrame, detection_cutoff: float, c
 	Parameters
 	----------
 	genotypes: pands.DataFrame
+	backgrounds: pandas.DataFrame
 	detection_cutoff: float
-	cutoffs: List[float]
+	fixed_cutoff: float
 	use_strict_filter: bool
 	Returns
 	-------
 
 	"""
-	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
-	# used when sorting the genotypes.
-	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = get_fuzzy_backgrounds(genotypes, cutoffs)
-	# Make sure the selected detection cutoff is a valid float.
-	fuzzy_detected_cutoff = max(detection_cutoff, fuzzy_detected_cutoff)
 
 	# Filter out backgrounds that are only detected at one timepoint.
-	backgrounds = _get_backgrounds_present_at_multiple_timepoints(backgrounds, fuzzy_detected_cutoff)
-
+	# backgrounds = _get_backgrounds_present_at_multiple_timepoints(backgrounds, detection_cutoff)
 	# We want to iterate over the non-background genotypes to check if they appear both before and after any genotypes that fix.
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
-
 	# Iterate over the detected backgrounds.
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
-		first_detected_point: int = get_first_timpoint(background, fuzzy_detected_cutoff)
-		first_fixed_point: int = get_first_timpoint(background, fuzzy_fixed_cutoff)
-
+		first_detected_point: int = get_first_timepoint_above_cutoff(background, detection_cutoff)
+		first_fixed_point: int = get_first_timepoint_above_cutoff(background, fixed_cutoff)
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background
 			if genotype_label in backgrounds.index: continue
 			# Check if it is invalid.
-			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, fuzzy_detected_cutoff, use_strict_filter)
+			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, detection_cutoff, use_strict_filter)
 			if is_invalid:
 				return genotype_label
 
 
-DF = pandas.DataFrame
-
-
-def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: generate.GenotypeOptions, frequency_cutoffs: List[float],
-		use_strict_filter: bool) -> Tuple[DF, DF, Any, Any]:
+def _remove_single_point_background(genotypes: pandas.DataFrame, dlimit: float, flimit: float) -> List[str]:
 	"""
-		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
+		Identifies backgrounds which are only detected at a only single timepoint. Returns a list of labels that fail the filter.
 	Parameters
 	----------
-	trajectory_table: pandas.DataFrame
-	goptions: GenotypeOptions
-	frequency_cutoffs: List[float]
-	use_strict_filter: bool
+	genotypes: pandas.DataFrame
+	dlimit: float
+		The detection limit
+	flimit: float
+		The fixed detection limit.
+
+	Returns
+	-------
+	pandas.DataFrame
+		A list of backgrounds that fail the filter.
+	"""
+	backgrounds = genotypes[genotypes.max(axis = 1) > flimit]
+	invalid_backgrounds = backgrounds[backgrounds.sum(axis = 1) < (flimit + (2 * dlimit))]
+
+	return invalid_backgrounds.index
+
+
+def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimit: float) -> pandas.DataFrame:
+	"""
+		Filters out individual trajectories that fail certain filters.
+	Parameters
+	----------
+	trajectory_table:pandas.DataFrame
+	dlimit: float
+		The detection limit
+	flimit: float
+		The value above which a genotype is considered 'fixed'
 
 	Returns
 	-------
 
 	"""
-	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
-	frequency_cutoffs = [i for i in frequency_cutoffs if i <= goptions.fixed_breakpoint]
-	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
-	genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
-
-	# cache: List[Tuple[DF, DF]] = [(trajectory_table.copy(), genotype_table.copy())]
-	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
-	for _ in range(_iterations):
-		# Search for genotypes that do not make sense in the context of an evolved population.
-		current_invalid_genotype = get_invalid_genotype(genotype_table, goptions.detection_breakpoint, frequency_cutoffs, use_strict_filter)
-		if current_invalid_genotype is None:
-			break
-		else:
-			# Get a list of the trajectories that form this genotype.
-			invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
-			# Remove these trajectories from the trajectories table.
-			trajectory_table = trajectory_table[~trajectory_table.index.isin(invalid_members)]
-			# Re-calculate the genotypes based on the remaining trajectories.
-			genotype_table, genotype_members, linkage_table = generate.generate_genotypes(trajectory_table, options = goptions)
-
-	# cache.append((trajectory_table.copy(), genotype_table.copy()))
-	# Update the trajectories that comprise each genotype.
-	else:
-		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	return trajectory_table, genotype_table, genotype_members, linkage_table
+	# Remove trajectories that only exist at one timepoint and exceed the fixed cutoff limit.
+	failed_single_point_test = _remove_single_point_background(trajectory_table, dlimit, flimit)
+	logger.info("These trajectories did not pass the trajectory filters: " + str(list(failed_single_point_test)))
+	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 
 
 if __name__ == "__main__":

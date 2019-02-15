@@ -1,78 +1,28 @@
-import itertools
-from typing import Dict, List, Tuple, Optional
+import logging
+from typing import Dict, List, Tuple
 
 import pandas
-from dataclasses import dataclass
 
+logger = logging.getLogger(__file__)
 try:
-	from muller.inheritance.checks import check_additive_background, check_subtractive_background, check_derivative_background
+	from muller.inheritance.checks import apply_genotype_checks
+	from muller.inheritance import checks
+	from muller.inheritance.cluster import Cluster
 	from muller.options import OrderClusterParameters
 except ModuleNotFoundError:
-	from .checks import check_additive_background, check_subtractive_background, check_derivative_background
+	from . import checks
+	from .checks import apply_genotype_checks
+	from .cluster import Cluster
 	from options import OrderClusterParameters
 
 
-@dataclass
-class Genotype:
-	name: str
-	probability: float
-	trajectory: pandas.Series
-	background: List[str]
-	members: List[str]
-
-
-ClusterType = Dict[str, Genotype]
-
-
-def add_genotype_background(genotype_label: str, type_genotype: Genotype, nests: Dict[str, Genotype], initial_background_label: str):
-	# genotype_label = type_genotype.name
-	if genotype_label in nests:
-		nests[genotype_label].background += type_genotype.background
-		if len(nests[genotype_label].background) > 2 and initial_background_label in nests[genotype_label].background:
-			nests[genotype_label].background.remove(initial_background_label)
-	else:
-		nests[genotype_label] = type_genotype
-	return nests
-
-
-def apply_genotype_checks(type_trajectory: pandas.Series, test_trajectory: pandas.Series, options: OrderClusterParameters) -> Tuple[
-	bool, bool, Optional[float]]:
-	""" Applies the three checks to `type_trajectory` and `test_trajectory`."""
-	additive_check = check_additive_background(
-		left = type_trajectory,
-		right = test_trajectory,
-		double_cutoff = options.additive_background_double_cutoff,
-		single_cutoff = options.additive_background_single_cutoff
-	)
-
-	subtractive_check = check_subtractive_background(
-		left = type_trajectory,
-		right = test_trajectory,
-		double_cutoff = options.subtractive_background_double_cutoff,
-		single_cutoff = options.subtractive_background_single_cutoff
-	)
-
-	if subtractive_check:
-		delta = None
-	else:
-		delta = check_derivative_background(
-			left = type_trajectory,
-			right = test_trajectory,
-			detection_cutoff = options.derivative_detection_cutoff
-		)
-
-	return additive_check, subtractive_check, delta
-
-
-def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series, options: OrderClusterParameters) -> ClusterType:
+def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> Dict[str, List[str]]:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
 	----------
 	sorted_df: pandas.DataFrame
 		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
-	genotype_members: pandas.Series
-		maps genotypes to their respective members
 	options: OrderClusterParameters
 		Parameters for the program to use.
 
@@ -80,99 +30,112 @@ def order_clusters(sorted_df: pandas.DataFrame, genotype_members: pandas.Series,
 	-------
 	ClusterType
 	"""
+	# By default the backgrounds should occupy the first n lines of the dataframe
 	initial_background = sorted_df.iloc[0]
-
-	nests: Dict[str, Genotype] = {
-		initial_background.name: Genotype(
-			name = initial_background.name,
-			probability = 1.0,
-			trajectory = initial_background,
-			background = [initial_background.name],
-			members = genotype_members.loc[initial_background.name])
-	}
-	for genotype_label, type_trajectory in sorted_df[1:].iterrows():
-		type_members = genotype_members.loc[genotype_label]
-
+	genotype_nests = Cluster(initial_background, timepoints = sorted_df)
+	for unnested_label, unnested_trajectory in sorted_df[1:].iterrows():
+		logger.info(f"Nesting {unnested_label}")
 		genotype_deltas = list()
-		test_table = sorted_df[:genotype_label].iloc[::-1]
-		for test_label, test_trajectory in test_table.iterrows():  # iterate in reverse order
-			if genotype_label == test_label:  # The reduced dataframe still contains the genotype being tested.
+		# Iterate over the rest of the table in reverse order. Basically, we start with the newest nest and iterate until we find a nest that satisfies the filters.
+		test_table = sorted_df[:unnested_label].iloc[::-1]
+		table_of_checks = checks.apply_genotype_checks_to_table(unnested_trajectory, test_table, options)
+		table_of_checks = table_of_checks.drop(unnested_label)
+
+		for nested_label, row in table_of_checks.iterrows():
+			if nested_label == unnested_label: continue
+			additive_check, subtractive_check, delta, area_ratio, area_difference = row
+			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
+			area_check = area_ratio > 0.97
+			derivative_check = delta > options.derivative_check_cutoff
+			full_check = area_check and derivative_check and additive_check
+			logging.info(f"{unnested_label}|{nested_label} Full Check: {full_check}")
+			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
+			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")
+			logging.info(f"{unnested_label}|{nested_label} Derivative check: {derivative_check}")
+			logging.info(f"{unnested_label}|{nested_label} Area Difference: {area_difference}")
+			if area_check and delta > options.derivative_check_cutoff and additive_check:
+				# Most likely the background of the current genotype.
+				logging.info(f"Complete Check: True")
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				break
+			if area_difference < -.1:
+				# The unnested trajectory is larger than the nested trajectory it is being compared against.
 				continue
-
-			test_background = nests[test_label].background
-			type_genotype = Genotype(
-				name = genotype_label,
-				probability = 1.0,
-				trajectory = type_trajectory,
-				background = test_background + [genotype_label],
-				members = type_members
-			)
-			additive_check, subtractive_check, delta = apply_genotype_checks(type_trajectory, test_trajectory, options)
-			# print(genotype_label, test_label, additive_check, subtractive_check, delta)
-			if additive_check:
-				nests = add_genotype_background(genotype_label, type_genotype, nests, initial_background.name)
-				continue
-
-			if subtractive_check:
-				continue
-
-			genotype_deltas.append((test_label, delta))
-
+			genotype_deltas.append((nested_label, delta))
+			# if subtractive_check:
+			#	continue
 			if delta > options.derivative_check_cutoff:
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
-				nests = add_genotype_background(genotype_label, type_genotype, nests, initial_background.name)
-				break
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+			elif delta < -options.derivative_check_cutoff:
+				# They are anti-correlated.
+				continue
+			# break
+			if area_check:
+				# A candidate background
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				continue
+			if additive_check:# and False:
+				# Possible background
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 
-		is_member = genotype_label in itertools.chain.from_iterable(i.background for i in nests.values())
-		# Find the test that correlated the most with this genotype
-		if genotype_deltas:
-			correlated_label, correlated_delta = max(genotype_deltas, key = lambda s: s[1])
-		else:
-			correlated_label = "N/A"  # Shouldn't end up being used.
-			correlated_delta = 0
 
+		is_member = genotype_nests.is_a_member(unnested_label)
 		if not is_member:
+			logger.info(f"Not a member: {unnested_label}")
 			# if it hasn't been matched with a background, two things can happen
 			# (1) IF it is logically possible (i.e., if the sum of it
 			# and all existing backgrounds at each time point is ~1 or less),
 			# then we can make it its own background. otherwise put
 			# it in with the genotype it's most correlated with
+			# Find the test that correlated the most with this genotype
+			result = background_heuristic(genotype_nests, genotype_deltas, unnested_trajectory, options)
+			if result:
+				genotype_nests.add_genotype_to_background(unnested_label, result)
+	logger.info("The final backgrounds:")
+	for k, v in genotype_nests.nests.items():
+		vv = "|".join(v)
+		logger.info(f"{k}\t{vv}")
+	return genotype_nests.nests
 
-			backgrounds = [v.trajectory for k, v in nests.items() if len(v.background) == 1]
-			backgrounds = pandas.DataFrame(backgrounds)
-			total = backgrounds.sum()
-			# Check if There is at least one timepoint where the sum of all current backgrounds is greater than 1
-			# or there is at least one timepoint that is less than 1.15.
-			exceeds_background_limit = (total > options.new_background_base_cutoff).sum() > 1
-			under_cuttoff_limit = (total < options.new_background_significant_cutoff).sum() == 0
-			if exceeds_background_limit or not under_cuttoff_limit:
-				# add as background
-				back = Genotype(
-					name = genotype_label,
-					probability = 1.0,
-					trajectory = type_trajectory,
-					background = [genotype_label],
-					members = type_members
-				)
-				nests[genotype_label] = back
-			elif correlated_delta > 0:
-				correlated_background = nests[correlated_label].background
-				type_genotype = Genotype(
-					name = genotype_label,
-					probability = 0.5,
-					trajectory = type_trajectory,
-					background = correlated_background + [genotype_label],
-					members = type_members
-				)
-				nests[genotype_label] = type_genotype
 
-			else:
-				message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + genotype_label
+def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:
+	if genotype_deltas:
+		correlated_label, correlated_delta = max(genotype_deltas, key = lambda s: s[1])
+	else:
+		correlated_label = "N/A"  # Shouldn't end up being used.
+		correlated_delta = 0
+	return correlated_label, correlated_delta
 
-				raise ValueError(message)
 
-	return nests
+# noinspection PyUnresolvedReferences,PyTypeChecker
+def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[str, float]], unnested_trajectory: pandas.Series,
+		options: OrderClusterParameters):
+	unnested_label = unnested_trajectory.name
+	back = [unnested_label]
+	correlated_label, correlated_delta = get_maximum_genotype_delta(genotype_deltas)
+	current_background_total = genotype_nests.get_sum_of_backgrounds()
+
+	try:
+		correlated_background = genotype_nests.get(correlated_label)
+	except KeyError:
+		correlated_background = None
+
+	exceeds_background_limit = (current_background_total > options.new_background_base_cutoff).sum() > 1
+	under_cuttoff_limit = (current_background_total < options.new_background_significant_cutoff).sum() == 0
+
+	if exceeds_background_limit or not under_cuttoff_limit:
+		# add as background
+		result = back
+	elif correlated_delta > 0:
+		back = correlated_background + back
+		result = back
+	else:
+		# message = 'SOMETHING HAS GONE HORRIBLY WRONG FOR CLUSTER ' + unnested_label
+		result = None
+
+	return result[-1]
 
 
 if __name__ == "__main__":

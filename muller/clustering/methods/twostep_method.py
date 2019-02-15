@@ -4,11 +4,11 @@ from typing import Dict, List, Optional, Tuple
 import pandas
 
 try:
-	from muller_genotypes.methods.difference import unlink_unrelated_trajectories
-	from muller_genotypes.metrics.pairwise_calculation import PairwiseCalculation
+	from clustering.methods.difference import unlink_unrelated_trajectories
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
-	from ..metrics.pairwise_calculation import PairwiseCalculation
+	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 
 
 def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List[str]] = None) -> List[
@@ -87,7 +87,7 @@ def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]])
 	return value
 
 
-def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation, similarity_breakpoint: float, difference_breakpoint: float,
+def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculationCache, similarity_breakpoint: float, difference_breakpoint: float,
 		starting_genotypes: List[List[str]]) -> List[List[str]]:
 	"""
 		Clusters trajectories into muller_genotypes.
@@ -118,7 +118,7 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 
 	# Trajectories represent the population frequencies at each timepoint
 	# Each row represents a single timepoint, each column represents a mutation.
-	numerical_array = pair_array.asitem('pvalue')
+	numerical_array = pair_array.asdict()
 	population_genotypes = _group_trajectories_into_genotypes(numerical_array, similarity_breakpoint, starting_genotypes)
 
 	# at the end, look at all trajectories that are not listed and

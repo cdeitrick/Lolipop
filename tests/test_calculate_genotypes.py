@@ -1,7 +1,7 @@
 import unittest
 from io import StringIO
 from import_data import import_table_from_string
-from muller_genotypes.generate import *
+from clustering.generate import *
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
 				 "2,0,0.0,0.0,0.525,0.454,0.911,0.91\n" \
@@ -17,33 +17,25 @@ trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "16,0,0.0,0.0,0.0,0.209,0.209,0.0\n" \
 				 "20,0,0.0,0.0,0.138,0.295,0.0,0.081\n"
 
+def test_calculate_mean_genotype():
+	test_genotypes = [
+		['7'], ['4', '8'], ['3', '2'], ['13', '20', '11']
+	]
+	trajectories = pandas.read_csv(StringIO(trajectory_csv))
+	trajectories['Trajectory'] = trajectories['Trajectory'].astype(str)
+	trajectories = trajectories.set_index('Trajectory')
 
-class TestCalculateGenotypes(unittest.TestCase):
-	def test_calculate_mean_genotype(self):
-		test_genotypes = [
-			['7'], ['4', '8'], ['3', '2'], ['13', '20', '11']
-		]
-		trajectories = pandas.read_csv(StringIO(trajectory_csv))
-		trajectories['Trajectory'] = trajectories['Trajectory'].astype(str)
-		trajectories = trajectories.set_index('Trajectory')
+	expected_csv = """
+		Genotype	0	17	25	44	66	75	90	members
+		genotype-1	0.0	0.0	0.0	0.273	0.781	1.0	1.0	7
+		genotype-2	0	0	0	0	0.278	0.822	0.803	4|8
+		genotype-3	0	0	0	0.336	0.452	0.9175	0.8985	3|2
+		genotype-4	0	0	0	0.082	0.234666666666667	0.019	0.052	13|20|11
+		"""
+	expected_mean = import_table_from_string(expected_csv, index = 'Genotype')
+	output = calculate_mean_genotype(test_genotypes, trajectories)
 
-		expected_csv = """
-			Genotype	0	17	25	44	66	75	90	members
-			genotype-1	0.0	0.0	0.0	0.273	0.781	1.0	1.0	7
-			genotype-2	0	0	0	0	0.278	0.822	0.803	4|8
-			genotype-3	0	0	0	0.336	0.452	0.9175	0.8985	3|2
-			genotype-4	0	0	0	0.082	0.234666666666667	0.019	0.052	13|20|11
-			"""
-		expected_mean = import_table_from_string(expected_csv, index = 'Genotype')
-		output = calculate_mean_genotype(test_genotypes, trajectories)
+	pandas.testing.assert_frame_equal(expected_mean, output)
 
-		pandas.testing.assert_frame_equal(expected_mean, output)
-
-	def test_calculate_mean_of_trajectories(self):
-		pass
-
-
-	def test_group_trajectories_into_genotypes(self):
-		pass
 
 

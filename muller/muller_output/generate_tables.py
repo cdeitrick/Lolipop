@@ -2,11 +2,6 @@ from typing import Dict, List, Tuple, Union
 
 import pandas
 
-try:
-	from inheritance.order import ClusterType
-except ModuleNotFoundError:
-	from inheritance.order import ClusterType
-
 
 def _compile_parent_linkage(edges: pandas.DataFrame) -> Dict[str, List[str]]:
 	""" Maps a genotype to a list of all genotypes that inherit from it"""
@@ -119,16 +114,10 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_ggmuller_edges_table(genotype_clusters: ClusterType) -> pandas.DataFrame:
+def generate_ggmuller_edges_table(genotype_clusters: Dict[str,List[str]]) -> pandas.DataFrame:
 	table = list()
-	for genotype_info in genotype_clusters.values():
-		identity = genotype_info.name
-		background = genotype_info.background
-
-		if len(background) == 1:
-			parent = 'genotype-0'
-		else:
-			parent = background[0]
+	for identity, background in genotype_clusters.items():
+		parent = background[0]
 		if parent == identity:
 			parent = 'genotype-0'
 
@@ -214,18 +203,4 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 
 
 if __name__ == "__main__":
-	from pprint import pprint
-	from import_data import import_table_from_string
-
-	test_table = import_table_from_string(
-		"""
-			Parent	Identity
-			genotype-0	genotype-1
-			genotype-1	genotype-4
-			genotype-4	genotype-5
-			genotype-0	genotype-2
-			genotype-1	genotype-3
-		"""
-	)
-	output = _compile_parent_linkage(test_table)
-	pprint(output)
+	pass

@@ -1,30 +1,35 @@
 """
 	Main script to run the muller workflow.
 """
+import logging
 from pathlib import Path
-from pprint import pprint
 
+logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__file__)
+logger.addHandler(logging.StreamHandler())
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from muller.import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, sort_genotypes, filters
-	from inheritance import order
+	from clustering import generate, filters
+	from inheritance import order, sort_genotypes
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from import_data import import_trajectory_table, import_genotype_table
-	from muller_genotypes import generate, sort_genotypes, filters
-	from inheritance import order
+	from clustering import generate, filters
+	from inheritance import order, sort_genotypes
 	from muller_output import WorkflowData, generate_output
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
-	print("parsing options...")
+	logger.info("parsing options...")
 	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
-	pprint(vars(program_options))
+	logger.info("Program options:")
+	for k, v in vars(program_options).items():
+		logger.info(f"\t{k:<20}{v}")
 
-	print("Importing data...")
+	logger.info("Importing data...")
 	if program_options.is_genotype:
 		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
 		genotype_members = genotype_info['members']
@@ -32,19 +37,25 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		original_genotypes = mean_genotypes
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
-		original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
-			original_timepoints,
-			program_options_genotype,
-			[program_options.fixed_breakpoint] + program_options.frequencies,
-			program_options.use_strict_filter
-		)
+		if program_options.use_filter:
+			logger.info("using filter...")
+			original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
+				original_timepoints,
+				program_options_genotype,
+				[program_options.fixed_breakpoint] + program_options.frequencies,
+				program_options.use_strict_filter
+			)
+		else:
+			logger.info("not using filter...")
 
-	print("sorting muller_genotypes...")
+			timepoints = original_timepoints
+			mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(original_timepoints, program_options_genotype)
+			original_genotypes = mean_genotypes
+	logger.info("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
-	print("nesting muller_genotypes...")
-	genotype_clusters = order.order_clusters(sorted_genotypes, genotype_members, options = program_options_clustering)
-
-	print("Generating output...")
+	logger.info("nesting muller_genotypes...")
+	genotype_clusters = order.order_clusters(sorted_genotypes, options = program_options_clustering)
+	logger.info("Generating output...")
 	workflow_data = WorkflowData(
 		filename = input_filename,
 		info = info,
@@ -59,7 +70,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		cluster_options = program_options_clustering,
 		p_values = generate.PAIRWISE_CALCULATIONS,
 		filter_cache = [],
-		linkage_matrix = linkage_matrix
+		linkage_matrix = linkage_matrix,
+		genotype_palette_filename = program_options.genotype_palette_filename
 	)
 	generate_output(
 		workflow_data,

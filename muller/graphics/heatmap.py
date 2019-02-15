@@ -24,5 +24,5 @@ def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	ax.set_xlabel("Trajectory Label")
 	ax.set_title("p-values of all mutational trajectories")
 	if seaborn is not None:
-		seaborn.heatmap(data, ax = ax, annot = use_annotations)
+		seaborn.heatmap(-data, ax = ax, annot = use_annotations, vmin = -1)
 		fig.savefig(str(filename), format = 'png')
