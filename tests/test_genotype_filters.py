@@ -44,9 +44,9 @@ def test_remove_single_point_series():
 def test_get_first_timepoint_above_cutoff():
 	series =pandas.Series([0, .03, .04, .1, .2, .3, .4, .5, .6, .7, .8])
 
-	assert 2 == filters.get_first_timpoint_above_cutoff(series, 0.03)
-	assert 4 == filters.get_first_timpoint_above_cutoff(series, 0.1)
-	assert 1 == filters.get_first_timpoint_above_cutoff(series, 0)
+	assert 2 == filters.get_first_timepoint_above_cutoff(series, 0.03)
+	assert 4 == filters.get_first_timepoint_above_cutoff(series, 0.1)
+	assert 1 == filters.get_first_timepoint_above_cutoff(series, 0)
 
 def test_get_fuzzy_backgrounds(genotypes):
 	cutoffs = [0.9]
