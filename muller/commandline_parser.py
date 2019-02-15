@@ -2,8 +2,8 @@ import argparse
 import itertools
 import math
 from pathlib import Path
-from typing import List, Optional, Union
-
+from typing import List, Optional, Union, Dict
+import csv
 try:
 	from muller.options import GenotypeOptions, SortOptions, OrderClusterParameters
 except ModuleNotFoundError:
@@ -234,7 +234,10 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"--strict-filter",
-		help = "",
+		help = """By default, the filters allow trajectories to appear both before and after a genotype"""
+				"""fixes as long as they were undetected at the timepoint the sweep occurs. This generally"""
+				"""represents mutations which appear, are removed during a genotype sweep, and reappear """
+				"""afterwards. Using `--strict-filter` would remove these trajectories.""",
 		action = "store_true",
 		dest = "use_strict_filter"
 	)
@@ -243,14 +246,16 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
 		action = "store",
 		default = "matlab",
-		dest = "method"
+		dest = "method",
+		choices = ['matlab', 'hierarchy']
 	)
 	parser.add_argument(
 		"--metric",
-		help = "Either 'similarity' or 'dtw'",
+		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, such as the difference between them or how well they are correlated.",
 		action = "store",
 		default = "similarity",
-		dest = "metric"
+		dest = "metric",
+		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
 	)
 	parser.add_argument(
 		"-g", "--known-genotypes",
@@ -259,5 +264,14 @@ def create_parser() -> argparse.ArgumentParser:
 		default = None,
 		dest = "known_genotypes"
 	)
-
+	parser.add_argument(
+		"--genotype-colors",
+		help = "An optional map of genotypes to specified colors.",
+		action = "store",
+		type = Path,
+		default = None,
+		dest = "genotype_palette_filename"
+	)
 	return parser
+
+

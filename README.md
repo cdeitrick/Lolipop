@@ -31,7 +31,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	--fixed                     The minimum frequency at which to
 	                            consider a mutation fixed. Defaults to
 	                            1 - `uncertainty`
-	-s, --significant           [0.15] The frequency at which to consider a genotype
+	-s, --significant           [0.15ither 'similarity' or 'dtw'] The frequency at which to consider a genotype
 	                            significantly greater than zero.
 	-f, --frequencies           [0.10] The frequency cutoff to use when sorting genotypes.
 	                            May be a comma-separated string of frequencies, or a set inverval
@@ -51,6 +51,32 @@ Flowcharts for each individual step can be found under docs/flowcharts.
     --save-pvalues              Saves the p-values to a table and generates a heatmap
                                 for the population. Disabling saves a large amount of
                                 time for large datasets.
+    --sheetname                 Used to specify the sheet to use when the input is an excel file. Defaults to 
+                                'Sheet1'
+    --strict-filter             By default, the filters allow trajectories to appear both before and after a genotype
+                                fixes as long as they were undetected at the timepoint the sweep occurs. This generally
+                                represents mutations which appear, are removed during a genotype sweep, and reappear 
+                                afterwards. Using `--strict-filter` would remove these trajectories.
+    --genotype-colors           Path to a file with a custom genotype colorscheme. The file should be tab-delimited
+                                with a genotype name (ex. 'genotype-13') in the first column and a HEX color code
+                                (ex. '#F5674A') in the second. These colors will override the default colorscheme.
+    -g, --known-genotypes       [BETA] Path to a file listing trajectories which are known to be in the same genotype.
+                                Each line in the file represents a single genotype, and each line should be a 
+                                comma-separated list of trajectory labels as they appear in the input dataset.
+    -m, --method                Selects the clustering method to use. 'matlab' will use the original two-step
+                                method of sorting trajectories into genotypes while 'hierarchy' will use 
+                                hierarchical clustering to do the clustering. Defaults to 'matlab'
+    --metric                    Used to select the distance metric when `--method` is set to 'hierarchy'.
+        Available Options:
+        'similarity', 'binomial' Uses the binomial test implemented in the original matlab scripts as a distance metric.
+        'jaccard'               Uses the Jaccard distance between two series to determine the distance metric.
+        'minkowski'             Uses the minkowski distance as a distance metric. Primarily influenced by the
+                                difference between two series.
+        'pearson'               Uses the pearson correlation coefficient as the distance metric. Primarily 
+                                influenced by the correlation of two series against each other.
+        'combined'              A combination of the 'pearson' and 'minkowski' distances to account for the 
+                                correlation of two series as well as the difference between them.
+
 
 ## Input Parameters
 
