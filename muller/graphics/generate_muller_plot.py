@@ -1,6 +1,7 @@
 """
 	Python implementation of the Muller_plot function available from ggmuller.
 """
+import math
 from itertools import filterfalse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -9,7 +10,9 @@ import pandas
 from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
-
+import logging
+import random
+logger = logging.getLogger(__file__)
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -57,11 +60,7 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
 	groups = muller_df.groupby(by = 'Group_id')
 	y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
-	"""
-	for genotype_label in genotype_order:
-		ddf = muller_df[muller_df['Group_id'] == genotype_label]
-		y.append(ddf['Frequency'].tolist())
-	"""
+
 	return x, y, colors, labels
 
 
@@ -128,18 +127,12 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	-------
 	fontproperties: Dict[str, Any]
 	"""
-	black = [
-		"#FFE119", "#42D4F4", "#BFEF45", "#FABEBE", "#E6BEFF",
-		"FFFAC8", "#AAFFC3", "#FFD8B1", "#FFFFFF", "#BCF60C",
-		'#46f0f0'
-	]
-	black = [i.lower() for i in black]
 
-	if colormap[genotype_label] in black:
+	luminance = calculate_luminance(colormap[genotype_label])
+	if luminance > 0.5:
 		font_color = "#333333"
 	else:
 		font_color = "#FFFFFF"
-
 	label_properties = {
 		'size':  9,
 		'color': font_color
@@ -147,9 +140,52 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	return label_properties
 
 
+def calculate_luminance(color: str) -> float:
+	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
+
+	red = int(color[1:3], 16)
+	green = int(color[3:5], 16)
+	blue = int(color[5:], 16)
+
+	lum = (.299 * red) + (.587 * green) + (.114 * blue)
+	return lum / 255
+
+def distance(left:Tuple[float, float], right:Tuple[float,float])->float:
+	xl, yl = left
+	xr, yr = right
+
+	num = (xl - xr)**2 + (yl - yr)**2
+	return math.sqrt(num)
+
+def find_closest_point(point, points:List[Tuple[float, float]])->Tuple[float,float]:
+	return min(points, key = lambda s: distance(s, point))
+
+def relocate_point(point:Tuple[float,float], locations: List[Tuple[float, float]])->Tuple[float,float]:
+
+	x_loc, y_loc = point
+	for _ in range(10):
+		closest_neighbor = find_closest_point((x_loc, y_loc), locations)
+		y_is_close = math.isclose(y_loc, closest_neighbor[1], abs_tol = .1)
+		y_is_almost_close = math.isclose(y_loc, closest_neighbor[1], abs_tol = .3)
+		x_is_close = math.isclose(x_loc, closest_neighbor[0], abs_tol = 2)
+		x_large = x_loc >= closest_neighbor[0]
+		logger.debug(f"{x_loc}\t{y_loc}\t{closest_neighbor}\t{y_is_close}\t{y_is_almost_close}\t{x_is_close}\t{x_large}")
+		if distance(closest_neighbor, (x_loc, y_loc)) > 1: break
+		if y_is_close:
+			if y_loc > closest_neighbor[1]:
+				y_loc += random.uniform(.1, .2)
+			else:
+				y_loc -= random.uniform(.05, .15)
+		elif y_is_almost_close and x_is_close and x_large:
+			x_loc += .5
+			break
+		else:
+			break
+	return x_loc, y_loc
+
+#cat AU0106_S3_R1_001.fastq AU0106_S3_R2_001.fastq | metaphlan2.py --input_type multifastq --bowtie2out AU0106.bt2out.txt > AU0106.metaphlan.txt
 def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
-		output_filename: Path,
-		annotate_all: bool):
+		output_filename: Path, annotations: Dict[str, List[str]]):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 	Parameters
@@ -158,8 +194,8 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	trajectory_table: pandas.DataFrame
 	color_palette: Dict[str,str]
 	output_filename: Path
-	annotate_all:bool
-
+	annotations: Dict[str, List[str]]
+		A map of genotype labels to add to the plot.
 	Returns
 	-------
 	ax: Axes
@@ -172,42 +208,26 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax: Axes
 
 	x, y, colors, labels = generate_muller_series(muller_df, color_palette)
-
 	ax.stackplot(x, y, colors = colors, labels = labels)
 
-	if trajectory_table is not None and 'Gene' in trajectory_table:
-		groups = trajectory_table.groupby(by = 'genotype')
-
+	if annotations:
+		locations = list()
 		for genotype_label, point in points.items():
 			label_properties = get_font_properties(genotype_label, color_palette)
-			x_loc, y_loc = point
 
-			try:
-				group = groups.get_group(genotype_label)
-			except KeyError:
-				continue
-			group = group[~group['Gene'].isnull()]
-			if group.empty:
-				continue
-			frequencies = group[[i for i in group.columns if i in muller_df['Generation']]]
-			mean: pandas.Series = frequencies.mean(axis = 1)
-
-			if not annotate_all:
-				largest = mean.nlargest(3)
-
-				# genes = [str(i) for i in group.loc[largest.index]['Gene'].tolist() if str(i) != 'nan']
-				gene_df = group.loc[largest.index]['Gene']
+			if locations:
+				x_loc, y_loc = relocate_point(point, locations)
 			else:
-				# genes = [str(i) for i in group['Gene'].tolist()]
-				gene_df = group['Gene']
-			genes = [str(i) for i in gene_df.tolist()]
-			if not genes:  # No applicable genes found
-				continue
-
-			genes = [(g[:-1] if g.endswith('<') else g) for g in genes]
+				x_loc, y_loc = point
+			locations.append((x_loc, y_loc))
+			genotype_annotations = annotations.get(genotype_label, [])
+			try:
+				genotype_annotations = genotype_annotations[:3]
+			except IndexError:
+				pass
 			plt.text(
 				x_loc, y_loc,
-				"\n".join(genes),
+				"-"+"\n-".join(genotype_annotations),
 				bbox = dict(facecolor = color_palette[genotype_label], alpha = 1),
 				fontdict = label_properties
 			)
@@ -218,7 +238,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 
 	# Basic stacked area chart.
 
-	plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
+	#plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
 	ax.spines['right'].set_visible(False)
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))

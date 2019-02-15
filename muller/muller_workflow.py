@@ -4,8 +4,9 @@
 import logging
 from pathlib import Path
 
-logging.basicConfig(filename = "muller_log.txt", level = logging.DEBUG, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__file__)
+logger.addHandler(logging.StreamHandler())
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from muller.import_data import import_trajectory_table, import_genotype_table
@@ -36,17 +37,22 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		original_genotypes = mean_genotypes
 	else:
 		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
-		original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
-			original_timepoints,
-			program_options_genotype,
-			[program_options.fixed_breakpoint] + program_options.frequencies,
-			program_options.use_strict_filter
-		)
+		if program_options.use_filter:
+			logger.info("using filter...")
+			original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
+				original_timepoints,
+				program_options_genotype,
+				[program_options.fixed_breakpoint] + program_options.frequencies,
+				program_options.use_strict_filter
+			)
+		else:
+			logger.info("not using filter...")
+
+			timepoints = original_timepoints
+			mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(original_timepoints, program_options_genotype)
+			original_genotypes = mean_genotypes
 	logger.info("sorting muller_genotypes...")
-	print(mean_genotypes.to_string())
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
-	print()
-	print(sorted_genotypes.to_string())
 	logger.info("nesting muller_genotypes...")
 	genotype_clusters = order.order_clusters(sorted_genotypes, options = program_options_clustering)
 	logger.info("Generating output...")
@@ -64,7 +70,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		cluster_options = program_options_clustering,
 		p_values = generate.PAIRWISE_CALCULATIONS,
 		filter_cache = [],
-		linkage_matrix = linkage_matrix
+		linkage_matrix = linkage_matrix,
+		genotype_palette_filename = program_options.genotype_palette_filename
 	)
 	generate_output(
 		workflow_data,

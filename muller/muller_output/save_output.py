@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
-
+import math
 import pandas
 from dataclasses import dataclass
 
@@ -13,7 +13,7 @@ OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
 	from muller.clustering.generate import GenotypeOptions
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from inheritance.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
@@ -21,7 +21,7 @@ try:
 	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
 	from muller.widgets import generate_genotype_palette, map_trajectories_to_genotype
 except ModuleNotFoundError:
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller_output.generate_tables import *
 	from muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
@@ -46,9 +46,10 @@ class WorkflowData:
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
-	p_values: PairwiseCalculation
+	p_values: PairwiseCalculationCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
+	genotype_palette_filename: Optional[Path]
 
 
 class OutputFilenames:
@@ -118,6 +119,27 @@ def _make_folder(folder: Path):
 	if not folder.exists():
 		folder.mkdir()
 
+def generate_genotype_annotations(genotype_members:pandas.Series, info:pandas.DataFrame)->Dict[str,List[str]]:
+
+	gene_column = 'Gene'
+	aa_column = 'Amino Acid'
+	annotations: Dict[str, List[str]] = dict()
+	for genotype_label, members in genotype_members.items():
+		trajectory_labels = members.split('|')
+		trajectory_subtable = info.loc[trajectory_labels]
+		annotation = list()
+		for i, j in zip(trajectory_subtable[gene_column], trajectory_subtable[aa_column]):
+			if isinstance(i, float):
+				gene = ""
+			else:
+				gene = i.split('<')[0]
+			if isinstance(j, float): # is NAN
+				effect = ""
+			else:
+				effect = j.split('(')[0]
+			annotation.append(f"{gene} {effect}")
+		annotations[genotype_label] = annotation
+	return annotations
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool,
 		adjust_populations: bool):
@@ -128,7 +150,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
-	genotype_colors = generate_genotype_palette(_all_genotype_labels)
+	genotype_colors = generate_genotype_palette(_all_genotype_labels, workflow_data.genotype_palette_filename)
+	trajectory_colors = {i:genotype_colors[parent_genotypes[i]] for i in workflow_data.trajectories.index}
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
 
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
@@ -165,7 +188,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors, parent_genotypes)
 	plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors, parent_genotypes)
 	if muller_df is not None:
-		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, annotate_all)
+		genotype_annotations = generate_genotype_annotations(workflow_data.genotype_members, workflow_data.info)
+		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, genotype_annotations)
 
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)
@@ -173,7 +197,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		linkage_table.columns = ['clusterA', 'clusterB', 'distance', 'observations']
 		linkage_table['resultingCluster'] = list(num_trajectories + i for i in range(len(linkage_table)))
 		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
-		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
+		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot, trajectory_colors)
 
 	workflow_data.p_values.save(filenames.calculation_json)
 
