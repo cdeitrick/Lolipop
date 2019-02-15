@@ -1,13 +1,13 @@
 import itertools
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
-
+from scipy.spatial import distance
 import pandas
 
 PairwiseArrayType = Dict[Tuple[str, str], float]
 
 
-class PairwiseCalculation:
+class PairwiseCalculationCache:
 	"""
 		Calculates and holds the calculations for all pairwise elements.
 
@@ -45,12 +45,14 @@ class PairwiseCalculation:
 				series[right] = value
 			_square_map[left] = series
 		return pandas.DataFrame(_square_map)
-
+	def triangle(self):
+		""" Returns the condensed squareform of the pair array."""
+		return distance.squareform(self.squareform().values)
 	def get(self, left, right, default = None) -> float:
 		result = self.pairwise_values.get((left, right), default)
 		return result
 
-	def reduce(self, labels: Iterable[str]) -> 'PairwiseCalculation':
+	def reduce(self, labels: Iterable[str]) -> 'PairwiseCalculationCache':
 		"""
 			Removes all labels from `self.pairwise_values` that are not present in `labels`
 		"""
@@ -62,7 +64,7 @@ class PairwiseCalculation:
 		self.pairwise_values = pair_array
 		return self
 
-	def update(self, pair_array: PairwiseArrayType) -> 'PairwiseCalculation':
+	def update(self, pair_array: PairwiseArrayType) -> 'PairwiseCalculationCache':
 		self.pairwise_values.update(pair_array)
 		return self
 
@@ -82,7 +84,7 @@ class PairwiseCalculation:
 				output.write(line)
 
 	@classmethod
-	def read(cls, filename: Path) -> 'PairwiseCalculation':
+	def read(cls, filename: Path) -> 'PairwiseCalculationCache':
 		contents = filename.read_text().split('\n')
 		contents = [i.split('\t') for i in contents]
 		data = dict()
@@ -91,4 +93,4 @@ class PairwiseCalculation:
 			value = float(value)
 			data[left, right] = value
 			data[right, left] = value
-		return PairwiseCalculation(data)
+		return PairwiseCalculationCache(data)

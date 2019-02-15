@@ -1,15 +1,17 @@
 import itertools
 import logging
 from typing import Dict, List, Tuple
-import math
+
 logger = logging.getLogger(__file__)
 import pandas
 import math
 
 try:
 	from clustering.metrics import distance
+	from widgets import get_valid_points
 except ModuleNotFoundError:
 	from . import distance
+	from ...widgets import get_valid_points
 
 
 def normalize(series: pandas.Series) -> pandas.Series:
@@ -20,27 +22,6 @@ def normalize(series: pandas.Series) -> pandas.Series:
 	else:
 		normalized_series = (series - mean) / sigma
 	return normalized_series
-
-
-def filter_out_invalid_timepoints(left: pandas.Series, right: pandas.Series, detected_cutoff: float, fixed_cutoff: float) -> Tuple[
-	pandas.Series, pandas.Series]:
-	"""
-		Removes all timepoints from the dataframe where both values were either undetected or fixed.
-	Parameters
-	----------
-	left:pandas.DataFrame
-	right:pandas.DataFrame
-	detected_cutoff:float
-	fixed_cutoff:float
-
-	Returns
-	-------
-	pandas.DataFrame
-		A dataframe with any invalid timepoints removed.
-	"""
-	df = pandas.concat([left, right], axis = 1)
-	not_detected_fixed_df = df[df.lt(fixed_cutoff).any(axis = 1) & df.gt(detected_cutoff).any(axis = 1)]
-	return not_detected_fixed_df.iloc[:, 0], not_detected_fixed_df.iloc[:, 1]
 
 
 def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
@@ -98,8 +79,12 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	for left, right in pair_combinations:
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
+		detected_points = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, inner = False)
+		#detected_points = pandas.concat([left_trajectory, right_trajectory], axis = 1)
+		detected_points.columns = ['left', 'right']
+		left_trajectory = detected_points['left']
+		right_trajectory = detected_points['right']
 
-		left_trajectory, right_trajectory = filter_out_invalid_timepoints(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff)
 		if left_trajectory.empty:
 			distance_between_series = calculate_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		elif metric == "similarity":
@@ -112,17 +97,26 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 			distance_between_series = distance.binomial_distance(left_trajectory, right_trajectory)
 		elif metric == 'binomialp':
 			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
-		elif metric == 'dtw':
-			distance_between_series = distance.dynamic_time_warping(left_trajectory, right_trajectory)
+		elif metric == 'jaccard':
+			distance_between_series = distance.jaccard_distance(left_trajectory, right_trajectory)
+		elif metric == "combined":
+			distance_between_series_pearson = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
+			distance_between_series_minkowski = distance.minkowski_distance(left_trajectory, right_trajectory, 2)
+			#distance_between_series = (distance_between_series_jaccard / 2) + distance_between_series_pearson
+			distance_between_series = (2*distance_between_series_pearson) + distance_between_series_minkowski
 		else:
 			message = f"'{metric}' is not an available metric."
 			raise ValueError(message)
 		pair_array[left, right] = pair_array[right, left] = distance_between_series
 
 	# Assume that any pair with NAN values are the maximum possible distance from each other.
-	maximum_distance = max(pair_array.values())
-	pair_array = {k:(v if not math.isnan(v) else maximum_distance) for k,v in pair_array.items()}
-
-	for (l,r), v in sorted(pair_array.items()):
-		logger.debug(f"{l}\t{r}\t{v:.2E}")
+	maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
+	pair_array = {k: (v if not math.isnan(v) else maximum_distance) for k, v in pair_array.items()}
+	# Log the values for debugging
+	keys = sorted(set(i[0] for i in pair_array.keys()))
+	for key in keys:
+		items = {k: v for k, v in pair_array.items() if k[0] == key}
+		for (l, r), v in sorted(items.items(), key = lambda s: s[-1], reverse = False):
+			line = f"{l}\t{r}\t{v:.2E}"
+			logger.debug(line)
 	return pair_array

@@ -1,9 +1,11 @@
 import math
 
 import pandas
-from dtw import dtw
 
-
+try:
+	from inheritance.order_by_area import area_of_series, calculate_common_area
+except ModuleNotFoundError:
+	from ...inheritance.order_by_area import area_of_series, calculate_common_area
 def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int) -> float:
 	""" Calculates the minkowski distance between two series. Essentially just a generic lp-norm.
 		Parameters
@@ -28,20 +30,10 @@ def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> f
 	-------
 	float
 	"""
-	covariance = left.cov(right)
-	den = left.std() * right.std()
-	# The pearson correlation coefficient is in the range [-1, 1], where values closer to 1 indicate perfect similarity
-	pcc = covariance / den
+
+	pcc = left.corr(right, method = 'pearson')
 	# convert to distance metric.
 	return 1 - pcc
-
-
-def dynamic_time_warping(left: pandas.Series, right: pandas.Series) -> float:
-	""" Calculates the DTW distance between two series.
-	"""
-	cost_metric = lambda x, y: (x - y) ** 2
-	distance, cost_matrix, acc_cost_matrix, path = dtw(left.values, right.values, dist = cost_metric, w = 3, s = 2)
-	return distance
 
 
 # noinspection PyTypeChecker
@@ -76,5 +68,42 @@ def binomial_probability(left: pandas.Series, right: pandas.Series) -> float:
 	return value
 
 
+def bray_curtis(left: pandas.Series, right: pandas.Series) -> float:
+	area_left = area_of_series(left)
+	area_right = area_of_series(right)
+	area_shared = calculate_common_area(left, right, 0.03)
+
+	return 1-(2 * area_shared) / (area_left + area_right)
+
+
+def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
+	area_left = area_of_series(left)
+	area_right = area_of_series(right)
+	area_shared = calculate_common_area(left, right, 0.03)
+	j = area_shared / (area_left + area_right - area_shared)
+	return 1 - j
+
+
+def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas.Series:
+	minkowski = minkowski_distance(left, right, 2)
+	pearson = pearson_correlation_distance(left, right)
+	dtwarping = dynamic_time_warping(left, right)
+	bd = binomial_distance(left, right)
+	bc = bray_curtis(left, right)
+
+	data = {
+		'minkowski':        minkowski,
+		'pearson':          pearson,
+		'dtw':              dtwarping,
+		'binomialDistance': bd,
+		'brayCurtis':       bc,
+		'jaccard':			jaccard_distance(left, right),
+		'combined':			2*pearson + minkowski
+	}
+
+	return pandas.Series(data)
+
+
 if __name__ == "__main__":
 	pass
+
