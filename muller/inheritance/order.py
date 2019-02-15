@@ -43,7 +43,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 
 		for nested_label, row in table_of_checks.iterrows():
 			if nested_label == unnested_label: continue
-			additive_check, subtractive_check, delta, area_ratio = row
+			additive_check, subtractive_check, delta, area_ratio, area_difference = row
 			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
 			area_check = area_ratio > 0.97
 			derivative_check = delta > options.derivative_check_cutoff
@@ -52,18 +52,15 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
 			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")
 			logging.info(f"{unnested_label}|{nested_label} Derivative check: {derivative_check}")
+			logging.info(f"{unnested_label}|{nested_label} Area Difference: {area_difference}")
 			if area_check and delta > options.derivative_check_cutoff and additive_check:
 				# Most likely the background of the current genotype.
+				logging.info(f"Complete Check: True")
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 				break
-			if area_check:
-				# A candidate background
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+			if area_difference < -.1:
+				# The unnested trajectory is larger than the nested trajectory it is being compared against.
 				continue
-			if additive_check and False:
-				# Possible background
-
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 			genotype_deltas.append((nested_label, delta))
 			# if subtractive_check:
 			#	continue
@@ -71,11 +68,22 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
-				break
+			elif delta < -options.derivative_check_cutoff:
+				# They are anti-correlated.
+				continue
+			# break
+			if area_check:
+				# A candidate background
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				continue
+			if additive_check:# and False:
+				# Possible background
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+
 
 		is_member = genotype_nests.is_a_member(unnested_label)
 		if not is_member:
-			print(f"Not a member: {unnested_label}")
+			logger.info(f"Not a member: {unnested_label}")
 			# if it hasn't been matched with a background, two things can happen
 			# (1) IF it is logically possible (i.e., if the sum of it
 			# and all existing backgrounds at each time point is ~1 or less),
@@ -83,7 +91,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			# it in with the genotype it's most correlated with
 			# Find the test that correlated the most with this genotype
 			result = background_heuristic(genotype_nests, genotype_deltas, unnested_trajectory, options)
-			print(result)
 			if result:
 				genotype_nests.add_genotype_to_background(unnested_label, result)
 	logger.info("The final backgrounds:")

@@ -1,35 +1,11 @@
 from typing import Any, Optional, Tuple
 
 import pandas
-
+from widgets import get_valid_points
 try:
 	from inheritance import order_by_area
 except ModuleNotFoundError:
 	from . import order_by_area
-
-
-def get_detected_points(left: pandas.Series, right: pandas.Series, dlimit: float, exclude_fixed: bool = False) -> pandas.DataFrame:
-	""" Removes points where at least one series was not detected."""
-	df = pandas.concat([left, right], axis = 1)
-	df.columns = ['left', 'right']  # Prevent an IndexError when `left` and `right` refer to the same series.
-	at_least_one_detected = df.sum(axis = 1) > dlimit
-	at_least_one_detected = at_least_one_detected[at_least_one_detected]
-	at_least_one_detected = at_least_one_detected[at_least_one_detected]
-	if len(at_least_one_detected) == 1:
-		result = df.loc[at_least_one_detected.index[0]]
-	else:
-		position_index_min = df.index.get_loc(min(at_least_one_detected.index))
-		position_index_max = df.index.get_loc(max(at_least_one_detected.index))
-		if position_index_max < len(df.index):
-			#Slicing only retrieves items up to, but not including, the final element.
-			position_index_max +=1
-		result = df.iloc[position_index_min:position_index_max]
-
-	if exclude_fixed:
-		not_fixed = (result['left'] < 0.97) & (result['right'] < 0.97)
-		result = result.loc[not_fixed[not_fixed].index]
-
-	return result
 
 
 def check_additive_background(left: pandas.Series, right: pandas.Series, double_cutoff: float, single_cutoff: float) -> bool:
@@ -46,10 +22,12 @@ def check_additive_background(left: pandas.Series, right: pandas.Series, double_
 	-------
 	bool
 	"""
-	# trajectorysum = right + left
-	# trajectorysum = trajectorysum[trajectorysum > 0.03]
-	trajectorysum = get_detected_points(left, right, 0.03).sum(axis = 1)
-	double_check = (trajectorysum > double_cutoff).sum() > 0  # Implicit conversion from bool to int.
+	trajectorysum = right + left
+	#trajectorysum = trajectorysum[trajectorysum > 0.03]
+
+	#trajectorysum = get_valid_points(left, right, double_cutoff).sum(axis = 1)
+
+	double_check = (trajectorysum > double_cutoff).sum() > 1  # Implicit conversion from bool to int.
 	single_check = (trajectorysum > single_cutoff).sum() > 0
 	return double_check or single_check
 
@@ -105,7 +83,8 @@ def check_derivative_background_legacy(left: pandas.Series, right: pandas.Series
 
 def check_derivative_background(left: pandas.Series, right: pandas.Series, detection_cutoff: float) -> float:
 	# Pandas implementation of the derivative check, since it basically just checks for covariance.
-	df = get_detected_points(left, right, detection_cutoff, exclude_fixed = True)
+	df = get_valid_points(left, right, detection_cutoff, flimit = 0.97)
+
 	# return left.cov(right)
 	return df.iloc[:, 0].cov(df.iloc[:, 1])
 
@@ -163,11 +142,17 @@ def apply_genotype_checks_to_table(unnested_trajectory: pandas.Series, table: pa
 		args = (unnested_trajectory, 0.03),
 		axis = axis
 	)
-	area_check = area_check / order_by_area.area_of_series(unnested_trajectory)
+	area_difference = table.apply(
+		order_by_area.calculate_area_difference,
+		args = [unnested_trajectory],
+		axis = axis
+	)
+	area_of_unnested_trajectory = order_by_area.area_of_series(unnested_trajectory)
+	area_check = area_check / area_of_unnested_trajectory
+	area_difference = area_difference / area_of_unnested_trajectory
+	columns = ['additiveCheck', 'subtractiveCheck', 'derivativeCheck', 'areaCheck', 'areaDifference']
 
-	columns = ['additiveCheck', 'subtractiveCheck', 'derivativeCheck', 'areaCheck']
-
-	df = pandas.concat([additive_check, subtractive_check, covariance_check, area_check], axis = 1)
+	df = pandas.concat([additive_check, subtractive_check, covariance_check, area_check, area_difference], axis = 1)
 	df.columns = columns
 	return df
 

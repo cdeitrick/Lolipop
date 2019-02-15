@@ -40,7 +40,10 @@ def calculate_common_area(left: pandas.Series, right: pandas.Series, dlimit: flo
 		overlap = area_of_series(left.where(left < right, right))
 	return overlap
 
-
+def calculate_area_difference(left: pandas.Series, right:pandas.Series):
+	left_area = area_of_series(left)
+	right_area = area_of_series(right)
+	return left_area - right_area
 # noinspection PyTypeChecker
 def get_overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> Set[int]:
 	detected_left = left[left > dlimit]
@@ -62,6 +65,7 @@ def compare_to_table(left: pandas.Series, table: pandas.DataFrame, dlimit: float
 	df.columns = ['commonArea', 'noncommonArea', 'nonoverlappingArea']
 	df = df.sort_values(by = ['commonArea', 'nonoverlappingArea', 'noncommonArea'], ascending = [False, True, True])
 	return df
+
 
 
 if __name__ == "__main__":
