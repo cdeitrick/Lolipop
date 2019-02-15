@@ -3,16 +3,16 @@ from typing import Any, List, Tuple
 import pandas
 
 try:
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from clustering.methods.hierarchical_method import hierarchical_method
 	from clustering.methods.twostep_method import twostep_method
 except ModuleNotFoundError:
-	from ..metrics.pairwise_calculation_cache import PairwiseCalculation
+	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from .hierarchical_method import hierarchical_method
 	from .twostep_method import twostep_method
 
 
-def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise_calculations: PairwiseCalculation, method: str,
+def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise_calculations: PairwiseCalculationCache, method: str,
 		similarity_breakpoint: float, difference_breakpoint: float, starting_genotypes: List[List[str]]) -> Tuple[List[List[str]], Any]:
 	"""
 		Calculates genotypes for the population using the method defined by `method`
@@ -20,7 +20,7 @@ def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise
 	----------
 	timepoints: pandas.DataFrame
 		A dataframe of trajectory timepoints.
-	pairwise_calculations: PairwiseCalculation
+	pairwise_calculations: PairwiseCalculationCache
 		Contains the relevant calculations/metrics required by each method.
 	method: {'hierarchy', 'matlab'}
 		Specifies the clustering method to use.

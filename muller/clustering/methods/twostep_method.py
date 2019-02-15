@@ -5,10 +5,10 @@ import pandas
 
 try:
 	from clustering.methods.difference import unlink_unrelated_trajectories
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculation
+	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
-	from ..metrics.pairwise_calculation_cache import PairwiseCalculation
+	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 
 
 def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List[str]] = None) -> List[
@@ -87,7 +87,7 @@ def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]])
 	return value
 
 
-def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation, similarity_breakpoint: float, difference_breakpoint: float,
+def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculationCache, similarity_breakpoint: float, difference_breakpoint: float,
 		starting_genotypes: List[List[str]]) -> List[List[str]]:
 	"""
 		Clusters trajectories into muller_genotypes.

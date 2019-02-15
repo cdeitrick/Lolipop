@@ -73,7 +73,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 
 
 # noinspection PyTypeChecker
-def get_first_timpoint_above_cutoff(series: pandas.Series, cutoff: float) -> int:
+def get_first_timepoint_above_cutoff(series: pandas.Series, cutoff: float) -> int:
 	""" Extracts the first timepoint that exceeds the cutoff."""
 	return series[series > cutoff].idxmin()
 
@@ -109,15 +109,13 @@ def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas
 
 	# Filter out backgrounds that are only detected at one timepoint.
 	# backgrounds = _get_backgrounds_present_at_multiple_timepoints(backgrounds, detection_cutoff)
-
 	# We want to iterate over the non-background genotypes to check if they appear both before and after any genotypes that fix.
 	not_backgrounds = genotypes[~genotypes.index.isin(backgrounds.index)]
-
 	# Iterate over the detected backgrounds.
 	for _, background in backgrounds.iterrows():
 		# Find the timepoint where the background first fixes.
-		first_detected_point: int = get_first_timpoint_above_cutoff(background, detection_cutoff)
-		first_fixed_point: int = get_first_timpoint_above_cutoff(background, fixed_cutoff)
+		first_detected_point: int = get_first_timepoint_above_cutoff(background, detection_cutoff)
+		first_fixed_point: int = get_first_timepoint_above_cutoff(background, fixed_cutoff)
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background

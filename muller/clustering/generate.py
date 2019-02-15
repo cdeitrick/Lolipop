@@ -8,18 +8,18 @@ from options import GenotypeOptions
 logger = logging.getLogger(__name__)
 try:
 	from muller.clustering.average import calculate_mean_genotype
-	from clustering.metrics import PairwiseCalculation, calculate_pairwise_metric
+	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from clustering.methods import calculate_genotypes_from_given_method
 	from clustering.filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
 	from muller.widgets import map_trajectories_to_genotype
 except ModuleNotFoundError:
 	from .average import calculate_mean_genotype
-	from .metrics import PairwiseCalculation, calculate_pairwise_metric
+	from .metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from .methods import calculate_genotypes_from_given_method
 	from .filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
 	from widgets import map_trajectories_to_genotype
 
-PAIRWISE_CALCULATIONS = PairwiseCalculation()
+PAIRWISE_CALCULATIONS = PairwiseCalculationCache()
 
 
 def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOptions):
@@ -131,7 +131,8 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptio
 		logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
 
 		# Search for genotypes that do not make sense in the context of an evolved population.
-		fuzzy_detected_cutoff = max(goptions.detection_breakpoint, dlimit)
+		#fuzzy_detected_cutoff = max(goptions.detection_breakpoint, dlimit)
+		fuzzy_detected_cutoff = goptions.detection_breakpoint
 		logger.info(f"fuzzy cutoffs: {fuzzy_detected_cutoff}, {flimit}")
 		current_invalid_genotype = find_first_invalid_genotype(genotype_table, current_backgrounds, fuzzy_detected_cutoff, flimit, use_strict_filter)
 		logger.info(f"Invalid genotype: {current_invalid_genotype}")
