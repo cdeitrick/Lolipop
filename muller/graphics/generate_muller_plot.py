@@ -1,7 +1,9 @@
 """
 	Python implementation of the Muller_plot function available from ggmuller.
 """
+import logging
 import math
+import random
 from itertools import filterfalse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -10,8 +12,7 @@ import pandas
 from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
-import logging
-import random
+
 logger = logging.getLogger(__file__)
 plt.style.use('seaborn-white')
 
@@ -114,7 +115,7 @@ def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]
 	return points
 
 
-def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[str, Any]:
+def get_font_properties(genotype_color: str) -> Dict[str, Any]:
 	"""
 		Generates font properties for each annotations. The main difference is font color,
 		which is determined by the background color.
@@ -128,7 +129,7 @@ def get_font_properties(genotype_label: str, colormap: Dict[str, str]) -> Dict[s
 	fontproperties: Dict[str, Any]
 	"""
 
-	luminance = calculate_luminance(colormap[genotype_label])
+	luminance = calculate_luminance(genotype_color)
 	if luminance > 0.5:
 		font_color = "#333333"
 	else:
@@ -150,18 +151,20 @@ def calculate_luminance(color: str) -> float:
 	lum = (.299 * red) + (.587 * green) + (.114 * blue)
 	return lum / 255
 
-def distance(left:Tuple[float, float], right:Tuple[float,float])->float:
+
+def distance(left: Tuple[float, float], right: Tuple[float, float]) -> float:
 	xl, yl = left
 	xr, yr = right
 
-	num = (xl - xr)**2 + (yl - yr)**2
+	num = (xl - xr) ** 2 + (yl - yr) ** 2
 	return math.sqrt(num)
 
-def find_closest_point(point, points:List[Tuple[float, float]])->Tuple[float,float]:
+
+def find_closest_point(point, points: List[Tuple[float, float]]) -> Tuple[float, float]:
 	return min(points, key = lambda s: distance(s, point))
 
-def relocate_point(point:Tuple[float,float], locations: List[Tuple[float, float]])->Tuple[float,float]:
 
+def relocate_point(point: Tuple[float, float], locations: List[Tuple[float, float]]) -> Tuple[float, float]:
 	x_loc, y_loc = point
 	for _ in range(10):
 		closest_neighbor = find_closest_point((x_loc, y_loc), locations)
@@ -183,7 +186,32 @@ def relocate_point(point:Tuple[float,float], locations: List[Tuple[float, float]
 			break
 	return x_loc, y_loc
 
-#cat AU0106_S3_R1_001.fastq AU0106_S3_R2_001.fastq | metaphlan2.py --input_type multifastq --bowtie2out AU0106.bt2out.txt > AU0106.metaphlan.txt
+
+def annotate_axes(ax: Axes, points: Dict[str, Tuple[float, float]], annotations: Dict[str, List[str]], color_palette: Dict[str, str]) -> Axes:
+	locations = list()
+	for genotype_label, point in points.items():
+		if genotype_label == 'genotype-0': continue
+		label_properties = get_font_properties(color_palette[genotype_label])
+
+		if locations:
+			x_loc, y_loc = relocate_point(point, locations)
+		else:
+			x_loc, y_loc = point
+		locations.append((x_loc, y_loc))
+		genotype_annotations = annotations.get(genotype_label, [])
+		try:
+			genotype_annotations = genotype_annotations[:3]
+		except IndexError:
+			pass
+		ax.text(
+			x_loc, y_loc,
+			"-" + "\n-".join(genotype_annotations),
+			bbox = dict(facecolor = color_palette[genotype_label], alpha = 1),
+			fontdict = label_properties
+		)
+	return ax
+
+
 def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
 		output_filename: Path, annotations: Dict[str, List[str]] = None):
 	"""
@@ -211,35 +239,14 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax.stackplot(x, y, colors = colors, labels = labels)
 
 	if annotations:
-		locations = list()
-		for genotype_label, point in points.items():
-			if genotype_label == 'genotype-0': continue
-			label_properties = get_font_properties(genotype_label, color_palette)
-
-			if locations:
-				x_loc, y_loc = relocate_point(point, locations)
-			else:
-				x_loc, y_loc = point
-			locations.append((x_loc, y_loc))
-			genotype_annotations = annotations.get(genotype_label, [])
-			try:
-				genotype_annotations = genotype_annotations[:3]
-			except IndexError:
-				pass
-			plt.text(
-				x_loc, y_loc,
-				"-"+"\n-".join(genotype_annotations),
-				bbox = dict(facecolor = color_palette[genotype_label], alpha = 1),
-				fontdict = label_properties
-			)
-
+		annotate_axes(ax, points, annotations, color_palette)
+	else:
+		plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
 	ax.set_facecolor("#FFFFFF")
-	ax.set_xlabel("Generation")
-	ax.set_ylabel("Frequency")
+	ax.set_xlabel("Generation", fontsize = 20)
+	ax.set_ylabel("Frequency", fontsize = 20)
 
 	# Basic stacked area chart.
-	#if not annotations:
-	plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
 	ax.spines['right'].set_visible(False)
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
@@ -247,8 +254,8 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	plt.tight_layout()
 	plt.savefig(str(output_filename))
 	plt.savefig(str(output_filename.with_suffix('.pdf')))
-	plt.savefig(str(output_filename.with_suffix('.ps')))
-	plt.savefig(str(output_filename.with_suffix('.eps')))
+	plt.savefig(str(output_filename.with_suffix('.svg')))
+
 	return ax
 
 
