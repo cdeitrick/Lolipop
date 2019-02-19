@@ -1,5 +1,6 @@
 from typing import Dict, List
-
+import logging
+logger = logging.getLogger(__file__)
 import pandas
 
 
@@ -11,11 +12,15 @@ class Cluster:
 
 		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
 
-	def add_genotype_to_background(self, unnested_label: str, nested_label: str) -> None:
-		if unnested_label in self.nests:
-			self.nests[unnested_label].append(nested_label)
+	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority:bool = False) -> None:
+		logger.info(f"adding {nested_label} as a potential background for {unnested_label} with priority {priority}")
+		if unnested_label not in self.nests:
+			self.nests[unnested_label] = list()
+
+		if priority:
+			self.nests[unnested_label].insert(0, nested_label)
 		else:
-			self.nests[unnested_label] = [nested_label]
+			self.nests[unnested_label].append(nested_label)
 
 	def get(self, label: str) -> List[str]:
 		return self.nests[label]

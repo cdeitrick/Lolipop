@@ -175,7 +175,7 @@ def relocate_point(point:Tuple[float,float], locations: List[Tuple[float, float]
 			if y_loc > closest_neighbor[1]:
 				y_loc += random.uniform(.1, .2)
 			else:
-				y_loc -= random.uniform(.05, .15)
+				y_loc -= random.uniform(.05, .10)
 		elif y_is_almost_close and x_is_close and x_large:
 			x_loc += .5
 			break
@@ -185,7 +185,7 @@ def relocate_point(point:Tuple[float,float], locations: List[Tuple[float, float]
 
 #cat AU0106_S3_R1_001.fastq AU0106_S3_R2_001.fastq | metaphlan2.py --input_type multifastq --bowtie2out AU0106.bt2out.txt > AU0106.metaphlan.txt
 def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
-		output_filename: Path, annotations: Dict[str, List[str]]):
+		output_filename: Path, annotations: Dict[str, List[str]] = None):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 	Parameters
@@ -213,6 +213,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	if annotations:
 		locations = list()
 		for genotype_label, point in points.items():
+			if genotype_label == 'genotype-0': continue
 			label_properties = get_font_properties(genotype_label, color_palette)
 
 			if locations:
@@ -237,8 +238,8 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax.set_ylabel("Frequency")
 
 	# Basic stacked area chart.
-
-	#plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
+	#if not annotations:
+	plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
 	ax.spines['right'].set_visible(False)
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
@@ -246,6 +247,8 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	plt.tight_layout()
 	plt.savefig(str(output_filename))
 	plt.savefig(str(output_filename.with_suffix('.pdf')))
+	plt.savefig(str(output_filename.with_suffix('.ps')))
+	plt.savefig(str(output_filename.with_suffix('.eps')))
 	return ax
 
 

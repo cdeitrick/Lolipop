@@ -32,7 +32,10 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("Importing data...")
 	if program_options.is_genotype:
 		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
-		genotype_members = genotype_info['members']
+		try:
+			genotype_members = genotype_info['members']
+		except KeyError:
+			genotype_members = dict()
 		original_timepoints = timepoints = info = linkage_matrix = None
 		original_genotypes = mean_genotypes
 	else:

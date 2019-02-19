@@ -75,6 +75,7 @@ class OutputFilenames:
 		self.muller_table: Path = subfolder / (name + f'.muller.csv')  # This is generated in r.
 		self.muller_plot_basic: Path = output_folder / (name + '.muller.basic.png')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
+		self.muller_plot_unannotated: Path = subfolder / (name + '.muller.unannotated.png')
 		self.mermaid_script: Path = subfolder / (name + '.mermaid.md')
 		self.mermaid_render: Path = output_folder / (name + '.mermaid.png')
 		self.genotype_plot: Path = output_folder / (name + '.png')
@@ -139,25 +140,31 @@ def generate_genotype_annotations(genotype_members:pandas.Series, info:pandas.Da
 				effect = j.split('(')[0]
 			annotation.append(f"{gene} {effect}")
 		annotations[genotype_label] = annotation
+	if 'genotype=0' in annotations:
+		annotations.pop('genotype-0')
 	return annotations
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool,
 		adjust_populations: bool):
 	delimiter = '\t'
+	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
-
-	filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
-	trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
 	genotype_colors = generate_genotype_palette(_all_genotype_labels, workflow_data.genotype_palette_filename)
-	trajectory_colors = {i:genotype_colors[parent_genotypes[i]] for i in workflow_data.trajectories.index}
+
+	if workflow_data.trajectories is not None:
+		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
+		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
+		trajectory_colors = {i: genotype_colors[parent_genotypes[i]] for i in workflow_data.trajectories.index}
+		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
+
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
 
 	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 
-	filenames = OutputFilenames(output_folder, workflow_data.filename.stem)
+
 
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)
@@ -167,9 +174,6 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 	if workflow_data.original_trajectories is not None:
 		workflow_data.original_trajectories.to_csv(str(filenames.original_trajectory), sep = delimiter)
-
-	if workflow_data.trajectories is not None:
-		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
 
 	muller_df = generate_r_script(
 		trajectory = filenames.trajectory,
@@ -186,10 +190,12 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	filenames.parameters.write_text(json.dumps(parameters, indent = 2))
 
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors, parent_genotypes)
-	plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors, parent_genotypes)
+	if workflow_data.trajectories is not None:
+		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors, parent_genotypes)
 	if muller_df is not None:
 		genotype_annotations = generate_genotype_annotations(workflow_data.genotype_members, workflow_data.info)
 		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_annotated, genotype_annotations)
+		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors, filenames.muller_plot_unannotated)
 
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)

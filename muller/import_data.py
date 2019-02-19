@@ -77,6 +77,8 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 		key_column = 'Genotype'
 	elif 'Unnamed: 0' in data.columns:
 		key_column = 'Unnamed: 0'
+	elif 'Trajectory' in data.columns:
+		key_column = 'Trajectory'
 	else:
 		message = f"One of the columns needs to be labeled `Genotype`. Got {data.columns} instead from {filename}."
 		raise ValueError(message)

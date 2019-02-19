@@ -56,7 +56,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			if area_check and delta > options.derivative_check_cutoff and additive_check:
 				# Most likely the background of the current genotype.
 				logging.info(f"Complete Check: True")
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label, True)
 				break
 			if area_difference < -.1:
 				# The unnested trajectory is larger than the nested trajectory it is being compared against.

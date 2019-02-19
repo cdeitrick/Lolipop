@@ -48,10 +48,11 @@ def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
 			logger.debug(line)
 			#Check for empty lines
 			try:
-				key, color = line
+				key, color, *_ = line
 			except:
 				continue
-			palette[key] = color
+			if color:
+				palette[key] = color
 
 	return palette
 
@@ -157,3 +158,9 @@ def format_inconsistency_matrix(R) -> pandas.DataFrame:
 	inconsistency_table = pandas.DataFrame(R, columns = ['mean', 'std', 'observations', 'statistic'])
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
+
+if __name__ == "__main__":
+	import palettable
+
+	palette = palettable.colorbrewer.sequential.Blues_3
+	colormap = palette.get_mpl_colormap()
