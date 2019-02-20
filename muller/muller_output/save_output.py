@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
-import math
+
 import pandas
 from dataclasses import dataclass
 
@@ -18,14 +18,16 @@ try:
 	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller.muller_output.generate_tables import *
-	from muller.muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
-	from muller.widgets import generate_genotype_palette, map_trajectories_to_genotype
+	from muller.muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller.widgets import map_trajectories_to_genotype
+	from muller.palette import generate_clade_palette
 except ModuleNotFoundError:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller_output.generate_tables import *
-	from muller_output.generate_scripts import generate_mermaid_diagram, generate_r_script, excecute_mermaid_script, execute_r_script
-	from widgets import generate_genotype_palette, map_trajectories_to_genotype
+	from muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from widgets import map_trajectories_to_genotype
+	from palette import generate_clade_palette
 
 	GenotypeOptions = Any
 	SortOptions = Any
@@ -120,8 +122,13 @@ def _make_folder(folder: Path):
 	if not folder.exists():
 		folder.mkdir()
 
-def generate_genotype_annotations(genotype_members:pandas.Series, info:pandas.DataFrame)->Dict[str,List[str]]:
 
+def generate_genotype_annotations(genotype_members: pandas.Series, info: pandas.DataFrame) -> Dict[str, List[str]]:
+	gene_alias_filename = Path("/home/cld100/Documents/projects/rosch/prokka_gene_search/prokka_gene_map.txt")
+	contents = gene_alias_filename.read_text().split('\n')
+	lines = [line.split('\t') for line in contents if line]
+	gene_aliases = {i: j for i, j in lines}
+	gene_aliases['patA'] = 'dltB'
 	gene_column = 'Gene'
 	aa_column = 'Amino Acid'
 	annotations: Dict[str, List[str]] = dict()
@@ -134,15 +141,19 @@ def generate_genotype_annotations(genotype_members:pandas.Series, info:pandas.Da
 				gene = ""
 			else:
 				gene = i.split('<')[0]
-			if isinstance(j, float): # is NAN
+
+			for k, v in gene_aliases.items():
+				gene = gene.replace(k, v)
+
+			if isinstance(j, float):  # is NAN
 				effect = ""
 			else:
 				effect = j.split('(')[0]
 			annotation.append(f"{gene} {effect}")
 		annotations[genotype_label] = annotation
-	if 'genotype=0' in annotations:
-		annotations.pop('genotype-0')
+
 	return annotations
+
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool,
 		adjust_populations: bool):
@@ -151,7 +162,10 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	parent_genotypes = map_trajectories_to_genotype(workflow_data.genotype_members)
 
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
-	genotype_colors = generate_genotype_palette(_all_genotype_labels, workflow_data.genotype_palette_filename)
+	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
+	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
+	# genotype_colors = generate_genotype_palette(_all_genotype_labels, workflow_data.genotype_palette_filename)
+	genotype_colors = generate_clade_palette(edges_table)
 
 	if workflow_data.trajectories is not None:
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
@@ -160,11 +174,6 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
 
 	parameters = get_workflow_parameters(workflow_data, genotype_colors)
-
-	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
-	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
-
-
 
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)
@@ -185,7 +194,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		color_palette = genotype_colors,
 		genotype_labels = population_table['Identity'].unique().tolist()
 	)
-	mermaid_diagram = generate_mermaid_diagram(edges_table, genotype_colors)
+	mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors)
 	excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
 	filenames.parameters.write_text(json.dumps(parameters, indent = 2))
 

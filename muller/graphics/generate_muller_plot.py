@@ -13,6 +13,11 @@ from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
 
+try:
+	from muller.widgets import calculate_luminance
+except ModuleNotFoundError:
+	from widgets import calculate_luminance
+
 logger = logging.getLogger(__file__)
 plt.style.use('seaborn-white')
 
@@ -139,17 +144,6 @@ def get_font_properties(genotype_color: str) -> Dict[str, Any]:
 		'color': font_color
 	}
 	return label_properties
-
-
-def calculate_luminance(color: str) -> float:
-	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
-
-	red = int(color[1:3], 16)
-	green = int(color[3:5], 16)
-	blue = int(color[5:], 16)
-
-	lum = (.299 * red) + (.587 * green) + (.114 * blue)
-	return lum / 255
 
 
 def distance(left: Tuple[float, float], right: Tuple[float, float]) -> float:
