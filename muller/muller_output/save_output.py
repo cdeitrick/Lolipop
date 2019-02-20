@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import pandas
 from dataclasses import dataclass
-
+import itertools
 # logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
 # logger = logging.getLogger(__name__)
 ROOT_GENOTYPE_LABEL = "genotype-0"
@@ -142,7 +142,15 @@ def generate_genotype_annotations(genotype_members: pandas.Series, info: pandas.
 		trajectory_labels = members.split('|')
 		trajectory_subtable = info.loc[trajectory_labels]
 		annotation = list()
-		for i, j in zip(trajectory_subtable[gene_column], trajectory_subtable[aa_column]):
+		if gene_column in trajectory_subtable:
+			gene_column_values = trajectory_subtable[gene_column]
+		else:
+			gene_column_values = []
+		if aa_column in trajectory_subtable:
+			aa_column_values = trajectory_subtable[aa_column]
+		else:
+			aa_column_values = []
+		for i, j in itertools.zip_longest(gene_column_values, aa_column_values):
 			if isinstance(i, float):
 				gene = ""
 			else:
@@ -152,6 +160,8 @@ def generate_genotype_annotations(genotype_members: pandas.Series, info: pandas.
 				gene = gene.replace(k, v)
 
 			if isinstance(j, float):  # is NAN
+				effect = ""
+			elif j is None:
 				effect = ""
 			else:
 				effect = j.split('(')[0]

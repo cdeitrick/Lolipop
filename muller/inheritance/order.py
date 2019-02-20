@@ -40,19 +40,21 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 		test_table = sorted_df[:unnested_label].iloc[::-1]
 		table_of_checks = checks.apply_genotype_checks_to_table(unnested_trajectory, test_table, options)
 		table_of_checks = table_of_checks.drop(unnested_label)
-
 		for nested_label, row in table_of_checks.iterrows():
 			if nested_label == unnested_label: continue
 			additive_check, subtractive_check, delta, area_ratio, area_difference = row
+
 			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
 			area_check = area_ratio > 0.97
 			derivative_check = delta > options.derivative_check_cutoff
 			full_check = area_check and derivative_check and additive_check
+			priority = sum([additive_check, derivative_check, full_check])
 			logging.info(f"{unnested_label}|{nested_label} Full Check: {full_check}")
 			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
 			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")
 			logging.info(f"{unnested_label}|{nested_label} Derivative check: {derivative_check}")
 			logging.info(f"{unnested_label}|{nested_label} Area Difference: {area_difference}")
+
 			if area_check and delta > options.derivative_check_cutoff and additive_check:
 				# Most likely the background of the current genotype.
 				logging.info(f"Complete Check: True")
