@@ -5,9 +5,6 @@ import pandas
 
 def area_of_series(series: pandas.Series) -> float:
 	""" Calculates the area of a discrete series."""
-	# area = numpy.trapz(series.values)#, series.index)
-	# area = simps(series.values, series.index)
-	# area = series.sum()
 	total = series.sum()
 	return total
 

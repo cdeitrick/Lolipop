@@ -2,8 +2,8 @@ import argparse
 import itertools
 import math
 from pathlib import Path
-from typing import List, Optional, Union, Dict
-import csv
+from typing import List, Optional, Union
+
 try:
 	from muller.options import GenotypeOptions, SortOptions, OrderClusterParameters
 except ModuleNotFoundError:
@@ -235,9 +235,9 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"--strict-filter",
 		help = """By default, the filters allow trajectories to appear both before and after a genotype"""
-				"""fixes as long as they were undetected at the timepoint the sweep occurs. This generally"""
-				"""represents mutations which appear, are removed during a genotype sweep, and reappear """
-				"""afterwards. Using `--strict-filter` would remove these trajectories.""",
+			   """fixes as long as they were undetected at the timepoint the sweep occurs. This generally"""
+			   """represents mutations which appear, are removed during a genotype sweep, and reappear """
+			   """afterwards. Using `--strict-filter` would remove these trajectories.""",
 		action = "store_true",
 		dest = "use_strict_filter"
 	)
@@ -273,5 +273,3 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "genotype_palette_filename"
 	)
 	return parser
-
-

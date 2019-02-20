@@ -1,22 +1,9 @@
-import csv
-import random
 import re
-from collections import OrderedDict
-from pathlib import Path
-from typing import Collection, Dict, List, Optional
-import logging
-logger = logging.getLogger(__file__)
+from typing import Dict, List, Optional
+
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
-
-
-def generate_random_color() -> str:
-	r = random.randint(50, 200)
-	g = random.randint(50, 200)
-	b = random.randint(50, 200)
-	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
-	return color
 
 
 def get_numeric_columns(columns: List[str]) -> List[str]:
@@ -37,49 +24,6 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 			continue
 		numeric_columns.append(column)
 	return numeric_columns
-
-
-def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
-	""" The file should be either a list of colors or a map of genotypes to colors."""
-	palette = dict()
-	with paletteio.open() as palette_file:
-		reader = csv.reader(palette_file, delimiter = "\t")
-		for line in reader:
-			logger.debug(line)
-			#Check for empty lines
-			try:
-				key, color = line
-			except:
-				continue
-			palette[key] = color
-
-	return palette
-
-
-def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[Path] = None) -> Dict[str, str]:
-	""" Assigns a unique color to each genotype."""
-	color_palette = [
-		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
-		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
-		'#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
-		'#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'
-	]
-
-	if len(genotypes) >= len(color_palette):
-		color_palette += [generate_random_color() for _ in genotypes]
-	genotype_labels = sorted(genotypes, key = lambda s: int(s.split('-')[-1]))
-	# Use an OrderedDict to help with providing the correct order for the r script.
-	color_map = OrderedDict()
-	color_map['genotype-0'] = "#333333"
-	for label, color in zip(genotype_labels, color_palette):
-		color_map[label] = color
-	color_map['removed'] = '#000000'
-
-	if palette_filename:
-		custom_palette = parse_genotype_palette(palette_filename)
-		color_map.update(custom_palette)
-
-	return color_map
 
 
 def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
@@ -153,7 +97,22 @@ def format_linkage_matrix(Z) -> pandas.DataFrame:
 	return Z
 
 
+def calculate_luminance(color: str) -> float:
+	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
+
+	red = int(color[1:3], 16)
+	green = int(color[3:5], 16)
+	blue = int(color[5:], 16)
+
+	lum = (.299 * red) + (.587 * green) + (.114 * blue)
+	return lum / 255
+
+
 def format_inconsistency_matrix(R) -> pandas.DataFrame:
 	inconsistency_table = pandas.DataFrame(R, columns = ['mean', 'std', 'observations', 'statistic'])
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
+
+
+if __name__ == "__main__":
+	pass

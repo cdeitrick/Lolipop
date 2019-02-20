@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import pandas
 
 
-def generate_mermaid_diagram(backgrounds: pandas.DataFrame, color_palette: Dict[str, str]) -> str:
+def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str]) -> str:
 	"""
 	graph LR
     id1(Start)-->id2(Stop)

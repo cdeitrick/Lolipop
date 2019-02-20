@@ -77,6 +77,8 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 		key_column = 'Genotype'
 	elif 'Unnamed: 0' in data.columns:
 		key_column = 'Unnamed: 0'
+	elif 'Trajectory' in data.columns:
+		key_column = 'Trajectory'
 	else:
 		message = f"One of the columns needs to be labeled `Genotype`. Got {data.columns} instead from {filename}."
 		raise ValueError(message)
@@ -87,6 +89,9 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 		#raise ValueError(message)
 
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
+	# Make sure the genotype labels are prefixed with 'genotype-'
+	if not genotype_timeseries.index[0].startswith('genotype-'):
+		genotype_timeseries.index = ['genotype-' + str(i) for i in genotype_timeseries.index]
 
 	# Try to sort the genotypes by label, if posible.
 	# Note: designed to sort labels of the form `genotype-[\d]+`

@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Dict
 
 try:
-	from muller.widgets import generate_random_color, get_numeric_columns
+	from muller.widgets import get_numeric_columns
 except ModuleNotFoundError:
-	from widgets import generate_random_color, get_numeric_columns
+	from widgets import get_numeric_columns
 
 
 def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path, genotype_colors: Dict[str, str],

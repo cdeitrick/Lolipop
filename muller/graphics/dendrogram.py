@@ -20,7 +20,6 @@ def get_dendrogram_colors(Z, trajectory_colors: Dict[str, str]) -> Dict[str, str
 	# * rows in Z correspond to "inverted U" links that connect clusters
 	# * rows are ordered by increasing distance
 	# * if the colors of the connected clusters match, use that color for link
-	from pprint import pprint
 	index_to_trajectory = lambda s: str(s)
 
 	link_cols: Dict[str, str] = {}
@@ -33,7 +32,7 @@ def get_dendrogram_colors(Z, trajectory_colors: Dict[str, str]) -> Dict[str, str
 	return link_cols
 
 
-def plot_dendrogram(Z: Any, pair_array: PairwiseCalculationCache, filename: Path, trajectory_colors:Dict[str,str]):
+def plot_dendrogram(Z: Any, pair_array: PairwiseCalculationCache, filename: Path, trajectory_colors: Dict[str, str]):
 	plt.figure(figsize = (15, 15))
 	plt.title('Hierarchical Clustering Dendrogram')
 	plt.xlabel('sample index')

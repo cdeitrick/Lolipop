@@ -87,14 +87,12 @@ def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas.Series:
 	minkowski = minkowski_distance(left, right, 2)
 	pearson = pearson_correlation_distance(left, right)
-	dtwarping = dynamic_time_warping(left, right)
 	bd = binomial_distance(left, right)
 	bc = bray_curtis(left, right)
 
 	data = {
 		'minkowski':        minkowski,
 		'pearson':          pearson,
-		'dtw':              dtwarping,
 		'binomialDistance': bd,
 		'brayCurtis':       bc,
 		'jaccard':			jaccard_distance(left, right),
