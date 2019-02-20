@@ -61,38 +61,44 @@ class OutputFilenames:
 	def __init__(self, output_folder: Path, name: str, delimiter = '\t'):
 		if delimiter == '\t': suffix = 'tsv'
 		else: suffix = 'csv'
-		if not output_folder.exists():
-			output_folder.mkdir()
-		subfolder = output_folder / "supplementary-files"
-		if not subfolder.exists():
-			subfolder.mkdir()
 
-		self.original_trajectory: Path = subfolder / (name + f'.trajectories.original.{suffix}')
-		self.original_genotype: Path = subfolder / (name + f'.muller_genotypes.original.{suffix}')
+		def check_folder(path: Union[str,Path])->Path:
+			path = Path(path)
+			if not path.exists():
+				path.mkdir()
+			return path
+		output_folder = check_folder(output_folder)
+		supplementary_folder = check_folder(output_folder / "supplementary-files")
+		graphics_folder = check_folder(output_folder / "graphics")
+		tables_folder = check_folder(output_folder / "tables")
+		scripts_folder = check_folder(output_folder / "scripts")
+
+		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
+		self.original_genotype: Path = tables_folder / (name + f'.muller_genotypes.original.{suffix}')
 		self.trajectory: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
-		self.population: Path = output_folder / (name + f'.ggmuller.populations.{suffix}')
-		self.edges: Path = output_folder / (name + f'.ggmuller.edges.{suffix}')
-		self.r_script: Path = subfolder / (name + '.r')
-		self.muller_table: Path = subfolder / (name + f'.muller.csv')  # This is generated in r.
-		self.muller_plot_basic: Path = output_folder / (name + '.muller.basic.png')
+		self.population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
+		self.edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
+		self.r_script: Path = scripts_folder / (name + '.r')
+		self.muller_table: Path = tables_folder / (name + f'.muller.csv')  # This is generated in r.
+		self.muller_plot_basic: Path = graphics_folder / (name + '.muller.basic.png')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
-		self.muller_plot_unannotated: Path = subfolder / (name + '.muller.unannotated.png')
-		self.mermaid_script: Path = subfolder / (name + '.mermaid.md')
+		self.muller_plot_unannotated: Path = graphics_folder / (name + '.muller.unannotated.png')
+		self.mermaid_script: Path = scripts_folder / (name + '.mermaid.md')
 		self.mermaid_render: Path = output_folder / (name + '.mermaid.png')
-		self.genotype_plot: Path = output_folder / (name + '.png')
+		self.genotype_plot: Path = graphics_folder / (name + '.png')
 		self.genotype_plot_filtered: Path = output_folder / (name + f".filtered.png")
-		self.p_value: Path = subfolder / (name + ".pvalues.tsv")
-		self.calculation_matrix_p: Path = subfolder / (name + f".calculation.matrix.pvalues.{suffix}")
-		self.calculation_matrix_X = subfolder / (name + f".calculation.matrix.distance.{suffix}")
-		self.p_value_heatmap: Path = subfolder / (name + ".heatmap.pvalues.png")
-		self.distance_heatmap: Path = subfolder / (name + f".heatmap.distance.png")
-		self.parameters: Path = output_folder / (name + '.json')
+		self.p_value: Path = tables_folder / (name + ".pvalues.tsv")
+		self.calculation_matrix_p: Path = tables_folder / (name + f".calculation.matrix.pvalues.{suffix}")
+		self.calculation_matrix_X = tables_folder / (name + f".calculation.matrix.distance.{suffix}")
+		self.p_value_heatmap: Path = graphics_folder / (name + ".heatmap.pvalues.png")
+		self.distance_heatmap: Path = graphics_folder / (name + f".heatmap.distance.png")
+		self.parameters: Path = supplementary_folder / (name + '.json')
 
-		self.linkage_matrix_table = subfolder / (name + f".linkagematrix.tsv")
-		self.linkage_plot = subfolder / (name + f".dendrogram.png")
+		self.linkage_matrix_table = tables_folder / (name + f".linkagematrix.tsv")
+		self.linkage_plot = graphics_folder / (name + f".dendrogram.png")
 
-		self.calculation_json = subfolder / (name + f".calculations.json")
+		self.calculation_json = supplementary_folder / (name + f".calculations.json")
 
 
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
