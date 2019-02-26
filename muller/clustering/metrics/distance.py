@@ -6,6 +6,8 @@ try:
 	from inheritance.order_by_area import area_of_series, calculate_common_area
 except ModuleNotFoundError:
 	from ...inheritance.order_by_area import area_of_series, calculate_common_area
+
+
 def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int) -> float:
 	""" Calculates the minkowski distance between two series. Essentially just a generic lp-norm.
 		Parameters
@@ -32,8 +34,16 @@ def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> f
 	"""
 
 	pcc = left.corr(right, method = 'pearson')
+	# Adjust due to sample size
+	adjusted_pcc = adjust_correlation_coefficient(pcc, len(left))
 	# convert to distance metric.
-	return 1 - pcc
+	return 1 - adjusted_pcc
+
+
+def adjust_correlation_coefficient(r: float, n: int) -> float:
+	value = (1 - r ** 2) / (2 * n)
+	ra = r * (1 + value)
+	return ra
 
 
 # noinspection PyTypeChecker
@@ -41,6 +51,7 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	""" Based on the binomial calculations present in the original matlab scripts."""
 	# Find the mean frequency of each timepoint
 	# index is timepoints,  values are frequencies
+	# TODO make sure this is actually removing fixed timepoints.
 	not_detected_fixed_df = pandas.concat([left, right], axis = 1)
 	mean: pandas.Series = not_detected_fixed_df.mean(axis = 1)
 
@@ -49,16 +60,24 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	# E(sigma_p) = (1/n) E(sigma) == 1/n(sum(p(1-p))
 	# E(d_bar) = 1/n(sum(di)) == 1/n (n*sum(di))
 	# pandas.Series.radd is slow for some reason. Use '-' operator instead.
+	n = len(mean)
 	sigma_freq: pandas.Series = mean.mul(1 - mean)
 	# Difference of frequencies at each timepoint
 	# difference: pandas.Series = not_detected_fixed_df.iloc[:, 0] - not_detected_fixed_df.iloc[:, 1]
 	difference = not_detected_fixed_df.diff(axis = 1).iloc[:, 1]
-	sigma_pair: float = sigma_freq.sum() / len(mean)
+
+	sigma_pair: float = sigma_freq.sum() / n ** 2
 	# Sum of differences
-	difference_mean: float = abs(difference).sum()
+	difference_mean: float = abs(difference).sum() / n
 
 	X = difference_mean / (math.sqrt(2 * sigma_pair))
-
+	debug = False
+	if debug:
+		print(left.values)
+		print(right.values)
+		print("difference mean: ", difference_mean)
+		print("sigma: ", sigma_pair)
+		print("X: ", X)
 	return X
 
 
@@ -73,7 +92,7 @@ def bray_curtis(left: pandas.Series, right: pandas.Series) -> float:
 	area_right = area_of_series(right)
 	area_shared = calculate_common_area(left, right, 0.03)
 
-	return 1-(2 * area_shared) / (area_left + area_right)
+	return 1 - (2 * area_shared) / (area_left + area_right)
 
 
 def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
@@ -95,8 +114,8 @@ def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas
 		'pearson':          pearson,
 		'binomialDistance': bd,
 		'brayCurtis':       bc,
-		'jaccard':			jaccard_distance(left, right),
-		'combined':			2*pearson + minkowski
+		'jaccard':          jaccard_distance(left, right),
+		'combined':         2 * pearson + minkowski
 	}
 
 	return pandas.Series(data)
@@ -104,4 +123,3 @@ def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas
 
 if __name__ == "__main__":
 	pass
-
