@@ -19,7 +19,7 @@ try:
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
-	from muller import widgets, pallette
+	from muller import widgets, palette
 except ModuleNotFoundError:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot

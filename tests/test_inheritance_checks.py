@@ -11,7 +11,7 @@ from inheritance import checks
 		([0, .1, .1, .2, .2, .3, .3], [0, .1, .1, .2, .2, .3, .3], False),
 		([0, .1, .1, .1, .1, .1, .1], [0, 0, 0, 0, 0, .93, 0], False),
 		([0, .1, .1, .1, .1, .1, .1], [0, 0, 0, 0, 0, .94, .94], True),
-		([0, .1, .1, .1, .1, .1, .1], [0, 0, 0, 0, 0, 1.0, 0], True),
+		([0, .1, .1, .1, .1, .16, .1], [0, 0, 0, 0, 0, 1.0, 0], True),
 		([0, 0, 0, 0.403, 0.489, 0.057, 0.08], [0, 0, 0, 0, 0, 0.2675, 0.326], False)
 	])
 def test_additive_check(left: List[float], right: List[float], expected: bool):
@@ -58,17 +58,3 @@ def test_check_derivative_background(left: List[float], right: List[float], expe
 	assert expected == (result > 0)
 
 
-def test_get_detected_points():
-	left = pandas.Series([0, 0.246, 0, 0, 0.358], index = [0,17,25,44,66])
-	right = pandas.Series([0, 0.4, 0, 0, 0.357],index = [0,17,25,44,66])
-
-	result = checks.get_detected_points(left, right, 0.03)
-
-	df = pandas.DataFrame(
-		{
-			'left':  [0.246, 0, 0, 0.358],
-			'right': [0.4, 0, 0, 0.357]
-		},
-		index = [17,25,44,66]
-	)
-	pandas.testing.assert_frame_equal(df, result)

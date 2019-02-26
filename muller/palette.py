@@ -64,7 +64,6 @@ def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
 				continue
 			if color:
 				palette[key] = color
-	palette['genotype-0'] = '#FFFFFF'
 	return palette
 
 
@@ -116,7 +115,7 @@ def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[
 	genotype_labels = sorted(genotypes, key = lambda s: int(s.split('-')[-1]))
 	# Use an OrderedDict to help with providing the correct order for the r script.
 	color_map = OrderedDict()
-	color_map['genotype-0'] = "#333333"
+	color_map['genotype-0'] = "#FFFFFF"
 	for label, color in zip(genotype_labels, color_palette):
 		color_map[label] = color
 	color_map['removed'] = '#000000'
