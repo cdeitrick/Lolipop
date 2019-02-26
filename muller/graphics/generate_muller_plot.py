@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas
 from matplotlib import pyplot as plt
@@ -207,7 +207,7 @@ def annotate_axes(ax: Axes, points: Dict[str, Tuple[float, float]], annotations:
 
 
 def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
-		output_filename: Path, annotations: Dict[str, List[str]] = None):
+		output_filename: Union[Path, List[Path]], annotations: Dict[str, List[str]] = None):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 	Parameters
@@ -215,7 +215,9 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	muller_df: pandas.DataFrame
 	trajectory_table: pandas.DataFrame
 	color_palette: Dict[str,str]
-	output_filename: Path
+	output_filename: Path or List[Path]
+		If a list of paths is given the same graphics will be saves as each filename. This is useful if you want to save the
+		plot in a number of different formats.
 	annotations: Dict[str, List[str]]
 		A map of genotype labels to add to the plot.
 	Returns
@@ -223,6 +225,10 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax: Axes
 		The axes object containing the plot.
 	"""
+	if not isinstance(output_filename, list):
+		output_filenames = [output_filename]
+	else:
+		output_filenames = output_filename
 	points = get_coordinates(muller_df)
 
 	# noinspection PyUnusedLocal,PyUnusedLocal
@@ -246,9 +252,11 @@ def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional
 	ax.set_xlim(0, max(x))
 	ax.set_ylim(0, 1)
 	plt.tight_layout()
-	plt.savefig(str(output_filename))
-	plt.savefig(str(output_filename.with_suffix('.pdf')))
-	plt.savefig(str(output_filename.with_suffix('.svg')))
+
+	for output_filename in output_filenames:
+		plt.savefig(str(output_filename))
+	#plt.savefig(str(output_filename.with_suffix('.pdf')))
+	#plt.savefig(str(output_filename.with_suffix('.svg')))
 
 	return ax
 

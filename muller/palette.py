@@ -1,17 +1,17 @@
-
+import csv
+import logging
+import random
 from collections import OrderedDict
 from pathlib import Path
 from typing import Collection, Dict, Optional, Tuple
-import seaborn
+
 import pandas
-import csv
-import random
-from import_data import import_table_from_string
-import logging
+import seaborn
+
 logger = logging.getLogger(__file__)
 
 
-def parse_tree(edges: pandas.DataFrame):
+def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 	"""
 		Determines the clade and distance from root of every leaf and node in the ggmuller edges table.
 	Parameters
@@ -29,7 +29,7 @@ def parse_tree(edges: pandas.DataFrame):
 			- ''distance': int
 				The distance from the node/leaf to the root genotype.
 	"""
-	edges = edges.copy(deep = True) # To prevent unintended alterations
+	edges = edges.copy(deep = True)  # To prevent unintended alterations
 	leaf_table = edges.set_index('Identity')['Parent']
 	clades, iterations = zip(*[determine_clade(leaf_table, i) for i in edges['Identity'].values])
 	edges['clade'] = clades
@@ -75,26 +75,32 @@ def generate_random_color() -> str:
 	color = "#{:>02X}{:>02X}{:>02X}".format(r, g, b)
 	return color
 
-def generate_clade_palette(edges_table:pandas.DataFrame)->Dict[str,str]:
+
+def generate_clade_palette(edges_table: pandas.DataFrame) -> Dict[str, str]:
 	clades = parse_tree(edges_table)
 	clade_groups = clades.groupby(by = 'clade')
 	genotype_colors = dict()
-	color_labels = ["Greens_d", "Reds_d","Blues_d", 'Purples_d', "Greys_d", "Oranges_d"]
+	color_labels = ["Greens_d", "Reds_d", "Blues_d", 'Purples_d', "Greys_d", "Oranges_d"]
 	color_labels += ["winter", "autumn", "copper", "pink", "cool"]
 	for base_color, (clade_root, clade) in zip(color_labels, clade_groups):
 		color_palette = seaborn.color_palette(base_color, len(clade))
-		clade_colors = {g:c for g,c in zip(clade.index, map(rgbtohex,color_palette))}
+		clade_colors = {g: c for g, c in zip(clade.index, map(rgbtohex, color_palette))}
 		genotype_colors.update(clade_colors)
 	genotype_colors['genotype-0'] = '#FFFFFF'
 	genotype_colors['removed'] = "#000000"
 	return genotype_colors
 
-def rgbtohex(rgb:Tuple[float,float,float])->str:
-	red = int(rgb[0]*256)
-	green = int(rgb[1]*256)
-	blue = int(rgb[2]*256)
+
+def rgbtohex(rgb: Tuple[float, float, float]) -> str:
+	if rgb[0] < 1.1:  # The values are formatted as a number between 0 and 1
+		red = int(rgb[0] * 256)
+		green = int(rgb[1] * 256)
+		blue = int(rgb[2] * 256)
+	else:
+		red, green, blue = rgb
 	hex_string = f"#{red:>02X}{green:>02X}{blue:>02X}"
 	return hex_string
+
 
 def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[Path] = None) -> Dict[str, str]:
 	""" Assigns a unique color to each genotype."""
@@ -123,23 +129,4 @@ def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[
 
 
 if __name__ == "__main__":
-	string = """
-	Parent	Identity
-	genotype-0	genotype-13
-	genotype-13	genotype-12
-	genotype-0	genotype-3
-	genotype-3	genotype-8
-	genotype-13	genotype-6
-	genotype-13	genotype-7
-	genotype-8	genotype-10
-	genotype-13	genotype-4
-	genotype-8	genotype-11
-	genotype-13	genotype-5
-	genotype-3	genotype-1
-	genotype-13	genotype-9
-	genotype-10	genotype-2
-	"""
-	edges = import_table_from_string(string)
-	print(generate_clade_palette(edges))
-
-
+	pass
