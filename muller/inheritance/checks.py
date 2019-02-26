@@ -139,7 +139,7 @@ def apply_genotype_checks_to_table(unnested_trajectory: pandas.Series, table: pa
 
 	area_check = table.apply(
 		order_by_area.calculate_common_area,
-		args = (unnested_trajectory, 0.03),
+		args = [unnested_trajectory],
 		axis = axis
 	)
 	area_difference = table.apply(
