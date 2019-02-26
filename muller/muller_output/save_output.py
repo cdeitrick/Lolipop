@@ -110,7 +110,7 @@ class OutputFilenames:
 
 	@property
 	def delimiter(self)->str:
-		if self.suffix == '\t':
+		if self.suffix == 'tsv':
 			return '\t'
 		else:
 			return ','
@@ -237,7 +237,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	)
 
 	# Generate time series plots showing the mutations/genotypes over time.
-	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_clade, parent_genotypes)
+	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, parent_genotypes)
 	if workflow_data.trajectories is not None:
 		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade, parent_genotypes)
 

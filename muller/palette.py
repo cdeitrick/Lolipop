@@ -9,6 +9,12 @@ import pandas
 import seaborn
 
 logger = logging.getLogger(__file__)
+DISTINCTIVE_PALETTE = [
+	'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+	'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+	'#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+	'#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'
+]
 
 
 def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
@@ -103,12 +109,7 @@ def rgbtohex(rgb: Tuple[float, float, float]) -> str:
 
 def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[Path] = None) -> Dict[str, str]:
 	""" Assigns a unique color to each genotype."""
-	color_palette = [
-		'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
-		'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
-		'#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
-		'#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'
-	]
+	color_palette = DISTINCTIVE_PALETTE
 
 	if len(genotypes) >= len(color_palette):
 		color_palette += [generate_random_color() for _ in genotypes]
