@@ -92,7 +92,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		elif metric == 'pearson':
 			distance_between_series = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
 		elif metric == 'minkowski':
-			distance_between_series = distance.minkowski_distance(left_trajectory, right_trajectory, 2)
+			distance_between_series = distance.minkowski_distance(left_trajectory, right_trajectory)
 		elif metric == 'binomial':
 			distance_between_series = distance.binomial_distance(left_trajectory, right_trajectory)
 		elif metric == 'binomialp':

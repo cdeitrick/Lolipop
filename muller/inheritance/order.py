@@ -42,6 +42,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 		table_of_checks = table_of_checks.drop(unnested_label)
 		for nested_label, row in table_of_checks.iterrows():
 			if nested_label == unnested_label: continue
+			# todo The additive check checks for greater than 0, not whether one is consistently larger than the other.
 			additive_check, subtractive_check, delta, area_ratio, area_difference = row
 
 			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")

@@ -88,13 +88,16 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 get_detected_points = get_valid_points
 
 
-def format_linkage_matrix(Z) -> pandas.DataFrame:
-	Z = pandas.DataFrame(Z, columns = ["left", "right", "distance", "observations"])
-	# Z.index = pandas.Index([i + len(squaremap.index) for i in Z.index], name = "clusterLabel")
-	Z['left'] = Z['left'].astype(int)
-	Z['right'] = Z['right'].astype(int)
-	Z['observations'] = Z['observations'].astype(int)
-	return Z
+def format_linkage_matrix(Z, total_members:Optional[int]) -> pandas.DataFrame:
+	linkage_dataframe = pandas.DataFrame(Z, columns = ["left", "right", "distance", "observations"])
+
+	# linkage_dataframe.index = pandas.Index([i + len(squaremap.index) for i in linkage_dataframe.index], name = "clusterLabel")
+	linkage_dataframe['left'] = linkage_dataframe['left'].astype(int)
+	linkage_dataframe['right'] = linkage_dataframe['right'].astype(int)
+	linkage_dataframe['observations'] = linkage_dataframe['observations'].astype(int)
+	if total_members:
+		linkage_dataframe['resultingCluster'] = list(total_members + i for i in range(len(linkage_dataframe)))
+	return linkage_dataframe
 
 
 def calculate_luminance(color: str) -> float:
