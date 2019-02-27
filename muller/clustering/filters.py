@@ -118,7 +118,6 @@ def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas
 		first_detected_point: int = get_first_timepoint_above_cutoff(background, detection_cutoff)
 		first_fixed_point: int = get_first_timepoint_above_cutoff(background, fixed_cutoff)
 		background_value_at_first_fixed_point = background.loc[first_fixed_point]
-		print(first_fixed_point, background_value_at_first_fixed_point)
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background
