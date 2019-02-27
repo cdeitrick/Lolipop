@@ -29,5 +29,5 @@ def test_pearson_distance(left, right, expected: float):
 	left = pandas.Series(left)
 	right = pandas.Series(right)
 
-	result = distance.pearson_correlation_distance(left, right)
+	result = distance.pearson_correlation_distance(left, right, adjusted = False)
 	assert pytest.approx(result, rel = 1E-4) == expected

@@ -20,7 +20,7 @@ def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int = 2) ->
 	return math.pow(total, 1 / p)
 
 
-def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> float:
+def pearson_correlation_distance(left: pandas.Series, right: pandas.Series, adjusted = True) -> float:
 	"""
 		Calculates the pearson correlation between two series. The resulting value lies in the range [0,2].
 	Parameters
@@ -35,7 +35,10 @@ def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> f
 
 	pcc = left.corr(right, method = 'pearson')
 	# Adjust due to sample size
-	adjusted_pcc = adjust_correlation_coefficient(pcc, len(left))
+	if adjusted:
+		adjusted_pcc = adjust_correlation_coefficient(pcc, len(left))
+	else:
+		adjusted_pcc = pcc
 	# convert to distance metric.
 	return 1 - adjusted_pcc
 

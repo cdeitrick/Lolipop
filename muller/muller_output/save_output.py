@@ -145,7 +145,10 @@ def _make_folder(folder: Path):
 
 def generate_genotype_annotations(genotype_members: pandas.Series, info: pandas.DataFrame) -> Dict[str, List[str]]:
 	gene_alias_filename = Path("/home/cld100/Documents/projects/rosch/prokka_gene_search/prokka_gene_map.txt")
-	contents = gene_alias_filename.read_text().split('\n')
+	try:
+		contents = gene_alias_filename.read_text().split('\n')
+	except:
+		contents = []
 	lines = [line.split('\t') for line in contents if line]
 	gene_aliases = {i: j for i, j in lines}
 	gene_aliases['patA'] = 'dltB'
@@ -185,7 +188,7 @@ def generate_genotype_annotations(genotype_members: pandas.Series, info: pandas.
 	return annotations
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, annotate_all: bool, save_pvalues: bool,
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, save_pvalues: bool,
 		adjust_populations: bool):
 
 	# Set up the output folder

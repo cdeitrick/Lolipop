@@ -210,7 +210,7 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"--genotypes", "--cohorts",
-		help = "Indicates that the input table contains muller_genotypes rather than trajectories.",
+		help = "Indicates that the input table contains genotypes rather than trajectories.",
 		action = 'store_true',
 		dest = 'is_genotype'
 	)
