@@ -1,5 +1,5 @@
 import pytest
-from dataio.trajectories import import_table_from_string
+from dataio import import_table
 from clustering.average import _calculate_mean_frequencies_of_trajectories
 import pandas
 
@@ -29,7 +29,7 @@ def trajectory_table():
 		10	0	0	0.117	0	0	0	0.103	genotype-9
 		12	0	0.125	0	0.153	0.181	0.175	0.191	filtered
 	"""
-	return import_table_from_string(trajectory_table_string, index = 'Trajectory')
+	return import_table(trajectory_table_string, index = 'Trajectory')
 
 @pytest.fixture
 def genotype_table():
@@ -51,7 +51,7 @@ def genotype_table():
 		genotype-14	0	0	0	0	0	0.2675	0.326
 		genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	table = import_table_from_string(genotype_table_string, index = 'Genotype')
+	table = import_table(genotype_table_string, index = 'Genotype')
 	table = table.astype(float)
 	return table
 def test_calculate_mean_genotype(genotype_table, trajectory_table):

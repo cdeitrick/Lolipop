@@ -7,7 +7,7 @@ def test_relocate_point_simple():
 
 	expected_point = (.6, .513)
 	result_point = relocate_point(point, locations)
-	assert expected_point == result_point
+	assert pytest.approx(expected_point, result_point)
 
 def test_relocate_point_complex():
 	point = (0.1, 0.426)

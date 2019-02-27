@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 import pandas
 import pytest
 
-from dataio.trajectories import import_table_from_string
+from dataio.trajectories import import_table
 from muller.clustering.metrics import distance
 from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 from muller.clustering.methods.hierarchical_method import hierarchical_method
@@ -25,7 +25,7 @@ def five_genotypes() -> pandas.DataFrame:
 	trajectory-E2	0	0	0	0	0	0	0.05	0.55	0.5
 	trajectory-E3	0	0	0	0	0	0	0	0.6	0.5
 	"""
-	table = import_table_from_string(string, index = 'Trajectory')
+	table = import_table(string, index = 'Trajectory')
 
 	return table
 

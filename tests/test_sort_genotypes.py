@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from dataio.trajectories import import_table_from_string
+from dataio import import_table
 from inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
 
 
@@ -24,7 +24,7 @@ def table() -> pandas.DataFrame:
 		7	0	0	0	0.273	0.781	1	1
 		10	0	0	0.117	0	0	0	0.103
 	"""
-	t = import_table_from_string(trajectory_table, index = 'Trajectory')
+	t = import_table(trajectory_table, index = 'Trajectory')
 	return t
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def mouse_table()->pandas.DataFrame:
 	genotype-14	0	0	0	0	0	0	0	0.0172	0.1156	0.112	0.0948
 	genotype-15	0.001857	0	0.003714	0.001143	0	0	0.003286	0.006571	0.034	0.040286	0.038143
 	"""
-	t = import_table_from_string(table, index = 'Genotype')
+	t = import_table(table, index = 'Genotype')
 	return t
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def smalltable() -> pandas.DataFrame:
 		9	0	0	0	0	0	0.269	0.34
 		10	0	0	0.117	0	0	0	0.103
 	"""
-	t = import_table_from_string(trajectory_table, index = 'Trajectory')
+	t = import_table(trajectory_table, index = 'Trajectory')
 	return t
 
 @pytest.fixture
@@ -84,7 +84,7 @@ def genotype_table()->pandas.DataFrame:
 		genotype-14	0	0	0	0	0	0.2675	0.326
 		genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	t = import_table_from_string(trajectory_table, index = 'Genotype')
+	t = import_table(trajectory_table, index = 'Genotype')
 	return t
 
 
@@ -117,7 +117,7 @@ def test_sort_genotypes(table):
 		15	0	0	0.066	0.104	0.062	0	0
 		11	0	0	0	0.108	0.151	0	0
 	"""
-	expected_result = import_table_from_string(expected, index = 'Trajectory')
+	expected_result = import_table(expected, index = 'Trajectory')
 	class TestOptions:
 		def __init__(self):
 			self.detection_breakpoint = 0.03
@@ -147,7 +147,7 @@ def test_sort_genotypes_with_initial_values(mouse_table):
 		genotype-13	0	0.00525	0.0065	0.005	0.00775	0	0.01275	0.051	0.032	0.0195	0.02175
 		genotype-10	0	0	0	0	0.072	0.047	0.057	0	0	0	0
 	"""
-	expected_result = import_table_from_string(expected, index = 'Genotype')
+	expected_result = import_table(expected, index = 'Genotype')
 	expected_result.index.name = None
 	class TestOptions:
 		def __init__(self):

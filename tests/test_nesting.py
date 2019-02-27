@@ -1,7 +1,7 @@
 import pandas
 from dataclasses import dataclass
 
-from dataio.trajectories import import_table_from_string
+from dataio import import_table
 from muller.inheritance import order
 from muller.muller_output.generate_tables import generate_ggmuller_edges_table
 import pytest
@@ -15,7 +15,7 @@ def five_genotypes() -> pandas.DataFrame:
 	genotype-B	0	0.07	0.1	0.02	0.01	0	0	0	0
 	genotype-D	0	0	0	0	0	0	0.07	0	0.01
 	"""
-	table = import_table_from_string(string, index = 'Trajectory')
+	table = import_table(string, index = 'Trajectory')
 	return table
 
 
@@ -60,13 +60,13 @@ class OrderClusterParameters:
 def test_five_genotypes(five_genotypes):
 	expected_nests = """
 	Parent	Identity
-	genotype-C	genotype-A
-	genotype-0	genotype-B
 	genotype-0	genotype-C
-	genotype-A	genotype-D
+	genotype-C	genotype-A
 	genotype-A	genotype-E
+	genotype-0	genotype-B
+	genotype-A	genotype-D
 	"""
-	expected_nests = import_table_from_string(expected_nests)
+	expected_nests = import_table(expected_nests)
 	options = OrderClusterParameters.from_breakpoints(.03, .15)
 
 	result = order.order_clusters(five_genotypes, options)

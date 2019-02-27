@@ -2,9 +2,11 @@ import unittest
 
 import pytest
 
-from dataio.trajectories import *
+from dataio import import_table, parse_genotype_table, parse_trajectory_table
 from dataio.trajectories import _convert_to_integer, _correct_math_scale
-
+from widgets import get_numeric_columns
+from pathlib import Path
+import pandas
 DATA_FOLDER = Path(__file__).parent / "data"
 
 
@@ -33,7 +35,7 @@ def truth_trajectory_table():
 	20	0	0	0	0.138	0.295	0	0.081
 	21	0	0	0	0.114	0	0.11	0.123
 	"""
-	table = import_table_from_string(trajectory_table, index = 'Trajectory')
+	table = import_table(trajectory_table, index = 'Trajectory')
 	table.columns = [int(i) for i in table.columns]
 	table = table.astype(float)
 	return table
@@ -58,7 +60,7 @@ def truth_genotype_table():
 	genotype-14	0	0	0	0	0	0.2675	0.326
 	genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	table = import_table_from_string(genotype_table, index = 'Genotype')
+	table = import_table(genotype_table, index = 'Genotype')
 	table.columns = [int(i) for i in table.columns]
 	table = table.astype(float)
 	return table
@@ -90,7 +92,7 @@ class TestImportTable(unittest.TestCase):
 		string = """Trajectory	X0	X1	X2	X3	X4	X5
 			trajectory-A2	0	0	0	6	35	4
 			trajectory-A3	0	0	0	0	45	5"""
-		df = import_table_from_string(string, index = 'Trajectory')
+		df = import_table(string, index = 'Trajectory')
 		self.assertListEqual([35, 45], df['X4'].tolist())
 
 		fdf = _correct_math_scale(df)

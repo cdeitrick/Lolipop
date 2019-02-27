@@ -1,6 +1,6 @@
 import pytest
 import pandas
-from dataio.trajectories import import_table_from_string
+from dataio import import_table
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def sorted_df()->pandas.DataFrame:
 		genotype-13  0.0  0.00  0.033  0.1060  0.1065  0.0000  0.0000
 		genotype-15  0.0  0.00  0.000  0.1145  0.0000  0.1205  0.0615
 	"""
-	return import_table_from_string(string, index = 'Genotype')
+	return import_table(string, index = 'Genotype')
 
 def test_inheritance(sorted_df):
 	pass

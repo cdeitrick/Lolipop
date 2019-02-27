@@ -1,6 +1,6 @@
 import pytest
 import pandas
-from dataio.trajectories import import_table_from_string
+from dataio import import_table
 from inheritance import timepoint_detection
 @pytest.fixture
 def transposed_genotypes()->pandas.DataFrame:
@@ -22,7 +22,7 @@ def transposed_genotypes()->pandas.DataFrame:
 		genotype-14	0	0	0	0	0	0.2675	0.326
 		genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	table = import_table_from_string(genotype_table_string, index = 'Genotype')
+	table = import_table(genotype_table_string, index = 'Genotype')
 	return table.transpose()
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def transposed_mouse_genotypes()->pandas.DataFrame:
 		genotype-14	0	0	0	0	0	0	0	0.0172	0.1156	0.112	0.0948
 		genotype-15	0.001857	0	0.003714	0.001143	0	0	0.003286	0.006571	0.034	0.040286	0.038143
 	"""
-	t = import_table_from_string(table, index = 'Genotype')
+	t = import_table(table, index = 'Genotype')
 	return t.transpose()
 
 def test_get_first_detected_timepoint(transposed_genotypes, transposed_mouse_genotypes):
@@ -66,7 +66,7 @@ def test_get_first_detected_timepoint(transposed_genotypes, transposed_mouse_gen
 		'genotype-14': 75,
 		'genotype-15': 44
 	}, name = 'firstDetected')
-	expected = expected.astype(str)
+	expected:pandas.Series = expected.astype(str)
 	result = timepoint_detection.get_first_detected_timepoint(transposed_genotypes, 0.03)
 	assert expected.to_dict() == result.to_dict()
 
