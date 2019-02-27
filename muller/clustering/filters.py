@@ -26,7 +26,7 @@ def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> 
 
 # noinspection PyTypeChecker
 def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: int, background_fixed: int, detection_cutoff: float,
-		use_strict_filter: bool) -> bool:
+		background_value: float, use_strict_filter: bool) -> bool:
 	"""
 		Checks if a genotype does not adhere to certain assumptions related to the background.
 		1. The genotype should not be present both before and after a background fixes, and should be nonzero when the background fixes.
@@ -61,12 +61,13 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 	was_detected_before_and_after_background = first_detected < background_detected < last_detected
 	# Check if the genotype was detected before and after the timepoint the current backgound fixed.
 	was_detected_before_and_after_fixed = first_detected < background_fixed < last_detected
-
+	#print(genotype.name, (first_detected, background_detected), (last_detected, background_detected), was_detected_before_and_after_fixed, was_detected_before_and_after_background)
 	if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
 		# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 		# Check to see if it was undetected at the timpont the background fixed.
-
-		if use_strict_filter or genotype.loc[background_detected] > detection_cutoff:
+		value_at_fixed_point = genotype.loc[background_fixed]
+		fixed_point_value = value_at_fixed_point + background_value
+		if use_strict_filter or (value_at_fixed_point > detection_cutoff and fixed_point_value > (1 + detection_cutoff)):
 			# The genotype was detected at the first fixed timepoint.
 			return True
 	return False
@@ -116,12 +117,15 @@ def find_first_invalid_genotype(genotypes: pandas.DataFrame, backgrounds: pandas
 		# Find the timepoint where the background first fixes.
 		first_detected_point: int = get_first_timepoint_above_cutoff(background, detection_cutoff)
 		first_fixed_point: int = get_first_timepoint_above_cutoff(background, fixed_cutoff)
+		background_value_at_first_fixed_point = background.loc[first_fixed_point]
+		print(first_fixed_point, background_value_at_first_fixed_point)
 		# Iterate over the non-background genotypes.
 		for genotype_label, genotype in not_backgrounds.iterrows():
 			# Double check that it is not a background
 			if genotype_label in backgrounds.index: continue
 			# Check if it is invalid.
-			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, detection_cutoff, use_strict_filter)
+			is_invalid = check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point, detection_cutoff,
+				background_value_at_first_fixed_point, use_strict_filter)
 			if is_invalid:
 				return genotype_label
 
