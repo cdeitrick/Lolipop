@@ -50,6 +50,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			derivative_check = delta > options.derivative_check_cutoff
 			full_check = area_check and derivative_check and additive_check
 			priority = sum([additive_check, derivative_check, full_check])
+			logging.info(f"Computed priority: {priority}")
 			logging.info(f"{unnested_label}|{nested_label} Full Check: {full_check}")
 			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
 			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")

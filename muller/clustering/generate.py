@@ -121,7 +121,6 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptio
 
 	# Generate the initial genotypes.
 	genotype_table, genotype_members, linkage_table = generate_genotypes(filtered_trajectory_table, options = goptions)
-
 	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
 	for index in range(_iterations):
 		logger.info(f"filtering iteration {index} of {_iterations}")
@@ -129,11 +128,10 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptio
 		# used when sorting the genotypes.
 		current_backgrounds, (dlimit, flimit) = get_fuzzy_backgrounds(genotype_table, frequency_cutoffs)
 		logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
-
 		# Search for genotypes that do not make sense in the context of an evolved population.
-		#fuzzy_detected_cutoff = max(goptions.detection_breakpoint, dlimit)
 		fuzzy_detected_cutoff = goptions.detection_breakpoint
 		logger.info(f"fuzzy cutoffs: {fuzzy_detected_cutoff}, {flimit}")
+
 		current_invalid_genotype = find_first_invalid_genotype(genotype_table, current_backgrounds, fuzzy_detected_cutoff, flimit, use_strict_filter)
 		logger.info(f"Invalid genotype: {current_invalid_genotype}")
 		if current_invalid_genotype is None:
