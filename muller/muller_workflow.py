@@ -9,13 +9,13 @@ logger = logging.getLogger(__file__)
 logger.addHandler(logging.StreamHandler())
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
-	from muller.import_data import import_trajectory_table, import_genotype_table
+	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
 	from clustering import generate, filters
 	from inheritance import order, sort_genotypes
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
-	from import_data import import_trajectory_table, import_genotype_table
+	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
 	from clustering import generate, filters
 	from inheritance import order, sort_genotypes
 	from muller_output import WorkflowData, generate_output
@@ -31,7 +31,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 	logger.info("Importing data...")
 	if program_options.is_genotype:
-		mean_genotypes, genotype_info = import_genotype_table(input_filename, program_options.sheetname)
+		mean_genotypes, genotype_info = parse_genotype_table(input_filename, program_options.sheetname)
 		try:
 			genotype_members = genotype_info['members']
 		except KeyError:
@@ -39,7 +39,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		original_timepoints = timepoints = info = linkage_matrix = None
 		original_genotypes = mean_genotypes
 	else:
-		original_timepoints, info = import_trajectory_table(input_filename, program_options.sheetname)
+		original_timepoints, info = parse_trajectory_table(input_filename, program_options.sheetname)
 		if program_options.use_filter:
 			logger.info("using filter...")
 			original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(

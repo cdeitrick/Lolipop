@@ -1,6 +1,6 @@
 import unittest
-from import_data import import_table_from_string
-from muller_output.generate_tables import _subtract_children_from_parent, _append_genotype_0, _convert_genotype_table_to_population_table, _compile_parent_linkage
+from dataio.trajectories import import_table_from_string
+from muller_output.generate_tables import _append_genotype_0, _convert_genotype_table_to_population_table, _compile_parent_linkage
 import pandas
 edges_table = """
 	Parent	Identity

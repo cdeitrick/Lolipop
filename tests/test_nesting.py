@@ -1,7 +1,7 @@
 import pandas
 from dataclasses import dataclass
 
-from import_data import import_table_from_string
+from dataio.trajectories import import_table_from_string
 from muller.inheritance import order
 from muller.muller_output.generate_tables import generate_ggmuller_edges_table
 import pytest
@@ -70,6 +70,5 @@ def test_five_genotypes(five_genotypes):
 	options = OrderClusterParameters.from_breakpoints(.03, .15)
 
 	result = order.order_clusters(five_genotypes, options)
-	from pprint import pprint
 	result = generate_ggmuller_edges_table(result)
 	pandas.testing.assert_frame_equal(expected_nests, result)

@@ -1,6 +1,6 @@
 import pytest
-from import_data import import_table_from_string
-from clustering.average import _calculate_mean_frequencies_of_trajectories, calculate_mean_genotype
+from dataio.trajectories import import_table_from_string
+from clustering.average import _calculate_mean_frequencies_of_trajectories
 import pandas
 
 @pytest.fixture

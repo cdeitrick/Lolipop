@@ -2,8 +2,8 @@ import unittest
 
 import pytest
 
-from muller.import_data import *
-from muller.import_data import _convert_to_integer, _correct_math_scale
+from dataio.trajectories import *
+from dataio.trajectories import _convert_to_integer, _correct_math_scale
 
 DATA_FOLDER = Path(__file__).parent / "data"
 
@@ -66,7 +66,7 @@ def truth_genotype_table():
 
 @pytest.mark.parametrize('filename', list((DATA_FOLDER / "test_trajectory_tables").iterdir()))
 def test_import_trajectory_table(filename, truth_trajectory_table):
-	test_table, info = import_trajectory_table(filename)
+	test_table, info = parse_trajectory_table(filename)
 	pandas.testing.assert_frame_equal(truth_trajectory_table, test_table)
 
 
@@ -75,7 +75,7 @@ def test_import_trajectory_table(filename, truth_trajectory_table):
 	[i for i in (DATA_FOLDER / "test_genotype_tables").iterdir() if 'genotype' in i.name]
 )
 def test_import_genotype_tables(filename, truth_genotype_table):
-	test_table, info = import_genotype_table(filename)
+	test_table, info = parse_genotype_table(filename)
 	pandas.testing.assert_frame_equal(truth_genotype_table, test_table)
 
 
@@ -106,7 +106,7 @@ class TestImportTable(unittest.TestCase):
 		self.assertEqual(1, _convert_to_integer('abc', default = 1))
 
 	def test_import_genotype_table_does_not_crash(self):
-		df, info = import_genotype_table(DATA_FOLDER / "3_genotypes.genotypes.tsv")
+		df, info = parse_genotype_table(DATA_FOLDER / "3_genotypes.genotypes.tsv")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,9 @@
-import csv
 import logging
 import random
 from collections import OrderedDict
 from pathlib import Path
 from typing import Collection, Dict, Optional, Tuple
-
+from dataio import parse_genotype_palette
 import pandas
 import seaborn
 
@@ -54,23 +53,6 @@ def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:
 		else:
 			break
 	return label, iteration
-
-
-def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
-	""" The file should be either a list of colors or a map of genotypes to colors."""
-	palette = dict()
-	with paletteio.open() as palette_file:
-		reader = csv.reader(palette_file, delimiter = "\t")
-		for line in reader:
-			logger.debug(line)
-			# Check for empty lines
-			try:
-				key, color, *_ = line
-			except:
-				continue
-			if color:
-				palette[key] = color
-	return palette
 
 
 def generate_random_color() -> str:

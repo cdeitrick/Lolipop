@@ -252,14 +252,14 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 			filenames.muller_plot_annotated_pdf,
 			filenames.muller_plot_annotated_svg
 		]
-		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations)
-		generate_muller_plot(muller_df, workflow_data.trajectories, genotype_colors_distinct, filenames.muller_plot_unannotated)
+		generate_muller_plot(muller_df, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations)
+		generate_muller_plot(muller_df, genotype_colors_distinct, filenames.muller_plot_unannotated)
 
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(workflow_data.linkage_matrix, num_trajectories)
 		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
-		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot, trajectory_colors)
+		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
 
 	workflow_data.p_values.save(filenames.calculation_json)
 

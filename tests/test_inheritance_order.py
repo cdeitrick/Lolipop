@@ -1,7 +1,8 @@
 import pytest
 import pandas
-from import_data import import_table_from_string
-from inheritance import order
+from dataio.trajectories import import_table_from_string
+
+
 @pytest.fixture
 def sorted_df()->pandas.DataFrame:
 	string = """

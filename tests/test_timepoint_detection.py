@@ -1,6 +1,6 @@
 import pytest
 import pandas
-from import_data import import_table_from_string
+from dataio.trajectories import import_table_from_string
 from inheritance import timepoint_detection
 @pytest.fixture
 def transposed_genotypes()->pandas.DataFrame:

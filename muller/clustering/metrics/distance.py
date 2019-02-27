@@ -27,6 +27,8 @@ def pearson_correlation_distance(left: pandas.Series, right: pandas.Series, adju
 	----------
 	left:pandas.Series
 	right:pandas.Series
+	adjusted: bool; default True
+		Whther to adjust the coefficient for small sample sizes.
 
 	Returns
 	-------
@@ -90,18 +92,10 @@ def binomial_probability(left: pandas.Series, right: pandas.Series) -> float:
 	return value
 
 
-def bray_curtis(left: pandas.Series, right: pandas.Series) -> float:
-	area_left = area_of_series(left)
-	area_right = area_of_series(right)
-	area_shared = calculate_common_area(left, right, 0.03)
-
-	return 1 - (2 * area_shared) / (area_left + area_right)
-
-
 def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 	area_left = area_of_series(left)
 	area_right = area_of_series(right)
-	area_shared = calculate_common_area(left, right, 0.03)
+	area_shared = calculate_common_area(left, right)
 	j = area_shared / (area_left + area_right - area_shared)
 	return 1 - j
 
@@ -110,13 +104,11 @@ def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas
 	minkowski = minkowski_distance(left, right, 2)
 	pearson = pearson_correlation_distance(left, right)
 	bd = binomial_distance(left, right)
-	bc = bray_curtis(left, right)
 
 	data = {
 		'minkowski':        minkowski,
 		'pearson':          pearson,
 		'binomialDistance': bd,
-		'brayCurtis':       bc,
 		'jaccard':          jaccard_distance(left, right),
 		'combined':         2 * pearson + minkowski
 	}

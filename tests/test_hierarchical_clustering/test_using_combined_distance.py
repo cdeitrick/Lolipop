@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 import pandas
 import pytest
 
-from import_data import import_table_from_string
+from dataio.trajectories import import_table_from_string
 from muller.clustering.metrics import distance
 from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 from muller.clustering.methods.hierarchical_method import hierarchical_method

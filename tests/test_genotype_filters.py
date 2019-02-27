@@ -1,7 +1,7 @@
 import pytest
 import pandas
 from clustering import filters
-from import_data import import_table_from_string
+from dataio.trajectories import import_table_from_string
 
 @pytest.fixture
 def genotypes()->pandas.DataFrame:

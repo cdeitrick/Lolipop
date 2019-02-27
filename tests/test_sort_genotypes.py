@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from import_data import import_table_from_string
+from dataio.trajectories import import_table_from_string
 from inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
 
 
