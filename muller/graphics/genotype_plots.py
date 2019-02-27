@@ -61,6 +61,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	plt.ylabel('frequency')
 	plt.xlabel('timepoint')
 	plt.title('Genotypes')
+	plt.ylim(0, 1)
 	for cluster_id, cluster_timeseries in mutational_genotypes.iterrows():
 		cluster_color = genotype_colors[cluster_id]
 		plt.plot(
