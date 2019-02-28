@@ -107,6 +107,8 @@ def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -
 		distance_between_series = minkowski_distance(left, right)
 	elif metric == 'binomial':
 		distance_between_series = binomial_distance(left, right)
+	elif metric == 'similarity':
+		distance_between_series = binomial_probability(left, right)
 	elif metric == 'jaccard':
 		distance_between_series = jaccard_distance(left, right)
 	elif metric == "combined":
