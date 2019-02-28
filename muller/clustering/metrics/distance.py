@@ -100,20 +100,23 @@ def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 	return 1 - j
 
 
-def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas.Series:
-	minkowski = minkowski_distance(left, right, 2)
-	pearson = pearson_correlation_distance(left, right)
-	bd = binomial_distance(left, right)
-
-	data = {
-		'minkowski':        minkowski,
-		'pearson':          pearson,
-		'binomialDistance': bd,
-		'jaccard':          jaccard_distance(left, right),
-		'combined':         2 * pearson + minkowski
-	}
-
-	return pandas.Series(data)
+def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -> float:
+	if metric == 'pearson':
+		distance_between_series = pearson_correlation_distance(left, right)
+	elif metric == 'minkowski':
+		distance_between_series = minkowski_distance(left, right)
+	elif metric == 'binomial':
+		distance_between_series = binomial_distance(left, right)
+	elif metric == 'jaccard':
+		distance_between_series = jaccard_distance(left, right)
+	elif metric == "combined":
+		distance_between_series_pearson = pearson_correlation_distance(left, right)
+		distance_between_series_minkowski = minkowski_distance(left, right, 2)
+		distance_between_series = (2 * distance_between_series_pearson) + distance_between_series_minkowski
+	else:
+		message = f"'{metric}' is not an available metric."
+		raise ValueError(message)
+	return distance_between_series
 
 
 if __name__ == "__main__":

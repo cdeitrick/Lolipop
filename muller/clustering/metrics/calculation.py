@@ -14,17 +14,7 @@ except ModuleNotFoundError:
 	from ...widgets import get_valid_points
 
 
-def normalize(series: pandas.Series) -> pandas.Series:
-	mean = series.mean()
-	sigma = series.var()
-	if math.isnan(sigma) or len(series) < 2:
-		normalized_series = None
-	else:
-		normalized_series = (series - mean) / sigma
-	return normalized_series
-
-
-def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
+def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
 	"""
 		Calculates the overlap of two series that are both undetected or fixed at all timepoints.
 	Parameters
@@ -37,19 +27,22 @@ def calculate_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: f
 	-------
 	float
 	"""
-	left_fixed: pandas.Series = left[left.gt(fixed_cutoff)]
-	right_fixed: pandas.Series = right[right.gt(fixed_cutoff)]
+	left_fixed: pandas.Series = left[left.gt(fixed_cutoff)].dropna()
+	right_fixed: pandas.Series = right[right.gt(fixed_cutoff)].dropna()
 
 	if left_fixed.empty and right_fixed.empty:
 		# Both are undetected, since they both failed the invalid timepoint filter.
-		p_value = 1.0
+		p_value = False
 	else:
-		# Check if the trajectories overlap
+		# Since these genotypes fixed immediately, they should only be grouped together if they
+		# fixed at the same timepoint.
+		fixed_at_same_time = left_fixed.index[0] == right_fixed.index[0]
+		# Check if the trajectories overlap completely
 		overlap = set(left_fixed.index) & set(right_fixed.index)
-		# the p_value should be 1 if the fixed trajectories overlapped, and 0 otherwise.
-		p_value = float((len(left_fixed) > 2 and len(right_fixed) > 2 and len(overlap) > 2))
-
-	return p_value
+		complete_overlap = len(overlap) == len(left_fixed) and len(overlap) == len(right_fixed)
+		p_value = fixed_at_same_time and complete_overlap
+	result = 0 if p_value else math.nan
+	return result
 
 
 def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: float, fixed_cutoff: float, metric: str) -> Dict[
@@ -80,33 +73,13 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
 		detected_points = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, inner = False)
-		#detected_points = pandas.concat([left_trajectory, right_trajectory], axis = 1)
-		detected_points.columns = ['left', 'right']
 		left_trajectory = detected_points['left']
 		right_trajectory = detected_points['right']
 
 		if left_trajectory.empty:
-			distance_between_series = calculate_overlap(left_trajectory, right_trajectory, fixed_cutoff)
-		elif metric == "similarity":
-			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
-		elif metric == 'pearson':
-			distance_between_series = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
-		elif metric == 'minkowski':
-			distance_between_series = distance.minkowski_distance(left_trajectory, right_trajectory)
-		elif metric == 'binomial':
-			distance_between_series = distance.binomial_distance(left_trajectory, right_trajectory)
-		elif metric == 'binomialp':
-			distance_between_series = distance.binomial_probability(left_trajectory, right_trajectory)
-		elif metric == 'jaccard':
-			distance_between_series = distance.jaccard_distance(left_trajectory, right_trajectory)
-		elif metric == "combined":
-			distance_between_series_pearson = distance.pearson_correlation_distance(left_trajectory, right_trajectory)
-			distance_between_series_minkowski = distance.minkowski_distance(left_trajectory, right_trajectory, 2)
-			#distance_between_series = (distance_between_series_jaccard / 2) + distance_between_series_pearson
-			distance_between_series = (2*distance_between_series_pearson) + distance_between_series_minkowski
+			distance_between_series = fixed_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		else:
-			message = f"'{metric}' is not an available metric."
-			raise ValueError(message)
+			distance_between_series = distance.calculate_distance(left_trajectory, right_trajectory, metric)
 		pair_array[left, right] = pair_array[right, left] = distance_between_series
 
 	# Assume that any pair with NAN values are the maximum possible distance from each other.

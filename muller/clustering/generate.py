@@ -126,7 +126,10 @@ def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptio
 		logger.info(f"filtering iteration {index} of {_iterations}")
 		# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
 		# used when sorting the genotypes.
-		current_backgrounds, (dlimit, flimit) = get_fuzzy_backgrounds(genotype_table, frequency_cutoffs)
+		try:
+			current_backgrounds, (dlimit, flimit) = get_fuzzy_backgrounds(genotype_table, frequency_cutoffs)
+		except ValueError:
+			break
 		logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
 		# Search for genotypes that do not make sense in the context of an evolved population.
 		fuzzy_detected_cutoff = goptions.detection_breakpoint
