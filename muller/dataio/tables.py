@@ -40,9 +40,3 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_string(input_table, index = index)
 	#data = data[sorted(data.columns, key = lambda s: str(s))]
 	return data
-
-if __name__ == "__main__":
-	string = """Trajectory	X0	X1	X2	X3	X4	X5
-		trajectory-A2	0	0	0	6	35	4
-		trajectory-A3	0	0	0	0	45	5"""
-	print(import_table(string, index = 'Trajectory').to_string())
