@@ -1,6 +1,7 @@
 import pytest
+import unittest.mock as mock
 from dataio import file_parsers, import_table
-
+from io import StringIO
 test_labels = ["PROKKA_00139/>glyA", "gapN/>glgB", "PROKKA_00438<", "PROKKA_00512", "intergenic(62/+110)", "bglK_1<", "dnaI<","malK_1<","mepA_2<", "patA_1<"]
 expected_labels = [
 	"PROKKA_00139|glyA", "gapN|glgB", "PROKKA_00438", "PROKKA_00512", "intergenic", "bglK_1", "dnaI", "malK_1", "mepA_2", "patA_1"
@@ -43,4 +44,43 @@ def test_parse_annotations():
 
 	assert expected_result == test_result
 
+def test_parse_genotype_palette():
+	palette = """
+	genotype-3	#994567
+	genotype-1	#D342A1
+	removed	#333311	garbage1	garbage2
+	"""
+	class FakePath:
+		def open(self):
+			p = "\n".join(i.strip() for i in palette.split('\n'))
+			return StringIO(p)
+	expected = {
+		'genotype-1': '#D342A1',
+		'genotype-3': '#994567',
+		'removed': '#333311'
+	}
+	result = file_parsers.parse_genotype_palette(FakePath())
+
+	assert expected == result
+
+def test_parse_known_genotypes():
+	known_genotypes = """
+	1,3,4
+	trajectory-7
+	t5,t6
+	"""
+	class FakePath:
+		def read_text(self):
+			p = (i.strip() for i in known_genotypes.split('\n'))
+			p = "\n".join(i for i in p if i)
+			return p
+
+	expected = [
+		["1", "3", "4"],
+		["trajectory-7"],
+		["t5", "t6"]
+	]
+	result = file_parsers.parse_known_genotypes(FakePath())
+
+	assert expected == result
 
