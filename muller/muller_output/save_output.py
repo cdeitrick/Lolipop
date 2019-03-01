@@ -135,7 +135,8 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 		'derivativeDetectionCutoff':              workflow_data.cluster_options.derivative_detection_cutoff,
 		'derivativeCheckCutoff':                  workflow_data.cluster_options.derivative_check_cutoff,
 		# Palette
-		'genotypePalette':                        genotype_colors
+		'genotypePalette':                        genotype_colors,
+		'commit':                                 widgets.get_commit_hash()
 	}
 	return parameters
 

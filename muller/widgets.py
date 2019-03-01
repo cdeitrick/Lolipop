@@ -1,6 +1,7 @@
 import re
 from typing import Dict, List, Optional
-
+from pathlib import Path
+import csv
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
@@ -116,6 +117,16 @@ def format_inconsistency_matrix(R) -> pandas.DataFrame:
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
 
+def get_commit_hash()->str:
+	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
+	commit_hash = "n/a"
+	with filename.open() as log_file:
+		reader = csv.reader(log_file, delimiter = '\t')
+		for line in reader:
+			if line:
+				hash = line[0]
+				commit_hash = hash.split()[1]
+	return commit_hash[:7]
 
 if __name__ == "__main__":
-	pass
+	print(get_commit_hash())
