@@ -16,13 +16,13 @@ try:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from inheritance.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters
-	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
+	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
 	from muller import widgets, palette, dataio
 except ModuleNotFoundError:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot
+	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller_output.generate_tables import *
 	from muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
 	import widgets
@@ -100,6 +100,7 @@ class OutputFilenames:
 		self.p_value_heatmap: Path = graphics_folder / (name + ".heatmap.pvalues.png")
 		self.distance_heatmap: Path = graphics_folder / (name + f".heatmap.distance.png")
 		self.linkage_plot = graphics_folder / (name + f".dendrogram.png")
+		self.trajectory_plot_distinctive:Path = graphics_folder / (name + f".trajectories.png")
 
 		# scripts
 		self.r_script: Path = scripts_folder / (name + '.r')
@@ -172,9 +173,10 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	if workflow_data.trajectories is not None:
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
-		trajectory_colors = {i: genotype_colors_clade[parent_genotypes[i]] for i in workflow_data.trajectories.index}
 		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
-
+		trajectory_map = widgets.map_trajectories_to_genotype(workflow_data.genotype_members)
+	else:
+		trajectory_map = {}
 	# Save supplementary files
 	parameters = get_workflow_parameters(workflow_data, genotype_colors_clade)
 	filenames.parameters.write_text(json.dumps(parameters, indent = 2))
@@ -195,9 +197,12 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	)
 
 	# Generate time series plots showing the mutations/genotypes over time.
-	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, parent_genotypes)
+	trajectory_colors_distinct = palette.generate_trajectory_palette(genotype_colors_distinct, trajectory_map)
+	trajectory_colors_clade = palette.generate_trajectory_palette(genotype_colors_clade, trajectory_map)
+	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, trajectory_colors_distinct)
 	if workflow_data.trajectories is not None:
-		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade, parent_genotypes)
+		plot_timeseries(workflow_data.trajectories, trajectory_colors_distinct, filename = filenames.trajectory_plot_distinctive)
+		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade, trajectory_colors_clade)
 
 	# Generate muller plot, if possible
 	if muller_df is not None:

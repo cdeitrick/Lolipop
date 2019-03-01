@@ -109,6 +109,8 @@ def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[
 
 	return color_map
 
-
+def generate_trajectory_palette(genotype_palette:Dict[str,str], trajectory_map:Dict[str,str])->Dict[str,str]:
+	colors = {k:genotype_palette.get(v, '#333333') for k,v in trajectory_map.items()}
+	return colors
 if __name__ == "__main__":
 	pass
