@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import pandas
 
@@ -49,29 +49,6 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], rela
 			population_genotypes.merge_trajectories(left, right)
 	genotype_candidates = population_genotypes.to_list()
 	return genotype_candidates
-
-
-def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]]) -> Optional[List[str]]:
-	"""
-		Finds the genotype that contains the trajectory.
-	Parameters
-	----------
-	element: str
-		The trajectory id.
-	all_genotypes: List[List[int]]
-		All muller_genotypes that have been calculated.
-	Returns
-	-------
-		The genotype (in the form of a list of trajectory ids) containing the given trajectory id.
-		If the trajectory is not contained in any muller_genotypes, returns None
-	"""
-	candidates = [i for i in all_genotypes if element in i]
-	try:
-		value = candidates[0]
-	except IndexError:
-		value = None
-
-	return value
 
 
 def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculationCache, similarity_breakpoint: float, difference_breakpoint: float,

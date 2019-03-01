@@ -24,3 +24,22 @@ def test_relocate_point_complex():
 	result_point = relocate_point(point, locations)
 
 	assert pytest.approx(expected_point, result_point)
+
+def test_get_font_properties():
+
+	expected_result = {
+		'size': 9,
+		'color': '#333333'
+	}
+
+	assert get_font_properties("#99d8c9") == expected_result
+
+	assert get_font_properties("#00441b")['color'] == '#FFFFFF'
+
+def test_find_closest_point():
+	point = (10, 15)
+
+	points = [(0,1), (10,10), (11,11), (12,12)]
+	assert find_closest_point(point, points) == (12,12)
+def test_unique_everseen():
+	assert list(unique_everseen("AABBCCCADAACCFD")) == "A B C D F".split()
