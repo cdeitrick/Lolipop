@@ -79,7 +79,7 @@ def generate_clade_palette(edges_table: pandas.DataFrame) -> Dict[str, str]:
 
 
 def rgbtohex(rgb: Tuple[float, float, float]) -> str:
-	if rgb[0] < 1.1:  # The values are formatted as a number between 0 and 1
+	if isinstance(rgb[0], float):  # The values are formatted as a number between 0 and 1
 		red = int(rgb[0] * 256)
 		green = int(rgb[1] * 256)
 		blue = int(rgb[2] * 256)

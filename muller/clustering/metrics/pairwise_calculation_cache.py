@@ -1,8 +1,9 @@
 import itertools
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
-from scipy.spatial import distance
+
 import pandas
+from scipy.spatial import distance
 
 PairwiseArrayType = Dict[Tuple[str, str], float]
 
@@ -45,9 +46,11 @@ class PairwiseCalculationCache:
 				series[right] = value
 			_square_map[left] = series
 		return pandas.DataFrame(_square_map)
+
 	def triangle(self):
 		""" Returns the condensed squareform of the pair array."""
 		return distance.squareform(self.squareform().values)
+
 	def get(self, left, right, default = None) -> float:
 		result = self.pairwise_values.get((left, right), default)
 		return result
@@ -76,7 +79,7 @@ class PairwiseCalculationCache:
 			else:
 				yield key
 
-	def save(self, filename: Optional[Path]):
+	def save(self, filename: Path):
 		with filename.open('w') as output:
 			for key in self.unique():
 				value = self.get(*key)
