@@ -1,14 +1,16 @@
 import itertools
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import pandas
 
 try:
 	from clustering.methods.difference import unlink_unrelated_trajectories
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from clustering.methods.population_genotypes_cache import PopulationGenotypes
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from .population_genotypes_cache import PopulationGenotypes
 
 
 def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List[str]] = None) -> List[
@@ -22,6 +24,8 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], rela
 		A dictionary mapping pairs to p-values.
 	relative_cutoff: float; default 0.05
 		The cutoff indicating two trajectories are related.
+	base_genotypes: List[List[str]]
+		A set of pre-defined genotypes.
 
 	Returns
 	-------
@@ -33,8 +37,8 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], rela
 		genotype_candidates = [[min(pairs.keys())[0]]]  # by default the first trajectory forms the first genotype.
 	else:
 		genotype_candidates = []
-
-	seen = set()
+	population_genotypes = PopulationGenotypes(genotype_candidates)
+	seen = set(itertools.combinations(itertools.chain.from_iterable(genotype_candidates), 2))
 	for (left, right), p_value in pairs.items():
 		# ignore pairs that have already been sorted into a genotype.
 		if (left, right) in seen or (right, left) in seen:
@@ -42,49 +46,9 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], rela
 		seen.add((left, right))
 		# are the genotypes related?
 		if p_value > relative_cutoff:
-			# Check if any of the trajectories are already listed in genotypes.
-			# These will return None if no genotype is found.
-			genotype_left = _find_genotype_from_trajectory(left, genotype_candidates)
-			genotype_right = _find_genotype_from_trajectory(right, genotype_candidates)
-
-			if genotype_left and genotype_right:
-				# they are listed under two different genotypes. Combine them.
-				if genotype_left != genotype_right:
-					genotype_left += genotype_right
-					# Remove the redundant genotype.
-					genotype_candidates.remove(genotype_right)
-
-			elif genotype_left:
-				genotype_left.append(right)
-			elif genotype_right:
-				genotype_right.append(left)
-			else:
-				# Neither element is listed. Create a new genotype
-				genotype_candidates.append([left, right])
+			population_genotypes.merge_trajectories(left, right)
+	genotype_candidates = population_genotypes.to_list()
 	return genotype_candidates
-
-
-def _find_genotype_from_trajectory(element: str, all_genotypes: List[List[str]]) -> Optional[List[str]]:
-	"""
-		Finds the genotype that contains the trajectory.
-	Parameters
-	----------
-	element: str
-		The trajectory id.
-	all_genotypes: List[List[int]]
-		All muller_genotypes that have been calculated.
-	Returns
-	-------
-		The genotype (in the form of a list of trajectory ids) containing the given trajectory id.
-		If the trajectory is not contained in any muller_genotypes, returns None
-	"""
-	candidates = [i for i in all_genotypes if element in i]
-	try:
-		value = candidates[0]
-	except IndexError:
-		value = None
-
-	return value
 
 
 def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculationCache, similarity_breakpoint: float, difference_breakpoint: float,
@@ -145,3 +109,8 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 	# all_genotypes[population_id] = population_genotypes
 	# TODO Fix so that it returns a genotype for each population
 	return [i for i in population_genotypes if i]  # Only return non-empty lists.
+
+
+if __name__ == "__main__":
+	seen = set(itertools.combinations(itertools.chain.from_iterable([["1", "2"], ["3"]]), 2))
+	print(seen)

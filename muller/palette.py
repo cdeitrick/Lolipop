@@ -1,10 +1,9 @@
-import csv
 import logging
 import random
 from collections import OrderedDict
 from pathlib import Path
 from typing import Collection, Dict, Optional, Tuple
-
+from dataio import parse_genotype_palette
 import pandas
 import seaborn
 
@@ -56,23 +55,6 @@ def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:
 	return label, iteration
 
 
-def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
-	""" The file should be either a list of colors or a map of genotypes to colors."""
-	palette = dict()
-	with paletteio.open() as palette_file:
-		reader = csv.reader(palette_file, delimiter = "\t")
-		for line in reader:
-			logger.debug(line)
-			# Check for empty lines
-			try:
-				key, color, *_ = line
-			except:
-				continue
-			if color:
-				palette[key] = color
-	return palette
-
-
 def generate_random_color() -> str:
 	r = random.randint(50, 200)
 	g = random.randint(50, 200)
@@ -97,7 +79,7 @@ def generate_clade_palette(edges_table: pandas.DataFrame) -> Dict[str, str]:
 
 
 def rgbtohex(rgb: Tuple[float, float, float]) -> str:
-	if rgb[0] < 1.1:  # The values are formatted as a number between 0 and 1
+	if isinstance(rgb[0], float):  # The values are formatted as a number between 0 and 1
 		red = int(rgb[0] * 256)
 		green = int(rgb[1] * 256)
 		blue = int(rgb[2] * 256)
@@ -127,6 +109,8 @@ def generate_genotype_palette(genotypes: Collection, palette_filename: Optional[
 
 	return color_map
 
-
+def generate_trajectory_palette(genotype_palette:Dict[str,str], trajectory_map:Dict[str,str])->Dict[str,str]:
+	colors = {k:genotype_palette.get(v, '#333333') for k,v in trajectory_map.items()}
+	return colors
 if __name__ == "__main__":
 	pass

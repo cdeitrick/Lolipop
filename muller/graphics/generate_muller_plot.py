@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import pandas
 from matplotlib import pyplot as plt
@@ -126,8 +126,8 @@ def get_font_properties(genotype_color: str) -> Dict[str, Any]:
 		which is determined by the background color.
 	Parameters
 	----------
-	genotype_label: str
-	colormap: Dict[str,str]
+	genotype_color: str
+		The color of the genotype this text is associated with.
 
 	Returns
 	-------
@@ -206,14 +206,13 @@ def annotate_axes(ax: Axes, points: Dict[str, Tuple[float, float]], annotations:
 	return ax
 
 
-def generate_muller_plot(muller_df: pandas.DataFrame, trajectory_table: Optional[pandas.DataFrame], color_palette: Dict[str, str],
+def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, str],
 		output_filename: Union[Path, List[Path]], annotations: Dict[str, List[str]] = None):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 	Parameters
 	----------
 	muller_df: pandas.DataFrame
-	trajectory_table: pandas.DataFrame
 	color_palette: Dict[str,str]
 	output_filename: Path or List[Path]
 		If a list of paths is given the same graphics will be saves as each filename. This is useful if you want to save the

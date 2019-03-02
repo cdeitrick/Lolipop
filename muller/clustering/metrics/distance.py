@@ -20,13 +20,15 @@ def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int = 2) ->
 	return math.pow(total, 1 / p)
 
 
-def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> float:
+def pearson_correlation_distance(left: pandas.Series, right: pandas.Series, adjusted = True) -> float:
 	"""
 		Calculates the pearson correlation between two series. The resulting value lies in the range [0,2].
 	Parameters
 	----------
 	left:pandas.Series
 	right:pandas.Series
+	adjusted: bool; default True
+		Whther to adjust the coefficient for small sample sizes.
 
 	Returns
 	-------
@@ -35,7 +37,10 @@ def pearson_correlation_distance(left: pandas.Series, right: pandas.Series) -> f
 
 	pcc = left.corr(right, method = 'pearson')
 	# Adjust due to sample size
-	adjusted_pcc = adjust_correlation_coefficient(pcc, len(left))
+	if adjusted:
+		adjusted_pcc = adjust_correlation_coefficient(pcc, len(left))
+	else:
+		adjusted_pcc = pcc
 	# convert to distance metric.
 	return 1 - adjusted_pcc
 
@@ -87,38 +92,33 @@ def binomial_probability(left: pandas.Series, right: pandas.Series) -> float:
 	return value
 
 
-def bray_curtis(left: pandas.Series, right: pandas.Series) -> float:
-	area_left = area_of_series(left)
-	area_right = area_of_series(right)
-	area_shared = calculate_common_area(left, right, 0.03)
-
-	return 1 - (2 * area_shared) / (area_left + area_right)
-
-
 def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 	area_left = area_of_series(left)
 	area_right = area_of_series(right)
-	area_shared = calculate_common_area(left, right, 0.03)
+	area_shared = calculate_common_area(left, right)
 	j = area_shared / (area_left + area_right - area_shared)
 	return 1 - j
 
 
-def calculate_all_distances(left: pandas.Series, right: pandas.Series) -> pandas.Series:
-	minkowski = minkowski_distance(left, right, 2)
-	pearson = pearson_correlation_distance(left, right)
-	bd = binomial_distance(left, right)
-	bc = bray_curtis(left, right)
-
-	data = {
-		'minkowski':        minkowski,
-		'pearson':          pearson,
-		'binomialDistance': bd,
-		'brayCurtis':       bc,
-		'jaccard':          jaccard_distance(left, right),
-		'combined':         2 * pearson + minkowski
-	}
-
-	return pandas.Series(data)
+def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -> float:
+	if metric == 'pearson':
+		distance_between_series = pearson_correlation_distance(left, right)
+	elif metric == 'minkowski':
+		distance_between_series = minkowski_distance(left, right)
+	elif metric == 'binomial':
+		distance_between_series = binomial_distance(left, right)
+	elif metric == 'similarity':
+		distance_between_series = binomial_probability(left, right)
+	elif metric == 'jaccard':
+		distance_between_series = jaccard_distance(left, right)
+	elif metric == "combined":
+		distance_between_series_pearson = pearson_correlation_distance(left, right)
+		distance_between_series_minkowski = minkowski_distance(left, right, 2)
+		distance_between_series = (2 * distance_between_series_pearson) + distance_between_series_minkowski
+	else:
+		message = f"'{metric}' is not an available metric."
+		raise ValueError(message)
+	return distance_between_series
 
 
 if __name__ == "__main__":

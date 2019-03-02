@@ -1,7 +1,6 @@
-import io
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
-
+from .tables import import_table
 import pandas
 
 from widgets import get_numeric_columns
@@ -69,7 +68,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	return time_table, info_table
 
 
-def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
 	data = import_table(filename, sheet_name = sheet_name)
 
@@ -83,10 +82,10 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 		message = f"One of the columns needs to be labeled `Genotype`. Got {data.columns} instead from {filename}."
 		raise ValueError(message)
 
-	#if 'members' not in data.columns:
+	# if 'members' not in data.columns:
 	#	data['members'] = [f'trajectory-{i}' for i in data.index]
-		#message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
-		#raise ValueError(message)
+	# message = "The genotype must have a 'members' column with the names of all trajectories contained in the genotype. Individual trajectory names must be separated by '|'"
+	# raise ValueError(message)
 
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
 	# Make sure the genotype labels are prefixed with 'genotype-'
@@ -104,42 +103,7 @@ def import_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[p
 	return genotype_timeseries, genotype_info
 
 
-def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None) -> pandas.DataFrame:
-	if isinstance(input_table, Path) or '/' in input_table:
-		data = import_table_from_path(input_table, sheet_name)
-	else:
-		data = import_table_from_string(input_table)
-	data = data[sorted(data.columns, key = lambda s: str(s))]
-	return data
-
-
-def import_table_from_path(filename: Path, sheet_name: Optional[str] = None) -> pandas.DataFrame:
-	""" Imports a file as a pandas.DataFrame. Infers filetype from the filename extension/suffix.
-	"""
-	if filename.suffix in {'.xls', '.xlsx'}:
-		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
-	else:
-		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
-		data: pandas.DataFrame = pandas.read_table(str(filename), sep = sep)
-
-	return data
-
-
-def import_table_from_string(string: str, delimiter: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
-	""" Imports a table represented as a basic string object."""
-	# Remove unwanted whitespace.
-	string = '\n'.join(i.strip() for i in string.split('\n') if i)
-	if not delimiter:
-		delimiter = '\t' if '\t' in string else ','
-	result = pandas.read_table(io.StringIO(string), sep = delimiter, index_col = False)
-	if index:
-		# Using `index_col` in `read_table()` doesn't work for some reason.
-		result[index] = result[index].astype(str)
-		result.set_index(index, inplace = True)
-	return result
-
-
-def import_trajectory_table(filename: IOTYPE, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def parse_trajectory_table(filename: IOTYPE, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Reads an excel or csv file. Assumes that the file has a `Trajectory` column and a column for each timepoint.
 	Parameters

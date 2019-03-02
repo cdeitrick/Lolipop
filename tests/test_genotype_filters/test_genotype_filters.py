@@ -1,7 +1,7 @@
 import pytest
 import pandas
 from clustering import filters
-from import_data import import_table_from_string
+from dataio import import_table
 
 @pytest.fixture
 def genotypes()->pandas.DataFrame:
@@ -23,7 +23,7 @@ def genotypes()->pandas.DataFrame:
 		genotype-14	0	0	0	0	0	0.2675	0.326
 		genotype-15	0	0	0	0.1145	0	0.1205	0.0615
 	"""
-	t = import_table_from_string(genotype_table_string, index = 'Genotype')
+	t = import_table(genotype_table_string, index = 'Genotype')
 	t = t.astype(float)
 	return t
 
@@ -56,7 +56,7 @@ def test_get_fuzzy_backgrounds(genotypes):
 		genotype-4	0	0	0	0.525	0.454	0.911	0.91
 		genotype-5	0	0	0	0.147	0.45	0.924	0.887
 		genotype-6	0	0	0	0.273	0.781	1	1"""
-	expected_table = import_table_from_string(expected, index = 'Genotype')
+	expected_table = import_table(expected, index = 'Genotype')
 	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = filters.get_fuzzy_backgrounds(genotypes, cutoffs)
 	expected_table = expected_table.astype(float)
 	assert pytest.approx(fuzzy_fixed_cutoff == 0.9)

@@ -66,8 +66,4 @@ def is_subset(left: pandas.Series, right: pandas.Series) -> bool:
 X_and_Y = calculate_common_area
 
 if __name__ == "__main__":
-	left = pandas.Series([0, .1, .2, .3, .4])
-	right = pandas.Series([0, 0, .1, .2, .3])
-
-	print(is_subset(left, right))
-	print(is_subset(right, left))
+	pass
