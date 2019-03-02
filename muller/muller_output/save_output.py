@@ -77,7 +77,7 @@ class OutputFilenames:
 		self.trajectory: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
-		self.mermaid_render: Path = output_folder / (name + '.mermaid.png')
+		self.mermaid_render: Path = output_folder / (name + '.geneology.png')
 		self.genotype_plot_filtered: Path = output_folder / (name + f".filtered.png")
 
 		# tables
