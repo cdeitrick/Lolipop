@@ -97,7 +97,7 @@ def format_linkage_matrix(Z, total_members:Optional[int]) -> pandas.DataFrame:
 	linkage_dataframe['right'] = linkage_dataframe['right'].astype(int)
 	linkage_dataframe['observations'] = linkage_dataframe['observations'].astype(int)
 	if total_members:
-		linkage_dataframe['resultingCluster'] = list(total_members + i for i in range(len(linkage_dataframe)))
+		linkage_dataframe['clusterId'] = list(total_members + i for i in range(len(linkage_dataframe)))
 	return linkage_dataframe
 
 
