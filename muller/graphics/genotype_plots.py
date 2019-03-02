@@ -29,6 +29,7 @@ def plot_timeseries(timeseries: pandas.DataFrame, palette: Dict[str, str], ax: O
 		x_values, y_values = zip(*trajectory_timeseries)
 		ax.plot(x_values, y_values, '-o', color = color, label = trajectory_id, markersize = 2)
 	if filename:
+		plt.tight_layout()
 		plt.savefig(str(filename), dpi = 200)
 	return ax
 

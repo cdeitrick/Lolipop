@@ -70,6 +70,8 @@ class OutputFilenames:
 		output_folder = check_folder(output_folder)
 		supplementary_folder = check_folder(output_folder / "supplementary-files")
 		graphics_folder = check_folder(output_folder / "graphics")
+		graphics_distinctive_folder = check_folder(graphics_folder / "distinctive")
+		graphics_clade_folder = check_folder(graphics_folder / "clade")
 		tables_folder = check_folder(output_folder / "tables")
 		scripts_folder = check_folder(output_folder / "scripts")
 
@@ -78,7 +80,7 @@ class OutputFilenames:
 		self.genotype: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
 		self.mermaid_render: Path = output_folder / (name + '.geneology.png')
-		self.genotype_plot_filtered: Path = output_folder / (name + f".filtered.png")
+		self.genotype_plot_filtered: Path = output_folder / (name + f".genotypes.filtered.png")
 
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
@@ -92,15 +94,21 @@ class OutputFilenames:
 		self.calculation_matrix_p: Path = tables_folder / (name + f".calculation.matrix.pvalues.{suffix}")
 
 		# graphics
-		self.muller_plot_basic: Path = graphics_folder / (name + '.muller.basic.png')
-		self.muller_plot_unannotated: Path = graphics_folder / (name + '.muller.unannotated.png')
-		self.muller_plot_annotated_pdf: Path = graphics_folder / (name + '.muller.annotated.pdf')
-		self.muller_plot_annotated_svg: Path = graphics_folder / (name + ".muller.annotated.svg")
-		self.genotype_plot: Path = graphics_folder / (name + '.png')
-		self.p_value_heatmap: Path = graphics_folder / (name + ".heatmap.pvalues.png")
+		## Muller Plots
+		self.muller_plot_unannotated: Path = graphics_clade_folder / (name + '.muller.unannotated.png')
+		self.muller_plot_annotated_pdf: Path = graphics_clade_folder / (name + '.muller.annotated.pdf')
+		self.muller_plot_annotated_svg: Path = graphics_clade_folder / (name + ".muller.annotated.svg")
+		self.muller_plot_basic: Path = graphics_clade_folder / (name + '.muller.basic.png')
+		self.muller_plot_annotated_distinctive: Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.png')
+		self.muller_plot_annotated_distinctive_svg:Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.svg')
+		##Timeseries plots
+		self.genotype_plot: Path = graphics_distinctive_folder / (name + '.genotypes.distinctive.png')
+		self.trajectory_plot_distinctive: Path = graphics_distinctive_folder / (name + f".trajectories.distinctive.png")
+		## Geneology plots
+		self.mermaid_distinctive: Path = graphics_distinctive_folder / (name + f".geneology.distinctive.png")
+		## Other plots
 		self.distance_heatmap: Path = graphics_folder / (name + f".heatmap.distance.png")
 		self.linkage_plot = graphics_folder / (name + f".dendrogram.png")
-		self.trajectory_plot_distinctive:Path = graphics_folder / (name + f".trajectories.png")
 
 		# scripts
 		self.r_script: Path = scripts_folder / (name + '.r')
@@ -108,7 +116,7 @@ class OutputFilenames:
 
 		# supplementary files
 		self.parameters: Path = supplementary_folder / (name + '.json')
-		self.calculation_json = supplementary_folder / (name + f".calculations.json")
+		self.calculation_json = supplementary_folder / (name + f".calculations.tsv")
 
 	@property
 	def delimiter(self) -> str:
@@ -184,6 +192,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	# Generate and excecute scripts
 	mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_clade)
 	excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
+	distinctive_mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_distinct)
+	excecute_mermaid_script(filenames.mermaid_script, distinctive_mermaid_diagram, filenames.mermaid_distinctive)
 
 	muller_df = generate_r_script(
 		trajectory = filenames.trajectory,
@@ -202,7 +212,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, trajectory_colors_distinct)
 	if workflow_data.trajectories is not None:
 		plot_timeseries(workflow_data.trajectories, trajectory_colors_distinct, filename = filenames.trajectory_plot_distinctive)
-		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade, trajectory_colors_clade)
+		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade,
+			trajectory_colors_clade)
 
 	# Generate muller plot, if possible
 	if muller_df is not None:
@@ -226,4 +237,4 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	if save_pvalues:
 		workflow_data.p_values.save(filenames.calculation_matrix_p)
 		pvalues_matrix = workflow_data.p_values.squareform()
-		plot_heatmap(pvalues_matrix, filenames.p_value_heatmap)
+		plot_heatmap(pvalues_matrix, filenames.distance_heatmap)
