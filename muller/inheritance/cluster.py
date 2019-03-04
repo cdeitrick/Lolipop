@@ -56,4 +56,4 @@ class Cluster:
 			table.append(row)
 		table = pandas.DataFrame(table)[['Parent', 'Identity']]  # Reorder columns
 
-		return table.set_index('Identity')
+		return table.set_index('Identity')['Parent']

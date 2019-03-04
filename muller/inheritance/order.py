@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 import pandas
 
@@ -80,10 +80,9 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				# A candidate background
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
 				continue
-			if additive_check:# and False:
+			if additive_check:  # and False:
 				# Possible background
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
-
 
 		is_member = genotype_nests.is_a_member(unnested_label)
 		if not is_member:
@@ -102,9 +101,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 		vv = "|".join(v)
 		logger.info(f"{k}\t{vv}")
 	return genotype_nests.as_ancestry_table()
-
-
-
 
 
 def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:
@@ -146,4 +142,15 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 
 
 if __name__ == "__main__":
-	pass
+	from dataio import import_table
+	string = """
+	Genotype	0	1	2	3	5	8	13	21	34
+	genotype-C	0	0	0	0.3	0.7	1	1	1	1
+	genotype-A	0	0	0	0	0.45	0.5	0.55	0.7	0.85
+	genotype-E	0	0	0	0	0	0	0.05	0.55	0.5
+	genotype-B	0	0.07	0.1	0.02	0.01	0	0	0	0
+	genotype-D	0	0	0	0	0	0	0.07	0	0.01
+	"""
+	table = import_table(string, index = 'Genotype')
+
+
