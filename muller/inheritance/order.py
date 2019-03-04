@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 	from options import OrderClusterParameters
 
 
-def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> Dict[str, List[str]]:
+def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> pandas.Series:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
@@ -101,7 +101,10 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	for k, v in genotype_nests.nests.items():
 		vv = "|".join(v)
 		logger.info(f"{k}\t{vv}")
-	return genotype_nests.nests
+	return genotype_nests.as_ancestry_table()
+
+
+
 
 
 def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:
