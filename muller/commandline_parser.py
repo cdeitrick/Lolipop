@@ -245,7 +245,7 @@ def create_parser() -> argparse.ArgumentParser:
 		'-m', '--method',
 		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
 		action = "store",
-		default = "matlab",
+		default = "hierarchy",
 		dest = "method",
 		choices = ['matlab', 'hierarchy']
 	)
@@ -253,7 +253,7 @@ def create_parser() -> argparse.ArgumentParser:
 		"--metric",
 		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, such as the difference between them or how well they are correlated.",
 		action = "store",
-		default = "similarity",
+		default = "binomial",
 		dest = "metric",
 		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
 	)
