@@ -112,5 +112,4 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 
 
 if __name__ == "__main__":
-	seen = set(itertools.combinations(itertools.chain.from_iterable([["1", "2"], ["3"]]), 2))
-	print(seen)
+	pass

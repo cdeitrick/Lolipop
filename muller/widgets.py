@@ -124,8 +124,8 @@ def get_commit_hash()->str:
 		reader = csv.reader(log_file, delimiter = '\t')
 		for line in reader:
 			if line:
-				hash = line[0]
-				commit_hash = hash.split()[1]
+				hash_string = line[0]
+				commit_hash = hash_string.split()[1]
 	return commit_hash[:7]
 
 if __name__ == "__main__":

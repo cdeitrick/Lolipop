@@ -19,7 +19,7 @@ def parse_genotype_palette(paletteio: Path) -> Dict[str, str]:
 			# Check for empty lines
 			try:
 				key, color, *_ = line
-			except:
+			except ValueError:
 				continue
 			if color:
 				palette[key] = color
@@ -35,7 +35,7 @@ def parse_known_genotypes(known_genotypes: Path) -> List[List[str]]:
 def parse_gene_map(filename: Path) -> Dict[str, str]:
 	try:
 		contents = filename.read_text().split('\n')
-	except:
+	except FileNotFoundError:
 		contents = []
 	alias_lines = [line.split('\t') for line in contents if line]
 	alias_map = {i: j for i, j in alias_lines}
@@ -77,7 +77,6 @@ def parse_annotations(genotype_members: pandas.Series, info: pandas.DataFrame, a
 
 	gene_column = 'gene'
 	annotation_column = 'annotation'
-	description_column = 'description'
 	amino_acid_column = "amino acid"
 	genotype_annotations = dict()
 	for genotype_label, members in genotype_members.items():
@@ -85,8 +84,8 @@ def parse_annotations(genotype_members: pandas.Series, info: pandas.DataFrame, a
 		trajectory_subtable = info.loc[trajectory_labels]
 
 		gene_column_values = _get_column_values(trajectory_subtable, gene_column)
-		annotation_column_values = _get_column_values(trajectory_subtable, annotation_column)
-		amino_acid_column_values = _get_column_values(trajectory_subtable, amino_acid_column)
+		#annotation_column_values = _get_column_values(trajectory_subtable, annotation_column)
+		#amino_acid_column_values = _get_column_values(trajectory_subtable, amino_acid_column)
 
 		gene_column_values = [_clean_gene_label(i) for i in gene_column_values]
 		gene_column_values = [alias_map.get(i, i) for i in gene_column_values]
