@@ -44,7 +44,7 @@ class WorkflowData:
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
-	clusters: Dict[str, List[str]]
+	clusters: pandas.Series
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
@@ -166,7 +166,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	workflow_data.original_genotypes.to_csv(str(filenames.original_genotype), sep = delimiter)
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 	# Generate the input tables to ggmuller
-	edges_table = generate_ggmuller_edges_table(workflow_data.clusters)
+	edges_table = workflow_data.clusters.reset_index()
+	edges_table = edges_table[['Parent', 'Identity']] # Otherwise the r script doesn't work.
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)
@@ -174,7 +175,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
 	genotype_colors_distinct = palette.generate_genotype_palette(_all_genotype_labels, workflow_data.genotype_palette_filename)
 	genotype_colors_clade = palette.generate_clade_palette(edges_table)
-
+	print("Saving Trajectory Tables...")
 	# Save trajectory tables, if available
 	if workflow_data.original_trajectories is not None:
 		workflow_data.original_trajectories.to_csv(str(filenames.original_trajectory), sep = delimiter)
@@ -190,6 +191,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	filenames.parameters.write_text(json.dumps(parameters, indent = 2))
 
 	# Generate and excecute scripts
+	print("Generating scripts...")
 	mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_clade)
 	excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
 	distinctive_mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_distinct)
@@ -207,6 +209,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	)
 
 	# Generate time series plots showing the mutations/genotypes over time.
+	print("Generating series plots...")
 	trajectory_colors_distinct = palette.generate_trajectory_palette(genotype_colors_distinct, trajectory_map)
 	trajectory_colors_clade = palette.generate_trajectory_palette(genotype_colors_clade, trajectory_map)
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, trajectory_colors_distinct)
@@ -216,6 +219,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 			trajectory_colors_clade)
 
 	# Generate muller plot, if possible
+	print("Generating muller plots...")
 	if muller_df is not None:
 		genotype_annotations = dataio.parse_annotations(workflow_data.genotype_members, workflow_data.info)
 		annotated_muller_plot_filenames = [

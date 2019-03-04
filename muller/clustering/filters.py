@@ -40,6 +40,8 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 		The first timepoint the background qualifies as 'fixed'
 	detection_cutoff: float
 		The cutoff to determine whether a trajectory counts as 'detected'. It is based on the frequency cutoff used to identify the backgrounds.
+	background_value: float
+		The value of the background when it is considered fixed. This is needed since we are using fuzzy cutoffs to find the most abundant genotype.
 	use_strict_filter: bool
 		Whether to eliminate every genotype detected before and after a fixed point, or to allow these genotypes if they have frequency 0 at the fixed timepoint.
 

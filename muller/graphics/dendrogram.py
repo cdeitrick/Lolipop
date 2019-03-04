@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	from ..clustering.metrics import PairwiseCalculationCache
 
 
-def get_dendrogram_colors(Z, trajectory_colors: Dict[str, str]) -> Dict[str, str]:
+def get_dendrogram_colors(Z, trajectory_colors: Dict[str, str]) -> Dict[int, str]:
 	# see question for code prior to "color mapping"
 
 	# Color mapping
@@ -22,7 +22,7 @@ def get_dendrogram_colors(Z, trajectory_colors: Dict[str, str]) -> Dict[str, str
 	# * if the colors of the connected clusters match, use that color for link
 	index_to_trajectory = lambda s: str(s)
 
-	link_cols: Dict[str, str] = {}
+	link_cols: Dict[int, str] = {}
 	for cluster_index, (left_label, right_label) in enumerate(Z[:, :2].astype(int)):
 		get_color = lambda s: link_cols[s] if s > len(Z) else trajectory_colors[index_to_trajectory(s)]
 		color_1 = get_color(left_label)

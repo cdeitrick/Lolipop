@@ -1,7 +1,8 @@
-import re
-from typing import Dict, List, Optional
-from pathlib import Path
 import csv
+import re
+from pathlib import Path
+from typing import Dict, List, Optional
+
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
@@ -89,7 +90,7 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 get_detected_points = get_valid_points
 
 
-def format_linkage_matrix(Z, total_members:Optional[int]) -> pandas.DataFrame:
+def format_linkage_matrix(Z, total_members: Optional[int]) -> pandas.DataFrame:
 	linkage_dataframe = pandas.DataFrame(Z, columns = ["left", "right", "distance", "observations"])
 
 	# linkage_dataframe.index = pandas.Index([i + len(squaremap.index) for i in linkage_dataframe.index], name = "clusterLabel")
@@ -117,16 +118,24 @@ def format_inconsistency_matrix(R) -> pandas.DataFrame:
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
 
-def get_commit_hash()->str:
-	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
+
+def _get_git_log() -> str:
+	filename =  Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
+	contents = filename.read_text()
+	return contents
+
+
+def get_commit_hash() -> str:
 	commit_hash = "n/a"
-	with filename.open() as log_file:
-		reader = csv.reader(log_file, delimiter = '\t')
-		for line in reader:
-			if line:
-				hash = line[0]
-				commit_hash = hash.split()[1]
+	contents = _get_git_log().split('\n')
+
+	reader = csv.reader(contents, delimiter = '\t')
+	for line in reader:
+		if line:
+			hash_string = line[0]
+			commit_hash = hash_string.split()[1]
 	return commit_hash[:7]
+
 
 if __name__ == "__main__":
 	print(get_commit_hash())

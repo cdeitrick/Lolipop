@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 import pandas
 from scipy.spatial import distance

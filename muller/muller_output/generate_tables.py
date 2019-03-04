@@ -114,23 +114,6 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_ggmuller_edges_table(genotype_clusters: Dict[str,List[str]]) -> pandas.DataFrame:
-	table = list()
-	for identity, background in genotype_clusters.items():
-		parent = background[0]
-		if parent == identity:
-			parent = 'genotype-0'
-
-		row = {
-			'Parent':   parent,
-			'Identity': identity
-		}
-		table.append(row)
-	table = pandas.DataFrame(table)[['Parent', 'Identity']]  # Reorder columns
-
-	return table
-
-
 def generate_p_value_table(p_values, trajectory_genotypes: Dict[str, str]) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	timeseries_table = list()
 	for (left, right), calculation in p_values.items():

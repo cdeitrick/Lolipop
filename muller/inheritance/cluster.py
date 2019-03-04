@@ -41,3 +41,19 @@ class Cluster:
 	def is_a_background(self, element: str) -> bool:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
+
+	def as_ancestry_table(self) -> pandas.Series:
+		table = list()
+		for identity, background in self.nests.items():
+			parent = background[0]
+			if parent == identity:
+				parent = 'genotype-0'
+
+			row = {
+				'Parent':   parent,
+				'Identity': identity
+			}
+			table.append(row)
+		table = pandas.DataFrame(table)[['Parent', 'Identity']]  # Reorder columns
+
+		return table.set_index('Identity')['Parent']

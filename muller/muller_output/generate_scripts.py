@@ -92,7 +92,6 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, table_fil
 
 def execute_r_script(path: Path, script: str) -> Path:
 	path.write_text(script)
-	print("generating muller plot...")
 	subprocess.run(
 		['Rscript', '--vanilla', '--silent', path],
 		stdout = subprocess.PIPE,
