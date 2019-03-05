@@ -92,6 +92,7 @@ class OutputFilenames:
 		self.linkage_matrix_table = tables_folder / (name + f".linkagematrix.tsv")
 		self.p_value: Path = tables_folder / (name + ".pvalues.tsv")
 		self.calculation_matrix_p: Path = tables_folder / (name + f".distance.{suffix}")
+		self.calculation_json = tables_folder / (name + f".calculations.tsv")
 
 		# graphics
 		## Muller Plots
@@ -116,7 +117,7 @@ class OutputFilenames:
 
 		# supplementary files
 		self.parameters: Path = supplementary_folder / (name + '.json')
-		self.calculation_json = supplementary_folder / (name + f".calculations.tsv")
+
 
 	@property
 	def delimiter(self) -> str:
