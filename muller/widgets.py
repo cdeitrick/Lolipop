@@ -127,7 +127,8 @@ def _get_git_log() -> str:
 
 def get_commit_hash() -> str:
 	commit_hash = "n/a"
-	contents = _get_git_log().split('\n')
+	contents = _get_git_log()
+	contents = contents.split('\n')
 
 	reader = csv.reader(contents, delimiter = '\t')
 	for line in reader:
