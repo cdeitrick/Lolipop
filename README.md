@@ -1,5 +1,5 @@
 # A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background
-![muller_plot](./example/B1_muller_try1.muller.annotated.png)
+![muller_plot](./example/example.muller.annotated.png)
 
 ## Contents
 -  [General Workflow](#general-workflow)
@@ -111,7 +111,7 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 21            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
 ## Sample Usage
-
+The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
 ```
 python muller_workflow.py --input [input filename] --output [output folder]
 ```
@@ -127,111 +127,137 @@ python muller_workflow.py --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
-## Output Files
-
-The script generates the following files:
+## Output
+All files are prefixed by the name of the original input table.
 
 ### Tables
+#### Genotype and Trajectory tables
+- .muller_genotypes.tsv
+- .muller.trajectories.tsv
+- tables/.muller_genotypes.original.tsv
+- tables/.trajectories.original.tsv
 
-- `input filename`.genotypes.tsv
+Tables listing the genotypes and trajectories encountered in the analysis. The trajectory tables also link each trajectory to its respective genotype. There are two versions of these tables: one set with the original input trajectories and the initial calculated genotypes and another set with the final trajectories and genotypes left in the analysis after the filtering step. The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
 
-	A tab-delimited table with the mean frequency of each genotype at each timepoint. The mean is calculated from the trajectories that comprise each genotype.
+Example Genotype Table:
 
-- `input filename`.trajectories.tsv
+| Genotype    | 0.000 | 17.000 | 25.000 | 44.000 | 66.000 | 75.000 | 90.000 |
+| ----------- | ----- | ------ | ------ | ------ | ------ | ------ | ------ |
+| genotype-1  | 0.000 | 0.380  | 0.432  | 0.000  | 0.000  | 0.000  | 0.000  |
+| genotype-2  | 0.000 | 0.000  | 0.000  | 0.403  | 0.489  | 0.057  | 0.080  |
+| genotype-3  | 0.000 | 0.000  | 0.000  | 0.000  | 0.000  | 1.000  | 1.000  |
+| genotype-4  | 0.000 | 0.000  | 0.261  | 1.000  | 1.000  | 1.000  | 1.000  |
+| genotype-5  | 0.000 | 0.000  | 0.000  | 0.273  | 0.781  | 1.000  | 1.000  |
+| genotype-6  | 0.000 | 0.000  | 0.092  | 0.052  | 0.031  | 0.000  | 0.052  |
+| genotype-7  | 0.000 | 0.000  | 0.000  | 0.000  | 0.278  | 0.822  | 0.803  |
+| genotype-8  | 0.000 | 0.000  | 0.000  | 0.336  | 0.452  | 0.918  | 0.899  |
+| genotype-9  | 0.000 | 0.000  | 0.000  | 0.076  | 0.043  | 0.219  | 0.255  |
+| genotype-10 | 0.000 | 0.021  | 0.000  | 0.086  | 0.182  | 0.095  | 0.058  |
 
-	A tab-delimited table of the population trajectories used in the analysis. Each trajectory represents the frequency of a single mutation at each timepoint.
 
--  `input filename`.ggmuller.edges.tsv
 
-	Used as the `edges` input to ggmuller.
+#### Tables for ggmuller
+- tables/.ggmuller.populations.tsv
+- tables/.ggmuller.edges.tsv
 
-- `input filename`.ggmuller.populations.tsv
+These tables are designed for use with the ggmuller r package. The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
 
-	Used as the `population` input to ggmuller.
+#### Linkage matrix
+- tables/.linkagematrix.tsv
 
--  supplementary-files / `input filename`.genotypes.original.tsv
+This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
+Columns:
+- `left`, `right`: The two sub-clusters merged to create the current clusters
+- `clusterId`: The id assigned to this cluster. Note that since the individual genotypes are not included in the table, the clusters are numbered in order starting with 1 + the total number of genotypes.
+- `distance`: The distance between the two sub-clusters.
+- `observations`: The number of mutational trajectories contained in this cluster.
 
-    The initial genotypes generated before applying the genotype filters.
+Example linkage matrix:
 
-- supplementary-files / `input filename`.trajectories.original.tsv
+| left | right | distance | observations | resultingCluster |
+|------|-------|----------|--------------|------------------|
+| 7    | 18    | 0.034    | 2            | 19               |
+| 13   | 17    | 0.175    | 2            | 20               |
+| 8    | 11    | 0.199    | 2            | 21               |
+| 2    | 5     | 0.239    | 2            | 22               |
+| 10   | 3     | 0.279    | 2            | 23               |
+| 9    | 12    | 0.370    | 2            | 24               |
+| 23   | 6     | 0.529    | 3            | 25               |
+| 22   | 21    | 0.624    | 4            | 26               |
+| 26   | 1     | 0.708    | 5            | 27               |
+| 24   | 16    | 0.760    | 3            | 28               |
+| 14   | 25    | 0.786    | 4            | 29               |
+| 15   | 20    | 0.988    | 3            | 30               |
+| 29   | 27    | 1.094    | 9            | 31               |
+| 31   | 19    | 1.358    | 11           | 32               |
+| 30   | 28    | 1.362    | 6            | 33               |
+| 4    | 32    | 1.499    | 12           | 34               |
+| 33   | 0     | 2.125    | 7            | 35               |
+| 34   | 35    | 4.943    | 19           | 36               |
 
-    The unfiltered trajectories.
+#### Distance Matrix
+- tables/.distance.tsv
 
-- supplementary-files / `input filename`.muller.csv
+A table of pairwise distance values between each trajectory.
 
-    The table generated by ggmuller and used to generate the muller diagrams.
+#### Muller table
+- tables/.muller.tsv
 
-- supplementary-files / `input filename`.pvalues.tsv
+The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` used to generate the muller plots. This file is created from the r script, described later.
 
-    A tab-delimited file listing the calculated p-value for each pair of mutational trajectories. Only created
-    if `--save-pvalues` is provided.
-    
-- supplementary-files / `input filename`.calculation.matrix.pvalues.tsv
-    
-    A table with all pairwise p-values for all trajectories. 
-    Rows/columns are sorted by genotype and share the same order.
-    Requires `--save-pvalues`
+### Graphics
+Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
 
-- supplementary-files / `input filename`.calculation.matrix.distance.tsv
-    A table with all pairwise distances for all trajectories. 
-    Rows/columns are sorted by genotype and share the same order.
-    Requires `--save-pvalues`
-    
-### Diagrams
+#### Muller Plots
+- .muller.annotated.png
+- graphics/clade/.muller.annotated.svg
+- graphics/clade/.muller.annotated.png
+- graphics/clade/.muller.unannotated.png
+- graphics/distinctive/.muller.annotated.distinctive.png
+- graphics/distinctive/.muller.annotated.distinctive.svg
 
-- `input filename`.muller.basic.png
+The main value of a muller plot is to quickly visualize abundance and geneology of genotypes over the course of an evolution experiment.
 
-	The muller plot generated by the r script. Colors correspond to the same genotypes in the genotype plots.
+![muller](example/example.muller.annotated.png)
 
-- `input filename`.muller.annotated.png, `input filename`.muller.annotated.pdf
-    
-    A muller plot annotated with relevant mutations listed in the `Gene` column of the trajectory table. 
-    Only the top 3 mutations (by frequency) are included if `--annotate-all` is not given.
+#### Geneology Plots
+- .geneology.png
+- graphics/.geneology.distinctive.png
 
--  `input_filename`.png
+These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
 
-    Plots of all trajectories (colored by parent genotype) and genotypes.
+![geneology](example/example.geneology.png)
 
-- `input filename`.filtered.png
-    Plot of all trajectories and genotypes with filtered mutations included. Identical to the above if `--no-filter` is provided.
+#### Trajectory and genotype plots
+- .genotypes.png
+- .genotypes.filtered.png
+- .trajectories.distinctive.png
 
-- `input filename`.mermaid.png
+Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
 
-    If [mermaid.cli](https://github.com/mermaidjs/mermaid.cli) is installed, the mermaid script will automatically be used to generate a map of nested genotypes.
+![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
 
-- supplementary-file / `input filename`.linkagematrix.png
-    The linkage table produced by the hierarchical clustering.
+#### Distance Heatmap
+- graphics/.heatmap.distance.png
 
-- supplementary-files / `input filename`.dendrogram.png
-    A tree plot of the distances between mutational trajectories. Only available if `--method` is `hierarchy`
+A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
-- supplementary-files / `input filename`.heatmap.pvalues.png
-    A heatmap of the p-value matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
+![heatmap](example/graphics/example.heatmap.distance.png)
 
-- supplementary-files / `input filename`.heatmap.distance.png
-        A heatmap of the distance matrix table. Only created in `--save-pvalues` is given. Requires the [seaborn](https://seaborn.pydata.org) library.
+#### Dendrogram
+- graphics/.dendrogram.png
+Shows the arrangment and distance between clusters and member trajectories.
 
-### Other
+![dendrogram](example/graphics/example.dendrogram.png)
 
-- supplementary-files / `input filename`.r
+### Scripts
+- scripts/example.mermaid.md
+- scripts/example.r
 
-	A basic r script to import the `population` and `edges` tables and generate a muller plot.
+Two external scripts are used during the course of this analysis. The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation. The [mermaid](https://mermaidjs.github.io) script is used to generate the geneology plots.
 
--  supplementary-files / `input filename`.mermaid.md
+### Supplementary files
+- supplementary-files/example.json
 
-	A script written in the [mermaid](https://mermaidjs.github.io) scripting language. Generates a diagram indicating the hierarchy of genotypes/backgrounds in the current population.
+A json-formatted file with all parameters used in the analysis.
 
--  `input filename`.json
-
-	Contains the parameters used for the analysis. See the flowcharts in /docs/flowcharts to see where each parameter is used.
-
-## Genotype Plots
-The `.genotypeplot.png` file gives an easy-to-visualize plot of all trajectory and genotype frequencies over time.
-Trajectories are colored based on their parent genotype.
-![genotypeplot](./example/B1_muller_try1.filtered.png)
-
-## Mermaid Diagram
-
-The `.mermaid` file can be used to generate a quick diagram showing the relation between all genotypes in the population.
-
-![diagram](./example/B1_muller_try1.mermaid.png)

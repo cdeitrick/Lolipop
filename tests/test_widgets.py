@@ -100,8 +100,8 @@ def test_get_valid_points_complex():
 
 	expected = pandas.Series([0, 0.653])
 
-@patch('muller.widgets._get_git_log')
-def test_get_commit_hash():
+@patch('widgets._get_git_log')
+def test_get_commit_hash(filename_mock):
 	test_file = """
 	045a5b605b03f566c527f6684586322708525522 045a5b605b03f566c527f6684586322708525522 cdeitrick <cld100@pitt.edu> 1551711670 -0500	checkout: moving from master to version0.2
 	045a5b605b03f566c527f6684586322708525522 78db720e4429e60d2821125247c486996d83cc0e Unknown <cld100@pitt.edu> 1551711685 -0500	commit: Update based on pycharm code inspecter
@@ -110,7 +110,7 @@ def test_get_commit_hash():
 	"""
 	expected_hash = "f086ec9"
 
-	#filename_mock.return_value = test_file
+	filename_mock.return_value = test_file
 	result_hash = widgets.get_commit_hash()
 
 	assert expected_hash == result_hash
