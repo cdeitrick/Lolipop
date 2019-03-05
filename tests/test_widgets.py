@@ -67,7 +67,7 @@ def test_get_detected_points():
 	assert [3, 4, 5] == list(widgets.get_detected_points(left, right, .03, .97, inner = True).index)
 
 
-def test_get_valid_points():
+def test_get_valid_points_simple():
 	left = pandas.Series([0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 0])
 	right = pandas.Series([0, 0, 0, .1, .2, .3, .3, .3, .3, 0, 0, 0])
 
@@ -93,6 +93,12 @@ def test_get_valid_points():
 	result = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
 	pandas.testing.assert_frame_equal(expected, result)
 
+
+def test_get_valid_points_complex():
+	left = pandas.Series([0, 0.653, 1, 1, 1, 0.91, 0.907, 1])
+	right = pandas.Series([0, 0, 0.646, 0.777, 0.89, 0.512, 0.135, 0.546])
+
+	expected = pandas.Series([0, 0.653])
 
 def test_get_commit_hash():
 	test_file = """

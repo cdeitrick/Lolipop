@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 
 
-def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'monocrit') -> Tuple[List[List[str]], Any]:
+def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance') -> Tuple[List[List[str]], Any]:
 	"""
 
 	Parameters
@@ -27,17 +27,15 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	logger.debug(f"cluster_method: {cluster_method}")
 	squaremap = pair_array.squareform()
 	condensed_squaremap = distance.squareform(squaremap.values)
-
-	Z = hierarchy.linkage(condensed_squaremap, method = 'ward', optimal_ordering = True)
+	method = 'ward'
+	Z = hierarchy.linkage(condensed_squaremap, method = method, optimal_ordering = True)
 	inconsistent = hierarchy.inconsistent(Z, 10)
-
 	MR = hierarchy.maxRstat(Z, inconsistent, 1)
 
 	if cluster_method == 'distance':
 		maximum_distance = max(pair_array.pairwise_values.values())
 		distances = pandas.Series([i for i in pair_array.pairwise_values.values() if (i != maximum_distance and i > 0)])
 		similarity_cutoff = distances.quantile(.1)
-
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
 	elif cluster_method == 'monocrit':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'monocrit', monocrit = MR)
