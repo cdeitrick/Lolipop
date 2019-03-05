@@ -48,7 +48,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	--annotate-all              By default, the muller diagrams only annotate the top 3 (by frequency)
 	                            genes for each genotype. This option forces the scripts to annotate
 	                            all genes associated with each genotype.
-    --save-pvalues              Saves the p-values to a table and generates a heatmap
+    --no-heatmap                By default the scripts save the p-values to a table and generates a heatmap for the 
+                                population. Disabling saves a large amount of time for large datasets.
                                 for the population. Disabling saves a large amount of
                                 time for large datasets.
     --sheetname                 Used to specify the sheet to use when the input is an excel file. Defaults to 
