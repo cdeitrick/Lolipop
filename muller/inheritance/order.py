@@ -45,11 +45,12 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			# todo The additive check checks for greater than 0, not whether one is consistently larger than the other.
 			additive_check, subtractive_check, delta, area_ratio, area_difference = row
 
-			# logging.info(f"{unnested_label}\t{nested_label}\t{additive_check}\t{subtractive_check}\t{delta}")
+
 			area_check = area_ratio > 0.97
 			derivative_check = delta > options.derivative_check_cutoff
 			full_check = area_check and derivative_check and additive_check
 			priority = sum([additive_check, derivative_check, full_check])
+
 			logging.info(f"Computed priority: {priority}")
 			logging.info(f"{unnested_label}|{nested_label} Full Check: {full_check}")
 			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
@@ -62,19 +63,16 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				logging.info(f"Complete Check: True")
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label, True)
 				break
-			if area_difference < -.1:
+			if area_difference < -.1 or delta < -options.derivative_check_cutoff:
 				# The unnested trajectory is larger than the nested trajectory it is being compared against.
 				continue
+
 			genotype_deltas.append((nested_label, delta))
-			# if subtractive_check:
-			#	continue
+
 			if delta > options.derivative_check_cutoff:
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
-			elif delta < -options.derivative_check_cutoff:
-				# They are anti-correlated.
-				continue
 			# break
 			if area_check:
 				# A candidate background

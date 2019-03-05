@@ -90,7 +90,11 @@ def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pa
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
 	# Make sure the genotype labels are prefixed with 'genotype-'
 	if not genotype_timeseries.index[0].startswith('genotype-'):
-		genotype_timeseries.index = ['genotype-' + str(i) for i in genotype_timeseries.index]
+		genotype_timeseries.index.name = 'originalLabel'
+		genotype_timeseries['Genotype'] = [f'genotype-{i}' for i in range(1, len(genotype_timeseries) + 1)]
+		genotype_timeseries = genotype_timeseries.reset_index()
+		genotype_timeseries = genotype_timeseries.set_index('Genotype')
+		genotype_timeseries.pop('originalLabel')
 
 	# Try to sort the genotypes by label, if posible.
 	# Note: designed to sort labels of the form `genotype-[\d]+`

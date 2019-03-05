@@ -55,6 +55,8 @@ def _get_column_values(table: pandas.DataFrame, column: str) -> List[str]:
 
 
 def _clean_gene_label(label: str) -> str:
+	label = str(label)
+	if label == "nan": label = ""
 	gene_separator = "/>"
 	if gene_separator in label:
 		sublabels = [_clean_gene_label(i) for i in label.split(gene_separator)]

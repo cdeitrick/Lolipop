@@ -65,7 +65,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 			difference_breakpoint = program_options.difference_breakpoint,
 			n_binom = None,
 			method = program_options.method,
-			metric = program_options.metric if program_options.method != 'similarity' else 'binomialp',
+			metric = program_options.metric if program_options.method != 'matlab' else 'similarity',
 			starting_genotypes = starting_genotypes
 		)
 		program_options_clustering = OrderClusterParameters.from_breakpoints(

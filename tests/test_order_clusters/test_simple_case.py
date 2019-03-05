@@ -31,10 +31,28 @@ def five_genotypes() -> pandas.DataFrame:
 
 
 @pytest.fixture
+def ten_genotypes() -> pandas.DataFrame:
+	string = """
+	Genotype	0	1	2	3	5	8	13	21	34
+	genotype-C	0.00	0.00	0.00	0.30	0.70	1.00	1.00	1.00	1.00
+	genotype-J	0.00	0.00	0.00	0.00	0.70	0.80	1.00	1.00	1.00
+	genotype-A	0.00	0.00	0.00	0.00	0.45	0.50	0.55	0.70	0.85
+	genotype-E	0.00	0.00	0.00	0.00	0.00	0.00	0.05	0.55	0.50
+	genotype-F	0.10	0.33	0.20	0.10	0.05	0.00	0.00	0.00	0.00
+	genotype-B	0.00	0.07	0.10	0.02	0.01	0.00	0.00	0.00	0.00
+	genotype-G	0.00	0.00	0.07	0.02	0.10	0.00	0.00	0.00	0.00
+	genotype-H	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.10
+	genotype-I	0.00	0.00	0.00	0.00	0.00	0.07	0.06	0.00	0.00
+	genotype-D	0.00	0.00	0.00	0.00	0.00	0.00	0.07	0.00	0.01
+	"""
+	return import_table(string, index = 'Genotype')
+
+
+@pytest.fixture
 def options():
 	class Options:
-		additive_background_single_cutoff = 0.15
-		additive_background_double_cutoff = 0.03
+		additive_background_single_cutoff = 1.15
+		additive_background_double_cutoff = 1.03
 		subtractive_background_single_cutoff = 0.15
 		subtractive_background_double_cutoff = 0.03
 		derivative_check_cutoff = 0.01
@@ -65,4 +83,21 @@ def test_five_genotypes(five_genotypes, options):
 		'genotype-E': 'genotype-A'
 	}
 	result = order.order_clusters(five_genotypes, options)
+	assert expected == result.to_dict()
+
+
+def test_ten_genotypes(ten_genotypes, options):
+	expected = {
+		'genotype-A': 'genotype-J',
+		'genotype-B': 'genotype-F',
+		'genotype-C': 'genotype-0',
+		'genotype-D': 'genotype-A',
+		'genotype-E': 'genotype-A',
+		'genotype-F': 'genotype-0',
+		'genotype-G': 'genotype-0',
+		'genotype-H': 'genotype-E',
+		'genotype-I': 'genotype-A',
+		'genotype-J': 'genotype-C'
+	}
+	result = order.order_clusters(ten_genotypes, options)
 	assert expected == result.to_dict()

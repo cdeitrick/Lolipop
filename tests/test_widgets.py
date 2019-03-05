@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pandas
 
@@ -67,7 +67,7 @@ def test_get_detected_points():
 	assert [3, 4, 5] == list(widgets.get_detected_points(left, right, .03, .97, inner = True).index)
 
 
-def test_get_valid_points():
+def test_get_valid_points_simple():
 	left = pandas.Series([0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 0])
 	right = pandas.Series([0, 0, 0, .1, .2, .3, .3, .3, .3, 0, 0, 0])
 
@@ -94,6 +94,13 @@ def test_get_valid_points():
 	pandas.testing.assert_frame_equal(expected, result)
 
 
+def test_get_valid_points_complex():
+	left = pandas.Series([0, 0.653, 1, 1, 1, 0.91, 0.907, 1])
+	right = pandas.Series([0, 0, 0.646, 0.777, 0.89, 0.512, 0.135, 0.546])
+
+	expected = pandas.Series([0, 0.653])
+
+@patch('muller.widgets._get_git_log')
 def test_get_commit_hash():
 	test_file = """
 	045a5b605b03f566c527f6684586322708525522 045a5b605b03f566c527f6684586322708525522 cdeitrick <cld100@pitt.edu> 1551711670 -0500	checkout: moving from master to version0.2
@@ -103,8 +110,7 @@ def test_get_commit_hash():
 	"""
 	expected_hash = "f086ec9"
 
-	with patch('muller.widgets._get_git_log') as filename_mock:
-		filename_mock.return_value = test_file
-		result_hash = widgets.get_commit_hash()
+	#filename_mock.return_value = test_file
+	result_hash = widgets.get_commit_hash()
 
 	assert expected_hash == result_hash
