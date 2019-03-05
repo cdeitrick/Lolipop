@@ -95,10 +95,10 @@ class OutputFilenames:
 
 		# graphics
 		## Muller Plots
-		self.muller_plot_unannotated: Path = graphics_clade_folder / (name + '.muller.unannotated.png')
+		self.muller_plot_unannotated: Path = graphics_distinctive_folder / (name + '.muller.unannotated.png')
 		self.muller_plot_annotated_pdf: Path = graphics_clade_folder / (name + '.muller.annotated.pdf')
 		self.muller_plot_annotated_svg: Path = graphics_clade_folder / (name + ".muller.annotated.svg")
-		self.muller_plot_basic: Path = graphics_distinctive_folder / (name + '.muller.basic.png')
+		self.muller_plot_basic: Path = graphics_clade_folder / (name + '.muller.basic.png')
 		self.muller_plot_annotated_distinctive: Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.png')
 		self.muller_plot_annotated_distinctive_svg:Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.svg')
 		##Timeseries plots
