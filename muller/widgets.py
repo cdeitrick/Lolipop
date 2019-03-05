@@ -129,12 +129,15 @@ def get_commit_hash() -> str:
 	commit_hash = "n/a"
 	contents = _get_git_log()
 	contents = contents.split('\n')
-
+	contents = [i.strip() for i in contents if i.strip()]
 	reader = csv.reader(contents, delimiter = '\t')
 	for line in reader:
 		if line:
 			hash_string = line[0]
-			commit_hash = hash_string.split()[1]
+			try:
+				commit_hash = hash_string.split()[1]
+			except IndexError:
+				continue
 	return commit_hash[:7]
 
 
