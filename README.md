@@ -21,7 +21,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	-h, --help                  Show this help message and exit
 	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
 	-o,  --output               The folder to save the files to.
-	--method                    The clustering method to use when grouping mutatoinal trajectories into genotypes.
+	--method                    [hierarchy] The clustering method to use when grouping mutatoinal trajectories into genotypes.
                                 Available methods: 'matlab', 'hierarchy'
 	-u, --uncertainty           The uncertainty to apply when performing
 	                            frequency-based calculations. For
@@ -69,7 +69,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 hierarchical clustering to do the clustering. Defaults to 'matlab'
     --metric                    Used to select the distance metric when `--method` is set to 'hierarchy'.
         Available Options:
-        'similarity', 'binomial' Uses the binomial test implemented in the original matlab scripts as a distance metric.
+        'similarity', 'binomial' [Default] Uses the binomial test implemented in the original matlab scripts as a distance metric.
         'jaccard'               Uses the Jaccard distance between two series to determine the distance metric.
         'minkowski'             Uses the minkowski distance as a distance metric. Primarily influenced by the
                                 difference between two series.
