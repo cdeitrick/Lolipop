@@ -229,7 +229,7 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"--no-heatmap",
 		help = "By default the scripts save the p-values to a table and generates a heatmap for the population. Disabling saves a large amount of time for large datasets.",
-		action = "store_False",
+		action = "store_false",
 		dest = "save_pvalue"
 	)
 	parser.add_argument(

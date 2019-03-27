@@ -8,11 +8,12 @@ class Cluster:
 	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):
 		self.initial_background_label: str = initial_background.name
 		self.timepoints = timepoints.copy()
+		self.confidence = dict()
 		initial_genotype = ['genotype-0']
 
 		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
 
-	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority:bool = False) -> None:
+	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority:int = None) -> None:
 		logger.info(f"adding {nested_label} as a potential background for {unnested_label} with priority {priority}")
 		if unnested_label not in self.nests:
 			self.nests[unnested_label] = list()
@@ -21,6 +22,11 @@ class Cluster:
 			self.nests[unnested_label].insert(0, nested_label)
 		else:
 			self.nests[unnested_label].append(nested_label)
+
+		if priority:
+			self.confidence[nested_label, unnested_label] = priority
+			# To make lookup easier
+			self.confidence[unnested_label, nested_label] = priority
 
 	def get(self, label: str) -> List[str]:
 		return self.nests[label]

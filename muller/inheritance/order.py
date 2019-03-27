@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 	from options import OrderClusterParameters
 
 
-def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> pandas.Series:
+def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> Cluster:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
@@ -61,7 +61,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			if area_check and delta > options.derivative_check_cutoff and additive_check:
 				# Most likely the background of the current genotype.
 				logging.info(f"Complete Check: True")
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label, True)
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 5)
 				break
 			if area_difference < -.1 or delta < -options.derivative_check_cutoff:
 				# The unnested trajectory is larger than the nested trajectory it is being compared against.
@@ -72,15 +72,15 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			if delta > options.derivative_check_cutoff:
 				# They are probably on the same background.
 				# Need to do one last check: these two genotypes cannot sum to larger than the background.
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 3)
 			# break
 			if area_check:
 				# A candidate background
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 4)
 				continue
 			if additive_check:  # and False:
 				# Possible background
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label)
+				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 1)
 
 		is_member = genotype_nests.is_a_member(unnested_label)
 		if not is_member:
@@ -93,12 +93,12 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			# Find the test that correlated the most with this genotype
 			result = background_heuristic(genotype_nests, genotype_deltas, unnested_trajectory, options)
 			if result:
-				genotype_nests.add_genotype_to_background(unnested_label, result)
+				genotype_nests.add_genotype_to_background(unnested_label, result, 0)
 	logger.info("The final backgrounds:")
 	for k, v in genotype_nests.nests.items():
 		vv = "|".join(v)
 		logger.info(f"{k}\t{vv}")
-	return genotype_nests.as_ancestry_table()
+	return genotype_nests
 
 
 def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:

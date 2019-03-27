@@ -44,7 +44,7 @@ class WorkflowData:
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
-	clusters: pandas.Series
+	clusters: Any
 	genotype_options: GenotypeOptions
 	sort_options: SortOptions
 	cluster_options: OrderClusterParameters
@@ -167,7 +167,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	workflow_data.original_genotypes.to_csv(str(filenames.original_genotype), sep = delimiter)
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 	# Generate the input tables to ggmuller
-	edges_table = workflow_data.clusters.reset_index()
+	edges_table = workflow_data.clusters.as_ancestry_table().reset_index()
 	edges_table = edges_table[['Parent', 'Identity']] # Otherwise the r script doesn't work.
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
@@ -193,7 +193,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 	# Generate and excecute scripts
 	print("Generating scripts...")
-	mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_clade)
+	mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_clade, workflow_data.clusters)
 	excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
 	distinctive_mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_distinct)
 	excecute_mermaid_script(filenames.mermaid_script, distinctive_mermaid_diagram, filenames.mermaid_distinctive)

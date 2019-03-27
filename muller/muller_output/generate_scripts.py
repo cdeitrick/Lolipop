@@ -1,11 +1,10 @@
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional,Any
 
 import pandas
 
-
-def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str]) -> str:
+def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str], clusters:Any = None) -> str:
 	"""
 	graph LR
     id1(Start)-->id2(Stop)
@@ -30,11 +29,20 @@ def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[s
 		identity = row['Identity']
 		parent_id = parent.split('-')[-1]
 		identity_id = identity.split('-')[-1]
-		line = "id{left_id}({left})-->id{right_id}({right});".format(
+
+		if clusters:
+			confidence = clusters.confidence.get((parent,identity), "")
+		else:
+			confidence = ""
+		if confidence:
+			confidence = f"|{confidence}|"
+
+		line = "id{left_id}({left})-->{confidence}id{right_id}({right});".format(
 			left_id = identity_id,
 			right_id = parent_id,
 			left = identity,
-			right = parent
+			right = parent,
+			confidence = confidence
 		)
 		diagram_contents.append(line)
 
