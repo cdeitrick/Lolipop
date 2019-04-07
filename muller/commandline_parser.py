@@ -6,8 +6,10 @@ from typing import List, Optional, Union
 
 try:
 	from muller.options import GenotypeOptions, SortOptions, OrderClusterParameters
+	from muller import dataio
 except ModuleNotFoundError:
 	from options import GenotypeOptions, SortOptions, OrderClusterParameters
+	import dataio
 
 from dataclasses import dataclass, fields
 
@@ -46,39 +48,33 @@ def parse_workflow_options(program_options: ProgramOptions):
 	# program_options = ProgramOptions.from_parser(program_options)
 	if program_options.fixed_breakpoint is None:
 		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
-	compatibility_mode = program_options.mode
-	if compatibility_mode:
-		program_options_genotype = GenotypeOptions.from_matlab()
-		program_options_sort = SortOptions.from_matlab()
-		program_options_clustering = OrderClusterParameters.from_matlab()
-	else:
-		if program_options.known_genotypes:
-			program_options.known_genotypes = Path(program_options.known_genotypes)
-			starting_genotypes = program_options.known_genotypes.read_text().split('\n')
-			starting_genotypes = [i.split(',') for i in starting_genotypes if i]
-		else:
-			starting_genotypes = None
-		program_options_genotype = GenotypeOptions(
-			detection_breakpoint = program_options.detection_breakpoint,
-			fixed_breakpoint = program_options.fixed_breakpoint,
-			similarity_breakpoint = program_options.similarity_breakpoint,
-			difference_breakpoint = program_options.difference_breakpoint,
-			n_binom = None,
-			method = program_options.method,
-			metric = program_options.metric if program_options.method != 'matlab' else 'similarity',
-			starting_genotypes = starting_genotypes
-		)
-		program_options_clustering = OrderClusterParameters.from_breakpoints(
-			program_options.detection_breakpoint,
-			program_options.significant_breakpoint
-		)
 
-		program_options_sort = SortOptions(
-			detection_breakpoint = program_options_genotype.detection_breakpoint,
-			fixed_breakpoint = program_options_genotype.fixed_breakpoint,
-			significant_breakpoint = program_options.significant_breakpoint,
-			frequency_breakpoints = program_options.frequencies
-		)
+	if program_options.known_genotypes:
+		program_options.known_genotypes = Path(program_options.known_genotypes)
+		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)
+	else:
+		starting_genotypes = None
+	program_options_genotype = GenotypeOptions(
+		detection_breakpoint = program_options.detection_breakpoint,
+		fixed_breakpoint = program_options.fixed_breakpoint,
+		similarity_breakpoint = program_options.similarity_breakpoint,
+		difference_breakpoint = program_options.difference_breakpoint,
+		n_binom = None,
+		method = program_options.method,
+		metric = program_options.metric if program_options.method != 'matlab' else 'similarity',
+		starting_genotypes = starting_genotypes
+	)
+	program_options_clustering = OrderClusterParameters.from_breakpoints(
+		program_options.detection_breakpoint,
+		program_options.significant_breakpoint
+	)
+
+	program_options_sort = SortOptions(
+		detection_breakpoint = program_options_genotype.detection_breakpoint,
+		fixed_breakpoint = program_options_genotype.fixed_breakpoint,
+		significant_breakpoint = program_options.significant_breakpoint,
+		frequency_breakpoints = program_options.frequencies
+	)
 	cluster_method = program_options.method
 	if cluster_method not in ACCEPTED_METHODS:
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
@@ -271,5 +267,13 @@ def create_parser() -> argparse.ArgumentParser:
 		type = Path,
 		default = None,
 		dest = "genotype_palette_filename"
+	)
+	parser.add_argument(
+		"--gene-alias",
+		help = "An optional two-column file with more accurate gene names. This is usefull when using a reference annotated via prokka.",
+		action = "store",
+		type = Path,
+		default = None,
+		dest = 'alias_filename'
 	)
 	return parser

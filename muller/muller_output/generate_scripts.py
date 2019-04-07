@@ -4,7 +4,7 @@ from typing import Dict, List, Optional,Any
 
 import pandas
 
-def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str], clusters:Any = None) -> str:
+def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str], clusters:Any = None, annotations:Dict[str,str] = None) -> str:
 	"""
 	graph LR
     id1(Start)-->id2(Stop)
@@ -13,7 +13,8 @@ def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[s
 	Parameters
 	----------
 	backgrounds
-	color_palette
+	color_palette: Dict[str,str]
+		Defines the colors for each genotype.
 
 	Returns
 	-------
@@ -36,6 +37,11 @@ def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[s
 			confidence = ""
 		if confidence:
 			confidence = f"|{confidence}|"
+
+		if annotations:
+			identity = annotations.get(identity, [])
+			identity = "".join(identity)
+			print(identity)
 
 		line = "id{left_id}({left})-->{confidence}id{right_id}({right});".format(
 			left_id = identity_id,

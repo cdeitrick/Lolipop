@@ -61,11 +61,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("Generating output...")
 	workflow_data = WorkflowData(
 		filename = input_filename,
+		program_options = vars(program_options),
 		info = info,
 		original_trajectories = original_timepoints,
 		original_genotypes = original_genotypes,
 		trajectories = timepoints,
-		genotypes = mean_genotypes,
+		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,
 		clusters = genotype_clusters,
 		genotype_options = program_options_genotype,

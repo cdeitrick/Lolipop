@@ -136,14 +136,14 @@ def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresh
 			ft = 0
 		# Get a table of the original frequencies at each timepoint for the genotypes present in `group`
 		trajectories: pandas.DataFrame = original_frequencies.loc[group.index]
-
 		if len(group) < 2:
 			# There is only one genotype in this combination of timepoints. No need to sort.
 			freq_groups.append(trajectories)
 		else:
 			# More than one genotype share this combination of key timepoints. Sort by frequency.
 			# Sort from highest to lowest using the timpoint columns as the sorting keys.
-			trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
+			#trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
+			trajectories = trajectories.sort_values(by = [fd,ft,ff], ascending = False)
 			freq_groups.append(trajectories)
 
 	try:

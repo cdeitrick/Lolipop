@@ -36,7 +36,7 @@ def calculate_genotypes_from_given_method(timepoints: pandas.DataFrame, pairwise
 		genotypes = twostep_method(timepoints, pairwise_calculations, similarity_breakpoint, difference_breakpoint, starting_genotypes)
 		linkage_matrix = None
 	elif method == "hierarchy":
-		genotypes, linkage_matrix = hierarchical_method(pairwise_calculations, similarity_breakpoint)
+		genotypes, linkage_matrix = hierarchical_method(pairwise_calculations, similarity_breakpoint, starting_genotypes = starting_genotypes)
 	else:
 		raise ValueError(f"Invalid clustering method: {method}")
 	return genotypes, linkage_matrix

@@ -63,7 +63,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				logging.info(f"Complete Check: True")
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 5)
 				break
-			if area_difference < -.1 or delta < -options.derivative_check_cutoff:
+			if area_difference < -0 or delta < -options.derivative_check_cutoff:
 				# The unnested trajectory is larger than the nested trajectory it is being compared against.
 				continue
 
@@ -78,6 +78,7 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 				# A candidate background
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 4)
 				continue
+
 			if additive_check:  # and False:
 				# Possible background
 				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 1)
@@ -140,15 +141,6 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 
 
 if __name__ == "__main__":
-	from dataio import import_table
-	string = """
-	Genotype	0	1	2	3	5	8	13	21	34
-	genotype-C	0	0	0	0.3	0.7	1	1	1	1
-	genotype-A	0	0	0	0	0.45	0.5	0.55	0.7	0.85
-	genotype-E	0	0	0	0	0	0	0.05	0.55	0.5
-	genotype-B	0	0.07	0.1	0.02	0.01	0	0	0	0
-	genotype-D	0	0	0	0	0	0	0.07	0	0.01
-	"""
-	table = import_table(string, index = 'Genotype')
+	pass
 
 

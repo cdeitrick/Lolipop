@@ -67,4 +67,4 @@ def test_five_genotypes(five_genotypes):
 	options = OrderClusterParameters.from_breakpoints(.03, .15)
 
 	result = order.order_clusters(five_genotypes, options)
-	assert expected == result.to_dict()
+	assert expected == result.as_dict()
