@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 from .tables import import_table
 import pandas
-
+import re
 from widgets import get_numeric_columns
 
 IOTYPE = Union[str, Path]
@@ -89,7 +89,7 @@ def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pa
 
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
 	# Make sure the genotype labels are prefixed with 'genotype-'
-	if not genotype_timeseries.index[0].startswith('genotype-'):
+	if not re.search("genotype-[\d]+",genotype_timeseries.index[0]):
 		genotype_timeseries.index.name = 'originalLabel'
 		genotype_timeseries['Genotype'] = [f'genotype-{i}' for i in range(1, len(genotype_timeseries) + 1)]
 		genotype_timeseries = genotype_timeseries.reset_index()

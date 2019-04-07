@@ -2,18 +2,49 @@ import pytest
 import unittest.mock as mock
 from dataio import file_parsers, import_table
 from io import StringIO
-test_labels = ["PROKKA_00139/>glyA", "gapN/>glgB", "PROKKA_00438<", "PROKKA_00512", "intergenic(62/+110)", "bglK_1<", "dnaI<","malK_1<","mepA_2<", "patA_1<"]
-expected_labels = [
-	"PROKKA_00139|glyA", "gapN|glgB", "PROKKA_00438", "PROKKA_00512", "intergenic", "bglK_1", "dnaI", "malK_1", "mepA_2", "patA_1"
-]
+import pandas
+import dataio
+
+
+@pytest.fixture
+def annotations() -> pandas.DataFrame:
+	string = """
+	Trajectory	Chromosome	Position	Class	Mutation	Gene	Annotation	Class	Amino	Description
+	1	1	36,414	SNP	G>A	speA	C127Y(TGT>TAT)	Non	C->Y	Arginine decarboxylase
+	2	1	138,043	SNP	C>T	rlmCD_1	H441H(CAC>CAT)	Syn	H->H	23S rRNA (uracilC(5))methyltransferase RlmCD
+	3	1	165,470	SNP	C>A	PROKKA_00173/>PROKKA_00174	intergenic(+174/91)	NC	na	Relaxase/Mobilisation nuclease domain protein/hypothetical protein
+	4	1	234,888	SNP	C>A	gapN	A95E(GCA>GAA)	Non	A->E	NADPdependent glyceraldehyde3phosphate dehydrogenase
+	"""
+	return dataio.import_table(string, index = 'Trajectory')
+
+def test_extract_annotations(annotations):
+	expected = {
+		'1': 'speA C127Y',
+		'2': 'rlmCD_1 H441H',
+		'3': "PROKKA_00173|PROKKA_00174 intergenic",
+		'4': "gapN A95E"
+	}
+
+	result = file_parsers.extract_annotations(annotations)
+
+	assert result == expected
+
+
+
 @pytest.mark.parametrize(
 	"test_label,expected_label",
-	zip(test_labels, expected_labels)
+	[
+		("PROKKA_00139/>glyA", "PROKKA_00139|glyA"),
+		("gapN/>glgB", "gapN|glgB"),
+		("PROKKA_00438<", "PROKKA_00438"),
+		("intergenic(62/+110)", "intergenic"),
+		("bglK_1<", "bglK_1")
+	]
 )
-def test_clean_gene_label(test_label:str, expected_label:str):
-
+def test_clean_gene_label(test_label: str, expected_label: str):
 	clean_result = file_parsers._clean_gene_label(test_label)
 	assert expected_label == clean_result
+
 
 def test_parse_annotations():
 	info_table_string = """
@@ -40,9 +71,10 @@ def test_parse_annotations():
 		'genotype-3': ["intergenic", "bglK_1", "dnaI"]
 	}
 
-	test_result = file_parsers.parse_annotations(genotype_members, info_table)
+	test_result = file_parsers.parse_genotype_annotations(genotype_members, info_table)
 
 	assert expected_result == test_result
+
 
 def test_parse_genotype_palette():
 	palette = """
@@ -50,18 +82,17 @@ def test_parse_genotype_palette():
 	genotype-1	#D342A1
 	removed	#333311	garbage1	garbage2
 	"""
-	class FakePath:
-		def open(self):
-			p = "\n".join(i.strip() for i in palette.split('\n'))
-			return StringIO(p)
+	palette = "\n".join([i.strip() for i in palette.split('\n')])
+
 	expected = {
 		'genotype-1': '#D342A1',
 		'genotype-3': '#994567',
-		'removed': '#333311'
+		'removed':    '#333311'
 	}
-	result = file_parsers.parse_genotype_palette(FakePath())
+	result = file_parsers.read_palette(palette)
 
 	assert expected == result
+
 
 def test_parse_known_genotypes():
 	known_genotypes = """
@@ -69,6 +100,7 @@ def test_parse_known_genotypes():
 	trajectory-7
 	t5,t6
 	"""
+
 	class FakePath:
 		def read_text(self):
 			p = (i.strip() for i in known_genotypes.split('\n'))
@@ -83,4 +115,3 @@ def test_parse_known_genotypes():
 	result = file_parsers.parse_known_genotypes(FakePath())
 
 	assert expected == result
-

@@ -72,7 +72,6 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	for left, right in pair_combinations:
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
-		detected_points = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, inner = False)
 		detected_points = pandas.DataFrame(
 			{
 				'left': left_trajectory,

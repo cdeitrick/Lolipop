@@ -71,7 +71,7 @@ def test_three_genotypes(three_genotypes, options):
 	}
 	clusters = order.order_clusters(three_genotypes, options)
 
-	assert expected == clusters.to_dict()
+	assert expected == clusters.as_dict()
 
 
 def test_five_genotypes(five_genotypes, options):
@@ -83,7 +83,7 @@ def test_five_genotypes(five_genotypes, options):
 		'genotype-E': 'genotype-A'
 	}
 	result = order.order_clusters(five_genotypes, options)
-	assert expected == result.to_dict()
+	assert expected == result.as_dict()
 
 
 def test_ten_genotypes(ten_genotypes, options):
@@ -100,4 +100,4 @@ def test_ten_genotypes(ten_genotypes, options):
 		'genotype-J': 'genotype-C'
 	}
 	result = order.order_clusters(ten_genotypes, options)
-	assert expected == result.to_dict()
+	assert expected == result.as_dict()

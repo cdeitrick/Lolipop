@@ -1,4 +1,4 @@
-
+ 
 
 # Overview
 ## What is a muller diagram?
@@ -119,7 +119,6 @@ P(\bar{d} > x) = 1-F(\bar{d}|\mu, \sigma) = \frac{1}{2} - \frac{1}{2}erf \bigg(\
 $$
 $$
 P(-x<\bar{d}<x) = 1 - erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)
-
 $$
 
 However, as noted above, this test is only performed for the measurements in $X$ and $Y$ which satisfy the requirement $f_{detected} < f <f_{fixed}$ for $f \in X,Y$. timepoints where neither series satisfy this requirement are discarded. If there is no overlap between the timepoints in $X$ and $Y$ after these timepoints have been discarded then the above probability calculation cannot be done. This does not mean that both series are unrelated; if both timepoints fix immediately (at the timepoint they are first detected) during the same timepoint, they should be added to the same genotype. There is an additional test to address this edge case. If two trajectories are fixed at 3 or more common timepoints they are assigned to the same genotype.
@@ -277,6 +276,28 @@ where $p=2$ (equivilent to the euclidean distance) for these scripts.
 
 Once the distance between all possible pairs of mutational trajectories has been calculated, each trajectory can be grouped with other trajectories that are sufficiently similar. Trajectories are first assigned to their own cluster, then clusters are merged with similar clusters until the mean distance between trajectories in the cluster exceeds a specified breakpoint.
 
+## Comparison of Clustering Methods
+
+The scripts currently use the two-step method by default, but this will be replaced by the hierarchical method after more testing is done.
+The hierarchical method and the desired distance metric can be selected using the `--method` and `--metric` options, respectively.
+
+### Two-Step clustering vs hierarchical clustering
+
+For the B1 testing population, the two-step method produces the following clusters:
+
+![B1.twostep.trajectories](figures/B1.twostep.trajectories.edited2.png)
+
+Each line is a single trajectory and is grouped with those of the same color. A major weakness of the two-step clustering method is its inability to accurately extract genotypes during timepoints when a large number of mutational trajectories are detected at similar frequencies. An example of this has been highlighted in the image above, where there are ten trajectories split among three genotypes.
+
+Let's use the tan genotype (consisting of 6 trajectories) as an example. The trajectories labelled A, B, and C appear to be more correlated to each other than to the other three trajectories that have been grouped into this genotype. While the two-step method determined that there was insufficient evidence to group the trajectories into a separate genotype, a human observer may disagree.
+
+Combining the dinomial distance metric with hierarchical clustering provides the following plot:
+![B1.hierarchy.binomial.trajectories](figures/B1.hierarchy.binomial.trajectories.png)
+
+This method splits the previous genotype up and groups A and B together (blue), while C (yellow) is paired with another trajectory which was not part of the original genotype, but shares a similar path as C.
+
+
+
 # Nesting successive genotypes
 
 ## Checks
@@ -395,25 +416,6 @@ Note that when a genotype is removed, all of the trajectories that comprise that
 
 ## Options
 
-## Input Files
-
-- table of trajectories or pre-eisting genotypes
-  - Given with the `-i` or `--input` options.
-  - Described above
-
-- known genotypes
-  - given with the `-g` or `--known-genotypes` options.
-  - Used to group mutations together which are already know to form a genotype. This does not prevent other trajectories from being grouped into one of these genotypes.
-  - Should be a comma-delimited file where each line corresponds to a unique genotype and each element should be an existing trajectory id as defined by the input trajectory table.
-
-- genotype colors
-  - given using the `--genotype-colors` option.
-  - Assigns user-defined colors to the indicated genotypes. Genotypes not mentioned in this file will retain their original colors.
-  - Since genotypes are labeled after they are generated, the muller scripts should be run once to see what the genotypes are named, then re-run with this option given.
-  - This should be a tab-delimited file where the first column lists the genotype label and the second column is the genotype color as a hex color code (ex. "#23F678"). Column names are optional and are not used.
-
-- annotation map
-
 ### Genotype colors
 
 It is possible to explicitly choose the color of individual genotypes using the `--genotype-colors` option. The value passed to this option should be a valid path to a text-delimited file composed of two columns. The first column is the genome name, the second column is the assigned color of that genotype as a hex color code (ex. #34FA19). There are two reserved genotype names: `genotype-0` to represent the root background, and `removed` which represents the trajectories that were filtered out of the analysis.
@@ -429,13 +431,18 @@ removed #FF0000
 # Output
 All files are prefixed by the name of the original input table.
 
-## General
-### .genotypes.tsv
-A table listing the final genotypes of the analysis
+## Tables
+### Genotype and Trajectory tables
+- .muller_genotypes.tsv
+- .muller.trajectories.tsv
+- tables/.muller_genotypes.original.tsv
+- tables/.trajectories.original.tsv
 
-Example:
+Tables listing the genotypes and trajectories encountered in the analysis. The trajectory tables also link each trajectory to its respective genotype. There are two versions of these tables: one set with the original input trajectories and the initial calculated genotypes and another set with the final trajectories and genotypes left in the analysis after the filtering step. The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
+
+Example Genotype Table:
 | Genotype    | 0.000 | 17.000 | 25.000 | 44.000 | 66.000 | 75.000 | 90.000 |
-|-------------|-------|--------|--------|--------|--------|--------|--------|
+| ----------- | ----- | ------ | ------ | ------ | ------ | ------ | ------ |
 | genotype-1  | 0.000 | 0.380  | 0.432  | 0.000  | 0.000  | 0.000  | 0.000  |
 | genotype-2  | 0.000 | 0.000  | 0.000  | 0.403  | 0.489  | 0.057  | 0.080  |
 | genotype-3  | 0.000 | 0.000  | 0.000  | 0.000  | 0.000  | 1.000  | 1.000  |
@@ -448,8 +455,110 @@ Example:
 | genotype-10 | 0.000 | 0.021  | 0.000  | 0.086  | 0.182  | 0.095  | 0.058  |
 
 
-## Tables
+
+### Tables for ggmuller
+- tables/.ggmuller.populations.tsv
+- tables/.ggmuller.edges.tsv
+
+These tables are designed for use with the ggmuller r package. The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
+
+### Linkage matrix
+- tables/.linkagematrix.tsv
+
+This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
+Columns:
+- `left`, `right`: The two sub-clusters merged to create the current clusters
+- `clusterId`: The id assigned to this cluster. Note that since the individual genotypes are not included in the table, the clusters are numbered in order starting with 1 + the total number of genotypes.
+- `distance`: The distance between the two sub-clusters.
+- `observations`: The number of mutational trajectories contained in this cluster.
+
+
+Example linkage matrix:
+| left | right | distance | observations | resultingCluster |
+|------|-------|----------|--------------|------------------|
+| 7    | 18    | 0.034    | 2            | 19               |
+| 13   | 17    | 0.175    | 2            | 20               |
+| 8    | 11    | 0.199    | 2            | 21               |
+| 2    | 5     | 0.239    | 2            | 22               |
+| 10   | 3     | 0.279    | 2            | 23               |
+| 9    | 12    | 0.370    | 2            | 24               |
+| 23   | 6     | 0.529    | 3            | 25               |
+| 22   | 21    | 0.624    | 4            | 26               |
+| 26   | 1     | 0.708    | 5            | 27               |
+| 24   | 16    | 0.760    | 3            | 28               |
+| 14   | 25    | 0.786    | 4            | 29               |
+| 15   | 20    | 0.988    | 3            | 30               |
+| 29   | 27    | 1.094    | 9            | 31               |
+| 31   | 19    | 1.358    | 11           | 32               |
+| 30   | 28    | 1.362    | 6            | 33               |
+| 4    | 32    | 1.499    | 12           | 34               |
+| 33   | 0     | 2.125    | 7            | 35               |
+| 34   | 35    | 4.943    | 19           | 36               |
+
+### Distance Matrix
+- tables/.distance.tsv
+
+A table of pairwise distance values between each trajectory.
+
+### Muller table
+- tables/.muller.tsv
+
+The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` used to generate the muller plots. This file is created from the r script, described later.
 
 ## Graphics
+Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
+
+### Muller Plots
+- .muller.annotated.png
+- graphics/clade/.muller.annotated.svg
+- graphics/clade/.muller.annotated.png
+- graphics/clade/.muller.unannotated.png
+- graphics/distinctive/.muller.annotated.distinctive.png
+- graphics/distinctive/.muller.annotated.distinctive.svg
+
+The main value of a muller plot is to quickly visualize abundance and geneology of genotypes over the course of an evolution experiment.
+
+![muller](example/example.muller.annotated.png)
+
+### Geneology Plots
+- .geneology.png
+- graphics/.geneology.distinctive.png
+
+These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
+
+![geneology](example/example.geneology.png)
+
+### Trajectory and genotype plots
+- .genotypes.png
+- .genotypes.filtered.png
+- .trajectories.distinctive.png
+
+Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
+
+![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
+
+### Distance Heatmap
+- graphics/.heatmap.distance.png
+
+A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
+
+![heatmap](example/graphics/example.heatmap.distance.png)
+
+### Dendrogram
+- graphics/.dendrogram.png
+Shows the arrangment and distance between clusters and member trajectories.
+
+![dendrogram](example/graphics/example.dendrogram.png)
 
 ## Scripts
+- scripts/example.mermaid.md
+- scripts/example.r
+
+Two external scripts are used during the course of this analysis. The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation. The [mermaid](https://mermaidjs.github.io) script is used to generate the geneology plots.
+
+## Supplementary files
+- supplementary-files/example.json
+
+A json-formatted file with all parameters used in the analysis.
+
+

@@ -2,6 +2,7 @@ from typing import Any, List, Tuple
 import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
+import itertools
 import logging
 logger = logging.getLogger(__file__)
 try:
@@ -10,7 +11,7 @@ except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 
 
-def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance') -> Tuple[List[List[str]], Any]:
+def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance', starting_genotypes: List[List[str]] = None) -> Tuple[List[List[str]], Any]:
 	"""
 
 	Parameters
@@ -19,12 +20,25 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	similarity_cutoff
 	cluster_method: {'distance;, 'monocrit'}; default 'monocrit'
 		The method to cluster leafs by.
+	starting_genotypes: List[List[str]]
+		Each element should be a list of trajectories known to be in the same genotype.
 	Returns
 	-------
 
 	"""
 	logger.debug(f"similarity_cutoff: {similarity_cutoff}")
 	logger.debug(f"cluster_method: {cluster_method}")
+
+	# If known genotypes are given, modify the pair_array so that they will be grouped together.
+	if starting_genotypes:
+		for genotype in starting_genotypes:
+			combinations = itertools.combinations(genotype, 2)
+			values = dict()
+			for a,b in combinations:
+				values[a,b] = 0
+				values[b,a] = 0
+			pair_array = pair_array.update(values)
+
 	squaremap = pair_array.squareform()
 	condensed_squaremap = distance.squareform(squaremap.values)
 	method = 'ward'

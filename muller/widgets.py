@@ -104,7 +104,6 @@ def format_linkage_matrix(Z, total_members: Optional[int]) -> pandas.DataFrame:
 
 def calculate_luminance(color: str) -> float:
 	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
-
 	red = int(color[1:3], 16)
 	green = int(color[3:5], 16)
 	blue = int(color[5:], 16)

@@ -21,7 +21,7 @@ def _subtract_children_from_parent(modified_genotypes: pandas.DataFrame, childre
 			genotype_frequencies = genotype[genotype > detection_cutoff]
 			genotype_children: pandas.Series = modified_genotypes.loc[children[genotype_label]].max()
 			genotype_frequencies: pandas.Series = genotype_frequencies - genotype_children
-			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.05)  # 0.05 so there is still a visible slice.
+			genotype_frequencies = genotype_frequencies.mask(lambda s: s < detection_cutoff, 0.01)  # 0.05 so there is still a visible slice.
 			genotype_frequencies = genotype_frequencies.fillna(0)  # Otherwise plotting the muller diagram will fail.
 		else:
 			genotype_frequencies = genotype

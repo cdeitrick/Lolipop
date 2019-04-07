@@ -49,6 +49,7 @@ class PairwiseCalculationCache:
 
 	def triangle(self):
 		""" Returns the condensed squareform of the pair array."""
+		# noinspection PyTypeChecker
 		return distance.squareform(self.squareform().values)
 
 	def get(self, left, right, default = None) -> float:

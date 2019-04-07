@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 import pandas
 
 
+# noinspection PyTypeChecker
 def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
 		Splits a genotype into smaller muller_genotypes if some members are not related to some other members. This may happen
@@ -19,8 +20,6 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 			- left
 			- right
 			- pvalue
-	pair_array
-		The list of p-values for each pair.
 	link_cut: float
 		The cuttoff value to choose whether a member is related to the other members.
 
@@ -30,6 +29,7 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 	"""
 	# Find the index of the minimum p-value after subtracting the link cutoff.
 	# Form two new muller_genotypes based on the two trajectories corresponding to the minimum p-value
+	# noinspection PyUnresolvedReferences
 	new_genotype_1_base, new_genotype_2_base = (unlinked_trajectories - link_cut).abs().idxmin()
 	# Get the row with the identified minimum mp-value.
 
@@ -84,6 +84,7 @@ def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Di
 			genotype_combinations:pandas.Series = genotype_combinations.set_index(['left', 'right'])['pvalue']
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.
+			# noinspection PyTypeChecker
 			unlinked_trajectories = genotype_combinations[genotype_combinations < link_cutoff].dropna()
 
 			if len(unlinked_trajectories) != 0:
