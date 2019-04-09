@@ -11,22 +11,17 @@ def empty_cache():
 
 @pytest.fixture
 def small_cache():
-	elements = """
-	1	2	.5
-	1	3	.6
-	1	4	.7
-	2	3	.2
-	2	4	.3
-	3	4	.8
-	"""
-	string = [i.strip() for i in elements.split("\n")]
-	string = "\n".join(i for i in string if i)
+	data = {
+		('1', '2'): .5,
+		('1', '3'): .6,
+		('1', '4'): .7,
+		('2', '3'): .2,
+		('2', '4'): .3,
+		('3', '4'): .8
+	}
 
-	class FakePath:
-		def read_text(self) -> str:
-			return string
 
-	return PairwiseCalculationCache.read(FakePath())
+	return PairwiseCalculationCache(data)
 
 
 def test_cache_empty(empty_cache, small_cache):
@@ -68,3 +63,42 @@ def test_squareform(small_cache):
 	labels = "1 2 3 4".split()
 	expected_df = pandas.DataFrame(expected, columns = labels, index = labels)
 	pandas.testing.assert_frame_equal(expected_df, small_cache.squareform())
+
+def test_asdict(small_cache):
+	expected = {
+		('1', '2'): .5,
+		('1', '3'): .6,
+		('1', '4'): .7,
+		('2', '1'): .5,
+		('2', '3'): .2,
+		('2', '4'): .3,
+		('3', '1'): .6,
+		('3', '2'): .2,
+		('3', '4'): .8,
+		('4', '1'): .7,
+		('4', '2'): .3,
+		('4', '3'): .8
+	}
+
+	assert small_cache.asdict() == expected
+
+def test_unique(small_cache):
+	expected = [
+		('1', '2'), ('1', '3'), ('1', '4'),
+		('2', '3'), ('2', '4'),
+		('3', '4')
+	]
+
+	result = sorted(small_cache.unique())
+	assert result == expected
+
+def test_update(small_cache):
+	new_elements = {
+		('15', '16'): 1,
+		('14', '1'): 2
+	}
+
+	small_cache.update(new_elements)
+
+	assert small_cache.get('14', '1') == 2
+	assert small_cache.get('1', '14') == 2

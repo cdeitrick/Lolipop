@@ -20,10 +20,12 @@ class PairwiseCalculationCache:
 	"""
 
 	def __init__(self, pairwise_array: PairwiseArrayType = None):
-		if pairwise_array is None:
-			self.pairwise_values = dict()
-		else:
-			self.pairwise_values: PairwiseArrayType = pairwise_array
+		if pairwise_array is None: pairwise_array = dict()
+		self.pairwise_values = dict()
+
+		for (left, right), value in pairwise_array.items():
+			self.pairwise_values[left,right] = value
+			self.pairwise_values[right,left] = value
 
 	def __bool__(self) -> bool:
 		return bool(self.pairwise_values)
@@ -53,7 +55,10 @@ class PairwiseCalculationCache:
 		return distance.squareform(self.squareform().values)
 
 	def get(self, left, right, default = None) -> float:
-		result = self.pairwise_values.get((left, right), default)
+		try:
+			result = self.pairwise_values[left, right]
+		except KeyError:
+			result = self.pairwise_values.get((right, left), default)
 		return result
 
 	def reduce(self, labels: Iterable[str]) -> 'PairwiseCalculationCache':
@@ -69,15 +74,18 @@ class PairwiseCalculationCache:
 		return self
 
 	def update(self, pair_array: PairwiseArrayType) -> 'PairwiseCalculationCache':
-		self.pairwise_values.update(pair_array)
+		for (left, right), value in pair_array.items():
+			self.pairwise_values[left, right] = value
+			self.pairwise_values[right, left] = value
 		return self
 
 	def unique(self) -> List[Tuple[str, str]]:
 		seen = set()
-		for key in self.pairwise_values.keys():
+		for key in sorted(self.pairwise_values.keys()):
 			if key in seen or key[::-1] in seen:
 				continue
 			else:
+				seen.add(key)
 				yield key
 
 	def save(self, filename: Path):

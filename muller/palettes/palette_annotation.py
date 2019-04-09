@@ -4,15 +4,6 @@
 from typing import List, Dict
 
 
-def read_annotation_palette(text: str) -> Dict[str, str]:
-	palette = dict()
-	for line in text.split('\n'):
-		fields = line.split('\t')
-		annotation = fields[0].strip()
-		color = fields[-1].strip()
-		palette[annotation] = color
-	return palette
-
 def generate_annotation_palette(genotype_annotations: Dict[str, List[str]], annotation_palette: Dict[str, str]) -> Dict[str, str]:
 	"""
 

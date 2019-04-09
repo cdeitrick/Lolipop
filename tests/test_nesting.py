@@ -3,6 +3,9 @@ from dataclasses import dataclass
 
 from dataio import import_table
 from muller.inheritance import order
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__file__)
 import pytest
 @pytest.fixture
 def five_genotypes() -> pandas.DataFrame:
@@ -10,7 +13,7 @@ def five_genotypes() -> pandas.DataFrame:
 	Trajectory	0	1	2	3	5	8	13	21	34
 	genotype-C	0	0	0	0.3	0.7	1	1	1	1
 	genotype-A	0	0	0	0	0.45	0.5	0.55	0.7	0.85
-	genotype-E	0	0	0	0	0	0	0.05	0.55	0.5
+	genotype-E	0	0	0	0	0	0	0.05	0.55	0.55
 	genotype-B	0	0.07	0.1	0.02	0.01	0	0	0	0
 	genotype-D	0	0	0	0	0	0	0.07	0	0.01
 	"""
@@ -67,4 +70,4 @@ def test_five_genotypes(five_genotypes):
 	options = OrderClusterParameters.from_breakpoints(.03, .15)
 
 	result = order.order_clusters(five_genotypes, options)
-	assert expected == result.as_dict()
+	assert result.as_dict() == expected

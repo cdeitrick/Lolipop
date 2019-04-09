@@ -76,13 +76,7 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	difference_mean: float = abs(difference).sum() / n
 
 	X = difference_mean / (math.sqrt(2 * sigma_pair))
-	debug = False
-	if debug:
-		print(left.values)
-		print(right.values)
-		print("difference mean: ", difference_mean)
-		print("sigma: ", sigma_pair)
-		print("X: ", X)
+
 	return X
 
 

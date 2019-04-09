@@ -3,7 +3,8 @@ from typing import Dict, List, Tuple
 
 import pandas
 
-
+def _find_weakest_pair(trajectories:pandas.Series, link_cut:float)->Tuple[str,str]:
+	return (trajectories - link_cut).abs().idxmin()
 # noinspection PyTypeChecker
 def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
@@ -15,10 +16,11 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 	genotype: Genotype
 		The genotype to split.
 	unlinked_trajectories: pandas.Series
-		A dataframe of trajectory pairs and their corresponding p-value.
-		Columns:
+		A series of trajectory pairs and their corresponding p-value.
+		Index:
 			- left
 			- right
+		Values:
 			- pvalue
 	link_cut: float
 		The cuttoff value to choose whether a member is related to the other members.
@@ -30,7 +32,8 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 	# Find the index of the minimum p-value after subtracting the link cutoff.
 	# Form two new muller_genotypes based on the two trajectories corresponding to the minimum p-value
 	# noinspection PyUnresolvedReferences
-	new_genotype_1_base, new_genotype_2_base = (unlinked_trajectories - link_cut).abs().idxmin()
+	#new_genotype_1_base, new_genotype_2_base = (unlinked_trajectories - link_cut).abs().idxmin()
+	new_genotype_1_base, new_genotype_2_base = _find_weakest_pair(unlinked_trajectories, link_cut)
 	# Get the row with the identified minimum mp-value.
 
 	# Make sure genotype 1 includes the lower id-value. Not important, but maintains parity with matlab script.
