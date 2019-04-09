@@ -18,14 +18,14 @@ try:
 	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *
-	from muller.muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
 	from muller import widgets, dataio, palettes
 	from muller.muller_output.flowchart import flowchart
 except ModuleNotFoundError:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller_output.generate_tables import *
-	from muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller_output.generate_scripts import generate_r_script, execute_r_script
 	import widgets
 	import palettes
 	import dataio
@@ -68,7 +68,7 @@ class OutputFilenames:
 			path = Path(path)
 			if not path.exists():
 				path.mkdir()
-			return path
+			return path.absolute()
 
 		output_folder = check_folder(output_folder)
 		supplementary_folder = check_folder(output_folder / "supplementary-files")
