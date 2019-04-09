@@ -40,12 +40,14 @@ def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:
 	return label, iteration
 
 
-def common_elements(left, right):
+def common_elements(left, right)->int:
+	""" Returns the number of elements that are common between `left` and `right`"""
 	common = set(left) & set(right)
 	return len(common)
 
 
 def tokenize(elements: List[str]):
+	""" Converts a list of strings into a list of unique words found in all the string elements."""
 	string = " ".join(elements)
 	tokens = string.split(" ")
 	return [i.strip() for i in tokens if i]

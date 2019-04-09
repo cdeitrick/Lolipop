@@ -29,6 +29,7 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 
 
 def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
+	""" Maps each trajectory to the genotype it belongs to."""
 	trajectory_to_genotype = dict()
 	for genotype_label, members in genotype_members.items():
 		for member in members.split('|'):
