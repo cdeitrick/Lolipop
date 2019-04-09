@@ -46,32 +46,6 @@ def unique_everseen(iterable, key = None):
 				yield element
 
 
-def generate_muller_series_legacy(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
-	"""
-		Generates the required inputs for matplotlib to generate a mullerplot.
-	Parameters
-	----------
-	muller_df: pandas.DataFrame
-	color_palette: Dict[str,str]
-		Maps genotypes to a specific color.
-
-	Returns
-	-------
-	x, y, colors, labels
-	"""
-	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
-
-	x = list(unique_everseen(muller_df['Generation'].tolist()))
-	colors = [color_palette[genotype_label[:-1] if genotype_label.endswith('a') else genotype_label] for genotype_label in genotype_order]
-	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
-	from pprint import pprint
-	pprint(genotype_order)
-	groups = muller_df.groupby(by = 'Group_id')
-
-	y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
-
-	return x, y, colors, labels
-
 def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	"""
 		Generates the required inputs for matplotlib to generate a mullerplot.
@@ -102,8 +76,8 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 		try:
 			next_label = genotype_order[index + 1]
 		except IndexError:
-			next_label = "   " # Three spaces, so the fllowing subscription works
-		if label == next_label[:-1]:
+			next_label = "   " # Three spaces, so the following subscription works
+		if label == next_label[:-1] and next_label[-1].isalpha(): # make sure it ends with a letter.
 			# The two halves of this specific genotype are next to each other. combine them and skip the next iteration.
 			seen.add(next_label)
 			genotype_series_a = groups.get_group(label)['Frequency'].tolist()
