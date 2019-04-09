@@ -18,7 +18,8 @@ class Cluster:
 		logger.info(f"adding {nested_label} as a potential background for {unnested_label} with priority {priority}")
 		if unnested_label not in self.nests:
 			self.nests[unnested_label] = list()
-		if priority:
+
+		if priority and False:
 			self.nests[unnested_label].insert(0, nested_label)
 		else:
 			self.nests[unnested_label].append(nested_label)
