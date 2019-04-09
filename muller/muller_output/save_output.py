@@ -160,11 +160,6 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 	return parameters
 
 
-def _make_folder(folder: Path):
-	if not folder.exists():
-		folder.mkdir()
-
-
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, save_pvalues: bool,
 		adjust_populations: bool):
 	# Set up the output folder
