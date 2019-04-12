@@ -1,3 +1,33 @@
+# Usage
+## Requirements
+These scripts require a few python and r packages to work.
+### python packages
+- pandas
+- seaborn
+- pygraphviz
+- scipy
+
+### r packages
+- ggmuller
+- ggplot2
+
+## Options
+
+### Genotype colors
+
+It is possible to explicitly choose the color of individual genotypes using the `--genotype-colors` option. 
+The value passed to this option should be a valid path to a text-delimited file composed of two columns. 
+The first column is the genome name, the second column is the assigned color of that genotype as a hex color code (ex. #34FA19). 
+There are two reserved genotype names: `genotype-0` to represent the root background, and `removed` which represents the trajectories that were filtered out of the analysis.
+
+A simple file might look like this:
+```
+genotype-1  #4501F3
+genotype-22 #FF00FF
+genotype-8  #678341
+removed #FF0000
+```
+
 # Output
 All files are prefixed by the name of the original input table.
 
@@ -8,7 +38,10 @@ All files are prefixed by the name of the original input table.
 - tables/.muller_genotypes.original.tsv
 - tables/.trajectories.original.tsv
 
-Tables listing the genotypes and trajectories encountered in the analysis. The trajectory tables also link each trajectory to its respective genotype. There are two versions of these tables: one set with the original input trajectories and the initial calculated genotypes and another set with the final trajectories and genotypes left in the analysis after the filtering step. The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
+Tables listing the genotypes and trajectories encountered in the analysis. 
+The trajectory tables also link each trajectory to its respective genotype. 
+There are two versions of these tables: one set with the original input trajectories and the initial calculated genotypes and another set with the final trajectories and genotypes left in the analysis after the filtering step. 
+The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
 
 Example Genotype Table:
 | Genotype    | 0.000 | 17.000 | 25.000 | 44.000 | 66.000 | 75.000 | 90.000 |
@@ -30,12 +63,14 @@ Example Genotype Table:
 - tables/.ggmuller.populations.tsv
 - tables/.ggmuller.edges.tsv
 
-These tables are designed for use with the ggmuller r package. The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
+These tables are designed for use with the ggmuller r package. 
+The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
 
 ### Linkage matrix
 - tables/.linkagematrix.tsv
 
-This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
+This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. 
+It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
 Columns:
 - `left`, `right`: The two sub-clusters merged to create the current clusters
 - `clusterId`: The id assigned to this cluster. Note that since the individual genotypes are not included in the table, the clusters are numbered in order starting with 1 + the total number of genotypes.
@@ -76,7 +111,10 @@ A table of pairwise distance values between each trajectory.
 The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` used to generate the muller plots. This file is created from the r script, described later.
 
 ## Graphics
-Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
+Each of the output plots use the same palette for genotypes and trajectories. 
+A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. 
+There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. 
+Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
 
 ### Muller Plots
 - .muller.annotated.png
@@ -94,7 +132,9 @@ The main value of a muller plot is to quickly visualize abundance and geneology 
 - .geneology.png
 - graphics/.geneology.distinctive.png
 
-These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
+These are simple flowcharts indicating the relationship between genotypes and clades. 
+The original genotype of each clade are shown to arise in "genotype-0", the root background. 
+The ancestry of all other genotypes are then shown relative to these clades.
 
 ![geneology](example/example.geneology.png)
 
@@ -103,14 +143,18 @@ These are simple flowcharts indicating the relationship between genotypes and cl
 - .genotypes.filtered.png
 - .trajectories.distinctive.png
 
-Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
+Timeseries plots of the frequency of each trajectory and genotype at each timepoint. 
+Trajectories are colored according to which genotype they were grouped into. 
+The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
 
 ![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
 
 ### Distance Heatmap
 - graphics/.heatmap.distance.png
 
-A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
+A pairwise comparison of the calculated distance between each mutational trajectory. 
+Trajectories are grouped by the final genotype. 
+The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
 ![heatmap](example/graphics/example.heatmap.distance.png)
 
@@ -121,12 +165,14 @@ Shows the arrangment and distance between clusters and member trajectories.
 ![dendrogram](example/graphics/example.dendrogram.png)
 
 ## Scripts
-- scripts/example.mermaid.md
 - scripts/example.r
 
-Two external scripts are used during the course of this analysis. The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation. The [mermaid](https://mermaidjs.github.io) script is used to generate the geneology plots.
+Two external scripts are used during the course of this analysis. 
+The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. 
+This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation. 
 
 ## Supplementary files
 - supplementary-files/example.json
 
 A json-formatted file with all parameters used in the analysis.
+ 
