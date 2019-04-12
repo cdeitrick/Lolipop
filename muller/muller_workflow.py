@@ -8,13 +8,13 @@ logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode 
 logger = logging.getLogger(__file__)
 logger.addHandler(logging.StreamHandler())
 try:
-	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
+	from muller.commandline_parser import create_parser, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
 	from clustering import generate
 	from inheritance import order, sort_genotypes
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
-	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
+	from commandline_parser import create_parser, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
 	from clustering import generate
 	from inheritance import order, sort_genotypes

@@ -41,7 +41,7 @@ class ProgramOptions(argparse.Namespace):
 			print(field)
 
 
-ACCEPTED_METHODS = ["matlab", "hierarchy"]
+ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
 
 
 def parse_workflow_options(program_options: ProgramOptions):
@@ -237,7 +237,7 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store",
 		default = "hierarchy",
 		dest = "method",
-		choices = ['matlab', 'hierarchy']
+		choices = ['matlab', 'hierarchy', 'twostep']
 	)
 	parser.add_argument(
 		"--metric",
