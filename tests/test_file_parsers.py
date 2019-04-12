@@ -1,7 +1,8 @@
-import pytest
-from dataio import file_parsers, import_table
 import pandas
+import pytest
+
 import dataio
+from dataio import file_parsers, import_table
 
 
 @pytest.fixture

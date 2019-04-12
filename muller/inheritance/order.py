@@ -45,7 +45,6 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 			# todo The additive check checks for greater than 0, not whether one is consistently larger than the other.
 			additive_check, subtractive_check, delta, area_ratio, area_difference = row
 
-
 			area_check = area_ratio > 0.97
 			derivative_check = delta > options.derivative_check_cutoff
 			full_check = area_check and derivative_check and additive_check
@@ -142,5 +141,3 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 
 if __name__ == "__main__":
 	pass
-
-

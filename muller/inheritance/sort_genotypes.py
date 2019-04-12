@@ -142,8 +142,8 @@ def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresh
 		else:
 			# More than one genotype share this combination of key timepoints. Sort by frequency.
 			# Sort from highest to lowest using the timpoint columns as the sorting keys.
-			#trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
-			trajectories = trajectories.sort_values(by = [fd,ft,ff], ascending = False)
+			# trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
+			trajectories = trajectories.sort_values(by = [fd, ft, ff], ascending = False)
 			freq_groups.append(trajectories)
 
 	try:

@@ -1,7 +1,7 @@
 """
 	Generates a palette using the annotations available from the input trajectories table.
 """
-from typing import List, Dict
+from typing import Dict, List
 
 
 def generate_annotation_palette(genotype_annotations: Dict[str, List[str]], annotation_palette: Dict[str, str]) -> Dict[str, str]:

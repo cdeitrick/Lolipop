@@ -1,6 +1,7 @@
 import pytest
-import treetools
+
 import dataio
+import treetools
 
 
 @pytest.mark.parametrize(
@@ -78,6 +79,7 @@ def test_parse_tree():
 	assert result['clade'].to_dict() == expected_parent
 	assert result['iterations'].to_dict() == expected_distance
 
+
 def test_group_clades():
 	clades = {
 		'genotype-10': ['dltB '],
@@ -86,7 +88,6 @@ def test_group_clades():
 		'genotype-6':  ['SPAR113_1988 G119C'],
 		'genotype-9':  ['dltB ']
 	}
-
 
 	result = treetools.group_clades(clades)
 	assert result == [['genotype-10', 'genotype-11', 'genotype-9'], ['genotype-16'], ['genotype-6']]

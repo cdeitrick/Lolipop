@@ -1,6 +1,8 @@
 import pytest
-from muller.graphics.generate_muller_plot import *
+
 import dataio
+from muller.graphics.generate_muller_plot import *
+
 
 def test_relocate_point_simple():
 	point = (.1, .613)
@@ -49,6 +51,7 @@ def test_find_closest_point():
 def test_unique_everseen():
 	assert list(unique_everseen("AABBCCCADAACCFD")) == "A B C D F".split()
 
+
 def test_generate_muller_series():
 	string = """
 	Generation	Group_id	Frequency
@@ -64,7 +67,7 @@ def test_generate_muller_series():
 	table = dataio.import_table(string)
 	palette = {'genotype-1': '#AAAAAA', 'genotype-12': '#BBBBBB'}
 
-	expected_x = [0,2,4,6]
+	expected_x = [0, 2, 4, 6]
 	expected_y = [
 		[0, .1, .4, 1], [0, 1, .9, .5]
 	]

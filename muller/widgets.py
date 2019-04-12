@@ -120,7 +120,7 @@ def format_inconsistency_matrix(R) -> pandas.DataFrame:
 
 
 def _get_git_log() -> str:
-	filename =  Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
+	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
 	contents = filename.read_text()
 	return contents
 

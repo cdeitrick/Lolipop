@@ -1,6 +1,8 @@
-from typing import List, Tuple
 import random
+from typing import List, Tuple
+
 import seaborn
+
 distinctive_palette = [
 	'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 	'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -20,6 +22,7 @@ distinctive_colorschemes = [
 	'Reds', 'Blues', 'Greens', 'Purples', 'hot', 'Greys', 'copper', 'cool'
 ]
 
+
 def load_colorscheme(string: str, size: int) -> List[str]:
 	"""Attempts to load a given colorscheme."""
 
@@ -29,6 +32,8 @@ def load_colorscheme(string: str, size: int) -> List[str]:
 		palette = seaborn.light_palette(string, size)
 
 	return palette.as_hex()
+
+
 def rgbtohex(rgb: Tuple[float, float, float]) -> str:
 	if isinstance(rgb[0], float):  # The values are formatted as a number between 0 and 1
 		red = int(rgb[0] * 256)

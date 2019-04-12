@@ -1,12 +1,16 @@
-import pandas
+import logging
 from dataclasses import dataclass
+
+import pandas
 
 from dataio import import_table
 from muller.inheritance import order
-import logging
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(level = logging.DEBUG)
 logger = logging.getLogger(__file__)
 import pytest
+
+
 @pytest.fixture
 def five_genotypes() -> pandas.DataFrame:
 	string = """

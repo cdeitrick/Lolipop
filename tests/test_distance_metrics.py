@@ -36,7 +36,7 @@ def test_pearson_distance(left, right, expected: float):
 @pytest.mark.parametrize("left,right",
 	[
 		([0, 0.0, 0.0, 0.273, 0.781, 1.0, 1.0], [0, 0.0, 0.0, 0.0, 0.345, 0.833, 0.793]),
-		([.1, .2, .2,.1, .5, .1, .2, .6, .2], [.12, .4, .1, .4, .5, .1, .4, .1, .3]),
+		([.1, .2, .2, .1, .5, .1, .2, .6, .2], [.12, .4, .1, .4, .5, .1, .4, .1, .3]),
 		([0, 0.0, 0.261, 1.0, 1.0, 1.0, 1.0], [0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0])
 	]
 )
@@ -52,4 +52,3 @@ def test_calculate_distance(left, right):
 	assert minkowski == distance.calculate_distance(left, right, 'minkowski')
 	assert jaccard == distance.calculate_distance(left, right, 'jaccard')
 	assert binomial == distance.calculate_distance(left, right, 'binomial')
-

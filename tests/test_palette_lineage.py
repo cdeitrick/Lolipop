@@ -1,5 +1,8 @@
-from palettes import palette_lineage
 import seaborn
+
+from palettes import palette_lineage
+
+
 def test_apply_clade_colorscheme():
 	clade = ['genotype-1', 'genotype-2', 'genotype-3']
 

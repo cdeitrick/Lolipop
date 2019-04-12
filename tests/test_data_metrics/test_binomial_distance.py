@@ -1,9 +1,12 @@
-import pytest
 import pandas
-from dataio import import_table
+import pytest
+
 from clustering.metrics.calculation import calculate_pairwise_metric
+from dataio import import_table
+
+
 @pytest.fixture
-def b1_data()->pandas.DataFrame:
+def b1_data() -> pandas.DataFrame:
 	string = """
 		Trajectory	0	17	25	44	66	75	90
 		1	0.000	0.000	0.261	1.000	1.000	1.000	1.000
@@ -30,22 +33,22 @@ def b1_data()->pandas.DataFrame:
 	"""
 	return import_table(string, index = 'Trajectory')
 
+
 @pytest.fixture
 def pairwise_values(b1_data):
 	pairwise_values = calculate_pairwise_metric(b1_data, 0.03, 0.97, 'binomial')
 	return pairwise_values
 
+
 @pytest.mark.parametrize("name,closest",
-[
-	("4", "8"),
-	("2", "3"),
-	("17", "9"),
-	("5", "20")
-]
+	[
+		("4", "8"),
+		("2", "3"),
+		("17", "9"),
+		("5", "20")
+	]
 )
-def test_binomial_distance(pairwise_values, name:str, closest:str):
+def test_binomial_distance(pairwise_values, name: str, closest: str):
 	candidates = (i for i in pairwise_values.items() if name in i[0])
 	pair, value = min(candidates, key = lambda s: s[1])
 	assert name in pair and closest in pair
-
-

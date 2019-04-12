@@ -1,6 +1,8 @@
 from io import StringIO
-from dataio import import_table
+
 from clustering.generate import *
+from dataio import import_table
+
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
 				 "2,0,0.0,0.0,0.525,0.454,0.911,0.91\n" \
@@ -15,6 +17,7 @@ trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "14,0,0.38,0.432,0.0,0.0,0.0,0.0\n" \
 				 "16,0,0.0,0.0,0.0,0.209,0.209,0.0\n" \
 				 "20,0,0.0,0.0,0.138,0.295,0.0,0.081\n"
+
 
 def test_calculate_mean_genotype():
 	test_genotypes = [
@@ -35,6 +38,3 @@ def test_calculate_mean_genotype():
 	output = calculate_mean_genotype(test_genotypes, trajectories)
 
 	pandas.testing.assert_frame_equal(expected_mean, output)
-
-
-

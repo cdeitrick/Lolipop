@@ -46,10 +46,11 @@ def test_calculate_overlapping_area(full_overlap, no_overlap, partial_overlap):
 	overlap_area = order_by_area.calculate_common_area(left, right)
 	assert overlap_area == order_by_area.area_of_series(right)
 
+
 def test_is_subset(full_overlap, no_overlap, partial_overlap):
 	left, right = full_overlap
 	assert order_by_area.is_subset(left, right)
-	assert False == order_by_area.is_subset(right,left)
+	assert False == order_by_area.is_subset(right, left)
 
 	left, right = partial_overlap
 	assert True == order_by_area.is_subset(left, right)

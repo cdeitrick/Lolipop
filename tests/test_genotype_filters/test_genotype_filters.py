@@ -1,10 +1,12 @@
-import pytest
 import pandas
+import pytest
+
 from clustering import filters
 from dataio import import_table
 
+
 @pytest.fixture
-def genotypes()->pandas.DataFrame:
+def genotypes() -> pandas.DataFrame:
 	genotype_table_string = """
 		Genotype	0	17	25	44	66	75	90
 		genotype-1	0	0	0.261	1	1	1	1
@@ -27,11 +29,12 @@ def genotypes()->pandas.DataFrame:
 	t = t.astype(float)
 	return t
 
+
 def test_remove_single_point_series():
 	table = pandas.DataFrame([
-		[0,0,0,1,0,0],
-		[1,3,2,0,1,1],
-		[0.03, 1,0,0,0,0]
+		[0, 0, 0, 1, 0, 0],
+		[1, 3, 2, 0, 1, 1],
+		[0.03, 1, 0, 0, 0, 0]
 	])
 	single_point_series = filters._remove_single_point_background(table, 0.03, 0.97)
 
@@ -41,12 +44,14 @@ def test_remove_single_point_series():
 
 	assert [0, 2] == list(single_point_series)
 
+
 def test_get_first_timepoint_above_cutoff():
-	series =pandas.Series([0, .03, .04, .1, .2, .3, .4, .5, .6, .7, .8])
+	series = pandas.Series([0, .03, .04, .1, .2, .3, .4, .5, .6, .7, .8])
 
 	assert 2 == filters.get_first_timepoint_above_cutoff(series, 0.03)
 	assert 4 == filters.get_first_timepoint_above_cutoff(series, 0.1)
 	assert 1 == filters.get_first_timepoint_above_cutoff(series, 0)
+
 
 def test_get_fuzzy_backgrounds(genotypes):
 	cutoffs = [0.9]
@@ -63,4 +68,3 @@ def test_get_fuzzy_backgrounds(genotypes):
 	assert pytest.approx(fuzzy_detected_cutoff == 0.1)
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
-

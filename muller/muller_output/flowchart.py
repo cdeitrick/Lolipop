@@ -1,8 +1,10 @@
-import pygraphviz
-import pandas
-import widgets
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Optional
+
+import pandas
+import pygraphviz
+
+import widgets
 
 
 def get_node_label_properties(identity: str, genotype_color: str, annotation: List[str]) -> Dict[str, str]:
@@ -22,7 +24,7 @@ def get_node_label_properties(identity: str, genotype_color: str, annotation: Li
 	return label_properties
 
 
-def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], clusters: Any = None, annotations: Dict[str, List[str]] = None,
+def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None,
 		filename: Optional[Path] = None):
 	"""
 		Creates a lineage plot showing the ancestry of each genotype.
@@ -30,7 +32,6 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], clusters: Any = 
 	----------
 	edges
 	palette
-	clusters
 	annotations
 	filename
 

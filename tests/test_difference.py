@@ -1,6 +1,7 @@
-import pytest
-from clustering.methods import difference
 import pandas
+import pytest
+
+from clustering.methods import difference
 
 
 @pytest.fixture

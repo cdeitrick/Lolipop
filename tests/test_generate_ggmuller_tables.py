@@ -1,7 +1,10 @@
 import unittest
-from dataio import import_table
-from muller_output.generate_tables import _append_genotype_0, _convert_genotype_table_to_population_table, _compile_parent_linkage
+
 import pandas
+
+from dataio import import_table
+from muller_output.generate_tables import _append_genotype_0, _compile_parent_linkage, _convert_genotype_table_to_population_table
+
 edges_table = """
 	Parent	Identity
 	genotype-0	genotype-1
@@ -11,29 +14,33 @@ edges_table = """
 	genotype-1	genotype-3
 """
 
+
 class TestEdgesTable(unittest.TestCase):
 	def test_compile_parent_linkage(self):
 		edges = import_table(edges_table)
 		expected_linkage = {
 			'genotype-1': ['genotype-4', 'genotype-3'],
 			'genotype-4': ['genotype-5'],
-			'genotype-0':['genotype-1', 'genotype-2']
+			'genotype-0': ['genotype-1', 'genotype-2']
 		}
 		output = _compile_parent_linkage(edges)
 		self.assertDictEqual(expected_linkage, output)
+
 	def test_generate_edges_table(self):
 		pass
+
 
 class TestPopulationTable(unittest.TestCase):
 	def test_subtract_children_from_parent(self):
 		pass
+
 	def test_convert_genotype_table_to_population_table(self):
 		test_table = import_table(
-		"""
-		Genotype	0	1	22	33
-		genotype-1	0	.12	.5	0
-		genotype-2	0	.23	.5	.7
-		""", index = 'Genotype'
+			"""
+			Genotype	0	1	22	33
+			genotype-1	0	.12	.5	0
+			genotype-2	0	.23	.5	.7
+			""", index = 'Genotype'
 		)
 		expected_table = import_table(
 			"""
@@ -48,9 +55,10 @@ class TestPopulationTable(unittest.TestCase):
 			33	genotype-2	70.0
 		"""
 		)
-		#expected_table['Generation'] = expected_table['Generation'].astype(str)
+		# expected_table['Generation'] = expected_table['Generation'].astype(str)
 		test_output = _convert_genotype_table_to_population_table(test_table)
 		pandas.testing.assert_frame_equal(expected_table, test_output)
+
 	def test_append_genotype_0(self):
 		basic_population_table = """
 			Generation	Identity	Population

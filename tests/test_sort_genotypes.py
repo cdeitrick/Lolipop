@@ -27,8 +27,9 @@ def table() -> pandas.DataFrame:
 	t = import_table(trajectory_table, index = 'Trajectory')
 	return t
 
+
 @pytest.fixture
-def mouse_table()->pandas.DataFrame:
+def mouse_table() -> pandas.DataFrame:
 	table = """
 	Genotype	0	1	2	3	4	5	6	7	8	9	10
 	genotype-1	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
@@ -50,6 +51,7 @@ def mouse_table()->pandas.DataFrame:
 	t = import_table(table, index = 'Genotype')
 	return t
 
+
 @pytest.fixture
 def smalltable() -> pandas.DataFrame:
 	trajectory_table = """
@@ -64,8 +66,9 @@ def smalltable() -> pandas.DataFrame:
 	t = import_table(trajectory_table, index = 'Trajectory')
 	return t
 
+
 @pytest.fixture
-def genotype_table()->pandas.DataFrame:
+def genotype_table() -> pandas.DataFrame:
 	trajectory_table = """
 		Genotype	0	17	25	44	66	75	90
 		genotype-1	0	0	0.261	1	1	1	1
@@ -99,6 +102,7 @@ def test_timepoint_above_threshold(smalltable, threshold, expected):
 	result = _get_timepoint_above_threshold(smalltable.T, threshold)
 	assert expected == result.to_dict()
 
+
 def test_sort_genotypes(table):
 	expected = """
 		Trajectory	0	17	25	44	66	75	90
@@ -118,15 +122,18 @@ def test_sort_genotypes(table):
 		11	0	0	0	0.108	0.151	0	0
 	"""
 	expected_result = import_table(expected, index = 'Trajectory')
+
 	class TestOptions:
 		def __init__(self):
 			self.detection_breakpoint = 0.03
 			self.fixed_breakpoint = 0.97
 			self.significant_breakpoint = 0.15
-			self.frequency_breakpoints = [1,.9,.8,.7,.6,.5,.4,.3,.2,.1,0]
+			self.frequency_breakpoints = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0]
+
 	result = sort_genotypes(table, TestOptions())
 	expected_result.index.name = None
 	pandas.testing.assert_frame_equal(result, expected_result)
+
 
 def test_sort_genotypes_with_initial_values(mouse_table):
 	expected = """
@@ -149,12 +156,13 @@ def test_sort_genotypes_with_initial_values(mouse_table):
 	"""
 	expected_result = import_table(expected, index = 'Genotype')
 	expected_result.index.name = None
+
 	class TestOptions:
 		def __init__(self):
 			self.detection_breakpoint = 0.03
 			self.fixed_breakpoint = 0.97
 			self.significant_breakpoint = 0.15
-			self.frequency_breakpoints = [1,.9,.8,.7,.6,.5,.4,.3,.2,.1,0.0]
+			self.frequency_breakpoints = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0.0]
+
 	result = sort_genotypes(mouse_table, TestOptions())
 	pandas.testing.assert_frame_equal(expected_result, result)
-

@@ -1,7 +1,8 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Mapping
+from typing import Dict, List, Mapping, Optional, Union
+
 import pandas
 
 logger = logging.getLogger(__file__)
@@ -54,7 +55,7 @@ def readfile(contents: Union[str, Path]) -> List[str]:
 	"""
 	if not isinstance(contents, str):
 		contents = contents.read_text()
-	lines = contents.split('\n') # Use this instead of splitlines sine splitlines sometimes doesn't work right.
+	lines = contents.split('\n')  # Use this instead of splitlines sine splitlines sometimes doesn't work right.
 	# Remove any whitespace to the left and right of the contents in the line. This should avaid issues with extra whitespace padding on the lines.
 	clean_lines = [l.strip() for l in lines]
 	# Remove empty lines
@@ -118,7 +119,7 @@ def _clean_annotation_label(label: str) -> str:
 	return result
 
 
-def _extract_value(row: Mapping[str,str], column: str) -> Optional[str]:
+def _extract_value(row: Mapping[str, str], column: str) -> Optional[str]:
 	"""
 		Extracts a value from a Mapping (usually a pandas.Series object) using a few variations of the input column.
 		For example, the column containing gene labels could be names 'Gene' or 'gene'. pandas.Series objects save null values as math.nan, a float.
@@ -156,7 +157,8 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 	return trajectory_annotations
 
 
-def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[str]]], info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[
+def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[str]]], info: pandas.DataFrame,
+		alias_filename: Optional[Path] = None) -> Dict[
 	str, List[str]]:
 	trajectory_annotations = extract_annotations(info, alias_filename)
 
@@ -164,8 +166,8 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 	for genotype_label, members in genotype_members.items():
 		if isinstance(members, str):
 			members = members.split('|')
-		member_values:List[Optional[str]] = [trajectory_annotations.get(i) for i in members]
+		member_values: List[Optional[str]] = [trajectory_annotations.get(i) for i in members]
 		# Remove missing annotations
-		member_values:List[str] = [i for i in member_values if i]
+		member_values: List[str] = [i for i in member_values if i]
 		genotype_annotations[genotype_label] = member_values
 	return genotype_annotations

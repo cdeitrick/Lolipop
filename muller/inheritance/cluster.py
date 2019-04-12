@@ -1,8 +1,8 @@
-from typing import Dict, List, Optional
 import logging
+from typing import Dict, List, Optional
+
 logger = logging.getLogger(__file__)
 import pandas
-
 
 
 class Cluster:
@@ -14,7 +14,7 @@ class Cluster:
 
 		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
 
-	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority:int = None) -> None:
+	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: int = None) -> None:
 		logger.info(f"adding {nested_label} as a potential background for {unnested_label} with priority {priority}")
 		if unnested_label not in self.nests:
 			self.nests[unnested_label] = list()
@@ -50,7 +50,7 @@ class Cluster:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
 
-	def get_highest_priority(self, label:str)->Optional[str]:
+	def get_highest_priority(self, label: str) -> Optional[str]:
 		candidates = dict()
 		for (left, right), value in self.confidence.items():
 			if left == label:
@@ -70,8 +70,8 @@ class Cluster:
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()
 		for identity, background in self.nests.items():
-			#parent = self.get_highest_priority(identity)
-			#if parent is None:
+			# parent = self.get_highest_priority(identity)
+			# if parent is None:
 			parent = background[0]
 			if parent == identity:
 				parent = 'genotype-0'
@@ -84,5 +84,6 @@ class Cluster:
 		table = pandas.DataFrame(table)[['Parent', 'Identity']]  # Reorder columns
 
 		return table.set_index('Identity')['Parent']
-	def as_dict(self)->Dict[str,str]:
+
+	def as_dict(self) -> Dict[str, str]:
 		return self.as_ancestry_table().to_dict()

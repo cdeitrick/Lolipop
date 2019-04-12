@@ -1,9 +1,9 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import pandas
-from dataclasses import dataclass
 
 # logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
 # logger = logging.getLogger(__name__)

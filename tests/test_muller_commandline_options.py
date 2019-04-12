@@ -113,5 +113,6 @@ class TestMullerProgramOptions(unittest.TestCase):
 		self.assertEqual(fixed_cutoff, program_options.fixed_breakpoint)
 		self.assertEqual(difference, program_options.difference_breakpoint)
 
+
 if __name__ == "__main__":
 	pass

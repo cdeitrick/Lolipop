@@ -1,6 +1,6 @@
-import pytest
-from muller_output import flowchart
 import dataio
+from muller_output import flowchart
+
 
 def test_get_font_properties():
 	expected = {'label': "genotype-1\ngene1\ngene2", 'fontcolor': '#FFFFFF'}
@@ -8,6 +8,7 @@ def test_get_font_properties():
 
 	expected = {'label': 'genotype-11', 'fontcolor': '#333333'}
 	assert flowchart.get_node_label_properties('genotype-11', '#FFFFFF', []) == expected
+
 
 def test_flowchart():
 	edges_string = """

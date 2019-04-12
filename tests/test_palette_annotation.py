@@ -1,5 +1,6 @@
-import pytest
 from palettes.palette_annotation import generate_annotation_palette
+
+
 def test_generate_annotation_palette():
 	annotations = {
 		'genotype-1': ['gene1', 'gene7'],

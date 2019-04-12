@@ -1,10 +1,13 @@
-import pytest
-import dataio
 import pandas
-from inheritance import order
+import pytest
+
+import dataio
 import options
+from inheritance import order
+
+
 @pytest.fixture
-def genotypes()->pandas.DataFrame:
+def genotypes() -> pandas.DataFrame:
 	string = """
 	Genotype	0	1	2	3	5	6	7	8	9	10
 	genotype-5	0.021	0.145	0.264	0.587	0.9615	1	1	1	1	1
@@ -19,11 +22,12 @@ def genotypes()->pandas.DataFrame:
 	"""
 	return dataio.import_table(string, index = 'Genotype')
 
+
 def test_order(genotypes):
 	expected = {
-		'genotype-2': 'genotype-11',
-		'genotype-5': 'genotype-0',
-		'genotype-9': 'genotype-0',
+		'genotype-2':  'genotype-11',
+		'genotype-5':  'genotype-0',
+		'genotype-9':  'genotype-0',
 		'genotype-10': 'genotype-11',
 		'genotype-11': 'genotype-14',
 		'genotype-12': 'genotype-14',
@@ -36,6 +40,3 @@ def test_order(genotypes):
 	result = order.order_clusters(genotypes, test_options)
 
 	assert result.as_dict() == expected
-
-
-

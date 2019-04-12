@@ -24,8 +24,8 @@ class PairwiseCalculationCache:
 		self.pairwise_values = dict()
 
 		for (left, right), value in pairwise_array.items():
-			self.pairwise_values[left,right] = value
-			self.pairwise_values[right,left] = value
+			self.pairwise_values[left, right] = value
+			self.pairwise_values[right, left] = value
 
 	def __bool__(self) -> bool:
 		return bool(self.pairwise_values)

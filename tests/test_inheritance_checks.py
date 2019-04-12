@@ -56,5 +56,3 @@ def test_check_derivative_background(left: List[float], right: List[float], expe
 	result = checks.check_derivative_background(left, right, -.03)
 
 	assert expected == (result > 0)
-
-

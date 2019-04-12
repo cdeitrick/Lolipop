@@ -1,10 +1,10 @@
 muller_workflow - INFO - parsing options...
 muller_workflow - INFO - Program options:
-muller_workflow - INFO - 	filename            /home/cld100/Documents/projects/rosch/pneumo.breseq.all.xlsx
-muller_workflow - INFO - 	sheetname           M3-matlab
-muller_workflow - INFO - 	output_folder       rosch-M3
-muller_workflow - INFO - 	fixed_breakpoint    0.99
-muller_workflow - INFO - 	detection_breakpoint0.01
+muller_workflow - INFO - 	filename            tests/data/B1_muller_try1.xlsx
+muller_workflow - INFO - 	sheetname           Sheet1
+muller_workflow - INFO - 	output_folder       B2
+muller_workflow - INFO - 	fixed_breakpoint    0.97
+muller_workflow - INFO - 	detection_breakpoint0.03
 muller_workflow - INFO - 	significant_breakpoint0.15
 muller_workflow - INFO - 	mode                False
 muller_workflow - INFO - 	frequencies         [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
@@ -17,27 +17,34 @@ muller_workflow - INFO - 	save_pvalue         True
 muller_workflow - INFO - 	use_strict_filter   False
 muller_workflow - INFO - 	method              hierarchy
 muller_workflow - INFO - 	metric              binomial
-muller_workflow - INFO - 	known_genotypes     /home/cld100/Documents/projects/rosch/m3_manual_genotypes.txt
+muller_workflow - INFO - 	known_genotypes     None
 muller_workflow - INFO - 	genotype_palette_filenameNone
 muller_workflow - INFO - 	alias_filename      None
 muller_workflow - INFO - Importing data...
 muller_workflow - INFO - using filter...
 generate - INFO - Pairwise calculations already exist: False
 calculation - INFO - Calculating the pairwise values...
-calculation - INFO - 	 detection limit: 0.01
-calculation - INFO - 	 fixed limit: 0.99
+calculation - INFO - 	 detection limit: 0.03
+calculation - INFO - 	 fixed limit: 0.97
 calculation - INFO - 	 metric: binomial
 generate - INFO - Filtering genotypes...
-generate - INFO - 	Frequency cutoffs:[0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+generate - INFO - 	Frequency cutoffs:[0.97, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 filters - INFO - These trajectories did not pass the trajectory filters: []
 generate - INFO - Pairwise calculations already exist: True
-generate - INFO - Reduced Pairwise calculations from 992 to 992
+generate - INFO - Reduced Pairwise calculations from 420 to 420
 generate - INFO - filtering iteration 0 of 20
-generate - INFO - Backgrounds:['genotype-5']
-generate - INFO - fuzzy cutoffs: 0.01, 0.99
+generate - INFO - Backgrounds:['genotype-1', 'genotype-14']
+generate - INFO - fuzzy cutoffs: 0.03, 0.97
+generate - INFO - Invalid genotype: genotype-4
+generate - INFO - Invalid members: ['12', '19']
+generate - INFO - Pairwise calculations already exist: True
+generate - INFO - Reduced Pairwise calculations from 420 to 342
+generate - INFO - filtering iteration 1 of 20
+generate - INFO - Backgrounds:['genotype-1', 'genotype-13']
+generate - INFO - fuzzy cutoffs: 0.03, 0.97
 generate - INFO - Invalid genotype: None
 muller_workflow - INFO - sorting muller_genotypes...
-sort_genotypes - INFO - filtering based on frequency 0.99
+sort_genotypes - INFO - filtering based on frequency 0.97
 sort_genotypes - INFO - filtering based on frequency 1.0
 sort_genotypes - INFO - filtering based on frequency 0.9
 sort_genotypes - INFO - filtering based on frequency 0.8
@@ -50,610 +57,479 @@ sort_genotypes - INFO - filtering based on frequency 0.2
 sort_genotypes - INFO - filtering based on frequency 0.1
 sort_genotypes - INFO - filtering based on frequency 0.0
 muller_workflow - INFO - nesting muller_genotypes...
-order - INFO - Nesting genotype-3
+order - INFO - Nesting genotype-13
 order - INFO - Computed priority: 3
-order - INFO - genotype-3|genotype-5 Full Check: True
-order - INFO - genotype-3|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-3|genotype-5 Additive Check: True
-order - INFO - genotype-3|genotype-5 Derivative check: True
-order - INFO - genotype-3|genotype-5 Area Difference: 0.38881657989587504
+order - INFO - genotype-13|genotype-1 Full Check: True
+order - INFO - genotype-13|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-13|genotype-1 Additive Check: True
+order - INFO - genotype-13|genotype-1 Derivative check: True
+order - INFO - genotype-13|genotype-1 Area Difference: 0.3952193844138833
 order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-3 with priority 5
+cluster - INFO - adding genotype-1 as a potential background for genotype-13 with priority 5
+order - INFO - Nesting genotype-12
+order - INFO - Computed priority: 1
+order - INFO - genotype-12|genotype-13 Full Check: False
+order - INFO - genotype-12|genotype-13 Area Check: True (1.0)
+order - INFO - genotype-12|genotype-13 Additive Check: True
+order - INFO - genotype-12|genotype-13 Derivative check: False
+order - INFO - genotype-12|genotype-13 Area Difference: 0.5270000000000001
+cluster - INFO - adding genotype-13 as a potential background for genotype-12 with priority 4
+order - INFO - Computed priority: 1
+order - INFO - genotype-12|genotype-1 Full Check: False
+order - INFO - genotype-12|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-12|genotype-1 Additive Check: True
+order - INFO - genotype-12|genotype-1 Derivative check: False
+order - INFO - genotype-12|genotype-1 Area Difference: 1.1305
+cluster - INFO - adding genotype-1 as a potential background for genotype-12 with priority 4
+order - INFO - Nesting genotype-9
+order - INFO - Computed priority: 2
+order - INFO - genotype-9|genotype-12 Full Check: False
+order - INFO - genotype-9|genotype-12 Area Check: False (0.6973886328725039)
+order - INFO - genotype-9|genotype-12 Additive Check: True
+order - INFO - genotype-9|genotype-12 Derivative check: True
+order - INFO - genotype-9|genotype-12 Area Difference: -0.2319508448540707
+order - INFO - Computed priority: 3
+order - INFO - genotype-9|genotype-13 Full Check: True
+order - INFO - genotype-9|genotype-13 Area Check: True (0.9758064516129034)
+order - INFO - genotype-9|genotype-13 Additive Check: True
+order - INFO - genotype-9|genotype-13 Derivative check: True
+order - INFO - genotype-9|genotype-13 Area Difference: 0.17281105990783416
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-13 as a potential background for genotype-9 with priority 5
+order - INFO - Nesting genotype-10
+order - INFO - Computed priority: 3
+order - INFO - genotype-10|genotype-9 Full Check: True
+order - INFO - genotype-10|genotype-9 Area Check: True (1.0)
+order - INFO - genotype-10|genotype-9 Additive Check: True
+order - INFO - genotype-10|genotype-9 Derivative check: True
+order - INFO - genotype-10|genotype-9 Area Difference: 0.3683657383079349
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-9 as a potential background for genotype-10 with priority 5
+order - INFO - Nesting genotype-5
+order - INFO - Computed priority: 0
+order - INFO - genotype-5|genotype-10 Full Check: False
+order - INFO - genotype-5|genotype-10 Area Check: False (0.0)
+order - INFO - genotype-5|genotype-10 Additive Check: False
+order - INFO - genotype-5|genotype-10 Derivative check: False
+order - INFO - genotype-5|genotype-10 Area Difference: 1.3435960591133003
+order - INFO - Computed priority: 0
+order - INFO - genotype-5|genotype-9 Full Check: False
+order - INFO - genotype-5|genotype-9 Area Check: False (0.0)
+order - INFO - genotype-5|genotype-9 Additive Check: False
+order - INFO - genotype-5|genotype-9 Derivative check: False
+order - INFO - genotype-5|genotype-9 Area Difference: 2.206896551724138
+order - INFO - Computed priority: 0
+order - INFO - genotype-5|genotype-12 Full Check: False
+order - INFO - genotype-5|genotype-12 Area Check: False (0.0)
+order - INFO - genotype-5|genotype-12 Additive Check: False
+order - INFO - genotype-5|genotype-12 Derivative check: False
+order - INFO - genotype-5|genotype-12 Area Difference: 1.463054187192118
+order - INFO - Computed priority: 0
+order - INFO - genotype-5|genotype-13 Full Check: False
+order - INFO - genotype-5|genotype-13 Area Check: False (0.0)
+order - INFO - genotype-5|genotype-13 Additive Check: False
+order - INFO - genotype-5|genotype-13 Derivative check: False
+order - INFO - genotype-5|genotype-13 Area Difference: 2.7610837438423643
+order - INFO - Computed priority: 0
+order - INFO - genotype-5|genotype-1 Full Check: False
+order - INFO - genotype-5|genotype-1 Area Check: False (0.3214285714285714)
+order - INFO - genotype-5|genotype-1 Additive Check: False
+order - INFO - genotype-5|genotype-1 Derivative check: False
+order - INFO - genotype-5|genotype-1 Area Difference: 4.247536945812808
+order - INFO - Not a member: genotype-5
+cluster - INFO - adding genotype-5 as a potential background for genotype-5 with priority 0
+order - INFO - Nesting genotype-11
+order - INFO - Computed priority: 0
+order - INFO - genotype-11|genotype-5 Full Check: False
+order - INFO - genotype-11|genotype-5 Area Check: False (0.0)
+order - INFO - genotype-11|genotype-5 Additive Check: False
+order - INFO - genotype-11|genotype-5 Derivative check: False
+order - INFO - genotype-11|genotype-5 Area Difference: -0.21088435374149664
+order - INFO - Computed priority: 0
+order - INFO - genotype-11|genotype-10 Full Check: False
+order - INFO - genotype-11|genotype-10 Area Check: False (0.4033041788143828)
+order - INFO - genotype-11|genotype-10 Additive Check: False
+order - INFO - genotype-11|genotype-10 Derivative check: False
+order - INFO - genotype-11|genotype-10 Area Difference: 0.8493683187560737
+order - INFO - Computed priority: 0
+order - INFO - genotype-11|genotype-9 Full Check: False
+order - INFO - genotype-11|genotype-9 Area Check: False (0.8989310009718172)
+order - INFO - genotype-11|genotype-9 Additive Check: False
+order - INFO - genotype-11|genotype-9 Derivative check: False
+order - INFO - genotype-11|genotype-9 Area Difference: 1.5306122448979589
+order - INFO - Computed priority: 1
+order - INFO - genotype-11|genotype-12 Full Check: False
+order - INFO - genotype-11|genotype-12 Area Check: False (0.13313896987366375)
+order - INFO - genotype-11|genotype-12 Additive Check: True
+order - INFO - genotype-11|genotype-12 Derivative check: False
+order - INFO - genotype-11|genotype-12 Area Difference: 0.943634596695821
+order - INFO - Computed priority: 1
+order - INFO - genotype-11|genotype-13 Full Check: False
+order - INFO - genotype-11|genotype-13 Area Check: False (0.8736637512147716)
+order - INFO - genotype-11|genotype-13 Additive Check: True
+order - INFO - genotype-11|genotype-13 Derivative check: False
+order - INFO - genotype-11|genotype-13 Area Difference: 1.967930029154519
+order - INFO - Computed priority: 3
+order - INFO - genotype-11|genotype-1 Full Check: True
+order - INFO - genotype-11|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-11|genotype-1 Additive Check: True
+order - INFO - genotype-11|genotype-1 Derivative check: True
+order - INFO - genotype-11|genotype-1 Area Difference: 3.140913508260447
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-1 as a potential background for genotype-11 with priority 5
+order - INFO - Nesting genotype-7
+order - INFO - Computed priority: 0
+order - INFO - genotype-7|genotype-11 Full Check: False
+order - INFO - genotype-7|genotype-11 Area Check: False (0.23083403538331929)
+order - INFO - genotype-7|genotype-11 Additive Check: False
+order - INFO - genotype-7|genotype-11 Derivative check: False
+order - INFO - genotype-7|genotype-11 Area Difference: 0.7337826453243472
+order - INFO - Computed priority: 0
+order - INFO - genotype-7|genotype-5 Full Check: False
+order - INFO - genotype-7|genotype-5 Area Check: False (0.0)
+order - INFO - genotype-7|genotype-5 Additive Check: False
+order - INFO - genotype-7|genotype-5 Derivative check: False
+order - INFO - genotype-7|genotype-5 Area Difference: 0.36815501263689976
+order - INFO - Computed priority: 3
+order - INFO - genotype-7|genotype-10 Full Check: True
+order - INFO - genotype-7|genotype-10 Area Check: True (1.0)
+order - INFO - genotype-7|genotype-10 Additive Check: True
+order - INFO - genotype-7|genotype-10 Derivative check: True
+order - INFO - genotype-7|genotype-10 Area Difference: 2.2064026958719456
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-10 as a potential background for genotype-7 with priority 5
+order - INFO - Nesting genotype-4
+order - INFO - Computed priority: 0
+order - INFO - genotype-4|genotype-7 Full Check: False
+order - INFO - genotype-4|genotype-7 Area Check: False (0.23561946902654865)
+order - INFO - genotype-4|genotype-7 Additive Check: False
+order - INFO - genotype-4|genotype-7 Derivative check: False
+order - INFO - genotype-4|genotype-7 Area Difference: 0.31305309734513276
+order - INFO - Computed priority: 1
+order - INFO - genotype-4|genotype-11 Full Check: False
+order - INFO - genotype-4|genotype-11 Area Check: True (1.0)
+order - INFO - genotype-4|genotype-11 Additive Check: False
+order - INFO - genotype-4|genotype-11 Derivative check: True
+order - INFO - genotype-4|genotype-11 Area Difference: 1.276548672566372
+cluster - INFO - adding genotype-11 as a potential background for genotype-4 with priority 3
+cluster - INFO - adding genotype-11 as a potential background for genotype-4 with priority 4
+order - INFO - Computed priority: 0
+order - INFO - genotype-4|genotype-5 Full Check: False
+order - INFO - genotype-4|genotype-5 Area Check: False (0.0)
+order - INFO - genotype-4|genotype-5 Additive Check: False
+order - INFO - genotype-4|genotype-5 Derivative check: False
+order - INFO - genotype-4|genotype-5 Area Difference: 0.7964601769911505
+order - INFO - Computed priority: 0
+order - INFO - genotype-4|genotype-10 Full Check: False
+order - INFO - genotype-4|genotype-10 Area Check: False (0.8473451327433629)
+order - INFO - genotype-4|genotype-10 Additive Check: False
+order - INFO - genotype-4|genotype-10 Derivative check: False
+order - INFO - genotype-4|genotype-10 Area Difference: 3.2101769911504427
+order - INFO - Computed priority: 0
+order - INFO - genotype-4|genotype-9 Full Check: False
+order - INFO - genotype-4|genotype-9 Area Check: True (1.0)
+order - INFO - genotype-4|genotype-9 Additive Check: False
+order - INFO - genotype-4|genotype-9 Derivative check: False
+order - INFO - genotype-4|genotype-9 Area Difference: 4.761061946902655
+order - INFO - Computed priority: 0
+order - INFO - genotype-4|genotype-12 Full Check: False
+order - INFO - genotype-4|genotype-12 Area Check: False (0.23561946902654865)
+order - INFO - genotype-4|genotype-12 Additive Check: False
+order - INFO - genotype-4|genotype-12 Derivative check: False
+order - INFO - genotype-4|genotype-12 Area Difference: 3.424778761061947
+order - INFO - Computed priority: 1
+order - INFO - genotype-4|genotype-13 Full Check: False
+order - INFO - genotype-4|genotype-13 Area Check: True (1.0)
+order - INFO - genotype-4|genotype-13 Additive Check: True
+order - INFO - genotype-4|genotype-13 Derivative check: False
+order - INFO - genotype-4|genotype-13 Area Difference: 5.7566371681415935
+cluster - INFO - adding genotype-13 as a potential background for genotype-4 with priority 4
+order - INFO - Computed priority: 3
+order - INFO - genotype-4|genotype-1 Full Check: True
+order - INFO - genotype-4|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-4|genotype-1 Additive Check: True
+order - INFO - genotype-4|genotype-1 Derivative check: True
+order - INFO - genotype-4|genotype-1 Area Difference: 8.426991150442477
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-1 as a potential background for genotype-4 with priority 5
+order - INFO - Nesting genotype-6
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-4 Full Check: False
+order - INFO - genotype-6|genotype-4 Area Check: False (0.5681818181818182)
+order - INFO - genotype-6|genotype-4 Additive Check: False
+order - INFO - genotype-6|genotype-4 Derivative check: False
+order - INFO - genotype-6|genotype-4 Area Difference: 0.08133971291866036
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-7 Full Check: False
+order - INFO - genotype-6|genotype-7 Area Check: False (0.5)
+order - INFO - genotype-6|genotype-7 Additive Check: False
+order - INFO - genotype-6|genotype-7 Derivative check: False
+order - INFO - genotype-6|genotype-7 Area Difference: 0.41985645933014365
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-11 Full Check: False
+order - INFO - genotype-6|genotype-11 Area Check: False (0.6363636363636365)
+order - INFO - genotype-6|genotype-11 Additive Check: False
+order - INFO - genotype-6|genotype-11 Derivative check: False
+order - INFO - genotype-6|genotype-11 Area Difference: 1.461722488038278
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-5 Full Check: False
+order - INFO - genotype-6|genotype-5 Area Check: False (0.0)
+order - INFO - genotype-6|genotype-5 Additive Check: False
+order - INFO - genotype-6|genotype-5 Derivative check: False
+order - INFO - genotype-6|genotype-5 Area Difference: 0.9425837320574165
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-10 Full Check: False
+order - INFO - genotype-6|genotype-10 Area Check: True (1.0)
+order - INFO - genotype-6|genotype-10 Additive Check: False
+order - INFO - genotype-6|genotype-10 Derivative check: False
+order - INFO - genotype-6|genotype-10 Area Difference: 3.5526315789473686
+order - INFO - Computed priority: 0
+order - INFO - genotype-6|genotype-9 Full Check: False
+order - INFO - genotype-6|genotype-9 Area Check: True (1.0)
+order - INFO - genotype-6|genotype-9 Additive Check: False
+order - INFO - genotype-6|genotype-9 Derivative check: False
+order - INFO - genotype-6|genotype-9 Area Difference: 5.229665071770335
+cluster - INFO - adding genotype-9 as a potential background for genotype-6 with priority 4
+order - INFO - Computed priority: 1
+order - INFO - genotype-6|genotype-12 Full Check: False
+order - INFO - genotype-6|genotype-12 Area Check: False (0.5)
+order - INFO - genotype-6|genotype-12 Additive Check: True
+order - INFO - genotype-6|genotype-12 Derivative check: False
+order - INFO - genotype-6|genotype-12 Area Difference: 3.7846889952153115
+cluster - INFO - adding genotype-12 as a potential background for genotype-6 with priority 1
+order - INFO - Computed priority: 3
+order - INFO - genotype-6|genotype-13 Full Check: True
+order - INFO - genotype-6|genotype-13 Area Check: True (1.0)
+order - INFO - genotype-6|genotype-13 Additive Check: True
+order - INFO - genotype-6|genotype-13 Derivative check: True
+order - INFO - genotype-6|genotype-13 Area Difference: 6.306220095693781
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-13 as a potential background for genotype-6 with priority 5
+order - INFO - Nesting genotype-2
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-6 Full Check: False
+order - INFO - genotype-2|genotype-6 Area Check: False (0.0)
+order - INFO - genotype-2|genotype-6 Additive Check: False
+order - INFO - genotype-2|genotype-6 Derivative check: False
+order - INFO - genotype-2|genotype-6 Area Difference: 0.8999999999999999
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-4 Full Check: False
+order - INFO - genotype-2|genotype-4 Area Check: False (0.35454545454545455)
+order - INFO - genotype-2|genotype-4 Additive Check: False
+order - INFO - genotype-2|genotype-4 Derivative check: False
+order - INFO - genotype-2|genotype-4 Area Difference: 1.0545454545454547
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-7 Full Check: False
+order - INFO - genotype-2|genotype-7 Area Check: False (0.46818181818181814)
+order - INFO - genotype-2|genotype-7 Additive Check: False
+order - INFO - genotype-2|genotype-7 Derivative check: False
+order - INFO - genotype-2|genotype-7 Area Difference: 1.697727272727273
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-11 Full Check: False
+order - INFO - genotype-2|genotype-11 Area Check: False (0.36363636363636365)
+order - INFO - genotype-2|genotype-11 Additive Check: False
+order - INFO - genotype-2|genotype-11 Derivative check: False
+order - INFO - genotype-2|genotype-11 Area Difference: 3.677272727272728
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-5 Full Check: False
+order - INFO - genotype-2|genotype-5 Area Check: False (0.5318181818181819)
+order - INFO - genotype-2|genotype-5 Additive Check: False
+order - INFO - genotype-2|genotype-5 Derivative check: False
+order - INFO - genotype-2|genotype-5 Area Difference: 2.6909090909090914
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-10 Full Check: False
+order - INFO - genotype-2|genotype-10 Area Check: False (0.46818181818181814)
+order - INFO - genotype-2|genotype-10 Additive Check: False
+order - INFO - genotype-2|genotype-10 Derivative check: False
+order - INFO - genotype-2|genotype-10 Area Difference: 7.65
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-9 Full Check: False
+order - INFO - genotype-2|genotype-9 Area Check: False (0.46818181818181814)
+order - INFO - genotype-2|genotype-9 Additive Check: False
+order - INFO - genotype-2|genotype-9 Derivative check: False
+order - INFO - genotype-2|genotype-9 Area Difference: 10.836363636363636
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-12 Full Check: False
+order - INFO - genotype-2|genotype-12 Area Check: False (0.46818181818181814)
+order - INFO - genotype-2|genotype-12 Additive Check: False
+order - INFO - genotype-2|genotype-12 Derivative check: False
+order - INFO - genotype-2|genotype-12 Area Difference: 8.090909090909092
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-13 Full Check: False
+order - INFO - genotype-2|genotype-13 Area Check: False (0.46818181818181814)
+order - INFO - genotype-2|genotype-13 Additive Check: False
+order - INFO - genotype-2|genotype-13 Derivative check: False
+order - INFO - genotype-2|genotype-13 Area Difference: 12.881818181818183
+order - INFO - Computed priority: 0
+order - INFO - genotype-2|genotype-1 Full Check: False
+order - INFO - genotype-2|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-2|genotype-1 Additive Check: False
+order - INFO - genotype-2|genotype-1 Derivative check: False
+order - INFO - genotype-2|genotype-1 Area Difference: 18.36818181818182
+order - INFO - Not a member: genotype-2
+cluster - INFO - adding genotype-2 as a potential background for genotype-2 with priority 0
+order - INFO - Nesting genotype-3
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-2 Full Check: False
+order - INFO - genotype-3|genotype-2 Area Check: False (0.13441955193482688)
+order - INFO - genotype-3|genotype-2 Additive Check: False
+order - INFO - genotype-3|genotype-2 Derivative check: False
+order - INFO - genotype-3|genotype-2 Area Difference: -0.10386965376782076
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-6 Full Check: False
+order - INFO - genotype-3|genotype-6 Area Check: False (0.43380855397148677)
+order - INFO - genotype-3|genotype-6 Additive Check: False
+order - INFO - genotype-3|genotype-6 Derivative check: False
+order - INFO - genotype-3|genotype-6 Area Difference: 0.7026476578411405
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-4 Full Check: False
+order - INFO - genotype-3|genotype-4 Area Check: False (0.7148676171079429)
+order - INFO - genotype-3|genotype-4 Additive Check: False
+order - INFO - genotype-3|genotype-4 Derivative check: False
+order - INFO - genotype-3|genotype-4 Area Difference: 0.8411405295315683
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-7 Full Check: False
+order - INFO - genotype-3|genotype-7 Area Check: False (0.0)
+order - INFO - genotype-3|genotype-7 Additive Check: False
+order - INFO - genotype-3|genotype-7 Derivative check: False
+order - INFO - genotype-3|genotype-7 Area Difference: 1.4175152749490836
+order - INFO - Computed priority: 1
+order - INFO - genotype-3|genotype-11 Full Check: False
+order - INFO - genotype-3|genotype-11 Area Check: False (0.8655804480651731)
+order - INFO - genotype-3|genotype-11 Additive Check: False
+order - INFO - genotype-3|genotype-11 Derivative check: True
+order - INFO - genotype-3|genotype-11 Area Difference: 3.191446028513239
+cluster - INFO - adding genotype-11 as a potential background for genotype-3 with priority 3
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-5 Full Check: False
+order - INFO - genotype-3|genotype-5 Area Check: False (0.13441955193482688)
+order - INFO - genotype-3|genotype-5 Additive Check: False
+order - INFO - genotype-3|genotype-5 Derivative check: False
+order - INFO - genotype-3|genotype-5 Area Difference: 2.3075356415478616
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-10 Full Check: False
+order - INFO - genotype-3|genotype-10 Area Check: False (0.43380855397148677)
+order - INFO - genotype-3|genotype-10 Additive Check: False
+order - INFO - genotype-3|genotype-10 Derivative check: False
+order - INFO - genotype-3|genotype-10 Area Difference: 6.75152749490835
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-9 Full Check: False
+order - INFO - genotype-3|genotype-9 Area Check: False (0.8655804480651731)
+order - INFO - genotype-3|genotype-9 Additive Check: False
+order - INFO - genotype-3|genotype-9 Derivative check: False
+order - INFO - genotype-3|genotype-9 Area Difference: 9.606924643584522
+order - INFO - Computed priority: 0
+order - INFO - genotype-3|genotype-12 Full Check: False
+order - INFO - genotype-3|genotype-12 Area Check: False (0.0)
+order - INFO - genotype-3|genotype-12 Additive Check: False
+order - INFO - genotype-3|genotype-12 Derivative check: False
+order - INFO - genotype-3|genotype-12 Area Difference: 7.146639511201629
+order - INFO - Computed priority: 1
+order - INFO - genotype-3|genotype-13 Full Check: False
+order - INFO - genotype-3|genotype-13 Area Check: False (0.8655804480651731)
+order - INFO - genotype-3|genotype-13 Additive Check: False
+order - INFO - genotype-3|genotype-13 Derivative check: True
+order - INFO - genotype-3|genotype-13 Area Difference: 11.43991853360489
+cluster - INFO - adding genotype-13 as a potential background for genotype-3 with priority 3
+order - INFO - Computed priority: 3
+order - INFO - genotype-3|genotype-1 Full Check: True
+order - INFO - genotype-3|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-3|genotype-1 Additive Check: True
+order - INFO - genotype-3|genotype-1 Derivative check: True
+order - INFO - genotype-3|genotype-1 Area Difference: 16.356415478615073
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-1 as a potential background for genotype-3 with priority 5
 order - INFO - Nesting genotype-8
 order - INFO - Computed priority: 0
 order - INFO - genotype-8|genotype-3 Full Check: False
-order - INFO - genotype-8|genotype-3 Area Check: False (0.17688266199649735)
+order - INFO - genotype-8|genotype-3 Area Check: False (0.357504215851602)
 order - INFO - genotype-8|genotype-3 Additive Check: False
 order - INFO - genotype-8|genotype-3 Derivative check: False
-order - INFO - genotype-8|genotype-3 Area Difference: 7.746059544658493
+order - INFO - genotype-8|genotype-3 Area Difference: -0.17200674536256322
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-2 Full Check: False
+order - INFO - genotype-8|genotype-2 Area Check: False (0.20741989881956155)
+order - INFO - genotype-8|genotype-2 Additive Check: False
+order - INFO - genotype-8|genotype-2 Derivative check: False
+order - INFO - genotype-8|genotype-2 Area Difference: -0.2580101180438448
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-6 Full Check: False
+order - INFO - genotype-8|genotype-6 Area Check: False (0.4064080944350759)
+order - INFO - genotype-8|genotype-6 Additive Check: False
+order - INFO - genotype-8|genotype-6 Derivative check: False
+order - INFO - genotype-8|genotype-6 Area Difference: 0.4097807757166948
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-4 Full Check: False
+order - INFO - genotype-8|genotype-4 Area Check: False (0.5362563237774031)
+order - INFO - genotype-8|genotype-4 Additive Check: False
+order - INFO - genotype-8|genotype-4 Derivative check: False
+order - INFO - genotype-8|genotype-4 Area Difference: 0.5244519392917371
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-7 Full Check: False
+order - INFO - genotype-8|genotype-7 Area Check: False (0.6138279932546374)
+order - INFO - genotype-8|genotype-7 Additive Check: False
+order - INFO - genotype-8|genotype-7 Derivative check: False
+order - INFO - genotype-8|genotype-7 Area Difference: 1.0016863406408096
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-11 Full Check: False
+order - INFO - genotype-8|genotype-11 Area Check: False (0.7858347386172008)
+order - INFO - genotype-8|genotype-11 Additive Check: False
+order - INFO - genotype-8|genotype-11 Derivative check: False
+order - INFO - genotype-8|genotype-11 Area Difference: 2.470489038785835
 order - INFO - Computed priority: 0
 order - INFO - genotype-8|genotype-5 Full Check: False
-order - INFO - genotype-8|genotype-5 Area Check: False (0.5582311733800349)
+order - INFO - genotype-8|genotype-5 Area Check: False (0.0)
 order - INFO - genotype-8|genotype-5 Additive Check: False
 order - INFO - genotype-8|genotype-5 Derivative check: False
-order - INFO - genotype-8|genotype-5 Area Difference: 11.146672504378282
-order - INFO - Not a member: genotype-8
-cluster - INFO - adding genotype-8 as a potential background for genotype-8 with priority 0
-order - INFO - Nesting genotype-13
-order - INFO - Computed priority: 0
-order - INFO - genotype-13|genotype-8 Full Check: False
-order - INFO - genotype-13|genotype-8 Area Check: False (0.01081081081081081)
-order - INFO - genotype-13|genotype-8 Additive Check: False
-order - INFO - genotype-13|genotype-8 Derivative check: False
-order - INFO - genotype-13|genotype-8 Area Difference: -0.3827027027027027
-order - INFO - Computed priority: 0
-order - INFO - genotype-13|genotype-3 Full Check: False
-order - INFO - genotype-13|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-13|genotype-3 Additive Check: False
-order - INFO - genotype-13|genotype-3 Derivative check: False
-order - INFO - genotype-13|genotype-3 Area Difference: 4.398918918918919
-cluster - INFO - adding genotype-3 as a potential background for genotype-13 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-13|genotype-5 Full Check: True
-order - INFO - genotype-13|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-13|genotype-5 Additive Check: True
-order - INFO - genotype-13|genotype-5 Derivative check: True
-order - INFO - genotype-13|genotype-5 Area Difference: 6.498108108108108
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-13 with priority 5
-order - INFO - Nesting genotype-14
-order - INFO - Computed priority: 0
-order - INFO - genotype-14|genotype-13 Full Check: False
-order - INFO - genotype-14|genotype-13 Area Check: False (0.6938775510204082)
-order - INFO - genotype-14|genotype-13 Additive Check: False
-order - INFO - genotype-14|genotype-13 Derivative check: False
-order - INFO - genotype-14|genotype-13 Area Difference: -0.14192949907235622
-order - INFO - Computed priority: 0
-order - INFO - genotype-14|genotype-8 Full Check: False
-order - INFO - genotype-14|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-14|genotype-8 Additive Check: False
-order - INFO - genotype-14|genotype-8 Derivative check: False
-order - INFO - genotype-14|genotype-8 Area Difference: -0.47031539888682744
-order - INFO - Computed priority: 0
-order - INFO - genotype-14|genotype-3 Full Check: False
-order - INFO - genotype-14|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-14|genotype-3 Additive Check: False
-order - INFO - genotype-14|genotype-3 Derivative check: False
-order - INFO - genotype-14|genotype-3 Area Difference: 3.632653061224489
-cluster - INFO - adding genotype-3 as a potential background for genotype-14 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-14|genotype-5 Full Check: True
-order - INFO - genotype-14|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-14|genotype-5 Additive Check: True
-order - INFO - genotype-14|genotype-5 Derivative check: True
-order - INFO - genotype-14|genotype-5 Area Difference: 5.433905380333951
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-14 with priority 5
-order - INFO - Nesting genotype-4
-order - INFO - Computed priority: 0
-order - INFO - genotype-4|genotype-14 Full Check: False
-order - INFO - genotype-4|genotype-14 Area Check: True (1.0)
-order - INFO - genotype-4|genotype-14 Additive Check: False
-order - INFO - genotype-4|genotype-14 Derivative check: False
-order - INFO - genotype-4|genotype-14 Area Difference: 1.1474103585657371
-cluster - INFO - adding genotype-14 as a potential background for genotype-4 with priority 4
-order - INFO - Computed priority: 0
-order - INFO - genotype-4|genotype-13 Full Check: False
-order - INFO - genotype-4|genotype-13 Area Check: False (0.3675298804780876)
-order - INFO - genotype-4|genotype-13 Additive Check: False
-order - INFO - genotype-4|genotype-13 Derivative check: False
-order - INFO - genotype-4|genotype-13 Area Difference: 0.8426294820717132
-order - INFO - Computed priority: 0
-order - INFO - genotype-4|genotype-8 Full Check: False
-order - INFO - genotype-4|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-4|genotype-8 Additive Check: False
-order - INFO - genotype-4|genotype-8 Derivative check: False
-order - INFO - genotype-4|genotype-8 Area Difference: 0.13745019920318738
-order - INFO - Computed priority: 0
-order - INFO - genotype-4|genotype-3 Full Check: False
-order - INFO - genotype-4|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-4|genotype-3 Additive Check: False
-order - INFO - genotype-4|genotype-3 Derivative check: False
-order - INFO - genotype-4|genotype-3 Area Difference: 8.94820717131474
-cluster - INFO - adding genotype-3 as a potential background for genotype-4 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-4|genotype-5 Full Check: True
-order - INFO - genotype-4|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-4|genotype-5 Additive Check: True
-order - INFO - genotype-4|genotype-5 Derivative check: True
-order - INFO - genotype-4|genotype-5 Area Difference: 12.816235059760956
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-4 with priority 5
-order - INFO - Nesting genotype-2
-order - INFO - Computed priority: 0
-order - INFO - genotype-2|genotype-4 Full Check: False
-order - INFO - genotype-2|genotype-4 Area Check: False (0.2571428571428572)
-order - INFO - genotype-2|genotype-4 Additive Check: False
-order - INFO - genotype-2|genotype-4 Derivative check: False
-order - INFO - genotype-2|genotype-4 Area Difference: -0.04380952380952385
-order - INFO - Computed priority: 0
-order - INFO - genotype-2|genotype-14 Full Check: False
-order - INFO - genotype-2|genotype-14 Area Check: False (0.9504761904761905)
-order - INFO - genotype-2|genotype-14 Additive Check: False
-order - INFO - genotype-2|genotype-14 Derivative check: False
-order - INFO - genotype-2|genotype-14 Area Difference: 1.0533333333333335
-order - INFO - Computed priority: 0
-order - INFO - genotype-2|genotype-13 Full Check: False
-order - INFO - genotype-2|genotype-13 Area Check: False (0.92)
-order - INFO - genotype-2|genotype-13 Additive Check: False
-order - INFO - genotype-2|genotype-13 Derivative check: False
-order - INFO - genotype-2|genotype-13 Area Difference: 0.7619047619047619
-order - INFO - Computed priority: 0
-order - INFO - genotype-2|genotype-8 Full Check: False
-order - INFO - genotype-2|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-2|genotype-8 Additive Check: False
-order - INFO - genotype-2|genotype-8 Derivative check: False
-order - INFO - genotype-2|genotype-8 Area Difference: 0.0876190476190477
-order - INFO - Computed priority: 0
-order - INFO - genotype-2|genotype-3 Full Check: False
-order - INFO - genotype-2|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-2|genotype-3 Additive Check: False
-order - INFO - genotype-2|genotype-3 Derivative check: False
-order - INFO - genotype-2|genotype-3 Area Difference: 8.512380952380951
-cluster - INFO - adding genotype-3 as a potential background for genotype-2 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-2|genotype-5 Full Check: True
-order - INFO - genotype-2|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-2|genotype-5 Additive Check: True
-order - INFO - genotype-2|genotype-5 Derivative check: True
-order - INFO - genotype-2|genotype-5 Area Difference: 12.21095238095238
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-2 with priority 5
-order - INFO - Nesting genotype-11
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-2 Full Check: False
-order - INFO - genotype-11|genotype-2 Area Check: False (0.0)
-order - INFO - genotype-11|genotype-2 Additive Check: False
-order - INFO - genotype-11|genotype-2 Derivative check: False
-order - INFO - genotype-11|genotype-2 Area Difference: 1.4277456647398845
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-4 Full Check: False
-order - INFO - genotype-11|genotype-4 Area Check: False (0.0)
-order - INFO - genotype-11|genotype-4 Additive Check: False
-order - INFO - genotype-11|genotype-4 Derivative check: False
-order - INFO - genotype-11|genotype-4 Area Difference: 1.3213872832369942
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-14 Full Check: False
-order - INFO - genotype-11|genotype-14 Area Check: False (0.0)
-order - INFO - genotype-11|genotype-14 Additive Check: False
-order - INFO - genotype-11|genotype-14 Derivative check: False
-order - INFO - genotype-11|genotype-14 Area Difference: 3.984971098265896
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-13 Full Check: False
-order - INFO - genotype-11|genotype-13 Area Check: False (0.0)
-order - INFO - genotype-11|genotype-13 Additive Check: False
-order - INFO - genotype-11|genotype-13 Derivative check: False
-order - INFO - genotype-11|genotype-13 Area Difference: 3.277456647398844
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-8 Full Check: False
-order - INFO - genotype-11|genotype-8 Area Check: False (0.3757225433526012)
-order - INFO - genotype-11|genotype-8 Additive Check: False
-order - INFO - genotype-11|genotype-8 Derivative check: False
-order - INFO - genotype-11|genotype-8 Area Difference: 1.640462427745665
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-3 Full Check: False
-order - INFO - genotype-11|genotype-3 Area Check: False (0.7526011560693642)
-order - INFO - genotype-11|genotype-3 Additive Check: False
-order - INFO - genotype-11|genotype-3 Derivative check: False
-order - INFO - genotype-11|genotype-3 Area Difference: 22.09364161849711
-order - INFO - Computed priority: 0
-order - INFO - genotype-11|genotype-5 Full Check: False
-order - INFO - genotype-11|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-11|genotype-5 Additive Check: False
-order - INFO - genotype-11|genotype-5 Derivative check: False
-order - INFO - genotype-11|genotype-5 Area Difference: 31.072832369942198
-cluster - INFO - adding genotype-5 as a potential background for genotype-11 with priority 4
-order - INFO - Nesting genotype-12
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-11 Full Check: False
-order - INFO - genotype-12|genotype-11 Area Check: False (0.0)
-order - INFO - genotype-12|genotype-11 Additive Check: False
-order - INFO - genotype-12|genotype-11 Derivative check: False
-order - INFO - genotype-12|genotype-11 Area Difference: -0.4469309462915601
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-2 Full Check: False
-order - INFO - genotype-12|genotype-2 Area Check: False (0.7485080988917306)
-order - INFO - genotype-12|genotype-2 Additive Check: False
-order - INFO - genotype-12|genotype-2 Derivative check: False
-order - INFO - genotype-12|genotype-2 Area Difference: 0.34271099744245526
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-4 Full Check: False
-order - INFO - genotype-12|genotype-4 Area Check: False (0.3819266837169651)
-order - INFO - genotype-12|genotype-4 Additive Check: False
-order - INFO - genotype-12|genotype-4 Derivative check: False
-order - INFO - genotype-12|genotype-4 Area Difference: 0.2838874680306905
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-14 Full Check: False
-order - INFO - genotype-12|genotype-14 Area Check: False (0.8815004262574595)
-order - INFO - genotype-12|genotype-14 Additive Check: False
-order - INFO - genotype-12|genotype-14 Derivative check: False
-order - INFO - genotype-12|genotype-14 Area Difference: 1.7570332480818416
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-13 Full Check: False
-order - INFO - genotype-12|genotype-13 Area Check: False (0.8013640238704177)
-order - INFO - genotype-12|genotype-13 Additive Check: False
-order - INFO - genotype-12|genotype-13 Derivative check: False
-order - INFO - genotype-12|genotype-13 Area Difference: 1.3657289002557544
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-8 Full Check: False
-order - INFO - genotype-12|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-12|genotype-8 Additive Check: False
-order - INFO - genotype-12|genotype-8 Derivative check: False
-order - INFO - genotype-12|genotype-8 Area Difference: 0.46035805626598475
-order - INFO - Computed priority: 0
-order - INFO - genotype-12|genotype-3 Full Check: False
-order - INFO - genotype-12|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-12|genotype-3 Additive Check: False
-order - INFO - genotype-12|genotype-3 Derivative check: False
-order - INFO - genotype-12|genotype-3 Area Difference: 11.77237851662404
-cluster - INFO - adding genotype-3 as a potential background for genotype-12 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-12|genotype-5 Full Check: True
-order - INFO - genotype-12|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-12|genotype-5 Additive Check: True
-order - INFO - genotype-12|genotype-5 Derivative check: True
-order - INFO - genotype-12|genotype-5 Area Difference: 16.73849104859335
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-12 with priority 5
-order - INFO - Nesting genotype-7
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-12 Full Check: False
-order - INFO - genotype-7|genotype-12 Area Check: False (0.6730418943533698)
-order - INFO - genotype-7|genotype-12 Additive Check: False
-order - INFO - genotype-7|genotype-12 Derivative check: False
-order - INFO - genotype-7|genotype-12 Area Difference: 0.06830601092896181
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-11 Full Check: False
-order - INFO - genotype-7|genotype-11 Area Check: False (0.0)
-order - INFO - genotype-7|genotype-11 Additive Check: False
-order - INFO - genotype-7|genotype-11 Derivative check: False
-order - INFO - genotype-7|genotype-11 Area Difference: -0.40915300546448086
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-2 Full Check: False
-order - INFO - genotype-7|genotype-2 Area Check: False (0.5245901639344264)
-order - INFO - genotype-7|genotype-2 Additive Check: False
-order - INFO - genotype-7|genotype-2 Derivative check: False
-order - INFO - genotype-7|genotype-2 Area Difference: 0.4344262295081968
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-4 Full Check: False
-order - INFO - genotype-7|genotype-4 Area Check: False (0.6038251366120219)
-order - INFO - genotype-7|genotype-4 Additive Check: False
-order - INFO - genotype-7|genotype-4 Derivative check: False
-order - INFO - genotype-7|genotype-4 Area Difference: 0.37158469945355194
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-14 Full Check: False
-order - INFO - genotype-7|genotype-14 Area Check: True (1.0)
-order - INFO - genotype-7|genotype-14 Additive Check: False
-order - INFO - genotype-7|genotype-14 Derivative check: False
-order - INFO - genotype-7|genotype-14 Area Difference: 1.9453551912568308
-cluster - INFO - adding genotype-14 as a potential background for genotype-7 with priority 4
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-13 Full Check: False
-order - INFO - genotype-7|genotype-13 Area Check: False (0.733606557377049)
-order - INFO - genotype-7|genotype-13 Additive Check: False
-order - INFO - genotype-7|genotype-13 Derivative check: False
-order - INFO - genotype-7|genotype-13 Area Difference: 1.527322404371585
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-8 Full Check: False
-order - INFO - genotype-7|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-7|genotype-8 Additive Check: False
-order - INFO - genotype-7|genotype-8 Derivative check: False
-order - INFO - genotype-7|genotype-8 Area Difference: 0.5601092896174865
-order - INFO - Computed priority: 0
-order - INFO - genotype-7|genotype-3 Full Check: False
-order - INFO - genotype-7|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-7|genotype-3 Additive Check: False
-order - INFO - genotype-7|genotype-3 Derivative check: False
-order - INFO - genotype-7|genotype-3 Area Difference: 12.6448087431694
-cluster - INFO - adding genotype-3 as a potential background for genotype-7 with priority 4
-order - INFO - Computed priority: 3
-order - INFO - genotype-7|genotype-5 Full Check: True
-order - INFO - genotype-7|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-7|genotype-5 Additive Check: True
-order - INFO - genotype-7|genotype-5 Derivative check: True
-order - INFO - genotype-7|genotype-5 Area Difference: 17.950136612021858
-order - INFO - Complete Check: True
-cluster - INFO - adding genotype-5 as a potential background for genotype-7 with priority 5
-order - INFO - Nesting genotype-9
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-7 Full Check: False
-order - INFO - genotype-9|genotype-7 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-7 Additive Check: False
-order - INFO - genotype-9|genotype-7 Derivative check: False
-order - INFO - genotype-9|genotype-7 Area Difference: -0.5754060324825986
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-12 Full Check: False
-order - INFO - genotype-9|genotype-12 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-12 Additive Check: False
-order - INFO - genotype-9|genotype-12 Derivative check: False
-order - INFO - genotype-9|genotype-12 Area Difference: -0.5464037122969837
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-11 Full Check: False
-order - INFO - genotype-9|genotype-11 Area Check: False (0.19315545243619495)
-order - INFO - genotype-9|genotype-11 Additive Check: False
-order - INFO - genotype-9|genotype-11 Derivative check: False
-order - INFO - genotype-9|genotype-11 Area Difference: -0.7491299303944314
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-2 Full Check: False
-order - INFO - genotype-9|genotype-2 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-2 Additive Check: False
-order - INFO - genotype-9|genotype-2 Derivative check: False
-order - INFO - genotype-9|genotype-2 Area Difference: -0.3909512761020881
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-4 Full Check: False
-order - INFO - genotype-9|genotype-4 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-4 Additive Check: False
-order - INFO - genotype-9|genotype-4 Derivative check: False
-order - INFO - genotype-9|genotype-4 Area Difference: -0.41763341067285376
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-14 Full Check: False
-order - INFO - genotype-9|genotype-14 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-14 Additive Check: False
-order - INFO - genotype-9|genotype-14 Derivative check: False
-order - INFO - genotype-9|genotype-14 Area Difference: 0.25058004640371256
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-13 Full Check: False
-order - INFO - genotype-9|genotype-13 Area Check: False (0.0)
-order - INFO - genotype-9|genotype-13 Additive Check: False
-order - INFO - genotype-9|genotype-13 Derivative check: False
-order - INFO - genotype-9|genotype-13 Area Difference: 0.07308584686774962
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-8 Full Check: False
-order - INFO - genotype-9|genotype-8 Area Check: False (0.160092807424594)
-order - INFO - genotype-9|genotype-8 Additive Check: False
-order - INFO - genotype-9|genotype-8 Derivative check: False
-order - INFO - genotype-9|genotype-8 Area Difference: -0.33758700696055666
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-3 Full Check: False
-order - INFO - genotype-9|genotype-3 Area Check: False (0.13109048723897915)
-order - INFO - genotype-9|genotype-3 Additive Check: False
-order - INFO - genotype-9|genotype-3 Derivative check: False
-order - INFO - genotype-9|genotype-3 Area Difference: 4.793503480278423
-order - INFO - Computed priority: 0
-order - INFO - genotype-9|genotype-5 Full Check: False
-order - INFO - genotype-9|genotype-5 Area Check: False (0.3213457076566126)
-order - INFO - genotype-9|genotype-5 Additive Check: False
-order - INFO - genotype-9|genotype-5 Derivative check: False
-order - INFO - genotype-9|genotype-5 Area Difference: 7.046113689095128
-order - INFO - Not a member: genotype-9
-cluster - INFO - adding genotype-9 as a potential background for genotype-9 with priority 0
-order - INFO - Nesting genotype-1
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-9 Full Check: False
-order - INFO - genotype-1|genotype-9 Area Check: True (1.0)
-order - INFO - genotype-1|genotype-9 Additive Check: False
-order - INFO - genotype-1|genotype-9 Derivative check: False
-order - INFO - genotype-1|genotype-9 Area Difference: 6.463203463203463
-cluster - INFO - adding genotype-9 as a potential background for genotype-1 with priority 4
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-7 Full Check: False
-order - INFO - genotype-1|genotype-7 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-7 Additive Check: False
-order - INFO - genotype-1|genotype-7 Derivative check: False
-order - INFO - genotype-1|genotype-7 Area Difference: 2.168831168831169
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-12 Full Check: False
-order - INFO - genotype-1|genotype-12 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-12 Additive Check: False
-order - INFO - genotype-1|genotype-12 Derivative check: False
-order - INFO - genotype-1|genotype-12 Area Difference: 2.3852813852813854
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-11 Full Check: False
-order - INFO - genotype-1|genotype-11 Area Check: False (0.4206349206349207)
-order - INFO - genotype-1|genotype-11 Additive Check: False
-order - INFO - genotype-1|genotype-11 Derivative check: False
-order - INFO - genotype-1|genotype-11 Area Difference: 0.8722943722943725
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-2 Full Check: False
-order - INFO - genotype-1|genotype-2 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-2 Additive Check: False
-order - INFO - genotype-1|genotype-2 Derivative check: False
-order - INFO - genotype-1|genotype-2 Area Difference: 3.545454545454546
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-4 Full Check: False
-order - INFO - genotype-1|genotype-4 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-4 Additive Check: False
-order - INFO - genotype-1|genotype-4 Derivative check: False
-order - INFO - genotype-1|genotype-4 Area Difference: 3.3463203463203466
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-14 Full Check: False
-order - INFO - genotype-1|genotype-14 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-14 Additive Check: False
-order - INFO - genotype-1|genotype-14 Derivative check: False
-order - INFO - genotype-1|genotype-14 Area Difference: 8.333333333333336
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-13 Full Check: False
-order - INFO - genotype-1|genotype-13 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-13 Additive Check: False
-order - INFO - genotype-1|genotype-13 Derivative check: False
-order - INFO - genotype-1|genotype-13 Area Difference: 7.00865800865801
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-8 Full Check: False
-order - INFO - genotype-1|genotype-8 Area Check: False (0.1673881673881674)
-order - INFO - genotype-1|genotype-8 Additive Check: False
-order - INFO - genotype-1|genotype-8 Derivative check: False
-order - INFO - genotype-1|genotype-8 Area Difference: 3.943722943722945
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-3 Full Check: False
-order - INFO - genotype-1|genotype-3 Area Check: False (0.0)
-order - INFO - genotype-1|genotype-3 Additive Check: False
-order - INFO - genotype-1|genotype-3 Derivative check: False
-order - INFO - genotype-1|genotype-3 Area Difference: 42.23809523809524
-order - INFO - Computed priority: 0
-order - INFO - genotype-1|genotype-5 Full Check: False
-order - INFO - genotype-1|genotype-5 Area Check: False (0.7215007215007215)
-order - INFO - genotype-1|genotype-5 Additive Check: False
-order - INFO - genotype-1|genotype-5 Derivative check: False
-order - INFO - genotype-1|genotype-5 Area Difference: 59.04978354978355
-order - INFO - Nesting genotype-10
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-1 Full Check: False
-order - INFO - genotype-10|genotype-1 Area Check: False (0.09374999999999999)
-order - INFO - genotype-10|genotype-1 Additive Check: False
-order - INFO - genotype-10|genotype-1 Derivative check: False
-order - INFO - genotype-10|genotype-1 Area Difference: 0.2031249999999999
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-9 Full Check: False
-order - INFO - genotype-10|genotype-9 Area Check: False (0.16666666666666666)
-order - INFO - genotype-10|genotype-9 Additive Check: False
-order - INFO - genotype-10|genotype-9 Derivative check: False
-order - INFO - genotype-10|genotype-9 Area Difference: 7.979166666666665
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-7 Full Check: False
-order - INFO - genotype-10|genotype-7 Area Check: False (0.0)
-order - INFO - genotype-10|genotype-7 Additive Check: False
-order - INFO - genotype-10|genotype-7 Derivative check: False
-order - INFO - genotype-10|genotype-7 Area Difference: 2.8125
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-12 Full Check: False
-order - INFO - genotype-10|genotype-12 Area Check: False (0.6076388888888888)
-order - INFO - genotype-10|genotype-12 Additive Check: False
-order - INFO - genotype-10|genotype-12 Derivative check: False
-order - INFO - genotype-10|genotype-12 Area Difference: 3.072916666666667
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-11 Full Check: False
-order - INFO - genotype-10|genotype-11 Area Check: False (0.16666666666666666)
-order - INFO - genotype-10|genotype-11 Additive Check: False
-order - INFO - genotype-10|genotype-11 Derivative check: False
-order - INFO - genotype-10|genotype-11 Area Difference: 1.2526041666666665
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-2 Full Check: False
-order - INFO - genotype-10|genotype-2 Area Check: False (0.6979166666666667)
-order - INFO - genotype-10|genotype-2 Additive Check: False
-order - INFO - genotype-10|genotype-2 Derivative check: False
-order - INFO - genotype-10|genotype-2 Area Difference: 4.46875
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-4 Full Check: False
-order - INFO - genotype-10|genotype-4 Area Check: False (0.0)
-order - INFO - genotype-10|genotype-4 Additive Check: False
-order - INFO - genotype-10|genotype-4 Derivative check: False
-order - INFO - genotype-10|genotype-4 Area Difference: 4.229166666666667
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-14 Full Check: False
-order - INFO - genotype-10|genotype-14 Area Check: False (0.6979166666666667)
-order - INFO - genotype-10|genotype-14 Additive Check: False
-order - INFO - genotype-10|genotype-14 Derivative check: False
-order - INFO - genotype-10|genotype-14 Area Difference: 10.229166666666668
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-13 Full Check: False
-order - INFO - genotype-10|genotype-13 Area Check: False (0.8020833333333333)
-order - INFO - genotype-10|genotype-13 Additive Check: False
-order - INFO - genotype-10|genotype-13 Derivative check: False
-order - INFO - genotype-10|genotype-13 Area Difference: 8.635416666666668
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-8 Full Check: False
-order - INFO - genotype-10|genotype-8 Area Check: False (0.3020833333333333)
-order - INFO - genotype-10|genotype-8 Additive Check: False
-order - INFO - genotype-10|genotype-8 Derivative check: False
-order - INFO - genotype-10|genotype-8 Area Difference: 4.947916666666668
-order - INFO - Computed priority: 0
-order - INFO - genotype-10|genotype-3 Full Check: False
-order - INFO - genotype-10|genotype-3 Area Check: False (0.9062500000000001)
-order - INFO - genotype-10|genotype-3 Additive Check: False
-order - INFO - genotype-10|genotype-3 Derivative check: False
-order - INFO - genotype-10|genotype-3 Area Difference: 51.02083333333333
+order - INFO - genotype-8|genotype-5 Area Difference: 1.7386172006745366
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-10 Full Check: False
+order - INFO - genotype-8|genotype-10 Area Check: False (0.6138279932546374)
+order - INFO - genotype-8|genotype-10 Additive Check: False
+order - INFO - genotype-8|genotype-10 Derivative check: False
+order - INFO - genotype-8|genotype-10 Area Difference: 5.418212478920743
+order - INFO - Computed priority: 0
+order - INFO - genotype-8|genotype-9 Full Check: False
+order - INFO - genotype-8|genotype-9 Area Check: True (1.0)
+order - INFO - genotype-8|genotype-9 Additive Check: False
+order - INFO - genotype-8|genotype-9 Derivative check: False
+order - INFO - genotype-8|genotype-9 Area Difference: 7.782462057335582
+cluster - INFO - adding genotype-9 as a potential background for genotype-8 with priority 4
+order - INFO - Computed priority: 2
+order - INFO - genotype-8|genotype-12 Full Check: False
+order - INFO - genotype-8|genotype-12 Area Check: False (0.6138279932546374)
+order - INFO - genotype-8|genotype-12 Additive Check: True
+order - INFO - genotype-8|genotype-12 Derivative check: True
+order - INFO - genotype-8|genotype-12 Area Difference: 5.745362563237775
+cluster - INFO - adding genotype-12 as a potential background for genotype-8 with priority 3
+cluster - INFO - adding genotype-12 as a potential background for genotype-8 with priority 1
 order - INFO - Computed priority: 1
-order - INFO - genotype-10|genotype-5 Full Check: False
-order - INFO - genotype-10|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-10|genotype-5 Additive Check: True
-order - INFO - genotype-10|genotype-5 Derivative check: False
-order - INFO - genotype-10|genotype-5 Area Difference: 71.24739583333333
-cluster - INFO - adding genotype-5 as a potential background for genotype-10 with priority 4
-order - INFO - Nesting genotype-6
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-10 Full Check: False
-order - INFO - genotype-6|genotype-10 Area Check: False (0.11035422343324251)
-order - INFO - genotype-6|genotype-10 Additive Check: False
-order - INFO - genotype-6|genotype-10 Derivative check: False
-order - INFO - genotype-6|genotype-10 Area Difference: -0.6076294277929155
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-1 Full Check: False
-order - INFO - genotype-6|genotype-1 Area Check: False (0.0)
-order - INFO - genotype-6|genotype-1 Additive Check: False
-order - INFO - genotype-6|genotype-1 Derivative check: False
-order - INFO - genotype-6|genotype-1 Area Difference: -0.5279291553133515
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-9 Full Check: False
-order - INFO - genotype-6|genotype-9 Area Check: False (0.0)
-order - INFO - genotype-6|genotype-9 Additive Check: False
-order - INFO - genotype-6|genotype-9 Derivative check: False
-order - INFO - genotype-6|genotype-9 Area Difference: 2.5231607629427795
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-7 Full Check: False
-order - INFO - genotype-6|genotype-7 Area Check: False (0.8719346049046321)
-order - INFO - genotype-6|genotype-7 Additive Check: False
-order - INFO - genotype-6|genotype-7 Derivative check: False
-order - INFO - genotype-6|genotype-7 Area Difference: 0.49591280653950964
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-12 Full Check: False
-order - INFO - genotype-6|genotype-12 Area Check: False (0.8065395095367848)
-order - INFO - genotype-6|genotype-12 Additive Check: False
-order - INFO - genotype-6|genotype-12 Derivative check: False
-order - INFO - genotype-6|genotype-12 Area Difference: 0.5980926430517713
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-11 Full Check: False
-order - INFO - genotype-6|genotype-11 Area Check: False (0.0)
-order - INFO - genotype-6|genotype-11 Additive Check: False
-order - INFO - genotype-6|genotype-11 Derivative check: False
-order - INFO - genotype-6|genotype-11 Area Difference: -0.11614441416893725
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-2 Full Check: False
-order - INFO - genotype-6|genotype-2 Area Check: False (0.747956403269755)
-order - INFO - genotype-6|genotype-2 Additive Check: False
-order - INFO - genotype-6|genotype-2 Derivative check: False
-order - INFO - genotype-6|genotype-2 Area Difference: 1.1457765667574935
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-4 Full Check: False
-order - INFO - genotype-6|genotype-4 Area Check: False (0.8038147138964578)
-order - INFO - genotype-6|genotype-4 Additive Check: False
-order - INFO - genotype-6|genotype-4 Derivative check: False
-order - INFO - genotype-6|genotype-4 Area Difference: 1.0517711171662127
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-14 Full Check: False
-order - INFO - genotype-6|genotype-14 Area Check: True (1.0)
-order - INFO - genotype-6|genotype-14 Additive Check: False
-order - INFO - genotype-6|genotype-14 Derivative check: False
-order - INFO - genotype-6|genotype-14 Area Difference: 3.40599455040872
-cluster - INFO - adding genotype-14 as a potential background for genotype-6 with priority 4
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-13 Full Check: False
-order - INFO - genotype-6|genotype-13 Area Check: False (0.6880108991825614)
-order - INFO - genotype-6|genotype-13 Additive Check: False
-order - INFO - genotype-6|genotype-13 Derivative check: False
-order - INFO - genotype-6|genotype-13 Area Difference: 2.7806539509536794
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-8 Full Check: False
-order - INFO - genotype-6|genotype-8 Area Check: False (0.0)
-order - INFO - genotype-6|genotype-8 Additive Check: False
-order - INFO - genotype-6|genotype-8 Derivative check: False
-order - INFO - genotype-6|genotype-8 Area Difference: 1.333787465940055
-order - INFO - Computed priority: 0
-order - INFO - genotype-6|genotype-3 Full Check: False
-order - INFO - genotype-6|genotype-3 Area Check: True (1.0)
-order - INFO - genotype-6|genotype-3 Additive Check: False
-order - INFO - genotype-6|genotype-3 Derivative check: False
-order - INFO - genotype-6|genotype-3 Area Difference: 19.411444141689376
-cluster - INFO - adding genotype-3 as a potential background for genotype-6 with priority 4
-order - INFO - Computed priority: 1
-order - INFO - genotype-6|genotype-5 Full Check: False
-order - INFO - genotype-6|genotype-5 Area Check: True (1.0)
-order - INFO - genotype-6|genotype-5 Additive Check: True
-order - INFO - genotype-6|genotype-5 Derivative check: False
-order - INFO - genotype-6|genotype-5 Area Difference: 27.34775204359673
-cluster - INFO - adding genotype-5 as a potential background for genotype-6 with priority 4
+order - INFO - genotype-8|genotype-13 Full Check: False
+order - INFO - genotype-8|genotype-13 Area Check: True (1.0)
+order - INFO - genotype-8|genotype-13 Additive Check: True
+order - INFO - genotype-8|genotype-13 Derivative check: False
+order - INFO - genotype-8|genotype-13 Area Difference: 9.300168634064082
+cluster - INFO - adding genotype-13 as a potential background for genotype-8 with priority 4
+order - INFO - Computed priority: 3
+order - INFO - genotype-8|genotype-1 Full Check: True
+order - INFO - genotype-8|genotype-1 Area Check: True (1.0)
+order - INFO - genotype-8|genotype-1 Additive Check: True
+order - INFO - genotype-8|genotype-1 Derivative check: True
+order - INFO - genotype-8|genotype-1 Area Difference: 13.370994940978079
+order - INFO - Complete Check: True
+cluster - INFO - adding genotype-1 as a potential background for genotype-8 with priority 5
 order - INFO - The final backgrounds:
-order - INFO - genotype-5	genotype-0
-order - INFO - genotype-3	genotype-5|genotype-5
-order - INFO - genotype-8	genotype-8|genotype-8
-order - INFO - genotype-13	genotype-5|genotype-3|genotype-3|genotype-5
-order - INFO - genotype-14	genotype-5|genotype-3|genotype-3|genotype-5
-order - INFO - genotype-4	genotype-5|genotype-3|genotype-14|genotype-14|genotype-3|genotype-5
-order - INFO - genotype-2	genotype-5|genotype-3|genotype-3|genotype-5
-order - INFO - genotype-11	genotype-5|genotype-5
-order - INFO - genotype-12	genotype-5|genotype-3|genotype-3|genotype-5
-order - INFO - genotype-7	genotype-5|genotype-3|genotype-14|genotype-14|genotype-3|genotype-5
-order - INFO - genotype-9	genotype-9|genotype-9
-order - INFO - genotype-1	genotype-9|genotype-9
-order - INFO - genotype-10	genotype-5|genotype-5
-order - INFO - genotype-6	genotype-5|genotype-3|genotype-14|genotype-14|genotype-3|genotype-5
+order - INFO - genotype-1	genotype-0
+order - INFO - genotype-13	genotype-1|genotype-1
+order - INFO - genotype-12	genotype-13|genotype-13|genotype-1|genotype-1
+order - INFO - genotype-9	genotype-13|genotype-13
+order - INFO - genotype-10	genotype-9|genotype-9
+order - INFO - genotype-5	genotype-5|genotype-5
+order - INFO - genotype-11	genotype-1|genotype-1
+order - INFO - genotype-7	genotype-10|genotype-10
+order - INFO - genotype-4	genotype-11|genotype-11|genotype-11|genotype-11|genotype-13|genotype-13|genotype-1|genotype-1
+order - INFO - genotype-6	genotype-9|genotype-9|genotype-12|genotype-12|genotype-13|genotype-13
+order - INFO - genotype-2	genotype-2|genotype-2
+order - INFO - genotype-3	genotype-11|genotype-11|genotype-13|genotype-13|genotype-1|genotype-1
+order - INFO - genotype-8	genotype-9|genotype-9|genotype-12|genotype-12|genotype-12|genotype-12|genotype-13|genotype-13|genotype-1|genotype-1
 muller_workflow - INFO - Generating output...

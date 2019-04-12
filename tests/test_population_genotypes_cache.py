@@ -83,6 +83,7 @@ def test_merge_trajectories(one_genotype):
 	expected = {'genotype-3': ['17', '18', '2', '3', '1']}
 	assert expected == one_genotype.genotypes
 
+
 def test_to_list(many_genotypes):
 	expected = [
 		["1", "4", "5"],

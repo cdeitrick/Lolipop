@@ -1,6 +1,6 @@
-from typing import List, Dict
-
 from collections import OrderedDict
+from typing import Dict, List
+
 from . import colorset
 
 

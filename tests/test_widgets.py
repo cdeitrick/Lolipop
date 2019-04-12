@@ -1,6 +1,7 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pandas
+
 import dataio
 import widgets
 
@@ -100,6 +101,7 @@ def test_get_valid_points_complex():
 
 	expected = pandas.Series([0, 0.653])
 
+
 @patch('widgets._get_git_log')
 def test_get_commit_hash(filename_mock):
 	test_file = """
@@ -115,8 +117,8 @@ def test_get_commit_hash(filename_mock):
 
 	assert expected_hash == result_hash
 
-def test_format_linkage_matrix():
 
+def test_format_linkage_matrix():
 	string = """
 			left	right	distance	observations
 		7	18	0.033999578315858	2

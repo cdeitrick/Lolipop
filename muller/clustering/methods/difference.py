@@ -3,8 +3,12 @@ from typing import Dict, List, Tuple
 
 import pandas
 
-def _find_weakest_pair(trajectories:pandas.Series, link_cut:float)->Tuple[str,str]:
+
+# noinspection PyUnresolvedReferences
+def _find_weakest_pair(trajectories: pandas.Series, link_cut: float) -> Tuple[str, str]:
 	return (trajectories - link_cut).abs().idxmin()
+
+
 # noinspection PyTypeChecker
 def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, link_cut: float) -> Tuple[List[str], List[str]]:
 	"""
@@ -32,7 +36,7 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 	# Find the index of the minimum p-value after subtracting the link cutoff.
 	# Form two new muller_genotypes based on the two trajectories corresponding to the minimum p-value
 	# noinspection PyUnresolvedReferences
-	#new_genotype_1_base, new_genotype_2_base = (unlinked_trajectories - link_cut).abs().idxmin()
+	# new_genotype_1_base, new_genotype_2_base = (unlinked_trajectories - link_cut).abs().idxmin()
 	new_genotype_1_base, new_genotype_2_base = _find_weakest_pair(unlinked_trajectories, link_cut)
 	# Get the row with the identified minimum mp-value.
 
@@ -84,7 +88,7 @@ def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Di
 			combination_pairs = [(left, right, pair_array[left, right]) for left, right in itertools.permutations(genotype, 2)]
 			# Combine all pairs and p-values into a dataframe for convienience.
 			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
-			genotype_combinations:pandas.Series = genotype_combinations.set_index(['left', 'right'])['pvalue']
+			genotype_combinations: pandas.Series = genotype_combinations.set_index(['left', 'right'])['pvalue']
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.
 			# noinspection PyTypeChecker

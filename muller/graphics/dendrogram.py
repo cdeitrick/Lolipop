@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import matplotlib.pyplot as plt
 from scipy.cluster import hierarchy
@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 
 def plot_dendrogram(Z: Any, pair_array: PairwiseCalculationCache, filename: Path):
 	fig, ax = plt.subplots(figsize = (15, 15))
-	#plt.figure(figsize = (15, 15))
+	# plt.figure(figsize = (15, 15))
 	ax.set_title('Hierarchical Clustering Dendrogram', size = 30)
 	ax.set_xlabel('Trajectory Label', size = 20)
 	ax.set_ylabel('Distance', size = 20)

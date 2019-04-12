@@ -1,7 +1,9 @@
 from typing import Any, Optional, Tuple
 
 import pandas
+
 from widgets import get_valid_points
+
 try:
 	from inheritance import order_by_area
 except ModuleNotFoundError:
@@ -23,8 +25,8 @@ def check_additive_background(left: pandas.Series, right: pandas.Series, double_
 	bool
 	"""
 	trajectorysum = right + left
-	#trajectorysum = trajectorysum[trajectorysum > 0.03]
-	#trajectorysum = get_valid_points(left, right, double_cutoff).sum(axis = 1)
+	# trajectorysum = trajectorysum[trajectorysum > 0.03]
+	# trajectorysum = get_valid_points(left, right, double_cutoff).sum(axis = 1)
 
 	double_check = (trajectorysum > double_cutoff).sum() > 1  # Implicit conversion from bool to int.
 	single_check = (trajectorysum > single_cutoff).sum() > 0

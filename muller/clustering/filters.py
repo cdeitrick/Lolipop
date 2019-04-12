@@ -63,7 +63,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 	was_detected_before_and_after_background = first_detected < background_detected < last_detected
 	# Check if the genotype was detected before and after the timepoint the current backgound fixed.
 	was_detected_before_and_after_fixed = first_detected < background_fixed < last_detected
-	#print(genotype.name, (first_detected, background_detected), (last_detected, background_detected), was_detected_before_and_after_fixed, was_detected_before_and_after_background)
+	# print(genotype.name, (first_detected, background_detected), (last_detected, background_detected), was_detected_before_and_after_fixed, was_detected_before_and_after_background)
 	if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
 		# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 		# Check to see if it was undetected at the timpont the background fixed.

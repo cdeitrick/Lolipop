@@ -1,12 +1,13 @@
 import unittest
+from pathlib import Path
 
+import pandas
 import pytest
 
 from dataio import import_table, parse_genotype_table, parse_trajectory_table
 from dataio.trajectories import _convert_to_integer, _correct_math_scale
 from widgets import get_numeric_columns
-from pathlib import Path
-import pandas
+
 DATA_FOLDER = Path(__file__).parent / "data"
 
 

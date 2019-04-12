@@ -1,5 +1,7 @@
+from typing import Dict, List, Tuple
+
 import pandas
-from typing import List, Dict, Tuple
+
 
 def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 	"""
@@ -40,7 +42,7 @@ def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:
 	return label, iteration
 
 
-def common_elements(left, right)->int:
+def common_elements(left, right) -> int:
 	""" Returns the number of elements that are common between `left` and `right`"""
 	common = set(left) & set(right)
 	return len(common)
@@ -80,5 +82,3 @@ def group_clades(clade_annotations: Dict[str, List[str]]) -> List[List[str]]:
 		seen = seen | set(related)
 
 	return result
-
-

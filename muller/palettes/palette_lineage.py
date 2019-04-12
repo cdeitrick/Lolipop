@@ -2,6 +2,7 @@
 Generates a palette using the information.
 """
 from typing import Dict, List
+
 import pandas
 
 try:

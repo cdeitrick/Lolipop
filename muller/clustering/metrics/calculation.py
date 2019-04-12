@@ -74,7 +74,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		right_trajectory = trajectories.loc[right]
 		detected_points = pandas.DataFrame(
 			{
-				'left': left_trajectory,
+				'left':  left_trajectory,
 				'right': right_trajectory
 			}
 		)

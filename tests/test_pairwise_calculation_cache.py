@@ -20,7 +20,6 @@ def small_cache():
 		('3', '4'): .8
 	}
 
-
 	return PairwiseCalculationCache(data)
 
 
@@ -64,6 +63,7 @@ def test_squareform(small_cache):
 	expected_df = pandas.DataFrame(expected, columns = labels, index = labels)
 	pandas.testing.assert_frame_equal(expected_df, small_cache.squareform())
 
+
 def test_asdict(small_cache):
 	expected = {
 		('1', '2'): .5,
@@ -82,6 +82,7 @@ def test_asdict(small_cache):
 
 	assert small_cache.asdict() == expected
 
+
 def test_unique(small_cache):
 	expected = [
 		('1', '2'), ('1', '3'), ('1', '4'),
@@ -92,10 +93,11 @@ def test_unique(small_cache):
 	result = sorted(small_cache.unique())
 	assert result == expected
 
+
 def test_update(small_cache):
 	new_elements = {
 		('15', '16'): 1,
-		('14', '1'): 2
+		('14', '1'):  2
 	}
 
 	small_cache.update(new_elements)

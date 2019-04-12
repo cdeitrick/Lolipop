@@ -1,9 +1,11 @@
+import itertools
+import logging
 from typing import Any, List, Tuple
+
 import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
-import itertools
-import logging
+
 logger = logging.getLogger(__file__)
 try:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
@@ -11,7 +13,8 @@ except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 
 
-def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance', starting_genotypes: List[List[str]] = None) -> Tuple[List[List[str]], Any]:
+def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance',
+		starting_genotypes: List[List[str]] = None) -> Tuple[List[List[str]], Any]:
 	"""
 
 	Parameters
@@ -34,9 +37,9 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 		for genotype in starting_genotypes:
 			combinations = itertools.combinations(genotype, 2)
 			values = dict()
-			for a,b in combinations:
-				values[a,b] = 0
-				values[b,a] = 0
+			for a, b in combinations:
+				values[a, b] = 0
+				values[b, a] = 0
 			pair_array = pair_array.update(values)
 
 	squaremap = pair_array.squareform()
