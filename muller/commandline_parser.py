@@ -223,12 +223,6 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "annotate_all"
 	)
 	parser.add_argument(
-		"--no-heatmap",
-		help = "By default the scripts save the p-values to a table and generates a heatmap for the population. Disabling saves a large amount of time for large datasets.",
-		action = "store_false",
-		dest = "save_pvalue"
-	)
-	parser.add_argument(
 		"--strict-filter",
 		help = """By default, the filters allow trajectories to appear both before and after a genotype"""
 			   """fixes as long as they were undetected at the timepoint the sweep occurs. This generally"""

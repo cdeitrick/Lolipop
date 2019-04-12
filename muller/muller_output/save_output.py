@@ -160,8 +160,7 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 	return parameters
 
 
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, save_pvalues: bool,
-		adjust_populations: bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, adjust_populations: bool):
 	# Set up the output folder
 	base_filename = workflow_data.filename.stem
 	if workflow_data.program_options['sheetname'] and workflow_data.program_options['sheetname'] != 'Sheet1':
@@ -293,10 +292,9 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		squareform.to_csv(filenames.distance_matrix)
 	except:
 		pass
-	if save_pvalues:
-		# workflow_data.p_values.save(filenames.calculation_matrix_p)
-		pvalues_matrix = workflow_data.p_values.squareform()
-		try:
-			plot_heatmap(pvalues_matrix, filenames.distance_heatmap)
-		except:
-			pass
+
+	pvalues_matrix = workflow_data.p_values.squareform()
+	try:
+		plot_heatmap(pvalues_matrix, filenames.distance_heatmap)
+	except:
+		pass

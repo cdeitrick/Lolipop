@@ -49,9 +49,10 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("nesting muller_genotypes...")
 	genotype_clusters = order.order_clusters(sorted_genotypes, options = program_options_clustering)
 	logger.info("Generating output...")
+
 	workflow_data = WorkflowData(
 		filename = input_filename,
-		program_options = vars(program_options),
+
 		info = info,
 		original_trajectories = timepoints,
 		original_genotypes = mean_genotypes,
@@ -59,9 +60,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,
 		clusters = genotype_clusters,
+
+		program_options = vars(program_options),
 		genotype_options = program_options_genotype,
 		sort_options = program_options_sort,
 		cluster_options = program_options_clustering,
+
 		p_values = generate.PAIRWISE_CALCULATIONS,
 		filter_cache = [],
 		linkage_matrix = linkage_matrix,
@@ -71,15 +75,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		workflow_data,
 		output_folder,
 		program_options.detection_breakpoint,
-		program_options.save_pvalue,
 		adjust_populations = True
 	)
-
 	return genotype_clusters
 
 
 if __name__ == "__main__":
 	args = create_parser().parse_args()
-	# cmd_parser = ProgramOptions.from_parser(args)
-	# cmd_parser = ProgramOptions.debug(args)
+
 	workflow(args.filename, args.output_folder, program_options = args)
