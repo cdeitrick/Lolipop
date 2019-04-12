@@ -62,9 +62,8 @@ def test_get_fuzzy_backgrounds(genotypes):
 		genotype-5	0	0	0	0.147	0.45	0.924	0.887
 		genotype-6	0	0	0	0.273	0.781	1	1"""
 	expected_table = import_table(expected, index = 'Genotype')
-	backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff) = filters.get_fuzzy_backgrounds(genotypes, cutoffs)
+	backgrounds, fuzzy_fixed_cutoff = filters.get_fuzzy_backgrounds(genotypes, cutoffs)
 	expected_table = expected_table.astype(float)
 	assert pytest.approx(fuzzy_fixed_cutoff == 0.9)
-	assert pytest.approx(fuzzy_detected_cutoff == 0.1)
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)

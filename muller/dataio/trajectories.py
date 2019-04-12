@@ -73,7 +73,8 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	""" Imports a table that lists pre-computed genotypes rather than trajectories."""
 	data = import_table(filename, sheet_name = sheet_name)
-
+	# For some reason some tables are annotated with 'genotype   ' with extra spaces.
+	data.columns = [(i.strip() if isinstance(i, str) else i) for i in data.columns]
 	if 'Genotype' in data.columns:
 		key_column = 'Genotype'
 	elif 'Unnamed: 0' in data.columns:
@@ -106,6 +107,8 @@ def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pa
 		sorted_index = genotype_timeseries.index
 
 	genotype_timeseries = genotype_timeseries.loc[sorted_index]
+
+	# Remove extraneous whitespace.
 	return genotype_timeseries, genotype_info
 
 

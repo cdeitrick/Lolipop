@@ -75,10 +75,15 @@ def test_import_trajectory_table(filename, truth_trajectory_table):
 
 @pytest.mark.parametrize(
 	'filename',
-	[i for i in (DATA_FOLDER / "test_genotype_tables").iterdir() if 'genotype' in i.name]
+	[
+		"B1_muller_try1.muller_genotypes.original.tsv",
+		"B1_muller_try1.muller_genotypes.original.xls",
+		"B1_muller_try1.muller_genotypes.original.xlsx"
+	]
 )
 def test_import_genotype_tables(filename, truth_genotype_table):
-	test_table, info = parse_genotype_table(filename)
+	folder = DATA_FOLDER / "test_genotype_tables"
+	test_table, info = parse_genotype_table(folder / filename)
 	pandas.testing.assert_frame_equal(truth_genotype_table, test_table)
 
 
