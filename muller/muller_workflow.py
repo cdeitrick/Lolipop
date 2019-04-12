@@ -10,13 +10,13 @@ logger.addHandler(logging.StreamHandler())
 try:
 	from muller.commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
-	from clustering import generate, filters
+	from clustering import generate
 	from inheritance import order, sort_genotypes
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from commandline_parser import create_parser, ProgramOptions, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
-	from clustering import generate, filters
+	from clustering import generate
 	from inheritance import order, sort_genotypes
 	from muller_output import WorkflowData, generate_output
 
@@ -36,24 +36,14 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			genotype_members = genotype_info['members']
 		except KeyError:
 			genotype_members = dict()
-		original_timepoints = timepoints = info = linkage_matrix = None
-		original_genotypes = mean_genotypes
+		timepoints = info = linkage_matrix = None
 	else:
-		original_timepoints, info = parse_trajectory_table(input_filename, program_options.sheetname)
-		if program_options.use_filter:
-			logger.info("using filter...")
-			original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes_with_filter(
-				original_timepoints,
-				program_options_genotype,
-				[program_options.fixed_breakpoint] + program_options.frequencies,
-				program_options.use_strict_filter
-			)
-		else:
-			logger.info("not using filter...")
+		timepoints, info = parse_trajectory_table(input_filename, program_options.sheetname)
+		breakpoints = program_options.frequencies if program_options.use_filter else None
+		mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(
+			timepoints, program_options_genotype, breakpoints
+		)
 
-			timepoints = original_timepoints
-			mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(original_timepoints, program_options_genotype)
-			original_genotypes = mean_genotypes
 	logger.info("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	logger.info("nesting muller_genotypes...")
@@ -63,8 +53,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		filename = input_filename,
 		program_options = vars(program_options),
 		info = info,
-		original_trajectories = original_timepoints,
-		original_genotypes = original_genotypes,
+		original_trajectories = timepoints,
+		original_genotypes = mean_genotypes,
 		trajectories = timepoints,
 		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,

@@ -127,7 +127,7 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 	trajectories = trajectories[sorted(trajectories.columns, key = lambda s: int(s))]
 	if info is not None:
 		trajectory_table: pandas.DataFrame = trajectories.copy()
-		trajectory_table['genotype'] = [parent_genotypes[k] for k in trajectory_table.index]
+		trajectory_table['genotype'] = [parent_genotypes.get(k) for k in trajectory_table.index]
 		trajectory_table = trajectory_table.join(info).sort_values(by = ['genotype'])
 		return trajectory_table
 

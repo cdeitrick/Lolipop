@@ -12,7 +12,7 @@ FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
-	from muller.clustering.generate import GenotypeOptions
+	from muller.clustering.generatelegacy import GenotypeOptions
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from inheritance.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters
@@ -177,13 +177,10 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	# ------------------------------------------- Save the genotype and trajectory tables --------------------------------------------------------
 	##############################################################################################################################################
 
-	workflow_data.original_genotypes.to_csv(str(filenames.original_genotype), sep = delimiter)
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 
 	print("Saving Trajectory Tables...")
 	# Save trajectory tables, if available
-	if workflow_data.original_trajectories is not None:
-		workflow_data.original_trajectories.to_csv(str(filenames.original_trajectory), sep = delimiter)
 	if workflow_data.trajectories is not None:
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
@@ -285,8 +282,10 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		num_trajectories = len(workflow_data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(workflow_data.linkage_matrix, num_trajectories)
 		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
-		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
-
+		try:
+			plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
+		except:
+			pass
 	workflow_data.p_values.save(filenames.distance_table)
 
 	try:
