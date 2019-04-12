@@ -173,5 +173,53 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 
 
+def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series, options: GenotypeOptions, breakpoints: List[float],
+		use_strict_filter: bool = False) -> List[str]:
+	"""
+		Finds all trajectories which should be filtered out of the dataset based on certain criteria.
+		 These criteria concern both the trajectories and their parent genotypes.
+	Parameters
+	----------
+	original_genotypes: pandas.DataFrame
+		pre-computed genotypes table.
+	genotype_members: pandas.Series
+		Maps genotypes to a '|' delimited string of member trajectories.
+	options: GenotypeOptions
+	breakpoints: List[float]
+	use_strict_filter: bool; default False
+
+	Returns
+	-------
+	List[str]
+		A list of all trajectories which should be filtered out of the dataset.
+	"""
+	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
+	# used when sorting the genotypes.
+	try:
+		current_backgrounds, fuzzy_fixed_limit = get_fuzzy_backgrounds(original_genotypes, breakpoints)
+	except ValueError:
+		return []
+
+	logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
+
+	# Search for genotypes that do not make sense in the context of an evolved population.
+	current_invalid_genotype = find_first_invalid_genotype(
+		original_genotypes,
+		current_backgrounds,
+		options.detection_breakpoint,
+		fuzzy_fixed_limit,
+		use_strict_filter
+	)
+	logger.info(f"Invalid genotype: {current_invalid_genotype}")
+
+	if current_invalid_genotype is None:
+		return []
+	else:
+		# Get a list of the trajectories that form this genotype.
+		invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
+		logger.info("Invalid members: " + str(invalid_members))
+		return invalid_members
+
+
 if __name__ == "__main__":
 	pass

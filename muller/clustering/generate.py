@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import numpy
 import pandas
@@ -11,12 +11,12 @@ try:
 	from muller.clustering.average import calculate_mean_genotype
 	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from clustering.methods import calculate_genotypes_from_given_method
-	from clustering.filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
+	from clustering import filters
 except ModuleNotFoundError:
 	from .average import calculate_mean_genotype
 	from .metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from .methods import calculate_genotypes_from_given_method
-	from .filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
+	from . import filters
 
 PAIRWISE_CALCULATIONS = PairwiseCalculationCache()
 
@@ -56,7 +56,8 @@ def calculate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) 
 	return mean_genotypes, genotype_members, linkage_matrix
 
 
-def generate_genotypes(trajectories: pandas.DataFrame, options: GenotypeOptions, breakpoints: List[float] = None)->Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
+def generate_genotypes(trajectories: pandas.DataFrame, options: GenotypeOptions, breakpoints: List[float] = None) -> Tuple[
+	pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 	"""
 	Parameters
 	----------
@@ -88,7 +89,7 @@ def generate_genotypes(trajectories: pandas.DataFrame, options: GenotypeOptions,
 		_iterations = 0  # The for loop shouldn't excecute.
 
 	for index in range(_iterations):
-		invalid_members = filter_genotypes(genotype_table, genotype_members, options, breakpoints, use_strict_filter)
+		invalid_members = filters.filter_genotypes(genotype_table, genotype_members, options, breakpoints, use_strict_filter)
 		if invalid_members:
 			# Remove these trajectories from the trajectories table.
 			modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
@@ -97,54 +98,6 @@ def generate_genotypes(trajectories: pandas.DataFrame, options: GenotypeOptions,
 		else:
 			break
 	return genotype_table, genotype_members, linkage_matrix
-
-
-def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series, options: GenotypeOptions, breakpoints: List[float],
-		use_strict_filter: bool = False)->List[str]:
-	"""
-		Finds all trajectories which should be filtered out of the dataset based on certain criteria.
-		 These criteria concern both the trajectories and their parent genotypes.
-	Parameters
-	----------
-	original_genotypes: pandas.DataFrame
-		pre-computed genotypes table.
-	genotype_members: pandas.Series
-		Maps genotypes to a '|' delimited string of member trajectories.
-	options: GenotypeOptions
-	breakpoints: List[float]
-	use_strict_filter: bool; default False
-
-	Returns
-	-------
-	List[str]
-		A list of all trajectories which should be filtered out of the dataset.
-	"""
-	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
-	# used when sorting the genotypes.
-	try:
-		current_backgrounds, fuzzy_fixed_limit = get_fuzzy_backgrounds(original_genotypes, breakpoints)
-	except ValueError:
-		return []
-
-	logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
-
-	# Search for genotypes that do not make sense in the context of an evolved population.
-	current_invalid_genotype = find_first_invalid_genotype(
-		original_genotypes,
-		current_backgrounds,
-		options.detection_breakpoint,
-		fuzzy_fixed_limit,
-		use_strict_filter
-	)
-	logger.info(f"Invalid genotype: {current_invalid_genotype}")
-
-	if current_invalid_genotype is None:
-		return []
-	else:
-		# Get a list of the trajectories that form this genotype.
-		invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
-		logger.info("Invalid members: " + str(invalid_members))
-		return invalid_members
 
 
 if __name__ == "__main__":
