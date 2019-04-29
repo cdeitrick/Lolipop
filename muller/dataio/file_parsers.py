@@ -1,11 +1,11 @@
-import logging
+
 import re
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Union
 
 import pandas
 
-logger = logging.getLogger(__file__)
+from loguru import logger
 
 
 def read_map(contents: Union[str, Path]):

@@ -1,22 +1,23 @@
-import logging
 from typing import List, Tuple
 
 import pandas
 
-logger = logging.getLogger(__file__)
+from loguru import logger
 try:
 	from muller.inheritance.checks import apply_genotype_checks
 	from muller.inheritance import checks
+	from muller.inheritance import scoring
 	from muller.inheritance.cluster import Cluster
 	from muller.options import OrderClusterParameters
 except ModuleNotFoundError:
+	from . import scoring
 	from . import checks
 	from .checks import apply_genotype_checks
 	from .cluster import Cluster
 	from options import OrderClusterParameters
 
 
-def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters) -> Cluster:
+def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:float,derivative_cutoff:float) -> Cluster:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
@@ -31,73 +32,27 @@ def order_clusters(sorted_df: pandas.DataFrame, options: OrderClusterParameters)
 	ClusterType
 	"""
 	# By default the backgrounds should occupy the first n lines of the dataframe
+
+
 	initial_background = sorted_df.iloc[0]
 	genotype_nests = Cluster(initial_background, timepoints = sorted_df)
 	for unnested_label, unnested_trajectory in sorted_df[1:].iterrows():
-		logger.info(f"Nesting {unnested_label}")
-		genotype_deltas = list()
+		logger.debug(f"Nesting {unnested_label}")
 		# Iterate over the rest of the table in reverse order. Basically, we start with the newest nest and iterate until we find a nest that satisfies the filters.
 		test_table = sorted_df[:unnested_label].iloc[::-1]
-		table_of_checks = checks.apply_genotype_checks_to_table(unnested_trajectory, test_table, options)
-		table_of_checks = table_of_checks.drop(unnested_label)
-		for nested_label, row in table_of_checks.iterrows():
+		for nested_label, nested_genotype in test_table.iterrows():
 			if nested_label == unnested_label: continue
-			# todo The additive check checks for greater than 0, not whether one is consistently larger than the other.
-			additive_check, subtractive_check, delta, area_ratio, area_difference = row
+			score_additive = scoring.calculate_additive_score(nested_genotype, unnested_trajectory, additive_cutoff)
+			score_derivative = scoring.calculate_derivative_score(nested_genotype, unnested_trajectory, detection_cutoff = dlimit, cutoff = derivative_cutoff)
+			score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory, dlimit = dlimit)
 
-			area_check = area_ratio > 0.97
-			derivative_check = delta > options.derivative_check_cutoff
-			full_check = area_check and derivative_check and additive_check
-			priority = sum([additive_check, derivative_check, full_check])
-
-			logging.info(f"Computed priority: {priority}")
-			logging.info(f"{unnested_label}|{nested_label} Full Check: {full_check}")
-			logging.info(f"{unnested_label}|{nested_label} Area Check: {area_check} ({area_ratio})")
-			logging.info(f"{unnested_label}|{nested_label} Additive Check: {additive_check}")
-			logging.info(f"{unnested_label}|{nested_label} Derivative check: {derivative_check}")
-			logging.info(f"{unnested_label}|{nested_label} Area Difference: {area_difference}")
-
-			if area_check and delta > options.derivative_check_cutoff and additive_check:
-				# Most likely the background of the current genotype.
-				logging.info(f"Complete Check: True")
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 5)
-				break
-			if area_difference < -0 or delta < -options.derivative_check_cutoff:
-				# The unnested trajectory is larger than the nested trajectory it is being compared against.
-				continue
-
-			genotype_deltas.append((nested_label, delta))
-
-			if delta > options.derivative_check_cutoff:
-				# They are probably on the same background.
-				# Need to do one last check: these two genotypes cannot sum to larger than the background.
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 3)
-			# break
-			if area_check:
-				# A candidate background
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 4)
-				continue
-
-			if additive_check:  # and False:
-				# Possible background
-				genotype_nests.add_genotype_to_background(unnested_label, nested_label, 1)
-
-		is_member = genotype_nests.is_a_member(unnested_label)
-		if not is_member:
-			logger.info(f"Not a member: {unnested_label}")
-			# if it hasn't been matched with a background, two things can happen
-			# (1) IF it is logically possible (i.e., if the sum of it
-			# and all existing backgrounds at each time point is ~1 or less),
-			# then we can make it its own background. otherwise put
-			# it in with the genotype it's most correlated with
-			# Find the test that correlated the most with this genotype
-			result = background_heuristic(genotype_nests, genotype_deltas, unnested_trajectory, options)
-			if result:
-				genotype_nests.add_genotype_to_background(unnested_label, result, 0)
-	logger.info("The final backgrounds:")
-	for k, v in genotype_nests.nests.items():
-		vv = "|".join(v)
-		logger.info(f"{k}\t{vv}")
+			total_score = score_additive + score_derivative + score_area
+			logger.debug(f"{unnested_label}\t{nested_label}\t{total_score}")
+			genotype_nests.add_genotype_to_background(unnested_label, nested_label, total_score)
+	logger.info("Final Ancestry:")
+	for genotype_label in sorted_df.index:
+		candidate = genotype_nests.get_highest_priority(genotype_label)
+		logger.info(f"{genotype_label}\t{candidate}")
 	return genotype_nests
 
 
@@ -140,4 +95,30 @@ def background_heuristic(genotype_nests: Cluster, genotype_deltas: List[Tuple[st
 
 
 if __name__ == "__main__":
-	pass
+	import dataio
+	input_string = """
+	Genotype	0	1	2	3	4	5	6	7	8	9	10
+	genotype-9	0.01	0.279	0.341	0.568	0.708	0.913	0.756	0.455	0.399	0.13	0.041
+	genotype-6	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
+	genotype-18	0	0	0	0	0	0.247	0.388	0.215	0.403	0.141	0.028
+	genotype-21	0	0	0	0	0.148	0.384	0.344	0.289	0.333	0.146	0.031
+	genotype-17	0	0	0	0	0	0	0.084	0.12	0.124	0.343	0.398
+	genotype-20	0	0	0	0	0	0	0	0.077	0.018	0.239	0.308
+	genotype-5	0	0	0	0	0	0	0	0	0.236	0.121	0.034
+	genotype-16	0.085	0.112	0.16	0	0	0	0	0	0	0	0
+	genotype-1	0	0.056	0.101	0.174	0	0	0	0	0	0	0
+	genotype-4	0	0	0	0	0	0	0	0.043	0.099	0.146	0.1275
+	genotype-11	0.278	0.277	0.224	0.195	0	0	0	0	0	0	0
+	genotype-8	0.213	0.265	0.184	0	0	0	0	0	0	0	0
+	genotype-12	0.027	0.059	0.0325	0.008	0	0	0	0	0	0	0
+	genotype-10	0.013	0	0.026	0.008	0	0	0	0	0	0	0.041
+	genotype-7	0	0.088	0.036	0.046	0	0.059	0.052	0	0.073	0	0
+	genotype-14	0	0.021	0.026	0.02	0.031	0	0	0.032	0.035	0.016	0
+	genotype-13	0	0	0	0	0.072	0.047	0.057	0	0	0	0
+	genotype-19	0	0	0	0	0	0	0.03	0.085	0.037	0.019	0
+	genotype-3	0	0	0	0	0	0	0.007666666666667	0.006333333333333	0.033	0.043333333333333	0.026333333333333
+	genotype-15	0	0	0	0	0	0	0.007	0.038	0.023666666666667	0.023333333333333	0.041
+	genotype-2	0	0	0	0	0	0	0	0	0.067	0.068	0.074
+	"""
+	table = dataio.import_table(input_string, index = 'Genotype')
+	order_clusters(table, additive_cutoff = 0.03, derivative_cutoff = 0.03, dlimit = 0.03)

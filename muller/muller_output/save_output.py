@@ -5,8 +5,6 @@ from typing import Any, Dict, Optional, Tuple
 
 import pandas
 
-# logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
-# logger = logging.getLogger(__name__)
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
@@ -95,7 +93,7 @@ class OutputFilenames:
 		self.distance_matrix: Path = tables_folder / (name + f".distance.{suffix}")
 
 		# graphics
-		## Muller Plots
+		# Muller Plots
 		self.muller_plot_unannotated: Path = graphics_distinctive_folder / (name + '.muller.unannotated.png')
 		self.muller_plot_annotated_pdf: Path = graphics_clade_folder / (name + '.muller.annotated.pdf')
 		self.muller_plot_annotated_svg: Path = graphics_clade_folder / (name + ".muller.annotated.svg")
@@ -105,7 +103,7 @@ class OutputFilenames:
 
 		##Timeseries plots
 		self.genotype_plot: Path = graphics_distinctive_folder / (name + '.genotypes.distinctive.png')
-		self.trajectory_plot_distinctive: Path = graphics_distinctive_folder / (name + f".trajectories.distinctive.png")
+		self.trajectory_plot_distinctive: Path = graphics_distinctive_folder / (name + f".trajectories.distinctive.svg")
 		self.genotype_plot_filtered: Path = output_folder / (name + f".genotypes.filtered.png")
 
 		## Geneology plots

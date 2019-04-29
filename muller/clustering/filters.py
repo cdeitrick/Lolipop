@@ -1,9 +1,9 @@
-import logging
+
 from typing import List, Tuple
 
 import pandas
 
-logger = logging.getLogger(__file__)
+from loguru import logger
 try:
 	from muller.options import GenotypeOptions
 except ModuleNotFoundError:
@@ -200,7 +200,7 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 	except ValueError:
 		return []
 
-	logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
+	logger.debug(f"Backgrounds for filtering:" + str(list(current_backgrounds.index)))
 
 	# Search for genotypes that do not make sense in the context of an evolved population.
 	current_invalid_genotype = find_first_invalid_genotype(
@@ -210,11 +210,12 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 		fuzzy_fixed_limit,
 		use_strict_filter
 	)
-	logger.info(f"Invalid genotype: {current_invalid_genotype}")
+
 
 	if current_invalid_genotype is None:
 		return []
 	else:
+		logger.info(f"Found Invalid genotype: {current_invalid_genotype}. Removing...")
 		# Get a list of the trajectories that form this genotype.
 		invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
 		logger.info("Invalid members: " + str(invalid_members))

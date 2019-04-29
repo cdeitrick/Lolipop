@@ -1,8 +1,7 @@
 import itertools
-import logging
+from loguru import logger
 from typing import Dict, List, Tuple
 
-logger = logging.getLogger(__file__)
 import pandas
 import math
 
@@ -62,10 +61,10 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	Each key in the dictionary corresponds to a pair of trajectory ids which map to the p-value for that pair.
 	The order of ids does not matter.
 	"""
-	logger.info("Calculating the pairwise values...")
-	logger.info(f"\t detection limit: {detection_cutoff}")
-	logger.info(f"\t fixed limit: {fixed_cutoff}")
-	logger.info(f"\t metric: {metric}")
+	logger.debug("Calculating the pairwise values...")
+	logger.debug(f"\t detection limit: {detection_cutoff}")
+	logger.debug(f"\t fixed limit: {fixed_cutoff}")
+	logger.debug(f"\t metric: {metric}")
 
 	pair_combinations: List[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
 	pair_array = dict()

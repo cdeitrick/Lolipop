@@ -1,12 +1,12 @@
 import itertools
-import logging
+
 from typing import Any, List, Tuple
 
 import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
-logger = logging.getLogger(__file__)
+from loguru import logger
 try:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 except ModuleNotFoundError:

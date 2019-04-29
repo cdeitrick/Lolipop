@@ -1,7 +1,7 @@
 """
 	Python implementation of the Muller_plot function available from ggmuller.
 """
-import logging
+
 import math
 import random
 from itertools import filterfalse
@@ -20,7 +20,7 @@ try:
 except ModuleNotFoundError:
 	from widgets import calculate_luminance
 
-logger = logging.getLogger(__file__)
+from loguru import logger
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)

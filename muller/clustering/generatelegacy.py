@@ -1,11 +1,10 @@
-import logging
+from loguru import logger
 from typing import Any, List, Tuple
 
 import pandas
 
 from options import GenotypeOptions
 
-logger = logging.getLogger(__name__)
 try:
 	from muller.clustering.average import calculate_mean_genotype
 	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
@@ -30,7 +29,7 @@ def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOption
 		_before = len(PAIRWISE_CALCULATIONS)
 		PAIRWISE_CALCULATIONS = PAIRWISE_CALCULATIONS.reduce(timepoints.index)
 		_after = len(PAIRWISE_CALCULATIONS)
-		logging.info(f"Reduced Pairwise calculations from {_before} to {_after}")
+		logger.info(f"Reduced Pairwise calculations from {_before} to {_after}")
 	else:
 		pair_array = calculate_pairwise_metric(
 			timepoints,

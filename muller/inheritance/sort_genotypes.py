@@ -1,8 +1,7 @@
-import logging
 
 import pandas
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 from options import SortOptions
 
 try:
@@ -28,7 +27,7 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	sorted_genotypes = list()
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
 	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
-		logger.info(f"filtering based on frequency {frequency}")
+		logger.debug(f"filtering based on frequency {frequency}")
 		# Ignore genotypes that do not have at least on timepoint exceeding the current frequency.
 		genotypes_above_threshold = _remove_low_frequency_series(current_genotypes, frequency)
 

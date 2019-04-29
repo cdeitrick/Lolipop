@@ -1,12 +1,12 @@
 """
 	Main script to run the muller workflow.
 """
-import logging
 from pathlib import Path
 
-logging.basicConfig(filename = "muller_log.txt", level = logging.INFO, filemode = 'w', format = '%(module)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__file__)
-logger.addHandler(logging.StreamHandler())
+from loguru import logger
+logger.remove()
+import sys
+logger.add(sys.stderr, level="INFO")
 try:
 	from muller.commandline_parser import create_parser, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
@@ -47,7 +47,12 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
 	logger.info("nesting muller_genotypes...")
-	genotype_clusters = order.order_clusters(sorted_genotypes, options = program_options_clustering)
+	genotype_clusters = order.order_clusters(
+		sorted_genotypes,
+		additive_cutoff = program_options_genotype.detection_breakpoint,
+		derivative_cutoff = program_options_clustering.derivative_check_cutoff,
+		dlimit = program_options_genotype.detection_breakpoint
+	)
 	logger.info("Generating output...")
 
 	workflow_data = WorkflowData(
