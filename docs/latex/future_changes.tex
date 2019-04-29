@@ -1,0 +1,9 @@
+\documentclass{report}
+\begin{document}
+\chapter{Future changes}
+
+There are a few improvements that will be made to the scripts sometime in the future.
+
+\section{Nesting}
+The current version of the nesting algorithm can be improved in two ways. The first concerns the additive/subtractive checks. To check if one series is *consistently* greater than another series, the scripts check whether two timepoints exceed the detection limit or at least one timepoint is significantly (defined as greater that 0.15) greater than the corresponding timepoint in the other series. There should be a more statistically-relevant test that could replace these checks. The second issue to change is the selection of a background genotype for a given unnested genotype, assuming all candidate backgrounds have been identified. The scripts currently choose the first detected candidate background (due to sorting, the background which arose/fixed closest to the unnested genotype) as the parent genotype for a given unnested genotype. Candidates are currently selected if they pass any of the implemented checks, regardless of how reliable those checks are. For example, a genotype that was first detected after a candidate background fixed would be nested under that background, even if the derivative check may suggest otherwise. A better version of this would use the confidence we have in each of the individual check to make a decision on the final background.
+\end{document}

@@ -61,7 +61,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 		difference_breakpoint = program_options.difference_breakpoint,
 		n_binom = None,
 		method = program_options.method,
-		metric = program_options.metric if program_options.method != 'matlab' else 'similarity',
+		metric = program_options.metric if program_options.method not in ['matlab', 'twostep'] else 'similarity',
 		starting_genotypes = starting_genotypes
 	)
 	program_options_clustering = OrderClusterParameters.from_breakpoints(
@@ -189,7 +189,7 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"-r", "--similarity-cutoff",
-		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into muller_genotypes.",
+		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
 		action = "store",
 		default = 0.05,
 		dest = "similarity_breakpoint",
@@ -239,6 +239,7 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "method",
 		choices = ['matlab', 'hierarchy', 'twostep']
 	)
+	#TODO add option to change the fcluster method.
 	parser.add_argument(
 		"--metric",
 		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, such as the difference between them or how well they are correlated.",

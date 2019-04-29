@@ -1,33 +1,12 @@
 # Clustering Mutational Trajectories
 Two methods have been implemented for clustering trajectories into genotypes, referred to here as the "two-step" method and the hierarchical method.
 
-## Two-step Method
-The two-step method was originally devised by Katya Kosheleva in 2012 to model the evolution of yeast populations, and has since been modified to accomodate a wider array of experimental designs. Since each frequency measurement is analagous to the probability of a mutation being detected at a given timepoint, we can use the binomial distribution to test whether two sets of frequency measurements represent the same underlying series. There are a few key assumptions that must be made:
-
-1. The separation between two mutational trajectories that belong to the same genotype is due to measurement error and the error is normally distributed.
-
-2. Each sampled timepoint over the course of an evolutionary experiment is perfectly representative of the population as a whole. That is, mutations that first appear at large frequencies (i.e. 60%) must have appeared and risen to that level since the most resently sampled timepoint (i.e. it was not simply missed during the sampling step).
-
-3. Any two mutational trajectories will have at least one common timepoint where both are detected and not fixed.
-
-Assumption 3 is particularly troublesum, since there are typically a few mutational trajectories which do not satisfy this assumption, and these cases must be handled differently (described after the calculation method).
-
-The two-step method also requires the user to specify a couple arbitrary variables:
-- `similarity_cutoff`: defaults to 0.05. Used during the agglomerative clustering step to group trajectories into initial genotypes.
-- `link_cutoff`: defaults to 0.25. Used during the unlinking step to determine if a genotype contains at least one pair of mutational trajectories that do not belong to the same genotype.
-
-
-The two-step method essentially tests whther the average distance between two series is statistically significant given the uncertainty in the data. If the difference is not statistically significant, the two genotypes are grouped into the same genotype. This is done for all possible pairs of mutational trajectories in the dataset.
-
-### Agglomerative clustering based on similarity
-
-The two-step method defines each mutational frequency as the probability of a mutation being detected given $n$ independent measurements. This is best characterized by the binomial distribution which models the probability of a "success" (in this case, the presence of a specific mutation) given the probability of success (the measured frequency).
-
-### Similarity Calculation
+## Similarity Calculation
+Both clustering methods use a similarity calculation based on the binomial distribution.
 
 If there are two series $X$ and $Y$ that represent a pair of mutational trajectories with $n$ timepoints such that $X=\{X_0,X_1,...,X_n\}$ and $Y=\{Y_0,Y_1,...,Y_n\}$ where $f_{detected} \lt X_i,Y_i \lt f_{fixed}$, there exists a series $\mu$ representing the mean probability of success (a mutation is present) at any time point $i$ such that $\mu=\{\mu_0,\mu_1,...,\mu_n\}$, where $\mu_i=\frac{X_i+Y_i}{2}$ for $0\le i \le n$.
 
-Since $\mu$ represents the average probability of success between the two series at each timepoint and the variance of a binomial distribution as a whole is defined as $\sigma^2=np(1-p)$, the variance $\sigma_i^2$ for each element $\mu_i \in \mu$ is $\sigma_i^2=\mu_i(1-\mu_i)$ for an individual element $\mu_i$.
+Since $\mu$ represents the set of average probability of success between the two series at each timepoint and the variance of a binomial distribution as a whole is defined as $\sigma^2=np(1-p)$, the variance $\sigma_i^2$ for each element $\mu_i \in \mu$ is $\sigma_i^2=\mu_i(1-\mu_i)$ for an individual element $\mu_i$.
 
 The variance of the series as a whole is then
 $$
@@ -49,39 +28,31 @@ We want to determine whether the average difference $\bar{d}$ between the two mu
 $$
 P(\bar{d} > x) = 1-F(\bar{d}|\mu, \sigma) = \frac{1}{2} - \frac{1}{2}erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)
 $$
+
+Since we are interested in whether $\bar{d}$ exceeds
 $$
-P(-x<\bar{d}<x) = 1 - erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)
+P(\bar{d} < -x, x < \bar{d}) = 1 - erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)
 $$
 
 However, as noted above, this test is only performed for the measurements in $X$ and $Y$ which satisfy the requirement $f_{detected} < f <f_{fixed}$ for $f \in X,Y$. timepoints where neither series satisfy this requirement are discarded. If there is no overlap between the timepoints in $X$ and $Y$ after these timepoints have been discarded then the above probability calculation cannot be done. This does not mean that both series are unrelated; if both timepoints fix immediately (at the timepoint they are first detected) during the same timepoint, they should be added to the same genotype. There is an additional test to address this edge case. If two trajectories are fixed at 3 or more common timepoints they are assigned to the same genotype.
 
-### Summary
 
-$$
-\mu=\frac{1}{2}(X_i+Y_i)
-$$
-
-$$
-\sigma = \mu(1-\mu)
-$$
-$$
-d=|X_i-Y_i|
-$$
 
 ### Example
 Given two mutational series from the same genotype:
-| Trajectory    | 0 | 1    | 2   | 3    | 4    | 5   |
-|---------------|---|------|-----|------|------|-----|
-| trajectory-A1 | 0 | 0    | 0   | 0.1  | 0.5  | 0.5 |
-| trajectory-A2 | 0 | 0    | 0   | 0.06 | 0.35 | 0.4 |
+
+| Trajectory    | 0 | 1 | 2 | 3     | 4     | 5     |
+|---------------|---|---|---|-------|-------|-------|
+| trajectory-A1 | 0 | 0 | 0 | 0.100 | 0.500 | 0.500 |
+| trajectory-A2 | 0 | 0 | 0 | 0.060 | 0.350 | 0.400 |
+
 Calculate the series for $\mu$, $\sigma^2$, and $d$:
 
-
-|            | 0 | 1 | 2 | 3      | 4        | 5      |
-|------------|---|---|---|--------|----------|--------|
-| $\mu_i$         | 0 | 0 | 0 | 0.08   | 0.425    | 0.45   |
-| $\sigma_i^2$      | 0 | 0 | 0 | 0.221 | 0.733 | 0.743 |
-| $d_i$           | 0 | 0 | 0 | 0.04   | 0.15     | 0.1    |
+|              | 0 | 1 | 2 | 3     | 4     | 5     |
+|--------------|---|---|---|-------|-------|-------|
+| $\mu_i$      | 0 | 0 | 0 | 0.080 | 0.425 | 0.45  |
+| $\sigma_i^2$ | 0 | 0 | 0 | 0.221 | 0.733 | 0.743 |
+| $d_i$        | 0 | 0 | 0 | 0.040 | 0.150 | 0.100 |
 
 This gives us the following values:
 
@@ -91,41 +62,31 @@ $\bar{d}=(0.040+0.150+0.100)/3=0.097$
 
 $$
 p = 1 - erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)=
-1-erf \bigg(\frac{0.097}{\sqrt{2 \times 0.0.062}}\bigg)=
+1-erf \bigg(\frac{0.097}{\sqrt{2 \times 0.062}}\bigg)=
 1-erf(0.091)=1-0.300=0.700
 $$
 
 Note that while these values were rounded to three decimal places for brevity, the actual calculation used the full numbers.
 
-### Summary
-
-The similarity calculation uses three sets of values:
-$$
-  \mu = {\frac{1}{2}(X_i + Y_i)}
-$$
-$$
-  \sigma = \mu_i(1-\mu_i)
-$$
-$$
-  d = |X_i-Y_i|
-$$
-
 ### Example
 Given two mutational series from different genotypes:
-| Trajectory    | 0 | 1    | 2   | 3    | 4    | 5   |
-|---------------|---|------|-----|------|------|-----|
-| trajectory-A1 | 0 | 0    | 0   | 0.1  | 0.5  | 0.5 |
-| trajectory-B1 | 0 | 0.07 | 0.1 | 0.02 | 0.01 | 0   |
+
+| Trajectory    | 0 | 1     | 2     | 3     | 4     | 5     |
+|---------------|---|-------|-------|-------|-------|-------|
+| trajectory-A1 | 0 | 0     | 0     | 0.100 | 0.500 | 0.500 |
+| trajectory-B1 | 0 | 0.070 | 0.100 | 0.020 | 0.010 | 0     |
+
 Calculate the series for $\mu$, $\sigma^2$, and $d$:
-|            | 0 | 1        | 2      | 3      | 4        | 5      |
-|------------|---|----------|--------|--------|----------|--------|
-| mu         | 0 | 0.035    | 0.05   | 0.06   | 0.255    | 0.25   |
-| sigma      | 0 | 0.033775 | 0.0475 | 0.0564 | 0.189975 | 0.1875 |
-| d          | 0 | 0.07     | 0.1    | 0.08   | 0.49     | 0.5    |
+
+|              | 0 | 1     | 2     | 3     | 4     | 5     |
+|--------------|---|-------|-------|-------|-------|-------|
+| $\mu_i$      | 0 | 0.035 | 0.050 | 0.060 | 0.255 | 0.250 |
+| $\sigma_i^2$ | 0 | 0.034 | 0.048 | 0.056 | 0.190 | 0.188 |
+| $d_i$        | 0 | 0.070 | 0.100 | 0.080 | 0.490 | 0.500 |
 
 This gives us the following values:
 
-$\sigma^2=(0.034+0.048+0.056+0.190+0.189)/16=0.020606$
+$\sigma^2=(0.034+0.048+0.056+0.190+0.189)/16=0.021$
 
 $\bar{d}=(0.07+0.1+0.08+0.49+0.5)/5=0.248$
 
@@ -134,6 +95,29 @@ p = 1 - erf \bigg(\frac{\bar{d}}{\sqrt{2\sigma^2}}\bigg)=
 1-erf \bigg(\frac{0.248}{\sqrt{2 \times 0.021}}\bigg)=
 1-erf(1.223)=1-0.916=0.084
 $$
+
+
+## Two-step Method
+The two-step method was originally devised by Katya Kosheleva in 2012 to model the evolution of yeast populations, and has since been modified to accommodate a wider array of experimental designs. Since each frequency measurement is analogous to the probability of a mutation being detected at a given timepoint, we can use the binomial distribution to test whether two sets of frequency measurements represent the same underlying series. There are a few key assumptions that must be made:
+
+1. The separation between two mutational trajectories that belong to the same genotype is due to measurement error and the error is normally distributed.
+
+2. Each sampled timepoint over the course of an evolutionary experiment is perfectly representative of the population as a whole. That is, mutations that first appear at large frequencies (i.e. 60%) must have appeared and risen to that level since the most recently sampled timepoint (i.e. it was not simply missed during the sampling step).
+
+3. Any two mutational trajectories will have at least one common timepoint where both are detected and not fixed.
+
+Assumption 3 presents a particular problem, since there are typically a few mutational trajectories which do not satisfy this assumption, and these cases must be handled differently (described after the calculation method).
+
+The two-step method also requires the user to specify a couple arbitrary variables:
+- `similarity_cutoff`: defaults to 0.05. Used during the agglomerative clustering step to group trajectories into initial genotypes.
+- `link_cutoff`: defaults to 0.25. Used during the unlinking step to determine if a genotype contains at least one pair of mutational trajectories that do not belong to the same genotype.
+
+
+The two-step method essentially tests whther the average distance between two series is statistically significant given the uncertainty in the data. If the difference is not statistically significant, the two genotypes are grouped into the same genotype. This is done for all possible pairs of mutational trajectories in the dataset.
+
+### Agglomerative clustering based on similarity
+
+The two-step method defines each mutational frequency as the probability of a mutation being detected given $n$ independent measurements. This is best characterized by the binomial distribution which models the probability of a "success" (in this case, the presence of a specific mutation) given the probability of success (the measured frequency).
 
 
 ### Unlinking based on maximal distance
@@ -146,10 +130,10 @@ For each genotype with at least one pair of trajectories that have a p-value les
 
 For the three mutational trajectories in the above examples, the pairwise p-values are:
 
-| $p$| A2 | B1 |
-|--|----|----|
-|A1|0.700|0.084|
-|A2|   |0.177|
+| $p$ | A2   | B1  |
+|-----|------|-----|
+|A1   |0.700 |0.084|
+|A2   |      |0.177|
 
 The two genotypes with the least similarity are A1 and B1. Since at least one pair of trajectories in this genotype have a p-value less than the default `link_cutoff` value of 0.25, these two trajectories are split into their own genotypes, and the remaining trajectories (in this case, A2) are sorted into the genotype that is most similar. The resulting genotypes are then:
 
@@ -227,4 +211,3 @@ Combining the dinomial distance metric with hierarchical clustering provides the
 ![B1.hierarchy.binomial.trajectories](figures/B1.hierarchy.binomial.trajectories.png)
 
 This method splits the previous genotype up and groups A and B together (blue), while C (yellow) is paired with another trajectory which was not part of the original genotype, but shares a similar path as C.
- 

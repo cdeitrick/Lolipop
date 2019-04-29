@@ -44,6 +44,7 @@ There are two versions of these tables: one set with the original input trajecto
 The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
 
 Example Genotype Table:
+
 | Genotype    | 0.000 | 17.000 | 25.000 | 44.000 | 66.000 | 75.000 | 90.000 |
 | ----------- | ----- | ------ | ------ | ------ | ------ | ------ | ------ |
 | genotype-1  | 0.000 | 0.380  | 0.432  | 0.000  | 0.000  | 0.000  | 0.000  |
@@ -77,8 +78,8 @@ Columns:
 - `distance`: The distance between the two sub-clusters.
 - `observations`: The number of mutational trajectories contained in this cluster.
 
-
 Example linkage matrix:
+
 | left | right | distance | observations | resultingCluster |
 |------|-------|----------|--------------|------------------|
 | 7    | 18    | 0.034    | 2            | 19               |

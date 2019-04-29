@@ -50,14 +50,14 @@ If the computed jaccard distance is equal to the above equation, genotype $Y$ ar
 
 | Genotype   | 0 | 17 | 25 | 44    | 66    | 75    | 90    |
 |------------|---|----|----|-------|-------|-------|-------|
-| genotype-6 | 0 | 0  | 0  | 0.273 | 0.781 | 1     | 1     |
-| genotype-7 | 0 | 0  | 0  | 0.403 | 0.489 | 0.057 | 0.08  |
+| genotype-6 | 0 | 0  | 0  | 0.273 | 0.781 | 1.000 | 1.000 |
+| genotype-7 | 0 | 0  | 0  | 0.403 | 0.489 | 0.057 | 0.080 |
 | genotype-3 | 0 | 0  | 0  | 0     | 0.211 | 0.811 | 0.813 |
 
 The jaccard distance between genotype-6 and genotype-7, assuming genotype-6 is the background:
 $$|X| = 0.273+0.781+1+1 = 3.054$$
-$$|Y| = 0.403+0.489+0.057+0.08=1.029$$
-$$|X \cap Y|=.273+.489+.057+0.08=0.899$$
+$$|Y| = 0.403+0.489+0.057+0.080=1.029$$
+$$|X \cap Y|=.273+.489+.057+0.080=0.899$$
 $$|X \cup Y| \equiv |X|+|Y|-|X \cap Y|= 3.054+1.029-0.899=3.184$$
 Now let's calculate the jaccard distance the traditional way:
 $$
@@ -72,7 +72,7 @@ Since $0.718\ne 0.663$, We cannot say that $Y$ arises in the background of $X$.
 
 Let's test if genotype-3 arises in the background of genotype-6:
 
-$$|X| = 0.273+0.781+1+1 = 3.054$$
+$$|X| = 0.273+0.781+1.000+1.000 = 3.054$$
 $$|Y| = 0.211+0.811+0.813=1.835$$
 $$|X \cap Y|=0+.211+.811+.813=1.835$$
 $$|X \cup Y| \equiv |X|+|Y|-|X \cap Y|= 3.054+1.835-1.835=3.184$$
@@ -94,8 +94,7 @@ So, there is evidence that genotype-3 arises in the background of genotype-6.
 
 Given the above checks, this is the ruleset for determining if a nested genotype is a potential background for the unnested genotype being tested.
 
-1. If the genotypes are begatively correlated, the nested genotype is not a background candidate for the current genotype.
+1. If the genotypes are negatively correlated, the nested genotype is not a background candidate for the current genotype.
 2. If the unnested genotype contains more elements than the nested genotype, it cannot be a background candidate.
 3. If the nested genotype is consistently larger than the unnested genotype, is positively correlated with the unnested genotype, and the jaccard distance indicates the unnested genotype is a subset of the nested genotype, then the nested genotype is assigned as the background for the unnested genotype. The newly nested genotype is then available as a potential background candidate for subsequent unnested genotypes.
 4. If the unnested genotype is consistently smaller than the nested genotype or is determined to be a subset of the nested genotype, the nested genotype is considered a potential background for the unnested genotype. The unnested genotype will continue to be tested against all other nested genotypes. If no other genotype has greater evidence for being the background of the unnested genotype, the script prioritises the nested genotype with the greatest maximum frequency which was detected closest to when the unnested genotype was first detected.
-
