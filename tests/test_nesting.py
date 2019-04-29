@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from dataclasses import dataclass
 
 import pandas
@@ -6,8 +6,7 @@ import pandas
 from dataio import import_table
 from muller.inheritance import order
 
-logging.basicConfig(level = logging.DEBUG)
-logger = logging.getLogger(__file__)
+
 import pytest
 
 
