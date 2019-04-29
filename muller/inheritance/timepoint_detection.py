@@ -84,7 +84,7 @@ def get_first_fixed_timepoint(transposed_genotypes: pandas.DataFrame, cutoff: fl
 	first_fixed = _get_timepoint_above_threshold(transposed_genotypes, cutoff, 'firstFixed')
 	if cutoff != 0:
 		# If we are checking for the lowest frequency breakpoint, ignore this check.
-		first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.nonzero()]
+		first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.to_numpy().nonzero()]
 	else:
 		first_fixed_reduced = first_fixed
 
