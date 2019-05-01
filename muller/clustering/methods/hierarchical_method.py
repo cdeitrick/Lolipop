@@ -54,6 +54,7 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 
 		logger.info(f"Finding quantile {similarity_cutoff}")
 		similarity_cutoff = distances.quantile(similarity_cutoff)
+
 		logger.info(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
 		clusters = hierarchy.fcluster(Z, t = 0.05, criterion = 'distance')

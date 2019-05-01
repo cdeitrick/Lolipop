@@ -45,15 +45,17 @@ class Cluster:
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
 	def get_highest_priority(self, label:str)->Optional[str]:
 		candidates = self.confidence.get(label, [])
-		try:
+		if candidates:
 			# Explicity tell the sorting method to use the priority score.
 			# This will prevent the method from using the genotype name to sort the elements,
 			# So ties should be broken by whichever candidate was added as a candidate first.
-			highest = max(candidates, key = lambda s: s[1])[0]
-		except ValueError:
+			candidate, score = max(candidates, key = lambda s: s[1])
+			if score < 1:
+				candidate = None
+		else:
 			# `candidates` was an empty sequence.
-			highest = None
-		return highest
+			candidate = None
+		return candidate
 
 
 	def as_ancestry_table(self) -> pandas.Series:

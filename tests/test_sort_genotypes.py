@@ -123,14 +123,7 @@ def test_sort_genotypes(table):
 	"""
 	expected_result = import_table(expected, index = 'Trajectory')
 
-	class TestOptions:
-		def __init__(self):
-			self.detection_breakpoint = 0.03
-			self.fixed_breakpoint = 0.97
-			self.significant_breakpoint = 0.15
-			self.frequency_breakpoints = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0]
-
-	result = sort_genotypes(table, TestOptions())
+	result = sort_genotypes(table, 0.03, 0.15, 0.97, [1, 0.97, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
 	expected_result.index.name = None
 	pandas.testing.assert_frame_equal(result, expected_result)
 
@@ -157,12 +150,5 @@ def test_sort_genotypes_with_initial_values(mouse_table):
 	expected_result = import_table(expected, index = 'Genotype')
 	expected_result.index.name = None
 
-	class TestOptions:
-		def __init__(self):
-			self.detection_breakpoint = 0.03
-			self.fixed_breakpoint = 0.97
-			self.significant_breakpoint = 0.15
-			self.frequency_breakpoints = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0.0]
-
-	result = sort_genotypes(mouse_table, TestOptions())
+	result = sort_genotypes(mouse_table, 0.03, 0.15, 0.97, [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
 	pandas.testing.assert_frame_equal(expected_result, result)

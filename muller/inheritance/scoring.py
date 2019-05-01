@@ -26,12 +26,12 @@ def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: 
 
 
 	score = int(difference.sum() > (cutoff * len(difference)/2))
-	logger.debug(f"{nested_genotype.name}\t{unnested_genotype.name}\t{difference.sum():.2f}\t{cutoff * len(difference)/2:.2f}")
+
 	# There may be a point where the unnested genotype is greater than the nested genotype.
 
 	if any(difference < 0):
-		score -= 0.5
-
+		score -= 1
+	logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
 def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detection_cutoff:float, cutoff:float) -> float:
@@ -60,7 +60,7 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 	elif covariance > cutoff:score = 2
 	elif covariance < -cutoff:score = -2
 	else: score = 0
-
+	logger.debug(f"{right.name}\t{left.name}\t{score}\t{covariance}")
 	return score
 
 def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas.Series)->float:
@@ -88,7 +88,7 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 		score = 2
 	else:
 		score = -2
-
+	logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
 
