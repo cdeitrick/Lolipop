@@ -218,7 +218,6 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "method",
 		choices = ['matlab', 'hierarchy', 'twostep']
 	)
-	#TODO add option to change the fcluster method.
 	parser.add_argument(
 		"--metric",
 		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, such as the difference between them or how well they are correlated.",

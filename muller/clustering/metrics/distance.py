@@ -56,7 +56,6 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	""" Based on the binomial calculations present in the original matlab scripts."""
 	# Find the mean frequency of each timepoint
 	# index is timepoints,  values are frequencies
-	# TODO make sure this is actually removing fixed timepoints.
 	not_detected_fixed_df = pandas.concat([left, right], axis = 1)
 	mean: pandas.Series = not_detected_fixed_df.mean(axis = 1)
 

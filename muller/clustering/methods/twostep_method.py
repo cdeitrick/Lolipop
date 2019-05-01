@@ -106,8 +106,6 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 		if len(population_genotypes) == starting_size_of_the_genotype_array:
 			break
 
-	# all_genotypes[population_id] = population_genotypes
-	# TODO Fix so that it returns a genotype for each population
 	return [i for i in population_genotypes if i]  # Only return non-empty lists.
 
 
