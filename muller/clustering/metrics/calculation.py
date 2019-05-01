@@ -1,6 +1,6 @@
 import itertools
 from loguru import logger
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple, Iterable
 
 import pandas
 import math
@@ -53,7 +53,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		A table of mutational trajectories. Should be a normal trajectory table.
 	detection_cutoff: float
 	fixed_cutoff: float
-	metric: {'similarity', 'dtw'}
+	metric: {'similarity', 'binomial', 'pearson', 'minkowski'}
 
 	Returns
 	-------
@@ -66,7 +66,8 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	logger.debug(f"\t fixed limit: {fixed_cutoff}")
 	logger.debug(f"\t metric: {metric}")
 
-	pair_combinations: List[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
+	# noinspection PyTypeChecker
+	pair_combinations: Iterable[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
 	pair_array = dict()
 	for left, right in pair_combinations:
 		left_trajectory = trajectories.loc[left]

@@ -10,9 +10,7 @@ FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
-	from muller.clustering.generatelegacy import GenotypeOptions
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from inheritance.sort_genotypes import SortOptions
 	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *

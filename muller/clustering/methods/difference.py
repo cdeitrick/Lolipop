@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 import pandas
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyTypeChecker
 def _find_weakest_pair(trajectories: pandas.Series, link_cut: float) -> Tuple[str, str]:
 	return (trajectories - link_cut).abs().idxmin()
 
@@ -87,7 +87,7 @@ def unlink_unrelated_trajectories(all_genotypes: List[List[str]], pair_array: Di
 			# Iterate over all possible pairs of genotype members.
 			combination_pairs = [(left, right, pair_array[left, right]) for left, right in itertools.permutations(genotype, 2)]
 			# Combine all pairs and p-values into a dataframe for convienience.
-			genotype_combinations = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
+			genotype_combinations: pandas.DataFrame = pandas.DataFrame(combination_pairs, columns = ['left', 'right', 'pvalue'])
 			genotype_combinations: pandas.Series = genotype_combinations.set_index(['left', 'right'])['pvalue']
 			# Get a dataframe of all trajectories in this genotype which are significantly different than the
 			# current pair of trajectories.

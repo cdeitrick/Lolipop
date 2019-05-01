@@ -63,7 +63,7 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 
 	return score
 
-def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas.Series, dlimit:float)->float:
+def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas.Series)->float:
 	"""
 		Calculates a score based on the probability the unnested genotype is a subset of the nested_genotype.
 		This take into account both the area of the nested genotype and the area of all other genotypes not in the nested genotype.
@@ -73,6 +73,7 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 
 	"""
 
+	# noinspection PyTypeChecker
 	other_genotypes:pandas.Series = 1 - nested_genotype
 
 	common_area_nested = order_by_area.calculate_common_area(nested_genotype, unnested_genotype)

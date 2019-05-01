@@ -5,8 +5,6 @@ from typing import Dict, List, Mapping, Optional, Union
 
 import pandas
 
-from loguru import logger
-
 
 def read_map(contents: Union[str, Path])->Dict[str,str]:
 	"""
@@ -137,7 +135,7 @@ def _extract_value(row: Mapping[str, str], column: str) -> Optional[str]:
 	return value
 
 
-def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, List[str]]:
+def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, str]:
 	if alias_filename:
 		alias_map = read_map(alias_filename)
 	else:

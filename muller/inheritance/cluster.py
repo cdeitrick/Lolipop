@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Mapping, Union
 
 import pandas
 
@@ -13,7 +13,7 @@ class Cluster:
 
 		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
 
-	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: int) -> None:
+	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: Union[int, float]) -> None:
 		if unnested_label not in self.nests:
 			self.nests[unnested_label] = list()
 
@@ -73,5 +73,5 @@ class Cluster:
 
 		return table.set_index('Identity')['Parent']
 
-	def as_dict(self) -> Dict[str, str]:
+	def as_dict(self) -> Mapping[str, str]:
 		return self.as_ancestry_table().to_dict()

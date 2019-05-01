@@ -1,7 +1,6 @@
 import itertools
 
 from typing import Any, List, Tuple
-import statistics
 import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
