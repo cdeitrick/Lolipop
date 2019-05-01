@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	logger.info("parsing options...")
-	program_options, program_options_genotype, program_options_sort, program_options_clustering = parse_workflow_options(program_options)
+	program_options = parse_workflow_options(program_options)
 	logger.info("Program options:")
 	for k, v in vars(program_options).items():
 		logger.info(f"\t{k:<20}{v}")
@@ -68,16 +68,16 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options.detection_breakpoint,
 		program_options.significant_breakpoint,
 		program_options.fixed_breakpoint,
-		program_options_sort.frequency_breakpoints
+		program_options.frequencies
 	)
 	logger.info("nesting muller_genotypes...")
 
 
 	genotype_clusters = order.order_clusters(
 		sorted_genotypes,
-		additive_cutoff = program_options_genotype.detection_breakpoint,
-		derivative_cutoff = program_options_clustering.derivative_check_cutoff,
-		dlimit = program_options_genotype.detection_breakpoint,
+		additive_cutoff = program_options.detection_breakpoint,
+		derivative_cutoff = program_options.detection_breakpoint,
+		dlimit = program_options.detection_breakpoint,
 		known_ancestry = known_ancestry
 	)
 	logger.info("Generating output...")
@@ -92,12 +92,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,
 		clusters = genotype_clusters,
-
 		program_options = vars(program_options),
-		genotype_options = program_options_genotype,
-		sort_options = program_options_sort,
-		cluster_options = program_options_clustering,
-
 		p_values = generate.PAIRWISE_CALCULATIONS,
 		filter_cache = [],
 		linkage_matrix = linkage_matrix,

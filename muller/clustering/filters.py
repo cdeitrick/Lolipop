@@ -4,10 +4,7 @@ from typing import List, Tuple
 import pandas
 
 from loguru import logger
-try:
-	from muller.options import GenotypeOptions
-except ModuleNotFoundError:
-	from options import GenotypeOptions
+
 
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, float]:

@@ -2,7 +2,6 @@ import pandas
 import pytest
 
 import dataio
-import options
 from inheritance import order
 
 
@@ -36,7 +35,6 @@ def test_order(genotypes):
 		'genotype-16': 'genotype-11'
 	}
 
-	test_options = options.OrderClusterParameters.from_breakpoints(.01, .15)
-	result = order.order_clusters(genotypes, test_options)
+	result = order.order_clusters(genotypes, .05, .05, .05)
 
 	assert result.as_dict() == expected

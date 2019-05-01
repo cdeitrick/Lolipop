@@ -11,7 +11,6 @@ OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
@@ -27,10 +26,6 @@ except ModuleNotFoundError:
 	import dataio
 	from muller_output.flowchart import flowchart
 
-	GenotypeOptions = Any
-	SortOptions = Any
-	OrderClusterParameters = Any
-
 
 @dataclass
 class WorkflowData:
@@ -44,9 +39,6 @@ class WorkflowData:
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
 	clusters: Any
-	genotype_options: GenotypeOptions
-	sort_options: SortOptions
-	cluster_options: OrderClusterParameters
 	p_values: PairwiseCalculationCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
@@ -129,30 +121,9 @@ class OutputFilenames:
 
 
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
-	options = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
-	parameters = {
-		# get_genotype_options
-		'detectionCutoff':                        workflow_data.genotype_options.detection_breakpoint,
-		'fixedCutoff':                            workflow_data.genotype_options.fixed_breakpoint,
-		'similarityCutoff':                       workflow_data.genotype_options.similarity_breakpoint,
-		'differenceCutoff':                       workflow_data.genotype_options.difference_breakpoint,
-		# sort options
-		'significanceCutoff':                     workflow_data.sort_options.significant_breakpoint,
-		'frequencyCutoffs':                       workflow_data.sort_options.frequency_breakpoints,
-		# cluster options
-		'additiveBackgroundDoubleCheckCutoff':    workflow_data.cluster_options.additive_background_double_cutoff,
-		'additiveBackgroundSingleCheckCutoff':    workflow_data.cluster_options.additive_background_single_cutoff,
-		'subtractiveBackgroundDoubleCheckCutoff': workflow_data.cluster_options.subtractive_background_double_cutoff,
-		'subtractiveBackgroundSingleCheckCutoff': workflow_data.cluster_options.subtractive_background_single_cutoff,
-		'derivativeDetectionCutoff':              workflow_data.cluster_options.derivative_detection_cutoff,
-		'derivativeCheckCutoff':                  workflow_data.cluster_options.derivative_check_cutoff,
-		# Palette
-		'genotypePalette':                        genotype_colors,
-		'commit':                                 widgets.get_commit_hash(),
-		'method':                                 workflow_data.genotype_options.method,
-		'metric':                                 workflow_data.genotype_options.metric,
-		'options':                                options
-	}
+	parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
+	parameters['genotypeColors'] = genotype_colors
+
 	return parameters
 
 
