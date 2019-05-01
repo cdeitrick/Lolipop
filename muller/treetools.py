@@ -2,6 +2,27 @@ from typing import Dict, List, Tuple
 
 import pandas
 
+def get_child_nodes(tree:pandas.DataFrame, label:str)->List[str]:
+	"""Retrieves all child node for the given label from the tree. Includes `label` in the output"""
+
+	children = list()
+	for index in tree.index:
+		parents = get_parent_nodes(tree, index)
+		if label in parents:
+			children.append(index)
+	return children
+
+def get_parent_nodes(tree: pandas.DataFrame, label: str)->List[str]:
+	"""Retrieves all parent nodes for the given node."""
+	parents = []
+	while label != 'genotype-0':
+		try:
+			parent = tree.loc[label]['Parent']
+		except KeyError:
+			parent = 'genotype-0'
+		parents.append(parent)
+		label = parent
+	return parents
 
 def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 	"""

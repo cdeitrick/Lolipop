@@ -21,7 +21,19 @@ similar_colorschemes = {
 distinctive_colorschemes = [
 	'Reds', 'Blues', 'Greens', 'Purples', 'hot', 'Greys', 'copper', 'cool'
 ]
-
+sequential_colorschemes = [
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+            'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+            'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+sequential2_colorschemes = [
+            'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+            'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
+            'hot', 'afmhot', 'gist_heat', 'copper']
+misc_colorschemes = [
+            'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
+            'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
+            'gist_rainbow', 'rainbow', 'jet', 'nipy_spectral', 'gist_ncar']
+distinctive_colorschemes = distinctive_colorschemes + sequential_colorschemes + sequential2_colorschemes + misc_colorschemes
 
 def load_colorscheme(string: str, size: int) -> List[str]:
 	"""Attempts to load a given colorscheme."""
