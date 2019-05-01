@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import pandas
 
@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 	from options import OrderClusterParameters
 
 
-def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:float,derivative_cutoff:float) -> Cluster:
+def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:float,derivative_cutoff:float, known_ancestry:Dict[str,str] = None) -> Cluster:
 	"""
 		Orders genotypes by which background they belong to.
 	Parameters
@@ -32,10 +32,18 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:fl
 	ClusterType
 	"""
 	# By default the backgrounds should occupy the first n lines of the dataframe
-
+	if known_ancestry is None: known_ancestry = dict()
 
 	initial_background = sorted_df.iloc[0]
 	genotype_nests = Cluster(initial_background, timepoints = sorted_df)
+	if known_ancestry:
+		logger.info(f"Found user-given ancestries.")
+	for identity, parent in known_ancestry.items():
+		# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
+		# TODO Also need to add a way to specify a genotype by one of the linked annotations.
+		logger.info(f"Adding {parent} as a potential background for {identity}")
+		genotype_nests.add_genotype_to_background(parent, 'genotype-0', priority = 100)
+		genotype_nests.add_genotype_to_background(identity, parent, priority = 100) # Dummy priority so that it is selected before other backgrounds.
 	for unnested_label, unnested_trajectory in sorted_df[1:].iterrows():
 		logger.debug(f"Nesting {unnested_label}")
 		# Iterate over the rest of the table in reverse order. Basically, we start with the newest nest and iterate until we find a nest that satisfies the filters.
@@ -49,10 +57,10 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:fl
 			total_score = score_additive + score_derivative + score_area
 			logger.debug(f"{unnested_label}\t{nested_label}\t{total_score}")
 			genotype_nests.add_genotype_to_background(unnested_label, nested_label, total_score)
-	logger.info("Final Ancestry:")
+	logger.debug("Final Ancestry:")
 	for genotype_label in sorted_df.index:
 		candidate = genotype_nests.get_highest_priority(genotype_label)
-		logger.info(f"{genotype_label}\t{candidate}")
+		logger.debug(f"{genotype_label}\t{candidate}")
 	return genotype_nests
 
 

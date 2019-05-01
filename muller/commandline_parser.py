@@ -271,4 +271,11 @@ def create_parser() -> argparse.ArgumentParser:
 		default = None,
 		dest = 'alias_filename'
 	)
+	parser.add_argument(
+		"--known-ancestry",
+		help = "A file designating the known ancestry of certain genotypes. Formatted like the ggmuller edges table.",
+		dest = 'known_ancestry',
+		default = None,
+		type = Path
+	)
 	return parser

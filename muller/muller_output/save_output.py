@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
-
+from loguru import logger
 import pandas
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
@@ -176,7 +176,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 
-	print("Saving Trajectory Tables...")
+	logger.info("Saving Trajectory Tables...")
 	# Save trajectory tables, if available
 	if workflow_data.trajectories is not None:
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
@@ -220,7 +220,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	# ------------------------------------------------- Generate the lineage plots ---------------------------------------------------------------
 	##############################################################################################################################################
-	print("Generating Lineage Plots...")
+	logger.info("Generating Lineage Plots...")
 	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)
@@ -244,7 +244,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	# -------------------------------- Generate time series plots showing the mutations/genotypes over time --------------------------------------
 	##############################################################################################################################################
-	print("Generating series plots...")
+	logger.info("Generating series plots...")
 	trajectory_colors_distinct = {k: genotype_colors_distinct[v] for k, v in parent_genotypes.items()}
 	trajectory_colors_lineage = {k: genotype_colors_clade[v] for k, v in parent_genotypes.items()}
 
@@ -257,7 +257,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	# ------------------------------------- Generate the muller plot using the table from the r script -------------------------------------------
 	##############################################################################################################################################
-	print("Generating muller plots...")
+	logger.info("Generating muller plots...")
 	if muller_df is not None:
 		annotated_muller_plot_filenames = [
 			filenames.muller_plot_annotated,

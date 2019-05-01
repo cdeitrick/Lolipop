@@ -1,31 +1,28 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pandas
 
 
 class Cluster:
+	""" Holds the possible ancestry candidates as well as the confidance score for each."""
 	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):
 		self.initial_background_label: str = initial_background.name
 		self.timepoints = timepoints.copy()
-		self.confidence = dict()
+		self.confidence: Dict[str,List[Tuple[str,float]]] = dict()
 		initial_genotype = ['genotype-0']
 
 		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
 
-	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: int = None) -> None:
+	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: int) -> None:
 		if unnested_label not in self.nests:
 			self.nests[unnested_label] = list()
 
-		if priority and False:
-			self.nests[unnested_label].insert(0, nested_label)
-		else:
-			self.nests[unnested_label].append(nested_label)
 		self.nests[unnested_label].append(nested_label)
 
-		if priority:
-			self.confidence[nested_label, unnested_label] = priority
-			# To make lookup easier
-			self.confidence[unnested_label, nested_label] = priority
+		if unnested_label not in self.confidence:
+			self.confidence[unnested_label] = []
+		self.confidence[unnested_label].append((nested_label, priority))
+
 
 	def get(self, label: str) -> List[str]:
 		return self.nests[label]
@@ -46,23 +43,18 @@ class Cluster:
 	def is_a_background(self, element: str) -> bool:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
-
-	def get_highest_priority(self, label: str) -> Optional[str]:
-		candidates = dict()
-		for (left, right), value in self.confidence.items():
-			if left == label:
-				candidates[right] = value
-			elif right == label:
-				candidates[left] = value
+	def get_highest_priority(self, label:str)->Optional[str]:
+		candidates = self.confidence.get(label, [])
 		try:
-			maximum = max(candidates.values())
+			# Explicity tell the sorting method to use the priority score.
+			# This will prevent the method from using the genotype name to sort the elements,
+			# So ties should be broken by whichever candidate was added as a candidate first.
+			highest = max(candidates, key = lambda s: s[1])[0]
 		except ValueError:
-			maximum = None
-		try:
-			candidate_backgrounds = [i for i in self.get(label) if candidates.get(i) == maximum]
-			return candidate_backgrounds[0]
-		except IndexError:
-			return None
+			# `candidates` was an empty sequence.
+			highest = None
+		return highest
+
 
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()

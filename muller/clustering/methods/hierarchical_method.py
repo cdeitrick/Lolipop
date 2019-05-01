@@ -1,7 +1,7 @@
 import itertools
 
 from typing import Any, List, Tuple
-
+import statistics
 import pandas
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
@@ -29,8 +29,8 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	-------
 
 	"""
-	logger.debug(f"similarity_cutoff: {similarity_cutoff}")
-	logger.debug(f"cluster_method: {cluster_method}")
+	logger.info(f"similarity_cutoff: {similarity_cutoff}")
+	logger.info(f"cluster_method: {cluster_method}")
 
 	# If known genotypes are given, modify the pair_array so that they will be grouped together.
 	if starting_genotypes:
@@ -44,7 +44,7 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 
 	squaremap = pair_array.squareform()
 	condensed_squaremap = distance.squareform(squaremap.values)
-	method = 'ward'
+	method = 'complete'
 	Z = hierarchy.linkage(condensed_squaremap, method = method, optimal_ordering = True)
 	inconsistent = hierarchy.inconsistent(Z, 10)
 	MR = hierarchy.maxRstat(Z, inconsistent, 1)
@@ -52,8 +52,12 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	if cluster_method == 'distance':
 		maximum_distance = max(pair_array.pairwise_values.values())
 		distances = pandas.Series([i for i in pair_array.pairwise_values.values() if (i != maximum_distance and i > 0)])
-		similarity_cutoff = distances.quantile(.1)
-		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
+
+		logger.info(f"Finding quantile {similarity_cutoff}")
+		similarity_cutoff = distances.quantile(similarity_cutoff)
+		logger.info(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
+
+		clusters = hierarchy.fcluster(Z, t = 0.05, criterion = 'distance')
 	elif cluster_method == 'monocrit':
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'monocrit', monocrit = MR)
 	elif cluster_method == 'inconsistent':

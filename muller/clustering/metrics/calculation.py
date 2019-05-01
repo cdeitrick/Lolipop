@@ -28,8 +28,7 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 	"""
 	left_fixed: pandas.Series = left[left.gt(fixed_cutoff)].dropna()
 	right_fixed: pandas.Series = right[right.gt(fixed_cutoff)].dropna()
-
-	if left_fixed.empty and right_fixed.empty:
+	if left_fixed.empty or right_fixed.empty:
 		# Both are undetected, since they both failed the invalid timepoint filter.
 		p_value = False
 	else:
@@ -41,6 +40,7 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 		complete_overlap = len(overlap) == len(left_fixed) and len(overlap) == len(right_fixed)
 		p_value = fixed_at_same_time and complete_overlap
 	result = 0 if p_value else math.nan
+
 	return result
 
 
@@ -71,19 +71,18 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	for left, right in pair_combinations:
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
-		detected_points = pandas.DataFrame(
-			{
-				'left':  left_trajectory,
-				'right': right_trajectory
-			}
-		)
-		left_trajectory = detected_points['left']
-		right_trajectory = detected_points['right']
 
-		if left_trajectory.empty:
+		# We only care about the timepoints such that `detection_cutoff` < f < `fixed_cutoff.
+		# For now, lets require that both timepoints are detected and not yet fixed.
+		detected_points = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
+		left_reduced = detected_points['left']
+		right_reduced = detected_points['right']
+
+		if left_reduced.empty:
 			distance_between_series = fixed_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		else:
-			distance_between_series = distance.calculate_distance(left_trajectory, right_trajectory, metric)
+			distance_between_series = distance.calculate_distance(left_reduced, right_reduced, metric)
+
 		pair_array[left, right] = pair_array[right, left] = distance_between_series
 
 	# Assume that any pair with NAN values are the maximum possible distance from each other.
