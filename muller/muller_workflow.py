@@ -54,7 +54,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			timepoints,
 			dlimit = program_options.detection_breakpoint,
 			flimit = program_options.fixed_breakpoint,
-			similarity_breakpoint =  program_options.significant_breakpoint,
+			similarity_breakpoint =  program_options.similarity_breakpoint,
 			difference_breakpoint =  program_options.difference_breakpoint,
 			method = program_options.method,
 			metric = program_options.metric,
@@ -65,10 +65,10 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	logger.info("sorting muller_genotypes...")
 	sorted_genotypes = sort_genotypes.sort_genotypes(
 		mean_genotypes,
-		program_options.detection_breakpoint,
-		program_options.significant_breakpoint,
-		program_options.fixed_breakpoint,
-		program_options.frequencies
+		dlimit = program_options.detection_breakpoint,
+		slimit = program_options.significant_breakpoint,
+		flimit = program_options.fixed_breakpoint,
+		breakpoints = program_options.frequencies
 	)
 	logger.info("nesting muller_genotypes...")
 
