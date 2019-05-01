@@ -8,7 +8,7 @@ import pandas
 from loguru import logger
 
 
-def read_map(contents: Union[str, Path]):
+def read_map(contents: Union[str, Path])->Dict[str,str]:
 	"""
 		Parses the contents of any file used to specify a key-value pair. This is used when defining palettes and gene aliases.
 	Parameters
