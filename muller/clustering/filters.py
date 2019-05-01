@@ -173,7 +173,7 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 
 
-def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series, options: GenotypeOptions, breakpoints: List[float],
+def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series,detection_breakpoint:float, breakpoints: List[float],
 		use_strict_filter: bool = False) -> List[str]:
 	"""
 		Finds all trajectories which should be filtered out of the dataset based on certain criteria.
@@ -184,7 +184,7 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 		pre-computed genotypes table.
 	genotype_members: pandas.Series
 		Maps genotypes to a '|' delimited string of member trajectories.
-	options: GenotypeOptions
+	detection_breakpoint: float
 	breakpoints: List[float]
 	use_strict_filter: bool; default False
 
@@ -206,7 +206,7 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 	current_invalid_genotype = find_first_invalid_genotype(
 		original_genotypes,
 		current_backgrounds,
-		options.detection_breakpoint,
+		detection_breakpoint,
 		fuzzy_fixed_limit,
 		use_strict_filter
 	)

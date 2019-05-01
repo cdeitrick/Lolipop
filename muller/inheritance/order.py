@@ -24,8 +24,16 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:fl
 	----------
 	sorted_df: pandas.DataFrame
 		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
-	options: OrderClusterParameters
-		Parameters for the program to use.
+	dlimit: float
+		The detection limit
+	additive_cutoff: float
+		Used when testing whther a nested genotype is consistently greater than an unnested genotype
+	derivative_cutoff: float
+		Used when testing whether two genotypes are correlated, not correlated, or anticorrelated. correlated/anticorrelated genotypes
+		must have a covariance outside the range [-`derivative_cutoff`, `derivative_cutoff`].
+	known_ancestry: Dict[str,str]
+		Manually-assigned ancestry values. For now, the parent genotype is automatically assigned to the root genotype to prevent
+		circular links from forming.
 
 	Returns
 	-------
@@ -52,7 +60,7 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit:float, additive_cutoff:fl
 			if nested_label == unnested_label: continue
 			score_additive = scoring.calculate_additive_score(nested_genotype, unnested_trajectory, additive_cutoff)
 			score_derivative = scoring.calculate_derivative_score(nested_genotype, unnested_trajectory, detection_cutoff = dlimit, cutoff = derivative_cutoff)
-			score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory, dlimit = dlimit)
+			score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory)
 
 			total_score = score_additive + score_derivative + score_area
 			logger.debug(f"{unnested_label}\t{nested_label}\t{total_score}")

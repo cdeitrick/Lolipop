@@ -86,6 +86,6 @@ def get_first_fixed_timepoint(transposed_genotypes: pandas.DataFrame, cutoff: fl
 		# If we are checking for the lowest frequency breakpoint, ignore this check.
 		first_fixed_reduced: pandas.DataFrame = first_fixed.iloc[first_fixed.to_numpy().nonzero()]
 	else:
-		first_fixed_reduced = first_fixed
+		first_fixed_reduced = first_fixed.to_frame()
 
 	return first_fixed_reduced

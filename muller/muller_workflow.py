@@ -51,11 +51,25 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		timepoints, info = parse_trajectory_table(input_filename, program_options.sheetname)
 		breakpoints = program_options.frequencies if program_options.use_filter else None
 		mean_genotypes, genotype_members, linkage_matrix = generate.generate_genotypes(
-			timepoints, program_options_genotype, breakpoints
+			timepoints,
+			dlimit = program_options.detection_breakpoint,
+			flimit = program_options.fixed_breakpoint,
+			similarity_breakpoint =  program_options.significant_breakpoint,
+			difference_breakpoint =  program_options.difference_breakpoint,
+			method = program_options.method,
+			metric = program_options.metric,
+			breakpoints = breakpoints,
+			starting_genotypes = program_options.starting_genotypes
 		)
 
 	logger.info("sorting muller_genotypes...")
-	sorted_genotypes = sort_genotypes.sort_genotypes(mean_genotypes, options = program_options_sort)
+	sorted_genotypes = sort_genotypes.sort_genotypes(
+		mean_genotypes,
+		program_options.detection_breakpoint,
+		program_options.significant_breakpoint,
+		program_options.fixed_breakpoint,
+		program_options_sort.frequency_breakpoints
+	)
 	logger.info("nesting muller_genotypes...")
 
 

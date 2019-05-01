@@ -75,6 +75,7 @@ def parse_workflow_options(program_options: ProgramOptions):
 		significant_breakpoint = program_options.significant_breakpoint,
 		frequency_breakpoints = program_options.frequencies
 	)
+	program_options.starting_genotypes = starting_genotypes
 	cluster_method = program_options.method
 	if cluster_method not in ACCEPTED_METHODS:
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"

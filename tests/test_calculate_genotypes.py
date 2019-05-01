@@ -1,6 +1,6 @@
 from io import StringIO
 
-from clustering.generatelegacy import *
+from clustering.generate import *
 from dataio import import_table
 
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
