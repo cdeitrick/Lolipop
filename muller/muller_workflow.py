@@ -8,7 +8,7 @@ from loguru import logger
 logger.remove()
 import sys
 logger.add(sys.stderr, level="INFO")
-logger.add("muller_log.txt", level = 'DEBUG')
+#logger.add("muller_log.txt", level = 'DEBUG')
 try:
 	from muller.commandline_parser import create_parser, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
