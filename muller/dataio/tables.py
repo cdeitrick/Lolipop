@@ -39,5 +39,4 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_path(input_table, sheet_name, index)
 	else:
 		data = _import_table_from_string(input_table, index = index)
-	# data = data[sorted(data.columns, key = lambda s: str(s))]
 	return data

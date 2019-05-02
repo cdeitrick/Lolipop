@@ -1,12 +1,14 @@
+import math
 
 import pandas
-import math
+
 from widgets import get_valid_points
 
 try:
 	from inheritance import order_by_area
 except ModuleNotFoundError:
 	from . import order_by_area
+
 
 def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
 	"""
@@ -23,17 +25,17 @@ def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: 
 	"""
 	difference = nested_genotype - unnested_genotype
 
-
-	score = int(difference.sum() > (cutoff * len(difference)/2))
+	score = int(difference.sum() > (cutoff * len(difference) / 2))
 
 	# There may be a point where the unnested genotype is greater than the nested genotype.
 
 	if any(difference < 0):
 		score -= 1
-	#logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
+	# logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
-def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detection_cutoff:float, cutoff:float) -> float:
+
+def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detection_cutoff: float, cutoff: float) -> float:
 	"""
 		Tests whther the two series are correlated or anticorrelated with each other. The scoring is as follows:
 		correlated: 2
@@ -55,15 +57,16 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 		covariance = math.nan
 	else:
 		covariance = df.iloc[:, 0].cov(df.iloc[:, 1])
-	if math.isnan(covariance): score = 0
-	elif covariance > cutoff:score = 2
-	elif covariance < -cutoff:score = -2
+
+	if covariance > cutoff: score = 2
+	elif covariance < -cutoff: score = -2
 	else: score = 0
 	from loguru import logger
 	logger.debug(f"{right.name}\t{left.name}\t{score}\t{covariance}")
 	return score
 
-def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas.Series)->float:
+
+def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series) -> float:
 	"""
 		Calculates a score based on the probability the unnested genotype is a subset of the nested_genotype.
 		This take into account both the area of the nested genotype and the area of all other genotypes not in the nested genotype.
@@ -74,7 +77,7 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 	"""
 
 	# noinspection PyTypeChecker
-	other_genotypes:pandas.Series = 1 - nested_genotype
+	other_genotypes: pandas.Series = 1 - nested_genotype
 
 	common_area_nested = order_by_area.calculate_common_area(nested_genotype, unnested_genotype)
 	common_area_other = order_by_area.calculate_common_area(other_genotypes, unnested_genotype)
@@ -83,15 +86,16 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 	is_subset_other = order_by_area.is_subset(other_genotypes, unnested_genotype)
 
 	if is_subset_nested and is_subset_other:
-		score = int(common_area_nested > 2*common_area_other)
+		score = int(common_area_nested > 2 * common_area_other)
 	elif is_subset_nested:
 		score = 2
 	else:
 		score = -2
-	#logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
+	# logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
-def calculate_subtractive_score(left:pandas.Series, right:pandas.Series, fixed_cutoff:float, cutoff:float)->int:
+
+def calculate_subtractive_score(left: pandas.Series, right: pandas.Series, fixed_cutoff: float, cutoff: float) -> int:
 	"""
 		Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
 		is in the background of the other, since otherwise the maximum combined frequency should, at most, be equal to the fixed cutoff value.
@@ -110,5 +114,3 @@ def calculate_subtractive_score(left:pandas.Series, right:pandas.Series, fixed_c
 	result = above_fixed.mean() > cutoff
 
 	return int(result)
-
-

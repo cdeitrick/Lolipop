@@ -1,11 +1,11 @@
 import itertools
-
 from typing import Any, List, Tuple
+
 import pandas
+from loguru import logger
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
-from loguru import logger
 try:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 except ModuleNotFoundError:
@@ -70,7 +70,3 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	for i, j in zip(clusters, squaremap.index):
 		cluster_map[i].append(j)
 	return list(cluster_map.values()), Z
-
-
-if __name__ == "__main__":
-	pass

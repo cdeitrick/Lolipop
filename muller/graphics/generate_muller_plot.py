@@ -21,6 +21,7 @@ except ModuleNotFoundError:
 	from widgets import calculate_luminance
 
 from loguru import logger
+
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -63,7 +64,6 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
 	x = list(unique_everseen(muller_df['Generation'].tolist()))
-	# colors = [color_palette[genotype_label[:-1] if genotype_label.endswith('a') else genotype_label] for genotype_label in genotype_order]
 	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
 
 	groups = muller_df.groupby(by = 'Group_id')
@@ -90,7 +90,6 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 		ys.append(genotype_series)
 		colors.append(genotype_color)
 
-	# y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
 	return x, ys, colors, labels
 
 
@@ -132,7 +131,6 @@ def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]
 			x = sorted(group['Generation'].values, key = lambda s: s - x)[0]
 
 		gdf = nonzero[nonzero['Group_id'].isin(genotype_order[:index] + [genotype_label])]
-		# gdf = gdf[gdf['Population'] != 50]
 		gdf = gdf[gdf['Generation'] == x]
 
 		mid_y = sum(gdf['Frequency'].values)
@@ -284,11 +282,5 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 
 	for output_filename in output_filenames:
 		plt.savefig(str(output_filename))
-	# plt.savefig(str(output_filename.with_suffix('.pdf')))
-	# plt.savefig(str(output_filename.with_suffix('.svg')))
 
 	return ax
-
-
-if __name__ == "__main__":
-	pass

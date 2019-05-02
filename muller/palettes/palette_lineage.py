@@ -43,8 +43,8 @@ def generate_lineage_palette(edges: pandas.DataFrame) -> Dict[str, str]:
 		palette.update(clade_palette)
 	return palette
 
-def get_major_clades(tree_table:pandas.DataFrame):
 
+def get_major_clades(tree_table: pandas.DataFrame):
 	clade_counts = tree_table['Parent'].value_counts()
 	cutoff = int(len(tree_table) / 20)
 	major_clades = list(clade_counts[clade_counts > cutoff].index)
@@ -60,5 +60,3 @@ def get_major_clades(tree_table:pandas.DataFrame):
 				first_major_clade = child
 		major_clade_map[child] = first_major_clade
 	return major_clade_map
-if __name__ == "__main__":
-	pass

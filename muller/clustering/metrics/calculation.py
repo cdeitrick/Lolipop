@@ -1,9 +1,9 @@
 import itertools
-from loguru import logger
-from typing import Dict, Tuple, Iterable
+import math
+from typing import Dict, Iterable, Tuple
 
 import pandas
-import math
+from loguru import logger
 
 try:
 	from clustering.metrics import distance

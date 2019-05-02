@@ -112,7 +112,3 @@ def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -
 		message = f"'{metric}' is not an available metric."
 		raise ValueError(message)
 	return distance_between_series
-
-
-if __name__ == "__main__":
-	pass

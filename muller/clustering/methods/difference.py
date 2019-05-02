@@ -49,9 +49,7 @@ def _divide_genotype(genotype: List[str], unlinked_trajectories: pandas.Series, 
 	for genotype_member in genotype:
 		# Check if the current genotype member is already contained in one of the muller_genotypes.
 		# Should only be one of the two trajectories used to form a new genotype.
-		if genotype_member in new_genotype_1 or genotype_member in new_genotype_2:
-			pass
-		else:
+		if not (genotype_member in new_genotype_1 or genotype_member in new_genotype_2):
 			# Use the highest p-value to determine which genotype to add the member to.
 			# P-values should correspond to the current member and the base member of the new muller_genotypes.
 			p_value_1 = unlinked_trajectories.loc[new_genotype_1_base, genotype_member]

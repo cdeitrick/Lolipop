@@ -1,4 +1,3 @@
-
 import re
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Union
@@ -6,7 +5,7 @@ from typing import Dict, List, Mapping, Optional, Union
 import pandas
 
 
-def read_map(contents: Union[str, Path])->Dict[str,str]:
+def read_map(contents: Union[str, Path]) -> Dict[str, str]:
 	"""
 		Parses the contents of any file used to specify a key-value pair. This is used when defining palettes and gene aliases.
 	Parameters

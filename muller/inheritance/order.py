@@ -13,7 +13,8 @@ except ModuleNotFoundError:
 	from .. import widgets
 
 
-def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit:float, additive_cutoff: float, subtractive_cutoff:float, derivative_cutoff: float,
+def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float,
+		derivative_cutoff: float,
 		known_ancestry: Dict[str, str] = None) -> Cluster:
 	"""
 		Orders genotypes by which background they belong to.
@@ -89,7 +90,3 @@ def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tupl
 		correlated_label = "N/A"  # Shouldn't end up being used.
 		correlated_delta = 0
 	return correlated_label, correlated_delta
-
-
-if __name__ == "__main__":
-	pass

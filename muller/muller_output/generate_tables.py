@@ -130,7 +130,3 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 		trajectory_table['genotype'] = [parent_genotypes.get(k) for k in trajectory_table.index]
 		trajectory_table = trajectory_table.join(info).sort_values(by = ['genotype'])
 		return trajectory_table
-
-
-if __name__ == "__main__":
-	pass

@@ -7,8 +7,9 @@ from loguru import logger
 
 logger.remove()
 import sys
-logger.add(sys.stderr, level="INFO")
-#logger.add("muller_log.txt", level = 'DEBUG')
+
+logger.add(sys.stderr, level = "INFO")
+# logger.add("muller_log.txt", level = 'DEBUG')
 try:
 	from muller.commandline_parser import create_parser, parse_workflow_options
 	from dataio.trajectories import parse_trajectory_table, parse_genotype_table
@@ -54,8 +55,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			timepoints,
 			dlimit = program_options.detection_breakpoint,
 			flimit = program_options.fixed_breakpoint,
-			similarity_breakpoint =  program_options.similarity_breakpoint,
-			difference_breakpoint =  program_options.difference_breakpoint,
+			similarity_breakpoint = program_options.similarity_breakpoint,
+			difference_breakpoint = program_options.difference_breakpoint,
 			method = program_options.method,
 			metric = program_options.metric,
 			breakpoints = breakpoints,
@@ -71,7 +72,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		breakpoints = program_options.frequencies
 	)
 	logger.info("nesting muller_genotypes...")
-
 
 	genotype_clusters = order.order_clusters(
 		sorted_genotypes,

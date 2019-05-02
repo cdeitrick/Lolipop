@@ -1,8 +1,7 @@
+from typing import List
 
 import pandas
-
 from loguru import logger
-from typing import List
 
 try:
 	from inheritance import timepoint_detection
@@ -10,7 +9,7 @@ except ModuleNotFoundError:
 	from . import timepoint_detection
 
 
-def sort_genotypes(genotype_frequencies: pandas.DataFrame, dlimit:float, slimit:float,flimit:float,breakpoints:List[float]) -> pandas.DataFrame:
+def sort_genotypes(genotype_frequencies: pandas.DataFrame, dlimit: float, slimit: float, flimit: float, breakpoints: List[float]) -> pandas.DataFrame:
 	"""
 		Sorts the muller_genotypes based on when they were first detected and first fixed.
 	Parameters
@@ -102,8 +101,7 @@ def _sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequenc
 	first_above_threshold_reduced = timepoint_detection.get_first_significant_timepoint(transposed, significant_cutoff)
 	# Use the frequency breakpoint rather than the fixed cutoff.
 	first_fixed_reduced = timepoint_detection.get_first_fixed_timepoint(transposed, frequency_breakpoint)
-	# if first_fixed_reduced.empty:
-	#	first_fixed_reduced = first_fixed
+
 	combined_df: pandas.DataFrame = pandas.concat(
 		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
 		axis = 1, sort = False)
@@ -155,7 +153,3 @@ def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresh
 		freq_df = None
 
 	return freq_df
-
-
-if __name__ == "__main__":
-	pass

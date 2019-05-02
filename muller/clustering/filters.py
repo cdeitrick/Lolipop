@@ -1,10 +1,7 @@
-
 from typing import List, Tuple
 
 import pandas
-
 from loguru import logger
-
 
 
 def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, float]:
@@ -170,7 +167,7 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 
 
-def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series,detection_breakpoint:float, breakpoints: List[float],
+def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series, detection_breakpoint: float, breakpoints: List[float],
 		use_strict_filter: bool = False) -> List[str]:
 	"""
 		Finds all trajectories which should be filtered out of the dataset based on certain criteria.
@@ -208,7 +205,6 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 		use_strict_filter
 	)
 
-
 	if current_invalid_genotype is None:
 		return []
 	else:
@@ -217,7 +213,3 @@ def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pan
 		invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
 		logger.info("Invalid members: " + str(invalid_members))
 		return invalid_members
-
-
-if __name__ == "__main__":
-	pass

@@ -89,7 +89,3 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 		plt.savefig(str(filename), dpi = 500, format = 'png')
 	else:
 		plt.show()
-
-
-if __name__ == "__main__":
-	pass

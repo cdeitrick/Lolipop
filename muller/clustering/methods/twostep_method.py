@@ -107,7 +107,3 @@ def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculation
 			break
 
 	return [i for i in population_genotypes if i]  # Only return non-empty lists.
-
-
-if __name__ == "__main__":
-	pass

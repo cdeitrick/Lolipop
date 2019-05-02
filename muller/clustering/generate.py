@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 PAIRWISE_CALCULATIONS = PairwiseCalculationCache()
 
 
-def _update_pairwise_array(timepoints: pandas.DataFrame, dlimit:float, flimit:float, metric:str):
+def _update_pairwise_array(timepoints: pandas.DataFrame, dlimit: float, flimit: float, metric: str):
 	global PAIRWISE_CALCULATIONS
 	logger.debug(f"Pairwise calculations already exist: {bool(PAIRWISE_CALCULATIONS)}")
 	if PAIRWISE_CALCULATIONS:
@@ -38,7 +38,8 @@ def _update_pairwise_array(timepoints: pandas.DataFrame, dlimit:float, flimit:fl
 	return PAIRWISE_CALCULATIONS
 
 
-def calculate_genotypes(timepoints: pandas.DataFrame, dlimit:float, flimit:float, sbreakpoint:float, dbreakpoint:float, method:str, metric:str, starting_genotypes:List[List[str]]) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
+def calculate_genotypes(timepoints: pandas.DataFrame, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, method: str, metric: str,
+		starting_genotypes: List[List[str]]) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 	pairwise_calculations = _update_pairwise_array(timepoints, dlimit, flimit, metric)
 	genotypes, linkage_matrix = calculate_genotypes_from_given_method(
 		timepoints,
@@ -53,7 +54,8 @@ def calculate_genotypes(timepoints: pandas.DataFrame, dlimit:float, flimit:float
 	return mean_genotypes, genotype_members, linkage_matrix
 
 
-def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: float, similarity_breakpoint:float, difference_breakpoint: float, method: str,
+def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: float, similarity_breakpoint: float, difference_breakpoint: float,
+		method: str,
 		metric: str, breakpoints: List[float] = None, starting_genotypes: List[List[str]] = None) -> Tuple[
 	pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 	"""
@@ -113,14 +115,10 @@ def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: fl
 			# Re-calculate the genotypes based on the remaining trajectories.
 			genotype_table, genotype_members, linkage_matrix = calculate_genotypes(modified_trajectories,
 				dlimit, flimit,
-			similarity_breakpoint, difference_breakpoint,
-			method, metric,
-			starting_genotypes
+				similarity_breakpoint, difference_breakpoint,
+				method, metric,
+				starting_genotypes
 			)
 		else:
 			break
 	return genotype_table, genotype_members, linkage_matrix
-
-
-if __name__ == "__main__":
-	pass
