@@ -121,24 +121,31 @@ def format_inconsistency_matrix(R) -> pandas.DataFrame:
 
 def _get_git_log() -> str:
 	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
-	contents = filename.read_text()
+	try:
+		contents = filename.read_text()
+	except FileNotFoundError:
+		contents = ""
 	return contents
 
 
 def get_commit_hash() -> str:
 	commit_hash = "n/a"
 	contents = _get_git_log()
-	contents = contents.split('\n')
-	contents = [i.strip() for i in contents if i.strip()]
-	reader = csv.reader(contents, delimiter = '\t')
-	for line in reader:
-		if line:
-			hash_string = line[0]
-			try:
-				commit_hash = hash_string.split()[1]
-			except IndexError:
-				continue
-	return commit_hash[:7]
+	if contents:
+		contents = contents.split('\n')
+		contents = [i.strip() for i in contents if i.strip()]
+		reader = csv.reader(contents, delimiter = '\t')
+		for line in reader:
+			if line:
+				hash_string = line[0]
+				try:
+					commit_hash = hash_string.split()[1]
+				except IndexError:
+					continue
+		commit_hash = commit_hash[:7]
+	else:
+		commit_hash = "not available"
+	return commit_hash
 
 
 if __name__ == "__main__":
