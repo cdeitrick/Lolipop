@@ -201,6 +201,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	# ------------------------------------------------- Generate and excecute the r script -------------------------------------------------------
 	##############################################################################################################################################
+	# TODO replicate how the r script generates the muller_df file so that we don't have to run the rscript.
 	muller_df = generate_r_script(
 		trajectory = filenames.trajectory,
 		population = filenames.population,
@@ -245,7 +246,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		generate_muller_plot(muller_df, genotype_colors_distinct, distinctive_muller_plot_filenames)
 
 	##############################################################################################################################################
-	# -------------------------------------------------- Generate supplementary graphics ---------------------------------------------------------
+	# ---------------------------------------------------- Generate supplementary files ----------------------------------------------------------
 	##############################################################################################################################################
 	workflow_data.clusters.to_table().to_csv(filenames.genotype_scores, sep = '\t')
 	if workflow_data.linkage_matrix is not None:

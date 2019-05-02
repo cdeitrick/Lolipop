@@ -77,9 +77,9 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		sorted_genotypes,
 		dlimit = program_options.detection_breakpoint,
 		flimit = program_options.fixed_breakpoint,
-		additive_cutoff = program_options.detection_breakpoint,
-		subtractive_cutoff = program_options.detection_breakpoint,
-		derivative_cutoff = 0.01,  # program_options.detection_breakpoint,
+		additive_cutoff = program_options.additive_cutoff,
+		subtractive_cutoff = program_options.subtractive_cutoff,
+		derivative_cutoff = program_options.derivative_cutoff,
 		known_ancestry = known_ancestry
 	)
 	logger.info("Generating output...")
