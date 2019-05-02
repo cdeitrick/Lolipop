@@ -106,7 +106,6 @@ class FrequencyParser(argparse.Action):
 
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
-		print("PARSING FIXED BREAKPOINT", values)
 		detected = namespace.detection_breakpoint
 		if values == "1":
 			values = 1 - detected
