@@ -111,6 +111,7 @@ class OutputFilenames:
 
 		# supplementary files
 		self.parameters: Path = supplementary_folder / (name + '.json')
+		self.genotype_scores: Path = supplementary_folder / (name + '.nestscores.tsv')
 
 	@property
 	def delimiter(self) -> str:
@@ -165,11 +166,14 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
 	# Annotations may be used to select specific colors for the lineage palette.
-	genotype_annotations = dataio.parse_genotype_annotations(
-		workflow_data.genotype_members,
-		workflow_data.info,
-		workflow_data.program_options['alias_filename']
-	)
+	if workflow_data.info is not None:
+		genotype_annotations = dataio.parse_genotype_annotations(
+			workflow_data.genotype_members,
+			workflow_data.info,
+			workflow_data.program_options['alias_filename']
+		)
+	else:
+		genotype_annotations = {}
 	# The custom palette overrides any other color.
 	if workflow_data.genotype_palette_filename:
 		custom_palette = dataio.read_map(workflow_data.genotype_palette_filename)
@@ -243,7 +247,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	# -------------------------------------------------- Generate supplementary graphics ---------------------------------------------------------
 	##############################################################################################################################################
-
+	workflow_data.clusters.to_table().to_csv(filenames.genotype_scores, sep = '\t')
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(workflow_data.linkage_matrix, num_trajectories)
