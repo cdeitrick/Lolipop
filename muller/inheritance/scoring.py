@@ -1,7 +1,6 @@
 
 import pandas
 import math
-from loguru import logger
 from widgets import get_valid_points
 
 try:
@@ -31,7 +30,7 @@ def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: 
 
 	if any(difference < 0):
 		score -= 1
-	logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
+	#logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
 def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detection_cutoff:float, cutoff:float) -> float:
@@ -60,6 +59,7 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 	elif covariance > cutoff:score = 2
 	elif covariance < -cutoff:score = -2
 	else: score = 0
+	from loguru import logger
 	logger.debug(f"{right.name}\t{left.name}\t{score}\t{covariance}")
 	return score
 
@@ -88,7 +88,7 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 		score = 2
 	else:
 		score = -2
-	logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
+	#logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
 def calculate_subtractive_score(left:pandas.Series, right:pandas.Series, fixed_cutoff:float, cutoff:float)->int:

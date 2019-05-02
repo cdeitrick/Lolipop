@@ -96,10 +96,27 @@ def test_get_valid_points_simple():
 
 
 def test_get_valid_points_complex():
-	left = pandas.Series([0, 0.653, 1, 1, 1, 0.91, 0.907, 1])
-	right = pandas.Series([0, 0, 0.646, 0.777, 0.89, 0.512, 0.135, 0.546])
+	left = pandas.Series([ 0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042])
+	right = pandas.Series([0.00, 0.00, 0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00])
 
-	expected = pandas.Series([0, 0.653])
+	expected_left = [0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042]
+	expected_right = [0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00]
+	result = widgets.get_valid_points(left, right, dlimit = 0.03)
+	assert result['left'].tolist() == expected_left
+	assert result['right'].tolist() == expected_right
+
+	switched_result = widgets.get_valid_points(right, left, 0.03)
+	assert switched_result['left'].tolist() == expected_right
+	assert switched_result['right'].tolist() == expected_left
+
+	expected_left = [0.263, 0.07, 0.081, 0.069, 0.042]
+	expected_right = [1.00, 1.00, 1.00, 1.00, 1.00]
+	result = widgets.get_valid_points(left, right, 0.03, inner = True)
+	assert result['left'].tolist() == expected_left
+	assert result['right'].tolist() == expected_right
+
+	result = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
+	assert result['left'].tolist() == [] and result['right'].tolist() == []
 
 
 @patch('widgets._get_git_log')

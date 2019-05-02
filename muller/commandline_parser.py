@@ -218,7 +218,7 @@ def create_parser() -> argparse.ArgumentParser:
 		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 	)
 	parser.add_argument(
-		"-r", "--similarity-cutoff",
+		"--similarity-cutoff",
 		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
 		action = "store",
 		default = 0.05,
@@ -226,7 +226,7 @@ def create_parser() -> argparse.ArgumentParser:
 		type = float
 	)
 	parser.add_argument(
-		"-l", "--difference-cutoff",
+		"--difference-cutoff",
 		help = "Minimum p-value to consider a pair of muller_genotypes unrelated. Used when splitting muller_genotypes.",
 		action = "store",
 		default = 0.25,

@@ -2,7 +2,7 @@ import csv
 import re
 from pathlib import Path
 from typing import Dict, List, Optional
-
+from loguru import logger
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
@@ -67,19 +67,23 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 		at_least_one_detected = (left > dlimit) & (right > dlimit)
 	else:
 		at_least_one_detected = (left > dlimit) | (right > dlimit)
+
 	# Remove indicies where the series value falls below the detection limit. This should include the masked fixed values.
 	at_least_one_detected_reduced = at_least_one_detected[at_least_one_detected]
 	if at_least_one_detected_reduced.empty:
 		# There are no shared timepoints between the series. Assign index_min and index_max to the same number, which will result in an empty dataframe.
 		position_index_min = position_index_max = 0
 	else:
+		# Apparently the min() and max functions now work with strings as well as numbers.
+		# Cast the numbers to float so the typeerror is thrown correctly.
 		try:
-			position_index_min_value = min(at_least_one_detected_reduced.index)
-			position_index_max_value = max(at_least_one_detected_reduced.index)
+			position_index_min_value = min(at_least_one_detected_reduced.index, key = lambda s: float(s))
+			position_index_max_value = max(at_least_one_detected_reduced.index, key = lambda s: float(s))
 		except TypeError:
 			# The indicies are str and we can't use min() or max(). Assume the indicies are already sorted.
 			position_index_min_value = at_least_one_detected_reduced.index[0]
 			position_index_max_value = at_least_one_detected_reduced.index[-1]
+
 		position_index_min = df.index.get_loc(position_index_min_value)
 		position_index_max = df.index.get_loc(position_index_max_value)
 		# Since we want to include the last index, increment position_index_max by one.
@@ -149,4 +153,7 @@ def get_commit_hash() -> str:
 
 
 if __name__ == "__main__":
-	print(get_commit_hash())
+	left = pandas.Series([0.00,0.00,0.00,0.00,0.00,0.263,0.07,0.081,0.069,0.042])
+	right = pandas.Series([0.00,0.00,0.170,0.55,0.947,1.00,1.00,1.00,1.00,1.00])
+
+	print(get_valid_points(left, right, 0.03, inner = True))

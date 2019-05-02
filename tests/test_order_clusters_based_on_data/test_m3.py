@@ -35,6 +35,6 @@ def test_order(genotypes):
 		'genotype-16': 'genotype-11'
 	}
 
-	result = order.order_clusters(genotypes, .05, .05, .05)
+	result = order.order_clusters(genotypes, .03, .97, .03, .03, .01)
 
 	assert result.as_dict() == expected
