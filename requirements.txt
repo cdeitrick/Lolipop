@@ -1,0 +1,7 @@
+pandas
+loguru
+pygraphviz
+scipy
+seaborn
+dataclasses
+matplotlib 
