@@ -91,6 +91,24 @@ def calculate_area_score(nested_genotype:pandas.Series, unnested_genotype:pandas
 	logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
+def calculate_subtractive_score(left:pandas.Series, right:pandas.Series, fixed_cutoff:float, cutoff:float)->int:
+	"""
+		Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
+		is in the background of the other, since otherwise the maximum combined frequency should, at most, be equal to the fixed cutoff value.
+	Parameters
+	----------
+	left, right: pandas.Series
+	fixed_cutoff: The fixed breakpoint.
+	cutoff: Governs whether two series consistently sum to a value greater than `fixed_cutoff`. Should be in the range [0,1]
+	"""
 
+	combined = left + right
+	above_fixed = combined - fixed_cutoff
+
+	# Finally, check whether the frequency of this series is consistently above the `cutoff` value.
+	# Timepoints that do not sum to greater than the fixed breakpoint will be negative.
+	result = above_fixed.mean() > cutoff
+
+	return int(result)
 
 

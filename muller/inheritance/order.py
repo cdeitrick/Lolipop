@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 	from .cluster import Cluster
 
 
-def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, additive_cutoff: float, derivative_cutoff: float,
+def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit:float, additive_cutoff: float, subtractive_cutoff:float, derivative_cutoff: float,
 		known_ancestry: Dict[str, str] = None) -> Cluster:
 	"""
 		Orders genotypes by which background they belong to.
@@ -21,8 +21,12 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, additive_cutoff: 
 		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
 	dlimit: float
 		The detection limit
+	flimit: float
+		The cutoff value to consider a genotype "fixed"
 	additive_cutoff: float
 		Used when testing whther a nested genotype is consistently greater than an unnested genotype
+	subtractive_cutoff: float
+		Used to test whether the combined frequencies of the nested/unnested genotype are consistently greater than the fixed cutoff.
 	derivative_cutoff: float
 		Used when testing whether two genotypes are correlated, not correlated, or anticorrelated. correlated/anticorrelated genotypes
 		must have a covariance outside the range [-`derivative_cutoff`, `derivative_cutoff`].
@@ -54,11 +58,12 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, additive_cutoff: 
 		for nested_label, nested_genotype in test_table.iterrows():
 			if nested_label == unnested_label: continue
 			score_additive = scoring.calculate_additive_score(nested_genotype, unnested_trajectory, additive_cutoff)
+			score_subtractive = scoring.calculate_subtractive_score(nested_genotype, unnested_trajectory, flimit, subtractive_cutoff)
 			score_derivative = scoring.calculate_derivative_score(nested_genotype, unnested_trajectory, detection_cutoff = dlimit,
 				cutoff = derivative_cutoff)
 			score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory)
 
-			total_score = score_additive + score_derivative + score_area
+			total_score = score_additive + score_subtractive + score_derivative + score_area
 			logger.debug(f"{unnested_label}\t{nested_label}\t{total_score}")
 			genotype_nests.add_genotype_to_background(unnested_label, nested_label, total_score)
 	logger.debug("Final Ancestry:")

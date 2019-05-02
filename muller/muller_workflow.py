@@ -75,9 +75,11 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 	genotype_clusters = order.order_clusters(
 		sorted_genotypes,
-		additive_cutoff = program_options.detection_breakpoint,
-		derivative_cutoff = program_options.detection_breakpoint,
 		dlimit = program_options.detection_breakpoint,
+		flimit = program_options.fixed_breakpoint,
+		additive_cutoff = program_options.detection_breakpoint,
+		subtractive_cutoff = program_options.detection_breakpoint,
+		derivative_cutoff = 0.01,  # program_options.detection_breakpoint,
 		known_ancestry = known_ancestry
 	)
 	logger.info("Generating output...")
