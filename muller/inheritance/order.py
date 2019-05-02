@@ -4,14 +4,10 @@ import pandas
 from loguru import logger
 
 try:
-	from muller.inheritance.checks import apply_genotype_checks
-	from muller.inheritance import checks
 	from muller.inheritance import scoring
 	from muller.inheritance.cluster import Cluster
 except ModuleNotFoundError:
 	from . import scoring
-	from . import checks
-	from .checks import apply_genotype_checks
 	from .cluster import Cluster
 
 
