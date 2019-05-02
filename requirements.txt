@@ -1,7 +1,7 @@
-pandas
+dataclasses
 loguru
+matplotlib
+pandas
 pygraphviz
 scipy
 seaborn
-dataclasses
-matplotlib 
