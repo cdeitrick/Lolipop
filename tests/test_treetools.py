@@ -1,7 +1,6 @@
 import pytest
+from muller import dataio, treetools
 
-import dataio
-import treetools
 
 
 @pytest.mark.parametrize(

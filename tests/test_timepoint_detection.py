@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-from dataio import import_table
-from inheritance import timepoint_detection
+from muller.dataio import import_table
+from muller.inheritance import timepoint_detection
 
 
 @pytest.fixture

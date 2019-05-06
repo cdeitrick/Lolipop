@@ -4,10 +4,12 @@ from typing import Any, Optional, Tuple, Union
 
 import pandas
 from loguru import logger
-
-from widgets import get_numeric_columns
-from .tables import import_table
-
+try:
+	from ..widgets import get_numeric_columns
+	from .tables import import_table
+except ValueError:
+	from widgets import get_numeric_columns
+	from dataio.tables import import_table
 IOTYPE = Union[str, Path]
 
 

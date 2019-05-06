@@ -1,7 +1,7 @@
 from io import StringIO
 
-from clustering.generate import *
-from dataio import import_table
+from muller.clustering.generate import *
+from muller.dataio import import_table
 
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \

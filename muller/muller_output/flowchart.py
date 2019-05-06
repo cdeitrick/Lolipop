@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import pandas
 import pygraphviz
 
-import widgets
+from .. import widgets
 
 
 def get_node_label_properties(identity: str, genotype_color: str, annotation: List[str]) -> Dict[str, str]:

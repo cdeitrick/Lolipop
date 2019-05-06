@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-from dataio import import_table
-from inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
+from muller.dataio import import_table
+from muller.inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
 
 
 @pytest.fixture

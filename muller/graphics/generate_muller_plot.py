@@ -105,6 +105,7 @@ def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]
 	points: Dict[str, Tuple[int, float]]
 	A dictionary mapping each genotype to an estimate of the midpoint of the genotype's area.
 	"""
+	# TODO increase the font sizes of the labels
 	genotype_order = list()
 	for index, row in muller_df.iterrows():
 		genotype_label = row['Group_id']
@@ -278,7 +279,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
 	# ax.set_ylim(0, 1)
-	plt.tight_layout()
+	#plt.tight_layout()
 
 	for output_filename in output_filenames:
 		plt.savefig(str(output_filename))

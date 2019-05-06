@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-from clustering.average import _calculate_mean_frequencies_of_trajectories
-from dataio import import_table
+from muller.clustering.average import _calculate_mean_frequencies_of_trajectories
+from muller.dataio import import_table
 
 
 @pytest.fixture

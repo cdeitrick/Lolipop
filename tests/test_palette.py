@@ -3,9 +3,8 @@ import re
 import pandas
 import pytest
 
-import palettes
-import treetools
-from dataio import import_table
+from muller import palettes, treetools
+from muller.dataio import import_table
 
 
 @pytest.fixture

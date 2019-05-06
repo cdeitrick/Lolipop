@@ -1,8 +1,7 @@
 import pandas
 import pytest
-
-import dataio
-from inheritance import order
+from muller import dataio
+from muller.inheritance import order
 
 
 @pytest.fixture

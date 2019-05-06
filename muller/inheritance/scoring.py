@@ -2,7 +2,7 @@ import math
 
 import pandas
 
-from widgets import get_valid_points
+from muller.widgets import get_valid_points
 
 try:
 	from inheritance import order_by_area

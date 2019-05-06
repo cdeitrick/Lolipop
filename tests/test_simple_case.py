@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from dataio import import_table
+from muller.dataio import import_table
 from muller.inheritance import order
 
 

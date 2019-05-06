@@ -14,7 +14,7 @@
     -  [Lineage Diagram](#lineage-diagrams)
 
 # Requirements
-The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install package`.
+The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install [package]`.
 - dataclasses (if using a python version below 3.7)
 - loguru
 - matplotlib

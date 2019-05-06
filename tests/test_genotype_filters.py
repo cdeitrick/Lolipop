@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-from clustering import filters
-from dataio import import_table
+from muller.clustering import filters
+from muller.dataio import import_table
 
 
 @pytest.fixture

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-import muller_workflow
-from commandline_parser import create_parser
+from muller import muller_workflow
+from muller.commandline_parser import create_parser
 
 DATA_FOLDER = Path(__file__).parent / "data"
 

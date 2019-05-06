@@ -11,21 +11,19 @@ FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
+	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from muller.graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
 	from muller import widgets, dataio, palettes
 	from muller.muller_output.flowchart import flowchart
 except ModuleNotFoundError:
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
-	from muller_output.generate_tables import *
-	from muller_output.generate_scripts import generate_r_script, execute_r_script
-	import widgets
-	import palettes
-	import dataio
-	from muller_output.flowchart import flowchart
+	from .. import widgets, dataio, palettes
+	from ..clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from ..graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
+	from .generate_tables import *
+	from .generate_scripts import generate_r_script, execute_r_script
+	from .flowchart import flowchart
 
 
 @dataclass

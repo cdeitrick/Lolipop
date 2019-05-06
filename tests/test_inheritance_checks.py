@@ -3,7 +3,7 @@ from typing import List
 import pandas
 import pytest
 
-from inheritance import scoring
+from muller.inheritance import scoring
 
 
 @pytest.mark.parametrize("left,right,expected",
