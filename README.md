@@ -1,71 +1,88 @@
 # A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background
-![muller_plot](./example/example.muller.annotated.png)
+![muller_plot](./example/example.muller.unannotated.png)
 
-## Contents
+# Contents
 -  [General Workflow](#general-workflow)
+-  [requirements](#requirements)
 -  [Script Options](#script-options)
--  [Input Parameters](#input-parameters)
+-  [Input Parameters](#input-dataset)
 -  [Sample Usage](#sample-usage)
 -  [Output Files](#output-files)
 -  [Genotype Plots](#genotype-plots)
--  [Mermaid Diagram](#mermaid-diagram)
+-  [Lineage Diagram](#lineage-diagrams)
 
-## General Workflow
+# Requirements
+The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install package`.
+- dataclasses (if using a python version below 3.7)
+- loguru
+- matplotlib
+- pandas
+- pygraphviz
+- scipy
+- seaborn
+
+Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
+
+# General Workflow
 
 Flowcharts for each individual step can be found under docs/flowcharts.
 
 ![overview](./docs/flowcharts/0-overview.png)
 
-## Script Options
+# Script Options
 
-	-h, --help                  Show this help message and exit
-	-i, --input                 The table of trajectories to cluster. Must be an excel file or csv/tsv file.
-	-o,  --output               The folder to save the files to.
-	--method                    [hierarchy] The clustering method to use when grouping mutatoinal trajectories into genotypes.
-                                Available methods: 'matlab', 'hierarchy'
-	-u, --uncertainty           The uncertainty to apply when performing
+## General Options
+	-h, --help                  
+                                Show a help message and exit
+    --name                      
+                                Prefix to use when naming the output files. defaults to the dataset filename.
+	-i, --input                
+                                The table of trajectories to cluster. Must be an excel file or csv/tsv file.
+                                The delimiter will be inferred from the file extension.
+	-o,  --output               
+                                The output folder to save the files to.
+	-d, --detection             
+                                The uncertainty to apply when performing
 	                            frequency-based calculations. For
 	                            example, a frequency at a given timepoint
 	                            is considered undetected if it falls
-	                            below 0 + `uncertainty`.
-	--fixed                     The minimum frequency at which to
+	                            below 0 + `detection`.
+	--fixed                     
+                                The minimum frequency at which to
 	                            consider a mutation fixed. Defaults to
 	                            1 - `uncertainty`
-	-s, --significant           [0.15ither 'similarity' or 'dtw'] The frequency at which to consider a genotype
+	-s, --significant           
+                                [0.15] The frequency at which to consider a genotype
 	                            significantly greater than zero.
-	-f, --frequencies           [0.10] The frequency cutoff to use when sorting genotypes.
+	-f, --frequencies           
+                                [0.10] The frequency cutoff or step to use when sorting genotypes.
 	                            May be a comma-separated string of frequencies, or a set inverval
-	                            to use when generating the frequency breakpoints.
+	                            to use when generating the frequency breakpoints. This affects
+                                the filtering step and the nesting step.
 	                            For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
-	-r --similarity-cutoff      [0.05] Maximum p-value difference to consider trajectories related.
-	                            Used when grouping trajectories into genotypes.
-	-l, --difference-cutoff     [0.10] Used to unlink unrelated trajectories present in a genotype. Is not used
-	                            when using hierarchical clustering.
 	--genotypes                 Indicates that the input table contains genotypes rather
 	                            than mutational trajectories.
-	--matlab                    Mimics the output of the original matlab script.
-	--no-filter                 Skips the genotype filtering step.
-	--annotate-all              By default, the muller diagrams only annotate the top 3 (by frequency)
-	                            genes for each genotype. This option forces the scripts to annotate
-	                            all genes associated with each genotype.
-    --no-heatmap                By default the scripts save the p-values to a table and generates a heatmap for the 
-                                population. Disabling saves a large amount of time for large datasets.
-                                for the population. Disabling saves a large amount of
-                                time for large datasets.
-    --sheetname                 Used to specify the sheet to use when the input is an excel file. Defaults to 
+	--no-filter                 
+                                Disables the genotype filtering step.
+    --sheetname                 
+                                Specifies the sheet to use when the input is an excel file. Defaults to
                                 'Sheet1'
-    --strict-filter             By default, the filters allow trajectories to appear both before and after a genotype
+    --strict-filter             
+                                By default, the filters allow trajectories to appear both before and after a genotype
                                 fixes as long as they were undetected at the timepoint the sweep occurs. This generally
-                                represents mutations which appear, are removed during a genotype sweep, and reappear 
+                                represents mutations which appear, are removed during a genotype sweep, and reappear
                                 afterwards. Using `--strict-filter` would remove these trajectories.
     --genotype-colors           Path to a file with a custom genotype colorscheme. The file should be tab-delimited
                                 with a genotype name (ex. 'genotype-13') in the first column and a HEX color code
                                 (ex. '#F5674A') in the second. These colors will override the default colorscheme.
-    -g, --known-genotypes       [BETA] Path to a file listing trajectories which are known to be in the same genotype.
-                                Each line in the file represents a single genotype, and each line should be a 
-                                comma-separated list of trajectory labels as they appear in the input dataset.
-    -m, --method                Selects the clustering method to use. 'matlab' will use the original two-step
-                                method of sorting trajectories into genotypes while 'hierarchy' will use 
+    --gene-alias ALIAS_FILENAME
+                                An optional two-column file with more accurate gene
+                                names. This is useful when using a reference
+                                annotated via prokka.
+
+## Clustering Options
+    -m, --method                Selects the clustering method to use. 'two-step' will use the original two-step
+                                method of sorting trajectories into genotypes while 'hierarchy' will use
                                 hierarchical clustering to do the clustering. Defaults to 'matlab'
     --metric                    Used to select the distance metric when `--method` is set to 'hierarchy'.
         Available Options:
@@ -73,19 +90,54 @@ Flowcharts for each individual step can be found under docs/flowcharts.
         'jaccard'               Uses the Jaccard distance between two series to determine the distance metric.
         'minkowski'             Uses the minkowski distance as a distance metric. Primarily influenced by the
                                 difference between two series.
-        'pearson'               Uses the pearson correlation coefficient as the distance metric. Primarily 
+        'pearson'               Uses the pearson correlation coefficient as the distance metric. Primarily
                                 influenced by the correlation of two series against each other.
-        'combined'              A combination of the 'pearson' and 'minkowski' distances to account for the 
+        'combined'              A combination of the 'pearson' and 'minkowski' distances to account for the
                                 correlation of two series as well as the difference between them.
+    -r --similarity-cutoff      
+                                [0.05] Used when grouping trajectories into genotypes.
+                                Maximum p-value difference to consider trajectories related when using
+                                the two-step method, and selects the maximum distance to consider
+                                trajectories related when `--method` is `hierarchy`.
 
+    -d, --difference-cutoff     [0.10] Only used when `--method` is `twostep`.
+                                Used to unlink unrelated trajectories present in a genotype. Is not used
+                                when using hierarchical clustering.
+    -g, --known-genotypes       
+                                Path to a file listing trajectories which are known to be in the same genotype.
+                                Each line in the file represents a single genotype, and each line should be a
+                                comma-separated list of trajectory labels as they appear in the input dataset.
 
-## Input Parameters
+## Nesting Options
+    --additive
+                                [0.03] Controls how the additive score between a nested and
+                                unnested genotype is calculated. Defaults to the
+                                detection cutoff value.
+    --subtractive
+                                Controls when the combined frequencies of a nested and
+                                unnested genotype are considered consistently larger
+                                than the fixed cutoff.Defaults to the detection cutoff
+                                value. (default: None)
+    --derivative
+                                Controls how much a nested and unnested genotype
+                                should be correlated/anticorrelated to be considered
+                                significant (default: 0.01). Correlation implies a positive relationship
+                                between the nested/unnested genotypes while anticorrelation is evidence
+                                against nesting the unnested genotype under the nested genotype.
+    --known-ancestry
+                                A tab-delimited file designating the known ancestry of certain
+                                genotypes. The left column should be the genotype to nest,
+                                right column should be its parent. Column names are ignored.
+                                Genotype names are generated during the clustering step,
+                                so this is only useful when re-running the analysis.
+
+# Input Dataset
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
 The table must have a column named `Trajectory` with labels for each mutational trajectory (or `Genotype` when using `--genotype`) and integer columns for each timepoint. The labels are solely used to identify trajectories belonging to a specific genotype, and must be integers. All other columns will be ignored when calculating genotypes and genotype clusters.
 The frequencies can be represented as either a number between 0 - 1,
 a number between 0 - 100 or as percentage.
-The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype. 
+The `Trajectory` and `Genotype` columns can contain any kind of label, but must be unique for each trajectory/genotype.
 
 | Population | Trajectory    | Chromosome | Position | Class | Mutation | 0 | 17    | 25    | 44    | 66    | 75    | 90    |
 |------------|---------------|------------|----------|-------|----------|---|-------|-------|-------|-------|-------|-------|
@@ -94,6 +146,7 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 3             | 1          | 78671    | SNP   | A>C      | 0 | 0     | 0     | 14.7% | 45%   | 92.4% | 88.7% |
 | B2         | 4             | 1          | 96585    | SNP   | T>G      | 0 | 0     | 0     | 0     | 21.1% | 81.1% | 81.3% |
 | B2         | 5             | 1          | 115010   | SNP   | G>T      | 0 | 0     | 0     | 40.3% | 48.9% | 5.7%  | 8%    |
+| B2         | t16           | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 0     | 20.9% | 20.9% | 0     |
 | B2         | 6             | 1          | 156783   | SNP   | C>G      | 0 | 0     | 0     | 0     | 0     | 100%  | 100%  |
 | B2         | 7             | 1          | 176231   | SNP   | T>A      | 0 | 0     | 0     | 27.3% | 78.1% | 100%  | 100%  |
 | B2         | 8             | 1          | 205211   | SNP   | C>T      | 0 | 0     | 0     | 0     | 34.5% | 83.3% | 79.3% |
@@ -111,7 +164,7 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 20            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
 | B2         | 21            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
-## Sample Usage
+# Sample Usage
 The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
 ```
 python muller_workflow.py --input [input filename] --output [output folder]
@@ -120,19 +173,16 @@ python muller_workflow.py --input [input filename] --output [output folder]
 Run with default parameters.
 
 ```
-python muller_workflow.py --input [filename] --output [folder] --matlab
-```
-Trajectories will be grouped into genotypes and each genotype will be nested using the same parameters the original matlab script used. The original script used different values in each script when performing frequency detection/significance. The improved version of the script (without the --matlab flag) harmonized these parameters so that similar calculations use the same parameter rather than re-defining the value to use.
-```
 python muller_workflow.py --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
-## Output
-All files are prefixed by the name of the original input table.
+# Output
+All files are prefixed by the name of the original input table if the `--name` parameter is unfilled.
 
-### Tables
-#### Genotype and Trajectory tables
+## Tables
+
+### Genotype and Trajectory tables
 - .muller_genotypes.tsv
 - .muller.trajectories.tsv
 - tables/.muller_genotypes.original.tsv
@@ -156,14 +206,13 @@ Example Genotype Table:
 | genotype-10 | 0.000 | 0.021  | 0.000  | 0.086  | 0.182  | 0.095  | 0.058  |
 
 
-
-#### Tables for ggmuller
+### Tables for ggmuller
 - tables/.ggmuller.populations.tsv
 - tables/.ggmuller.edges.tsv
 
 These tables are designed for use with the ggmuller r package. The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
 
-#### Linkage matrix
+### Linkage matrix
 - tables/.linkagematrix.tsv
 
 This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
@@ -196,17 +245,17 @@ Example linkage matrix:
 | 33   | 0     | 2.125    | 7            | 35               |
 | 34   | 35    | 4.943    | 19           | 36               |
 
-#### Distance Matrix
+### Distance Matrix
 - tables/.distance.tsv
 
 A table of pairwise distance values between each trajectory.
 
-#### Muller table
+### Muller table
 - tables/.muller.tsv
 
 The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` used to generate the muller plots. This file is created from the r script, described later.
 
-### Graphics
+## Graphics
 Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
 
 #### Muller Plots
@@ -221,15 +270,15 @@ The main value of a muller plot is to quickly visualize abundance and geneology 
 
 ![muller](example/example.muller.annotated.png)
 
-#### Geneology Plots
-- .geneology.png
-- graphics/.geneology.distinctive.png
+### Lineage Diagrams
+- .lineage.png
+- graphics/.lineage.distinctive.png
 
 These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
 
-![geneology](example/example.geneology.png)
+![geneology](example/example.lineage.png)
 
-#### Trajectory and genotype plots
+### Trajectory and genotype plots
 - .genotypes.png
 - .genotypes.filtered.png
 - .trajectories.distinctive.png
@@ -238,27 +287,29 @@ Timeseries plots of the frequency of each trajectory and genotype at each timepo
 
 ![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
 
-#### Distance Heatmap
+### Distance Heatmap
 - graphics/.heatmap.distance.png
 
 A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
 ![heatmap](example/graphics/example.heatmap.distance.png)
 
-#### Dendrogram
+### Dendrogram
 - graphics/.dendrogram.png
-Shows the arrangment and distance between clusters and member trajectories.
+Shows the arrangement and distance between clusters and member trajectories. Not available with `--method twostep`.
 
 ![dendrogram](example/graphics/example.dendrogram.png)
 
-### Scripts
-- scripts/example.mermaid.md
+## Scripts
 - scripts/example.r
 
-Two external scripts are used during the course of this analysis. The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation. The [mermaid](https://mermaidjs.github.io) script is used to generate the geneology plots.
+One external script is used during the course of this analysis. The r script is based on the [ggmuller](https://cran.r-project.org/web/packages/ggmuller/vignettes/ggmuller.html) package implemented in r, and is used to convert the genotypes data into a format required to generate the muller plots. This script also generates a basic muller plot (/graphics/distinctive/.muller.png), although all other muller plots are created with the python implementation.
 
-### Supplementary files
-- supplementary-files/example.json
+## Supplementary files
+- supplementary-files/.json
 
 A json-formatted file with all parameters used in the analysis.
 
+- supplementary-files/.nestscores.tsv
+
+Lists the scores between each genotype and the corresponding candidate ancestry genotypes. The highest score above or equal to 1 determines the parent genotype.
