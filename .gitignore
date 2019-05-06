@@ -60,7 +60,7 @@ target/
 .idea/
 *.csv
 *.xlsx
-*.yaml
+#*.yaml
 *.json
 *.eps
 *.pptx
