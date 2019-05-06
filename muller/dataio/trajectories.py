@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 
 import pandas
-
+from loguru import logger
 from widgets import get_numeric_columns
 from .tables import import_table
 
@@ -26,7 +26,7 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 	new_data = old_data.copy(deep = True)
 	for column in old_data.columns:
 		if old_data[column].max() > 1.0:
-			print(f"The column `{column}` had values greater than 1.0. It will be converted to a float between 0 and 1.")
+			logger.warning(f"The column `{column}` had values greater than 1.0. It will be converted to a float between 0 and 1.")
 			new_column = old_data[column] / 100
 		else:
 			new_column = old_data[column].astype(float)
@@ -63,7 +63,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	# Make sure the time table contains a column for timepoint `0`.
 	if 0 not in time_table.columns:
 		time_table[0] = 0.0  # Should be a float to match the dtype of the other columns
-		print("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
+		logger.warning("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
 	# Make sure there are no missing values.
 	time_table = time_table.fillna(0)
 	# Extract metadata for each series.
