@@ -5,9 +5,10 @@ import pandas
 import pytest
 
 from dataio.trajectories import import_table
+from muller.clustering.methods.hierarchical_method import hierarchical_method
 from muller.clustering.metrics import distance
 from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-from muller.clustering.methods.hierarchical_method import hierarchical_method
+
 
 @pytest.fixture
 def five_genotypes() -> pandas.DataFrame:
@@ -45,6 +46,3 @@ def test_using_minkowski_simple_case(five_genotypes):
 	clusters, linkage_matrix = hierarchical_method(cache, 0.05)
 	print(len(clusters))
 	print(clusters)
-
-
-

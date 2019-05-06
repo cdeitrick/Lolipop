@@ -1,9 +1,8 @@
-import pytest
-import unittest.mock as mock
-from dataio import file_parsers, import_table
-from io import StringIO
 import pandas
+import pytest
+
 import dataio
+from dataio import file_parsers, import_table
 
 
 @pytest.fixture
@@ -17,6 +16,7 @@ def annotations() -> pandas.DataFrame:
 	"""
 	return dataio.import_table(string, index = 'Trajectory')
 
+
 def test_extract_annotations(annotations):
 	expected = {
 		'1': 'speA C127Y',
@@ -28,7 +28,6 @@ def test_extract_annotations(annotations):
 	result = file_parsers.extract_annotations(annotations)
 
 	assert result == expected
-
 
 
 @pytest.mark.parametrize(
@@ -76,22 +75,30 @@ def test_parse_annotations():
 	assert expected_result == test_result
 
 
-def test_parse_genotype_palette():
-	palette = """
-	genotype-3	#994567
-	genotype-1	#D342A1
-	removed	#333311	garbage1	garbage2
-	"""
-	palette = "\n".join([i.strip() for i in palette.split('\n')])
-
+def test_read_map():
 	expected = {
 		'genotype-1': '#D342A1',
 		'genotype-3': '#994567',
 		'removed':    '#333311'
 	}
-	result = file_parsers.read_palette(palette)
+	palette = """
+	genotype-3	#994567
+	genotype-1	#D342A1
+	removed	#333311	garbage1	garbage2
+	"""
+	result = file_parsers.read_map(palette)
 
 	assert expected == result
+
+	# Test a file with garbage
+	palette_with_garbage = """
+	genotype-3	#994567	garbage
+	shortline
+		genotype-1	#D342A1	extra whitespace
+	removed	#333311
+	"""
+	result = file_parsers.read_map(palette_with_garbage)
+	assert result == expected
 
 
 def test_parse_known_genotypes():
@@ -101,17 +108,11 @@ def test_parse_known_genotypes():
 	t5,t6
 	"""
 
-	class FakePath:
-		def read_text(self):
-			p = (i.strip() for i in known_genotypes.split('\n'))
-			p = "\n".join(i for i in p if i)
-			return p
-
 	expected = [
 		["1", "3", "4"],
 		["trajectory-7"],
 		["t5", "t6"]
 	]
-	result = file_parsers.parse_known_genotypes(FakePath())
+	result = file_parsers.parse_known_genotypes(known_genotypes)
 
 	assert expected == result

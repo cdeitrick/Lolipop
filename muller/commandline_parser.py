@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 try:
-	from muller.options import GenotypeOptions, SortOptions, OrderClusterParameters
 	from muller import dataio
 except ModuleNotFoundError:
-	from options import GenotypeOptions, SortOptions, OrderClusterParameters
 	import dataio
 
 from dataclasses import dataclass, fields
+
+__version__ = "0.4"
 
 
 # For convienience. Helps with autocomplete.
@@ -41,45 +41,41 @@ class ProgramOptions(argparse.Namespace):
 			print(field)
 
 
-ACCEPTED_METHODS = ["matlab", "hierarchy"]
+ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
 
 
-def parse_workflow_options(program_options: ProgramOptions):
-	# program_options = ProgramOptions.from_parser(program_options)
+def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
+	"""
+		Generates values for each of the program parameters from the given parameters on the command line.
+	Parameters
+	----------
+	program_options
+
+	Returns
+	-------
+
+	"""
+
 	if program_options.fixed_breakpoint is None:
 		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
+	if program_options.additive_cutoff is None:
+		program_options.additive_cutoff = program_options.detection_breakpoint
+	if program_options.subtractive_cutoff is None:
+		program_options.subtractive_cutoff = program_options.detection_breakpoint
 
+	# TODO read the additional input files here rather than at the end of the analysis.
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
 		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)
 	else:
 		starting_genotypes = None
-	program_options_genotype = GenotypeOptions(
-		detection_breakpoint = program_options.detection_breakpoint,
-		fixed_breakpoint = program_options.fixed_breakpoint,
-		similarity_breakpoint = program_options.similarity_breakpoint,
-		difference_breakpoint = program_options.difference_breakpoint,
-		n_binom = None,
-		method = program_options.method,
-		metric = program_options.metric if program_options.method != 'matlab' else 'similarity',
-		starting_genotypes = starting_genotypes
-	)
-	program_options_clustering = OrderClusterParameters.from_breakpoints(
-		program_options.detection_breakpoint,
-		program_options.significant_breakpoint
-	)
 
-	program_options_sort = SortOptions(
-		detection_breakpoint = program_options_genotype.detection_breakpoint,
-		fixed_breakpoint = program_options_genotype.fixed_breakpoint,
-		significant_breakpoint = program_options.significant_breakpoint,
-		frequency_breakpoints = program_options.frequencies
-	)
+	program_options.starting_genotypes = starting_genotypes
 	cluster_method = program_options.method
 	if cluster_method not in ACCEPTED_METHODS:
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
 		raise ValueError(message)
-	return program_options, program_options_genotype, program_options_sort, program_options_clustering
+	return program_options
 
 
 def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
@@ -112,7 +108,6 @@ class FrequencyParser(argparse.Action):
 
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
-		print("PARSING FIXED BREAKPOINT", values)
 		detected = namespace.detection_breakpoint
 		if values == "1":
 			values = 1 - detected
@@ -126,6 +121,14 @@ def create_parser() -> argparse.ArgumentParser:
 		description = "Generates muller diagrams based on a set of mutational trajectories.",
 		formatter_class = argparse.ArgumentDefaultsHelpFormatter
 	)
+	##############################################################################################################################################
+	# --------------------------------------------------------- Required Parameters --------------------------------------------------------------
+	##############################################################################################################################################
+	parser.add_argument(
+		"-v", "--version",
+		action = 'version',
+		version = f"%(prog)s {__version__}"
+	)
 	parser.add_argument(
 		'-i', '--input',
 		help = "The table of trajectories to cluster.",
@@ -133,14 +136,6 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = 'filename',
 		type = Path,
 		required = True
-	)
-	parser.add_argument(
-		"--sheetname",
-		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
-		action = 'store',
-		dest = 'sheetname',
-		default = 'Sheet1',
-		type = str
 	)
 	parser.add_argument(
 		'-o', '--output',
@@ -151,6 +146,35 @@ def create_parser() -> argparse.ArgumentParser:
 		required = True
 	)
 	parser.add_argument(
+		"--name",
+		help = 'Prefix to use when naming the output files. defaults to the dataset filename.',
+		action = 'store',
+		type = str,
+		dest = 'name',
+		default = None
+	)
+	##############################################################################################################################################
+	# --------------------------------------------------------- Input Data Options ---------------------------------------------------------------
+	##############################################################################################################################################
+	parser.add_argument(
+		"--sheetname",
+		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
+		action = 'store',
+		dest = 'sheetname',
+		default = 'Sheet1',
+		type = str
+	)
+	parser.add_argument(
+		"--genotypes", "--cohorts",
+		help = "Indicates that the input table contains genotypes rather than trajectories.",
+		action = 'store_true',
+		dest = 'is_genotype'
+	)
+
+	##############################################################################################################################################
+	# ------------------------------------------------------ General Analysis Options ------------------------------------------------------------
+	##############################################################################################################################################
+	parser.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
@@ -158,7 +182,7 @@ def create_parser() -> argparse.ArgumentParser:
 		type = float
 	)
 	parser.add_argument(
-		"-u", "--uncertainty",
+		"-d", "--detection",
 		help = "The uncertainty to apply when performing frequency-based calculations. \
 			For example, a frequency at a given timepoint is considered undetected if it falls below 0 + `uncertainty`.",
 		action = 'store',
@@ -175,11 +199,32 @@ def create_parser() -> argparse.ArgumentParser:
 		type = float
 	)
 	parser.add_argument(
-		"--matlab",
-		help = "Mimics the output of the original matlab script.",
-		action = 'store_true',
-		dest = "mode"
+		"--additive",
+		help = "Controls how the additive score between a nested and unnested genotype is calculated. Defaults to the detection cutoff value.",
+		action = 'store',
+		default = None,
+		dest = 'additive_cutoff',
+		type = float
 	)
+	parser.add_argument(
+		"--subtractive",
+		help = "Controls when the combined frequencies of a nested and unnested genotype are considered consistently larger than the fixed cutoff."
+			   "Defaults to the detection cutoff value.",
+		default = None,
+		dest = "subtractive_cutoff"
+	)
+	parser.add_argument(
+		"--derivative",
+		help = "Controls how much a nested and unnested genotype should be correlated/anticorrelated to be considered significant",
+		default = 0.01,
+		dest = "derivative_cutoff",
+		type = float
+	)
+
+	##############################################################################################################################################
+	# ----------------------------------------------- Options for individual analysis steps ------------------------------------------------------
+	##############################################################################################################################################
+
 	parser.add_argument(
 		"-f", "--frequencies",
 		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
@@ -188,45 +233,30 @@ def create_parser() -> argparse.ArgumentParser:
 		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 	)
 	parser.add_argument(
-		"-r", "--similarity-cutoff",
-		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into muller_genotypes.",
+		"--similarity-cutoff",
+		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
 		action = "store",
 		default = 0.05,
 		dest = "similarity_breakpoint",
 		type = float
 	)
-
 	parser.add_argument(
-		"-l", "--difference-cutoff",
+		"--difference-cutoff",
 		help = "Minimum p-value to consider a pair of muller_genotypes unrelated. Used when splitting muller_genotypes.",
 		action = "store",
 		default = 0.25,
 		dest = "difference_breakpoint",
 		type = float
 	)
-	parser.add_argument(
-		"--genotypes", "--cohorts",
-		help = "Indicates that the input table contains genotypes rather than trajectories.",
-		action = 'store_true',
-		dest = 'is_genotype'
-	)
+
+	##############################################################################################################################################
+	# --------------------------------------------------- Genotype Clustering Options ------------------------------------------------------------
+	##############################################################################################################################################
 	parser.add_argument(
 		"--no-filter",
 		help = "Disables genotype filtering.",
 		action = 'store_false',
 		dest = 'use_filter'
-	)
-	parser.add_argument(
-		"--annotate-all",
-		help = "Adds all gene labels to the muller plots, instead of the top three.",
-		action = "store_true",
-		dest = "annotate_all"
-	)
-	parser.add_argument(
-		"--no-heatmap",
-		help = "By default the scripts save the p-values to a table and generates a heatmap for the population. Disabling saves a large amount of time for large datasets.",
-		action = "store_false",
-		dest = "save_pvalue"
 	)
 	parser.add_argument(
 		"--strict-filter",
@@ -243,22 +273,25 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store",
 		default = "hierarchy",
 		dest = "method",
-		choices = ['matlab', 'hierarchy']
+		choices = ['matlab', 'hierarchy', 'twostep']
 	)
 	parser.add_argument(
 		"--metric",
-		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, such as the difference between them or how well they are correlated.",
+		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, " \
+			   "such as the difference between them or how well they are correlated.",
 		action = "store",
 		default = "binomial",
 		dest = "metric",
 		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
 	)
+	##############################################################################################################################################
+	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
+	##############################################################################################################################################
 	parser.add_argument(
-		"-g", "--known-genotypes",
-		help = "A file with trajectories known to be in the same genotypes. Each genotype is defined by a comma-delimited line with the labels of the member trajectories.",
-		action = "store",
-		default = None,
-		dest = "known_genotypes"
+		"--annotate-all",
+		help = "Adds all gene labels to the muller plots, instead of the top three.",
+		action = "store_true",
+		dest = "annotate_all"
 	)
 	parser.add_argument(
 		"--genotype-colors",
@@ -268,6 +301,10 @@ def create_parser() -> argparse.ArgumentParser:
 		default = None,
 		dest = "genotype_palette_filename"
 	)
+
+	##############################################################################################################################################
+	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
+	##############################################################################################################################################
 	parser.add_argument(
 		"--gene-alias",
 		help = "An optional two-column file with more accurate gene names. This is usefull when using a reference annotated via prokka.",
@@ -275,5 +312,20 @@ def create_parser() -> argparse.ArgumentParser:
 		type = Path,
 		default = None,
 		dest = 'alias_filename'
+	)
+	parser.add_argument(
+		"-g", "--known-genotypes",
+		help = "A file with trajectories known to be in the same genotypes. "
+			   "Each genotype is defined by a comma-delimited line with the labels of the member trajectories.",
+		action = "store",
+		default = None,
+		dest = "known_genotypes"
+	)
+	parser.add_argument(
+		"--known-ancestry",
+		help = "A file designating the known ancestry of certain genotypes. Formatted like the ggmuller edges table.",
+		dest = 'known_ancestry',
+		default = None,
+		type = Path
 	)
 	return parser

@@ -76,10 +76,9 @@ def test_trajectory_filters(psdata):
 
 
 def test_get_fuzzy_backgrounds(genotype_table_a):
-	test_background, (dlimit, flimit) = filters.get_fuzzy_backgrounds(genotype_table_a, [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
+	test_background, flimit = filters.get_fuzzy_backgrounds(genotype_table_a, [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
 
 	assert pytest.approx(flimit, 0.7)
-	assert pytest.approx(dlimit, 0.03)
 	assert len(test_background) == 1
 	assert list(test_background.index) == ['genotype-1']
 

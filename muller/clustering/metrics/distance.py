@@ -56,7 +56,6 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	""" Based on the binomial calculations present in the original matlab scripts."""
 	# Find the mean frequency of each timepoint
 	# index is timepoints,  values are frequencies
-	# TODO make sure this is actually removing fixed timepoints.
 	not_detected_fixed_df = pandas.concat([left, right], axis = 1)
 	mean: pandas.Series = not_detected_fixed_df.mean(axis = 1)
 
@@ -76,13 +75,7 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 	difference_mean: float = abs(difference).sum() / n
 
 	X = difference_mean / (math.sqrt(2 * sigma_pair))
-	debug = False
-	if debug:
-		print(left.values)
-		print(right.values)
-		print("difference mean: ", difference_mean)
-		print("sigma: ", sigma_pair)
-		print("X: ", X)
+
 	return X
 
 
@@ -119,7 +112,3 @@ def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -
 		message = f"'{metric}' is not an available metric."
 		raise ValueError(message)
 	return distance_between_series
-
-
-if __name__ == "__main__":
-	pass

@@ -1,12 +1,11 @@
 import re
-from io import StringIO
 
 import pandas
 import pytest
 
 import palettes
-from dataio import import_table
 import treetools
+from dataio import import_table
 
 
 @pytest.fixture
@@ -37,20 +36,22 @@ def edges_table() -> pandas.Series:
 	table = table['Parent']
 	return table
 
+
 @pytest.mark.parametrize("label,expected",
-[
-	("genotype-8", "genotype-2"),
-	("genotype-18", "genotype-1"),
-	("genotype-2", "genotype-2"),
-	("genotype-5", "genotype-1"),
-	("genotype-9", "genotype-2"),
-	("genotype-19", "genotype-1"),
-	("genotype-13", "genotype-2")
-]
+	[
+		("genotype-8", "genotype-2"),
+		("genotype-18", "genotype-1"),
+		("genotype-2", "genotype-2"),
+		("genotype-5", "genotype-1"),
+		("genotype-9", "genotype-2"),
+		("genotype-19", "genotype-1"),
+		("genotype-13", "genotype-2")
+	]
 )
 def test_determine_clade(edges_table, label, expected):
 	result, iterations = treetools.determine_clade(edges_table, label)
 	assert expected == result
+
 
 def test_generate_genotype_palette():
 	genotypes = ['genotype-1', 'genotype-33', 'gen-5']

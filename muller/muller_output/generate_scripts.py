@@ -1,61 +1,8 @@
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional,Any
+from typing import Dict, List, Optional
 
 import pandas
-
-def generate_mermaid_script(backgrounds: pandas.DataFrame, color_palette: Dict[str, str], clusters:Any = None, annotations:Dict[str,str] = None) -> str:
-	"""
-	graph LR
-    id1(Start)-->id2(Stop)
-    style id1 fill:#f9f,stroke:#333,stroke-width:4px
-    style id2 fill:#ccf,stroke:#f66,stroke-width:2px,stroke-dasharray: 5, 5
-	Parameters
-	----------
-	backgrounds
-	color_palette: Dict[str,str]
-		Defines the colors for each genotype.
-
-	Returns
-	-------
-
-	"""
-	genotype_labels = list(set(backgrounds['Identity'].values))
-
-	node_map = {k: "style id{} fill:{}".format(k.split('-')[-1], color_palette[k]) for k in genotype_labels}
-
-	diagram_contents = ["graph TD;"]
-	for _, row in backgrounds.iterrows():
-		parent = row['Parent']
-		identity = row['Identity']
-		parent_id = parent.split('-')[-1]
-		identity_id = identity.split('-')[-1]
-
-		if clusters:
-			confidence = clusters.confidence.get((parent,identity), "")
-		else:
-			confidence = ""
-		if confidence:
-			confidence = f"|{confidence}|"
-
-		if annotations:
-			identity = annotations.get(identity, [])
-			identity = "".join(identity)
-			print(identity)
-
-		line = "id{left_id}({left})-->{confidence}id{right_id}({right});".format(
-			left_id = identity_id,
-			right_id = parent_id,
-			left = identity,
-			right = parent,
-			confidence = confidence
-		)
-		diagram_contents.append(line)
-
-	diagram_contents += list(node_map.values())
-
-	script_text = "\n".join(diagram_contents)
-	return script_text
 
 
 def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path, script_filename: Path,
@@ -115,17 +62,3 @@ def execute_r_script(path: Path, script: str) -> Path:
 	if _extra_file.exists():
 		_extra_file.unlink()
 	return path
-
-
-def excecute_mermaid_script(path: Path, script: str, mermaid_render: Path):
-	path.write_text(script)
-	try:
-		process = subprocess.run(
-			["mmdc", "--height", "1000", "--width", "1000", "--input", path, "--output", mermaid_render],
-			stdout = subprocess.PIPE,
-			stderr = subprocess.PIPE)
-		if process.stderr:
-			print("Warning encountered when generating mermaid diagram:")
-			print(process.stderr)
-	except FileNotFoundError:
-		pass

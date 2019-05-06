@@ -1,5 +1,31 @@
+from typing import Dict, List, Tuple
+
 import pandas
-from typing import List, Dict, Tuple
+
+
+def get_child_nodes(tree: pandas.DataFrame, label: str) -> List[str]:
+	"""Retrieves all child node for the given label from the tree. Includes `label` in the output"""
+
+	children = list()
+	for index in tree.index:
+		parents = get_parent_nodes(tree, index)
+		if label in parents:
+			children.append(index)
+	return children
+
+
+def get_parent_nodes(tree: pandas.DataFrame, label: str) -> List[str]:
+	"""Retrieves all parent nodes for the given node."""
+	parents = []
+	while label != 'genotype-0':
+		try:
+			parent = tree.loc[label]['Parent']
+		except KeyError:
+			parent = 'genotype-0'
+		parents.append(parent)
+		label = parent
+	return parents
+
 
 def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 	"""
@@ -40,12 +66,14 @@ def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:
 	return label, iteration
 
 
-def common_elements(left, right):
+def common_elements(left, right) -> int:
+	""" Returns the number of elements that are common between `left` and `right`"""
 	common = set(left) & set(right)
 	return len(common)
 
 
 def tokenize(elements: List[str]):
+	""" Converts a list of strings into a list of unique words found in all the string elements."""
 	string = " ".join(elements)
 	tokens = string.split(" ")
 	return [i.strip() for i in tokens if i]
@@ -78,5 +106,3 @@ def group_clades(clade_annotations: Dict[str, List[str]]) -> List[List[str]]:
 		seen = seen | set(related)
 
 	return result
-
-

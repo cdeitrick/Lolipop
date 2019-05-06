@@ -1,6 +1,8 @@
-from typing import List, Tuple
 import random
+from typing import List, Tuple
+
 import seaborn
+
 distinctive_palette = [
 	'#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 	'#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
@@ -19,6 +21,20 @@ similar_colorschemes = {
 distinctive_colorschemes = [
 	'Reds', 'Blues', 'Greens', 'Purples', 'hot', 'Greys', 'copper', 'cool'
 ]
+sequential_colorschemes = [
+	'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+	'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+	'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+sequential2_colorschemes = [
+	'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+	'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
+	'hot', 'afmhot', 'gist_heat', 'copper']
+misc_colorschemes = [
+	'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
+	'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
+	'gist_rainbow', 'rainbow', 'jet', 'nipy_spectral', 'gist_ncar']
+distinctive_colorschemes = distinctive_colorschemes + sequential_colorschemes + sequential2_colorschemes + misc_colorschemes
+
 
 def load_colorscheme(string: str, size: int) -> List[str]:
 	"""Attempts to load a given colorscheme."""
@@ -29,6 +45,8 @@ def load_colorscheme(string: str, size: int) -> List[str]:
 		palette = seaborn.light_palette(string, size)
 
 	return palette.as_hex()
+
+
 def rgbtohex(rgb: Tuple[float, float, float]) -> str:
 	if isinstance(rgb[0], float):  # The values are formatted as a number between 0 and 1
 		red = int(rgb[0] * 256)

@@ -34,6 +34,7 @@ def plot_timeseries(timeseries: pandas.DataFrame, palette: Dict[str, str], ax: O
 	return ax
 
 
+# noinspection PyTypeChecker
 def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.DataFrame, filename: Path, genotype_colors: Dict[str, str],
 		trajectory_palette: Dict[str, str]):
 	"""
@@ -88,7 +89,3 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 		plt.savefig(str(filename), dpi = 500, format = 'png')
 	else:
 		plt.show()
-
-
-if __name__ == "__main__":
-	pass

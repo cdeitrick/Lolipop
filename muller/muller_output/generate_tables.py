@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 import pandas
 
@@ -114,59 +114,6 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_p_value_table(p_values, trajectory_genotypes: Dict[str, str]) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-	timeseries_table = list()
-	for (left, right), calculation in p_values.items():
-		if calculation.mean_series is None:
-			# Assume all tables are None
-			continue
-
-		pair_df = pandas.DataFrame([calculation.sigma_series, calculation.mean_series, calculation.difference_series])
-		pair_df['variable'] = ['sigma', 'mean', 'difference']
-		pair_df['leftTrajectory'] = left
-		pair_df['rightTrajectory'] = right
-		pair_df['sigmaPair'] = calculation.sigma
-		pair_df['differencePair'] = calculation.difference_mean
-		pair_df['pvalue'] = calculation.pvalue
-		pair_df['X'] = calculation.X
-
-		timeseries_table.append(pair_df)
-
-	df = pandas.concat(timeseries_table, sort = True)
-	numeric_columns = [i for i in df.columns if isinstance(i, int)]
-	nonnumeric_columns = [i for i in df.columns if i not in numeric_columns]
-	df = df[nonnumeric_columns + numeric_columns]
-	matrix = generate_p_value_matrix(p_values, trajectory_genotypes)
-
-	return df, matrix
-
-
-def generate_p_value_matrix(p_values, trajectory_genotypes: Dict[str, str]):
-	""" Converts a dictionary mapping pairs of trajectories with thier respoective p-values into a similarity matrix."""
-	import itertools
-	import math
-
-	p_values = {k: v.pvalue for k, v in p_values.items()}
-	table = list()
-	all_ids = sorted(
-		set(itertools.chain.from_iterable(p_values.keys())),
-		key = lambda s: (trajectory_genotypes.get(s, 'zzz'), s)
-	)
-
-	for index in all_ids:
-		row = dict()
-		for column in all_ids:
-			if column == index:
-				value = math.nan
-			else:
-				value = p_values[column, index]
-			row[column] = value
-		series = pandas.Series(row, name = index)
-		table.append(series)
-	df = pandas.DataFrame(table)
-	return df
-
-
 def generate_missing_trajectories_table(trajectories: pandas.DataFrame, original_trajectories: pandas.DataFrame) -> pandas.DataFrame:
 	missing_trajectories = original_trajectories[~original_trajectories.index.isin(trajectories.index)]
 	concat_trajectories = pandas.concat([trajectories, missing_trajectories], sort = False)
@@ -180,10 +127,6 @@ def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: 
 	trajectories = trajectories[sorted(trajectories.columns, key = lambda s: int(s))]
 	if info is not None:
 		trajectory_table: pandas.DataFrame = trajectories.copy()
-		trajectory_table['genotype'] = [parent_genotypes[k] for k in trajectory_table.index]
+		trajectory_table['genotype'] = [parent_genotypes.get(k) for k in trajectory_table.index]
 		trajectory_table = trajectory_table.join(info).sort_values(by = ['genotype'])
 		return trajectory_table
-
-
-if __name__ == "__main__":
-	pass

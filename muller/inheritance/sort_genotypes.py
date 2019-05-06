@@ -1,9 +1,7 @@
-import logging
+from typing import List
 
 import pandas
-
-logger = logging.getLogger(__name__)
-from options import SortOptions
+from loguru import logger
 
 try:
 	from inheritance import timepoint_detection
@@ -11,7 +9,7 @@ except ModuleNotFoundError:
 	from . import timepoint_detection
 
 
-def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions) -> pandas.DataFrame:
+def sort_genotypes(genotype_frequencies: pandas.DataFrame, dlimit: float, slimit: float, flimit: float, breakpoints: List[float]) -> pandas.DataFrame:
 	"""
 		Sorts the muller_genotypes based on when they were first detected and first fixed.
 	Parameters
@@ -19,7 +17,10 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	genotype_frequencies:pandas.Dataframe
 		A dataframe with the mean frequency of each genotype, derived from the member trajectories
 		in that genotype. Each row should correspond to a single genotype.
-	options: SortOptions
+	dlimit, slimit, flimit: float
+		The three breakpoints that are used to determine the sort order of the genotypes.
+	breakpoints: List[float]
+		Frequencies with which to group genotypes into sortable bins. Each bin will be sorted individually then added to the final output.
 
 	Returns
 	-------
@@ -27,17 +28,17 @@ def sort_genotypes(genotype_frequencies: pandas.DataFrame, options: SortOptions)
 	"""
 	sorted_genotypes = list()
 	current_genotypes: pandas.DataFrame = genotype_frequencies.copy()
-	for frequency in [options.fixed_breakpoint] + options.frequency_breakpoints:
-		logger.info(f"filtering based on frequency {frequency}")
+	for frequency in [flimit] + breakpoints:
+		logger.debug(f"filtering based on frequency {frequency}")
 		# Ignore genotypes that do not have at least on timepoint exceeding the current frequency.
 		genotypes_above_threshold = _remove_low_frequency_series(current_genotypes, frequency)
 
 		sorted_dataframe = _sort_genotype_frequencies(
 			genotype_trajectories = genotypes_above_threshold,
 			frequency_breakpoint = frequency,
-			detection_cutoff = options.detection_breakpoint,
-			significant_cutoff = options.significant_breakpoint,
-			fixed_cutoff = options.fixed_breakpoint
+			detection_cutoff = dlimit,
+			significant_cutoff = slimit,
+			fixed_cutoff = flimit
 		)
 		if sorted_dataframe is not None:
 			current_genotypes = current_genotypes.drop(sorted_dataframe.index)
@@ -100,8 +101,7 @@ def _sort_genotype_frequencies(genotype_trajectories: pandas.DataFrame, frequenc
 	first_above_threshold_reduced = timepoint_detection.get_first_significant_timepoint(transposed, significant_cutoff)
 	# Use the frequency breakpoint rather than the fixed cutoff.
 	first_fixed_reduced = timepoint_detection.get_first_fixed_timepoint(transposed, frequency_breakpoint)
-	# if first_fixed_reduced.empty:
-	#	first_fixed_reduced = first_fixed
+
 	combined_df: pandas.DataFrame = pandas.concat(
 		[first_fixed_reduced, first_detected_reduced, first_above_threshold_reduced],
 		axis = 1, sort = False)
@@ -142,8 +142,8 @@ def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresh
 		else:
 			# More than one genotype share this combination of key timepoints. Sort by frequency.
 			# Sort from highest to lowest using the timpoint columns as the sorting keys.
-			#trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
-			trajectories = trajectories.sort_values(by = [fd,ft,ff], ascending = False)
+			# trajectories = trajectories.sort_values(by = [ff, ft, fd], ascending = False)
+			trajectories = trajectories.sort_values(by = [fd, ft, ff], ascending = False)
 			freq_groups.append(trajectories)
 
 	try:
@@ -153,7 +153,3 @@ def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresh
 		freq_df = None
 
 	return freq_df
-
-
-if __name__ == "__main__":
-	pass

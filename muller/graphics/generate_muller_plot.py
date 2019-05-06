@@ -1,7 +1,7 @@
 """
 	Python implementation of the Muller_plot function available from ggmuller.
 """
-import logging
+
 import math
 import random
 from itertools import filterfalse
@@ -12,6 +12,7 @@ import pandas
 from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
+
 # Make sure the svg files save the labels as actualt text.
 plt.rcParams['svg.fonttype'] = 'none'
 try:
@@ -19,7 +20,8 @@ try:
 except ModuleNotFoundError:
 	from widgets import calculate_luminance
 
-logger = logging.getLogger(__file__)
+from loguru import logger
+
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -46,32 +48,6 @@ def unique_everseen(iterable, key = None):
 				yield element
 
 
-def generate_muller_series_legacy(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
-	"""
-		Generates the required inputs for matplotlib to generate a mullerplot.
-	Parameters
-	----------
-	muller_df: pandas.DataFrame
-	color_palette: Dict[str,str]
-		Maps genotypes to a specific color.
-
-	Returns
-	-------
-	x, y, colors, labels
-	"""
-	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
-
-	x = list(unique_everseen(muller_df['Generation'].tolist()))
-	colors = [color_palette[genotype_label[:-1] if genotype_label.endswith('a') else genotype_label] for genotype_label in genotype_order]
-	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
-	from pprint import pprint
-	pprint(genotype_order)
-	groups = muller_df.groupby(by = 'Group_id')
-
-	y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
-
-	return x, y, colors, labels
-
 def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[List[float], List[List[float]], List[str], List[str]]:
 	"""
 		Generates the required inputs for matplotlib to generate a mullerplot.
@@ -88,7 +64,6 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
 	x = list(unique_everseen(muller_df['Generation'].tolist()))
-	#colors = [color_palette[genotype_label[:-1] if genotype_label.endswith('a') else genotype_label] for genotype_label in genotype_order]
 	labels = [(label if not label.endswith('a') else None) for label in genotype_order]
 
 	groups = muller_df.groupby(by = 'Group_id')
@@ -102,21 +77,21 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 		try:
 			next_label = genotype_order[index + 1]
 		except IndexError:
-			next_label = "   " # Three spaces, so the fllowing subscription works
-		if label == next_label[:-1]:
+			next_label = "   "  # Three spaces, so the following subscription works
+		if label == next_label[:-1] and next_label[-1].isalpha():  # make sure it ends with a letter.
 			# The two halves of this specific genotype are next to each other. combine them and skip the next iteration.
 			seen.add(next_label)
 			genotype_series_a = groups.get_group(label)['Frequency'].tolist()
 			genotype_series_b = groups.get_group(next_label)['Frequency'].tolist()
-			genotype_series = [i+j for i,j in zip(genotype_series_a, genotype_series_b)]
+			genotype_series = [i + j for i, j in zip(genotype_series_a, genotype_series_b)]
 		else:
 			# The genotype contains child genotypes.
 			genotype_series = groups.get_group(label)['Frequency'].tolist()
 		ys.append(genotype_series)
 		colors.append(genotype_color)
 
-	#y = [groups.get_group(label)['Frequency'].tolist() for label in genotype_order]
 	return x, ys, colors, labels
+
 
 def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]:
 	"""
@@ -156,7 +131,6 @@ def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]
 			x = sorted(group['Generation'].values, key = lambda s: s - x)[0]
 
 		gdf = nonzero[nonzero['Group_id'].isin(genotype_order[:index] + [genotype_label])]
-		# gdf = gdf[gdf['Population'] != 50]
 		gdf = gdf[gdf['Generation'] == x]
 
 		mid_y = sum(gdf['Frequency'].values)
@@ -234,7 +208,7 @@ def annotate_axes(ax: Axes, points: Dict[str, Tuple[float, float]], annotations:
 	for genotype_label, point in points.items():
 		background_properties = {
 			'facecolor': color_palette[genotype_label],
-			'alpha': 1,
+			'alpha':     1,
 			'edgecolor': "#FFFFFF",
 			'linewidth': 0.5
 		}
@@ -303,16 +277,10 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax.spines['right'].set_visible(False)
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
-	#ax.set_ylim(0, 1)
+	# ax.set_ylim(0, 1)
 	plt.tight_layout()
 
 	for output_filename in output_filenames:
 		plt.savefig(str(output_filename))
-	#plt.savefig(str(output_filename.with_suffix('.pdf')))
-	#plt.savefig(str(output_filename.with_suffix('.svg')))
 
 	return ax
-
-
-if __name__ == "__main__":
-	pass

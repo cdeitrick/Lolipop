@@ -1,27 +1,20 @@
-import logging
 from typing import List, Tuple
 
 import pandas
-
-logger = logging.getLogger(__file__)
-try:
-	from muller.options import GenotypeOptions
-except ModuleNotFoundError:
-	from options import GenotypeOptions
+from loguru import logger
 
 
-def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, Tuple[float, float]]:
+def get_fuzzy_backgrounds(genotypes: pandas.DataFrame, cutoffs: List[float]) -> Tuple[pandas.DataFrame, float]:
 	""" Extracts the backgrounds using a list of frequency breakpoints."""
 	for cutoff in cutoffs:
 		backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
 		backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2]  # Check if background appears at multiple timepoints.
 		if not backgrounds.empty:
 			fuzzy_fixed_cutoff = cutoff
-			fuzzy_detected_cutoff = 1 - cutoff
 			break
 	else:
 		raise ValueError("The filters cannot be applied since no backgrounds can be detected.")
-	return backgrounds, (fuzzy_detected_cutoff, fuzzy_fixed_cutoff)
+	return backgrounds, fuzzy_fixed_cutoff
 
 
 # noinspection PyTypeChecker
@@ -63,7 +56,7 @@ def check_if_genotype_is_invalid(genotype: pandas.Series, background_detected: i
 	was_detected_before_and_after_background = first_detected < background_detected < last_detected
 	# Check if the genotype was detected before and after the timepoint the current backgound fixed.
 	was_detected_before_and_after_fixed = first_detected < background_fixed < last_detected
-	#print(genotype.name, (first_detected, background_detected), (last_detected, background_detected), was_detected_before_and_after_fixed, was_detected_before_and_after_background)
+	# print(genotype.name, (first_detected, background_detected), (last_detected, background_detected), was_detected_before_and_after_fixed, was_detected_before_and_after_background)
 	if was_detected_before_and_after_background and was_detected_before_and_after_fixed:
 		# To confirm that it is an invalid genotype rather than a genotype that was wiped out by a background and then reapeared,
 		# Check to see if it was undetected at the timpont the background fixed.
@@ -174,5 +167,49 @@ def filter_trajectories(trajectory_table: pandas.DataFrame, dlimit: float, flimi
 	return trajectory_table[~trajectory_table.index.isin(failed_single_point_test)]
 
 
-if __name__ == "__main__":
-	pass
+def filter_genotypes(original_genotypes: pandas.DataFrame, genotype_members: pandas.Series, detection_breakpoint: float, breakpoints: List[float],
+		use_strict_filter: bool = False) -> List[str]:
+	"""
+		Finds all trajectories which should be filtered out of the dataset based on certain criteria.
+		 These criteria concern both the trajectories and their parent genotypes.
+	Parameters
+	----------
+	original_genotypes: pandas.DataFrame
+		pre-computed genotypes table.
+	genotype_members: pandas.Series
+		Maps genotypes to a '|' delimited string of member trajectories.
+	detection_breakpoint: float
+	breakpoints: List[float]
+	use_strict_filter: bool; default False
+
+	Returns
+	-------
+	List[str]
+		A list of all trajectories which should be filtered out of the dataset.
+	"""
+	# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
+	# used when sorting the genotypes.
+	try:
+		current_backgrounds, fuzzy_fixed_limit = get_fuzzy_backgrounds(original_genotypes, breakpoints)
+	except ValueError:
+		return []
+
+	logger.debug(f"Backgrounds for filtering:" + str(list(current_backgrounds.index)))
+
+	# Search for genotypes that do not make sense in the context of an evolved population.
+	current_invalid_genotype = find_first_invalid_genotype(
+		original_genotypes,
+		current_backgrounds,
+		detection_breakpoint,
+		fuzzy_fixed_limit,
+		use_strict_filter
+	)
+
+	if current_invalid_genotype is None:
+		return []
+	else:
+		logger.info(f"Found Invalid genotype: {current_invalid_genotype}. Removing...")
+		# Get a list of the trajectories that form this genotype.
+		invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
+		logger.info("Invalid members: " + str(invalid_members))
+		return invalid_members

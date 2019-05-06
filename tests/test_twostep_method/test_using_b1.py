@@ -1,8 +1,11 @@
-import pytest
 import pandas
+import pytest
+
 from dataio import import_table
+
+
 @pytest.fixture
-def b1_data()->pandas.DataFrame:
+def b1_data() -> pandas.DataFrame:
 	string = """
 	Trajectory	0	17	25	44	66	75	90
 	1.000	0.000	0.000	0.261	1.000	1.000	1.000	1.000

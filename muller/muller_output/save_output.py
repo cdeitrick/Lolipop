@@ -1,39 +1,31 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import pandas
-from dataclasses import dataclass
+from loguru import logger
 
-# logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
-# logger = logging.getLogger(__name__)
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "removed"
 OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
-	from muller.clustering.generate import GenotypeOptions
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from inheritance.sort_genotypes import SortOptions
-	from inheritance.order import OrderClusterParameters
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller.muller_output.generate_tables import *
-	from muller.muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
 	from muller import widgets, dataio, palettes
 	from muller.muller_output.flowchart import flowchart
 except ModuleNotFoundError:
 	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from muller_output.generate_tables import *
-	from muller_output.generate_scripts import generate_mermaid_script, generate_r_script, excecute_mermaid_script, execute_r_script
+	from muller_output.generate_scripts import generate_r_script, execute_r_script
 	import widgets
 	import palettes
 	import dataio
 	from muller_output.flowchart import flowchart
-
-	GenotypeOptions = Any
-	SortOptions = Any
-	OrderClusterParameters = Any
 
 
 @dataclass
@@ -48,9 +40,6 @@ class WorkflowData:
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
 	clusters: Any
-	genotype_options: GenotypeOptions
-	sort_options: SortOptions
-	cluster_options: OrderClusterParameters
 	p_values: PairwiseCalculationCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
@@ -68,7 +57,7 @@ class OutputFilenames:
 			path = Path(path)
 			if not path.exists():
 				path.mkdir()
-			return path
+			return path.absolute()
 
 		output_folder = check_folder(output_folder)
 		supplementary_folder = check_folder(output_folder / "supplementary-files")
@@ -77,14 +66,11 @@ class OutputFilenames:
 		graphics_clade_folder = check_folder(graphics_folder / "clade")
 		tables_folder = check_folder(output_folder / "tables")
 		scripts_folder = check_folder(output_folder / "scripts")
-
 		# General Files
 		self.trajectory: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
-		self.mermaid_render: Path = output_folder / (name + '.geneology.svg')
-		self.mermaid_image: Path = output_folder / (name + '.geneology.png')
-		self.genotype_plot_filtered: Path = output_folder / (name + f".genotypes.filtered.png")
+		self.muller_plot_unannotated_general: Path = output_folder / (name + '.muller.unannotated.png')
 
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
@@ -92,25 +78,30 @@ class OutputFilenames:
 		self.population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
 		self.muller_table: Path = tables_folder / (name + f'.muller.csv')  # This is generated in r.
-		self.calculation_matrix_X = tables_folder / (name + f".calculation.matrix.distance.{suffix}")
+
 		self.linkage_matrix_table = tables_folder / (name + f".linkagematrix.tsv")
-		self.p_value: Path = tables_folder / (name + ".pvalues.tsv")
-		self.calculation_matrix_p: Path = tables_folder / (name + f".distance.{suffix}")
-		self.calculation_json = tables_folder / (name + f".calculations.tsv")
+		self.distance_table: Path = tables_folder / (name + ".distance.tsv")
+		self.distance_matrix: Path = tables_folder / (name + f".distance.{suffix}")
 
 		# graphics
-		## Muller Plots
+		# Muller Plots
 		self.muller_plot_unannotated: Path = graphics_distinctive_folder / (name + '.muller.unannotated.png')
 		self.muller_plot_annotated_pdf: Path = graphics_clade_folder / (name + '.muller.annotated.pdf')
 		self.muller_plot_annotated_svg: Path = graphics_clade_folder / (name + ".muller.annotated.svg")
 		self.muller_plot_basic: Path = graphics_clade_folder / (name + '.muller.basic.png')
 		self.muller_plot_annotated_distinctive: Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.png')
 		self.muller_plot_annotated_distinctive_svg: Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.svg')
+
 		##Timeseries plots
 		self.genotype_plot: Path = graphics_distinctive_folder / (name + '.genotypes.distinctive.png')
-		self.trajectory_plot_distinctive: Path = graphics_distinctive_folder / (name + f".trajectories.distinctive.png")
+		self.trajectory_plot_distinctive: Path = graphics_distinctive_folder / (name + f".trajectories.distinctive.svg")
+		self.genotype_plot_filtered: Path = output_folder / (name + f".genotypes.filtered.png")
+
 		## Geneology plots
-		self.mermaid_distinctive: Path = graphics_distinctive_folder / (name + f".geneology.distinctive.png")
+		self.lineage_render: Path = output_folder / (name + '.lineage.svg')
+		self.lineage_image_clade: Path = graphics_distinctive_folder / (name + f".lineage.distinctive.png")
+		self.lineage_image_distinct: Path = output_folder / (name + '.lineage.png')
+
 		## Other plots
 		self.distance_heatmap: Path = graphics_folder / (name + f".heatmap.distance.png")
 		self.linkage_plot = graphics_folder / (name + f".dendrogram.png")
@@ -121,6 +112,7 @@ class OutputFilenames:
 
 		# supplementary files
 		self.parameters: Path = supplementary_folder / (name + '.json')
+		self.genotype_scores: Path = supplementary_folder / (name + '.nestscores.tsv')
 
 	@property
 	def delimiter(self) -> str:
@@ -131,101 +123,89 @@ class OutputFilenames:
 
 
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
-	options = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
-	parameters = {
-		# get_genotype_options
-		'detectionCutoff':                        workflow_data.genotype_options.detection_breakpoint,
-		'fixedCutoff':                            workflow_data.genotype_options.fixed_breakpoint,
-		'similarityCutoff':                       workflow_data.genotype_options.similarity_breakpoint,
-		'differenceCutoff':                       workflow_data.genotype_options.difference_breakpoint,
-		# sort options
-		'significanceCutoff':                     workflow_data.sort_options.significant_breakpoint,
-		'frequencyCutoffs':                       workflow_data.sort_options.frequency_breakpoints,
-		# cluster options
-		'additiveBackgroundDoubleCheckCutoff':    workflow_data.cluster_options.additive_background_double_cutoff,
-		'additiveBackgroundSingleCheckCutoff':    workflow_data.cluster_options.additive_background_single_cutoff,
-		'subtractiveBackgroundDoubleCheckCutoff': workflow_data.cluster_options.subtractive_background_double_cutoff,
-		'subtractiveBackgroundSingleCheckCutoff': workflow_data.cluster_options.subtractive_background_single_cutoff,
-		'derivativeDetectionCutoff':              workflow_data.cluster_options.derivative_detection_cutoff,
-		'derivativeCheckCutoff':                  workflow_data.cluster_options.derivative_check_cutoff,
-		# Palette
-		'genotypePalette':                        genotype_colors,
-		'commit':                                 widgets.get_commit_hash(),
-		'method':                                 workflow_data.genotype_options.method,
-		'metric':                                 workflow_data.genotype_options.metric,
-		'options':                                options
-	}
+	parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
+	parameters['genotypeColors'] = genotype_colors
+
 	return parameters
 
 
-def _make_folder(folder: Path):
-	if not folder.exists():
-		folder.mkdir()
-
-
-def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, save_pvalues: bool,
-		adjust_populations: bool):
+def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, adjust_populations: bool):
 	# Set up the output folder
-	base_filename = workflow_data.filename.stem
-	if workflow_data.program_options['sheetname']:
+	if workflow_data.program_options['name']:
+		base_filename = workflow_data.program_options['name']
+	else:
+		base_filename = workflow_data.filename.stem
+	if workflow_data.program_options['sheetname'] and workflow_data.program_options['sheetname'] != 'Sheet1':
 		base_filename += '.' + workflow_data.program_options['sheetname']
+
 	filenames = OutputFilenames(output_folder, base_filename)
 	delimiter = filenames.delimiter
 
+	# Map each trajectory to its parent genotype.
 	parent_genotypes = widgets.map_trajectories_to_genotype(workflow_data.genotype_members)
 
-	workflow_data.original_genotypes.to_csv(str(filenames.original_genotype), sep = delimiter)
+	##############################################################################################################################################
+	# ------------------------------------------- Save the genotype and trajectory tables --------------------------------------------------------
+	##############################################################################################################################################
+
 	workflow_data.genotypes.to_csv(str(filenames.genotype), sep = delimiter)
 
-	# Generate the input tables to ggmuller
+	logger.info("Saving Trajectory Tables...")
+	# Save trajectory tables, if available
+	if workflow_data.trajectories is not None:
+		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
+		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
+		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
+
+	##############################################################################################################################################
+	# ----------------------------------------- # Generate the input tables to ggmuller ----------------------------------------------------------
+	##############################################################################################################################################
 	edges_table = workflow_data.clusters.as_ancestry_table().reset_index()
 	edges_table = edges_table[['Parent', 'Identity']]  # Otherwise the r script doesn't work.
 	population_table = generate_ggmuller_population_table(workflow_data.genotypes, edges_table, detection_cutoff, adjust_populations)
 	population_table.to_csv(str(filenames.population), sep = delimiter, index = False)
 	edges_table.to_csv(str(filenames.edges), sep = delimiter, index = False)
-
-	# Generate the palette for the praphics.
+	##############################################################################################################################################
+	# ----------------------------------------- Generate the palette for the praphics ------------------------------------------------------------
+	##############################################################################################################################################
 	_all_genotype_labels = sorted(set(list(workflow_data.original_genotypes.index) + list(workflow_data.genotypes.index)))
-	genotype_annotations = dataio.parse_genotype_annotations(workflow_data.genotype_members, workflow_data.info, workflow_data.program_options['alias_filename'])
+	# Annotations may be used to select specific colors for the lineage palette.
+	if workflow_data.info is not None:
+		genotype_annotations = dataio.parse_genotype_annotations(
+			workflow_data.genotype_members,
+			workflow_data.info,
+			workflow_data.program_options['alias_filename']
+		)
+	else:
+		genotype_annotations = {}
+	# The custom palette overrides any other color.
 	if workflow_data.genotype_palette_filename:
-		custom_palette = dataio.read_palette(workflow_data.genotype_palette_filename)
+		custom_palette = dataio.read_map(workflow_data.genotype_palette_filename)
 	else:
 		custom_palette = {}
+
 	genotype_colors_distinct = palettes.generate_palette(_all_genotype_labels)
 	genotype_colors_clade = palettes.generate_palette(edges_table, custom_palette, genotype_annotations, 'lineage')
 
-	if workflow_data.genotype_palette_filename:
-		custom_palette = dataio.read_palette(workflow_data.genotype_palette_filename)
-		for k, v in custom_palette.items():
-			genotype_colors_clade[k] = v
-
-	print("Saving Trajectory Tables...")
-	# Save trajectory tables, if available
-	if workflow_data.original_trajectories is not None:
-		workflow_data.original_trajectories.to_csv(str(filenames.original_trajectory), sep = delimiter)
-	if workflow_data.trajectories is not None:
-		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
-		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
-		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
-		trajectory_map = widgets.map_trajectories_to_genotype(workflow_data.genotype_members)
-	else:
-		trajectory_map = {}
-	# Save supplementary files
+	##############################################################################################################################################
+	# ------------------------------------------------- Save supplementary files -----------------------------------------------------------------
+	##############################################################################################################################################
 	parameters = get_workflow_parameters(workflow_data, genotype_colors_clade)
 	filenames.parameters.write_text(json.dumps(parameters, indent = 2))
 
 	# Generate and excecute scripts
+	##############################################################################################################################################
+	# ------------------------------------------------- Generate the lineage plots ---------------------------------------------------------------
+	##############################################################################################################################################
+	logger.info("Generating Lineage Plots...")
+	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
+	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
+	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)
 
-	print("Generating scripts...")
-	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.mermaid_image)
-	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.mermaid_render)
-	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.mermaid_distinctive)
-	#mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_clade, workflow_data.clusters)
-	#excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_render)
-	# excecute_mermaid_script(filenames.mermaid_script, mermaid_diagram, filenames.mermaid_image)
-	#distinctive_mermaid_diagram = generate_mermaid_script(edges_table, genotype_colors_distinct)
-	#excecute_mermaid_script(filenames.mermaid_script, distinctive_mermaid_diagram, filenames.mermaid_distinctive)
-
+	##############################################################################################################################################
+	# ------------------------------------------------- Generate and excecute the r script -------------------------------------------------------
+	##############################################################################################################################################
+	# TODO replicate how the r script generates the muller_df file so that we don't have to run the rscript.
 	muller_df = generate_r_script(
 		trajectory = filenames.trajectory,
 		population = filenames.population,
@@ -238,18 +218,24 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	)
 
 	# Generate time series plots showing the mutations/genotypes over time.
-	print("Generating series plots...")
-	trajectory_colors_distinct = {k:genotype_colors_distinct[v] for k,v in trajectory_map.items()}
-	trajectory_colors_clade = {k:genotype_colors_clade[v] for k,v in trajectory_map.items()}
+
+	##############################################################################################################################################
+	# -------------------------------- Generate time series plots showing the mutations/genotypes over time --------------------------------------
+	##############################################################################################################################################
+	logger.info("Generating series plots...")
+	trajectory_colors_distinct = {k: genotype_colors_distinct[v] for k, v in parent_genotypes.items()}
+	trajectory_colors_lineage = {k: genotype_colors_clade[v] for k, v in parent_genotypes.items()}
 
 	plot_genotypes(workflow_data.trajectories, workflow_data.genotypes, filenames.genotype_plot, genotype_colors_distinct, trajectory_colors_distinct)
 	if workflow_data.trajectories is not None:
 		plot_timeseries(workflow_data.trajectories, trajectory_colors_distinct, filename = filenames.trajectory_plot_distinctive)
 		plot_genotypes(filtered_trajectories, workflow_data.genotypes, filenames.genotype_plot_filtered, genotype_colors_clade,
-			trajectory_colors_clade)
+			trajectory_colors_lineage)
 
-	# Generate muller plot, if possible
-	print("Generating muller plots...")
+	##############################################################################################################################################
+	# ------------------------------------- Generate the muller plot using the table from the r script -------------------------------------------
+	##############################################################################################################################################
+	logger.info("Generating muller plots...")
 	if muller_df is not None:
 		annotated_muller_plot_filenames = [
 			filenames.muller_plot_annotated,
@@ -261,25 +247,31 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 			filenames.muller_plot_annotated_distinctive_svg
 		]
 		generate_muller_plot(muller_df, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations)
+		generate_muller_plot(muller_df, genotype_colors_clade, [filenames.muller_plot_unannotated_general])
 		generate_muller_plot(muller_df, genotype_colors_distinct, distinctive_muller_plot_filenames)
 
+	##############################################################################################################################################
+	# ---------------------------------------------------- Generate supplementary files ----------------------------------------------------------
+	##############################################################################################################################################
+	workflow_data.clusters.to_table().to_csv(filenames.genotype_scores, sep = '\t')
 	if workflow_data.linkage_matrix is not None:
 		num_trajectories = len(workflow_data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(workflow_data.linkage_matrix, num_trajectories)
 		linkage_table.to_csv(str(filenames.linkage_matrix_table), sep = delimiter, index = False)
-		plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
-
-	workflow_data.p_values.save(filenames.calculation_json)
+		try:
+			plot_dendrogram(workflow_data.linkage_matrix, workflow_data.p_values, filenames.linkage_plot)
+		except:
+			pass
+	workflow_data.p_values.save(filenames.distance_table)
 
 	try:
 		squareform = workflow_data.p_values.squareform()
-		squareform.to_csv(filenames.calculation_matrix_p)
+		squareform.to_csv(filenames.distance_matrix)
 	except:
 		pass
-	if save_pvalues:
-		# workflow_data.p_values.save(filenames.calculation_matrix_p)
-		pvalues_matrix = workflow_data.p_values.squareform()
-		try:
-			plot_heatmap(pvalues_matrix, filenames.distance_heatmap)
-		except:
-			pass
+
+	pvalues_matrix = workflow_data.p_values.squareform()
+	try:
+		plot_heatmap(pvalues_matrix, filenames.distance_heatmap)
+	except:
+		pass

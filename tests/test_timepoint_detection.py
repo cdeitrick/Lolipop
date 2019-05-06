@@ -1,9 +1,12 @@
-import pytest
 import pandas
+import pytest
+
 from dataio import import_table
 from inheritance import timepoint_detection
+
+
 @pytest.fixture
-def transposed_genotypes()->pandas.DataFrame:
+def transposed_genotypes() -> pandas.DataFrame:
 	genotype_table_string = """
 		Genotype	0	17	25	44	66	75	90
 		genotype-1	0	0	0.261	1	1	1	1
@@ -25,8 +28,9 @@ def transposed_genotypes()->pandas.DataFrame:
 	table = import_table(genotype_table_string, index = 'Genotype')
 	return table.transpose()
 
+
 @pytest.fixture
-def transposed_mouse_genotypes()->pandas.DataFrame:
+def transposed_mouse_genotypes() -> pandas.DataFrame:
 	table = """
 		Genotype	0	1	2	3	4	5	6	7	8	9	10
 		genotype-1	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
@@ -48,48 +52,50 @@ def transposed_mouse_genotypes()->pandas.DataFrame:
 	t = import_table(table, index = 'Genotype')
 	return t.transpose()
 
+
 def test_get_first_detected_timepoint(transposed_genotypes, transposed_mouse_genotypes):
 	expected = pandas.Series({
-		'genotype-1': 25,
-		'genotype-2':17,
-		'genotype-3': 75,
-		'genotype-4': 44,
-		'genotype-5': 44,
-		'genotype-6': 44,
-		'genotype-7': 44,
-		'genotype-8': 44,
-		'genotype-9': 25,
+		'genotype-1':  25,
+		'genotype-2':  17,
+		'genotype-3':  75,
+		'genotype-4':  44,
+		'genotype-5':  44,
+		'genotype-6':  44,
+		'genotype-7':  44,
+		'genotype-8':  44,
+		'genotype-9':  25,
 		'genotype-10': 44,
 		'genotype-11': 66,
 		'genotype-12': 66,
-		'genotype-13':25,
+		'genotype-13': 25,
 		'genotype-14': 75,
 		'genotype-15': 44
 	}, name = 'firstDetected')
-	expected:pandas.Series = expected.astype(str)
+	expected: pandas.Series = expected.astype(str)
 	result = timepoint_detection.get_first_detected_timepoint(transposed_genotypes, 0.03)
 	assert expected.to_dict() == result.to_dict()
 
 	expected = pandas.Series({
-		'genotype-1': 2,
-		'genotype-2':1,
-		'genotype-3': 1,
-		'genotype-4': 0,
-		'genotype-5': 5,
-		'genotype-6': 4,
-		'genotype-7': 6,
-		'genotype-8': 7,
-		'genotype-9': 1,
+		'genotype-1':  2,
+		'genotype-2':  1,
+		'genotype-3':  1,
+		'genotype-4':  0,
+		'genotype-5':  5,
+		'genotype-6':  4,
+		'genotype-7':  6,
+		'genotype-8':  7,
+		'genotype-9':  1,
 		'genotype-10': 4,
 		'genotype-11': 1,
 		'genotype-12': 0,
-		'genotype-13':7,
+		'genotype-13': 7,
 		'genotype-14': 8,
 		'genotype-15': 8
 	}, name = 'firstDetected')
 	expected = expected.astype(str)
 	result = timepoint_detection.get_first_detected_timepoint(transposed_mouse_genotypes, 0.03)
 	assert expected.to_dict() == result.to_dict()
+
 
 def test_get_first_significant_timepoint(transposed_genotypes, transposed_mouse_genotypes):
 	expected_mouse = {
@@ -109,8 +115,7 @@ def test_get_first_significant_timepoint(transposed_genotypes, transposed_mouse_
 		'genotype-14': 10,
 		'genotype-15': 10
 	}
-	expected_mouse = {k:str(v) for k,v in expected_mouse.items()}
+	expected_mouse = {k: str(v) for k, v in expected_mouse.items()}
 	mouse_result = timepoint_detection.get_first_significant_timepoint(transposed_mouse_genotypes, 0.15)
 
 	assert expected_mouse == mouse_result.to_dict()
-

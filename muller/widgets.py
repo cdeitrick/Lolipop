@@ -29,6 +29,7 @@ def get_numeric_columns(columns: List[str]) -> List[str]:
 
 
 def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
+	""" Maps each trajectory to the genotype it belongs to."""
 	trajectory_to_genotype = dict()
 	for genotype_label, members in genotype_members.items():
 		for member in members.split('|'):
@@ -66,19 +67,23 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 		at_least_one_detected = (left > dlimit) & (right > dlimit)
 	else:
 		at_least_one_detected = (left > dlimit) | (right > dlimit)
+
 	# Remove indicies where the series value falls below the detection limit. This should include the masked fixed values.
 	at_least_one_detected_reduced = at_least_one_detected[at_least_one_detected]
 	if at_least_one_detected_reduced.empty:
 		# There are no shared timepoints between the series. Assign index_min and index_max to the same number, which will result in an empty dataframe.
 		position_index_min = position_index_max = 0
 	else:
+		# Apparently the min() and max functions now work with strings as well as numbers.
+		# Cast the numbers to float so the typeerror is thrown correctly.
 		try:
-			position_index_min_value = min(at_least_one_detected_reduced.index)
-			position_index_max_value = max(at_least_one_detected_reduced.index)
+			position_index_min_value = min(at_least_one_detected_reduced.index, key = lambda s: float(s))
+			position_index_max_value = max(at_least_one_detected_reduced.index, key = lambda s: float(s))
 		except TypeError:
 			# The indicies are str and we can't use min() or max(). Assume the indicies are already sorted.
 			position_index_min_value = at_least_one_detected_reduced.index[0]
 			position_index_max_value = at_least_one_detected_reduced.index[-1]
+
 		position_index_min = df.index.get_loc(position_index_min_value)
 		position_index_max = df.index.get_loc(position_index_max_value)
 		# Since we want to include the last index, increment position_index_max by one.
@@ -90,10 +95,9 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 get_detected_points = get_valid_points
 
 
-def format_linkage_matrix(Z, total_members: Optional[int]) -> pandas.DataFrame:
-	linkage_dataframe = pandas.DataFrame(Z, columns = ["left", "right", "distance", "observations"])
+def format_linkage_matrix(linkage_table, total_members: Optional[int]) -> pandas.DataFrame:
+	linkage_dataframe = pandas.DataFrame(linkage_table, columns = ["left", "right", "distance", "observations"])
 
-	# linkage_dataframe.index = pandas.Index([i + len(squaremap.index) for i in linkage_dataframe.index], name = "clusterLabel")
 	linkage_dataframe['left'] = linkage_dataframe['left'].astype(int)
 	linkage_dataframe['right'] = linkage_dataframe['right'].astype(int)
 	linkage_dataframe['observations'] = linkage_dataframe['observations'].astype(int)
@@ -112,33 +116,36 @@ def calculate_luminance(color: str) -> float:
 	return lum / 255
 
 
-def format_inconsistency_matrix(R) -> pandas.DataFrame:
-	inconsistency_table = pandas.DataFrame(R, columns = ['mean', 'std', 'observations', 'statistic'])
+def format_inconsistency_matrix(inconsistency_matrix) -> pandas.DataFrame:
+	inconsistency_table = pandas.DataFrame(inconsistency_matrix, columns = ['mean', 'std', 'observations', 'statistic'])
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
 
 
 def _get_git_log() -> str:
-	filename =  Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
-	contents = filename.read_text()
+	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"
+	try:
+		contents = filename.read_text()
+	except FileNotFoundError:
+		contents = ""
 	return contents
 
 
 def get_commit_hash() -> str:
 	commit_hash = "n/a"
 	contents = _get_git_log()
-	contents = contents.split('\n')
-	contents = [i.strip() for i in contents if i.strip()]
-	reader = csv.reader(contents, delimiter = '\t')
-	for line in reader:
-		if line:
-			hash_string = line[0]
-			try:
-				commit_hash = hash_string.split()[1]
-			except IndexError:
-				continue
-	return commit_hash[:7]
-
-
-if __name__ == "__main__":
-	print(get_commit_hash())
+	if contents:
+		contents = contents.split('\n')
+		contents = [i.strip() for i in contents if i.strip()]
+		reader = csv.reader(contents, delimiter = '\t')
+		for line in reader:
+			if line:
+				hash_string = line[0]
+				try:
+					commit_hash = hash_string.split()[1]
+				except IndexError:
+					continue
+		commit_hash = commit_hash[:7]
+	else:
+		commit_hash = "not available"
+	return commit_hash

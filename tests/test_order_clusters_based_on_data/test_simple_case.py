@@ -48,45 +48,30 @@ def ten_genotypes() -> pandas.DataFrame:
 	return import_table(string, index = 'Genotype')
 
 
-@pytest.fixture
-def options():
-	class Options:
-		additive_background_single_cutoff = 1.15
-		additive_background_double_cutoff = 1.03
-		subtractive_background_single_cutoff = 0.15
-		subtractive_background_double_cutoff = 0.03
-		derivative_check_cutoff = 0.01
-		derivative_detection_cutoff = 0.03
-		new_background_base_cutoff = 1.03
-		new_background_significant_cutoff = 1.15
-
-	return Options()
-
-
-def test_three_genotypes(three_genotypes, options):
+def test_three_genotypes(three_genotypes):
 	expected = {
 		'genotype-A': 'genotype-C',
 		'genotype-B': 'genotype-0',
 		'genotype-C': 'genotype-0'
 	}
-	clusters = order.order_clusters(three_genotypes, options)
+	clusters = order.order_clusters(three_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
 
-	assert expected == clusters.as_dict()
+	assert clusters.as_dict() == expected
 
 
-def test_five_genotypes(five_genotypes, options):
+def test_five_genotypes(five_genotypes):
 	expected = {
 		'genotype-A': 'genotype-C',
 		'genotype-B': 'genotype-0',
 		'genotype-C': 'genotype-0',
-		'genotype-D': 'genotype-A',
+		'genotype-D': 'genotype-C',
 		'genotype-E': 'genotype-A'
 	}
-	result = order.order_clusters(five_genotypes, options)
-	assert expected == result.as_dict()
+	result = order.order_clusters(five_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
+	assert result.as_dict() == expected
 
 
-def test_ten_genotypes(ten_genotypes, options):
+def test_ten_genotypes(ten_genotypes):
 	expected = {
 		'genotype-A': 'genotype-J',
 		'genotype-B': 'genotype-F',
@@ -99,5 +84,9 @@ def test_ten_genotypes(ten_genotypes, options):
 		'genotype-I': 'genotype-A',
 		'genotype-J': 'genotype-C'
 	}
-	result = order.order_clusters(ten_genotypes, options)
-	assert expected == result.as_dict()
+	# Manual override since the ancestry of these genotypes is somewhat ambiguous.
+	expected['genotype-H'] = 'genotype-J'
+	expected['genotype-I'] = 'genotype-C'
+	expected['genotype-D'] = 'genotype-J'
+	result = order.order_clusters(ten_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
+	assert result.as_dict() == expected

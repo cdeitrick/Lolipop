@@ -1,10 +1,11 @@
 from typing import Dict, List, Union
+
 import pandas
 
-from .palette_lineage import generate_lineage_palette
+from . import colorset
 from .palette_annotation import generate_annotation_palette
 from .palette_distinctive import generate_distinctive_palette
-from . import colorset
+from .palette_lineage import generate_lineage_palette
 
 
 def generate_palette(genotypes: Union[List[str], pandas.DataFrame], custom_palette: Dict[str, str] = None, annotations: Dict[str, List[str]] = None,
@@ -41,4 +42,3 @@ def generate_palette(genotypes: Union[List[str], pandas.DataFrame], custom_palet
 	palette['genotype-0'] = "#FFFFFF"
 	palette['removed'] = "#333333"
 	return palette
-

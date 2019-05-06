@@ -1,159 +1,124 @@
-import logging
-from typing import Any, List, Tuple
+from typing import List, Optional, Tuple
 
+import numpy
 import pandas
+from loguru import logger
 
-from options import GenotypeOptions
-
-logger = logging.getLogger(__name__)
 try:
 	from muller.clustering.average import calculate_mean_genotype
 	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from clustering.methods import calculate_genotypes_from_given_method
-	from clustering.filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
-	from muller.widgets import map_trajectories_to_genotype
+	from clustering import filters
 except ModuleNotFoundError:
 	from .average import calculate_mean_genotype
 	from .metrics import PairwiseCalculationCache, calculate_pairwise_metric
 	from .methods import calculate_genotypes_from_given_method
-	from .filters import get_fuzzy_backgrounds, filter_trajectories, find_first_invalid_genotype
-	from widgets import map_trajectories_to_genotype
+	from . import filters
 
 PAIRWISE_CALCULATIONS = PairwiseCalculationCache()
 
 
-def _update_pairwise_array(timepoints: pandas.DataFrame, options: GenotypeOptions):
+def _update_pairwise_array(timepoints: pandas.DataFrame, dlimit: float, flimit: float, metric: str):
 	global PAIRWISE_CALCULATIONS
-	logger.info(f"Pairwise calculations already exist: {bool(PAIRWISE_CALCULATIONS)}")
+	logger.debug(f"Pairwise calculations already exist: {bool(PAIRWISE_CALCULATIONS)}")
 	if PAIRWISE_CALCULATIONS:
 		# PAIRWISE_CALCULATIONS already contains previous calcuations.
 		_before = len(PAIRWISE_CALCULATIONS)
 		PAIRWISE_CALCULATIONS = PAIRWISE_CALCULATIONS.reduce(timepoints.index)
 		_after = len(PAIRWISE_CALCULATIONS)
-		logging.info(f"Reduced Pairwise calculations from {_before} to {_after}")
+		logger.debug(f"Reduced Pairwise calculations from {_before} to {_after}")
 	else:
 		pair_array = calculate_pairwise_metric(
 			timepoints,
-			detection_cutoff = options.detection_breakpoint,
-			fixed_cutoff = options.fixed_breakpoint,
-			metric = options.metric
+			detection_cutoff = dlimit,
+			fixed_cutoff = flimit,
+			metric = metric
 		)
 		PAIRWISE_CALCULATIONS.update(pair_array.copy())
 	return PAIRWISE_CALCULATIONS
 
 
-def generate_genotypes(timepoints: pandas.DataFrame, options: GenotypeOptions) -> Tuple[pandas.DataFrame, pandas.Series, Any]:
+def calculate_genotypes(timepoints: pandas.DataFrame, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, method: str, metric: str,
+		starting_genotypes: List[List[str]]) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
+	pairwise_calculations = _update_pairwise_array(timepoints, dlimit, flimit, metric)
+	genotypes, linkage_matrix = calculate_genotypes_from_given_method(
+		timepoints,
+		pairwise_calculations,
+		method,
+		sbreakpoint,
+		dbreakpoint,
+		starting_genotypes
+	)
+	mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
+	genotype_members = mean_genotypes.pop('members')
+	return mean_genotypes, genotype_members, linkage_matrix
+
+
+def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: float, similarity_breakpoint: float, difference_breakpoint: float,
+		method: str,
+		metric: str, breakpoints: List[float] = None, starting_genotypes: List[List[str]] = None) -> Tuple[
+	pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 	"""
 	Parameters
 	----------
-	timepoints: pandas.DataFrame
+	trajectories: pandas.DataFrame
 		A timeseries dataframe, usually generated from `import_table.import_trajectory_table`.
 			- Index -> str
 				Names unique to each trajectory.
 			- Columns -> int
 				The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
 				Each trajectory/timepoint will include the observed frequency at each timepoint.
-	options: GenotypeOptions
-		An instance of `GenotypeOptions` with the desired options. Can be generated automatically via `GenotypeOptions.from_breakpoints(0.03)`.
-
+	dlimit, flimit:float
+		The detection, significant, and fixed cutoff values, respectively
+	similarity_breakpoint: float
+		The cutoff value to use when clustering trajectories into genotypes. Two trajectories must have a distance less than this value to be
+		considered members of the same genotype.
+	difference_breakpoint: float
+		Only used when using the two-step method. Governs when the genotype contains two trajectories which should be split into separate genotypes.
+	method: {'two-step', 'hierarchy'}
+		The clustering method to use. The hierarchical method uses the maximum distance between a point and a candidate cluster to determine whether
+		to group said point to the cluster.
+	metric: {'binomial', 'pearson', 'minkowski'}
+		The distance metric to determine trajectory similarity.
+	breakpoints: Optional[List[float]]
+		An empty/None breakpoints value indicated that the filters should be skipped.
+	starting_genotypes: List[List[str]]
+		A list of genotypes to start the clustering algorithm with. The distance metrics will be modified so that the trajectories specified are
+		grouped together.
 	Returns
 	-------
-	pandas.DataFrame, pandas.Series
+	pandas.DataFrame, pandas.Series, numpy.array
 		- The genotype table
 		- A map of genotypes to members.
+		- A linkage matrix, if hierarchical clustering was used.
 	"""
-	# calculate the similarity between all pairs of trajectories in the population.
-
-	pairwise_calculations = _update_pairwise_array(timepoints, options)
-	genotypes, linkage_matrix = calculate_genotypes_from_given_method(
-		timepoints,
-		pairwise_calculations,
-		options.method,
-		options.similarity_breakpoint,
-		options.difference_breakpoint,
-		options.starting_genotypes
-	)
-	_mean_genotypes = calculate_mean_genotype(genotypes, timepoints)
-	genotype_members = _mean_genotypes.pop('members')
-	_mean_genotypes = _mean_genotypes[sorted(_mean_genotypes.columns)]
-
-	return _mean_genotypes, genotype_members, linkage_matrix
-
-
-def generate_genotypes_with_filter(original_timepoints: pandas.DataFrame, options: GenotypeOptions, frequency_breakpoints: List[float],
-		strict_filter: bool):
-	original_genotypes, original_genotype_members, linkage_matrix = generate_genotypes(original_timepoints, options)
-
-	timepoints, mean_genotypes, genotype_members, linkage_matrix = filter_genotypes(
-		original_timepoints,
-		options,
-		frequency_breakpoints,
-		strict_filter
+	use_strict_filter = False
+	modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes
+	genotype_table, genotype_members, linkage_matrix = calculate_genotypes(
+		modified_trajectories,
+		dlimit, flimit,
+		similarity_breakpoint, difference_breakpoint,
+		method, metric,
+		starting_genotypes
 	)
 
-	original_genotypes['members'] = genotype_members
-	_tm = map_trajectories_to_genotype(original_genotype_members)
-	original_timepoints['genotype'] = [_tm.get(i) for i in original_timepoints.index]
-	return original_genotypes, timepoints, mean_genotypes, genotype_members, linkage_matrix
-
-
-def filter_genotypes(trajectory_table: pandas.DataFrame, goptions: GenotypeOptions, frequency_cutoffs: List[float],
-		use_strict_filter: bool) -> Tuple[pandas.DataFrame, pandas.DataFrame, Any, Any]:
-	"""
-		Iteratively calculates the population genotypes, checks and removes invalid genotypes, and recomputes the genotypes until no changes occur.
-	Parameters
-	----------
-	trajectory_table: pandas.DataFrame
-	goptions: GenotypeOptions
-	frequency_cutoffs: List[float]
-	use_strict_filter: bool
-
-	Returns
-	-------
-
-	"""
-	# Remove 1.0 fro mthe list of frequency breakpoints to account for measurement errors.
-	logger.info("Filtering genotypes...")
-	frequency_cutoffs = [i for i in frequency_cutoffs if i <= goptions.fixed_breakpoint]
-	logger.info("\tFrequency cutoffs:" + str(frequency_cutoffs))
-	trajectory_table = trajectory_table.copy(deep = True)  # To avoid any unintended changes to the original table.
-	filtered_trajectory_table = filter_trajectories(trajectory_table, goptions.detection_breakpoint, goptions.fixed_breakpoint)
-
-	# Generate the initial genotypes.
-	genotype_table, genotype_members, linkage_table = generate_genotypes(filtered_trajectory_table, options = goptions)
-	_iterations = 20  # arbitrary, used to ensure the program does not encounter an infinite loop.
-	for index in range(_iterations):
-		logger.info(f"filtering iteration {index} of {_iterations}")
-		# Find all the backgrounds for this population. Some may fall below the usual `fixed_cutoff` threshold, so use the same frequency breakpoints
-		# used when sorting the genotypes.
-		try:
-			current_backgrounds, (dlimit, flimit) = get_fuzzy_backgrounds(genotype_table, frequency_cutoffs)
-		except ValueError:
-			break
-		logger.info(f"Backgrounds:" + str(list(current_backgrounds.index)))
-		# Search for genotypes that do not make sense in the context of an evolved population.
-		fuzzy_detected_cutoff = goptions.detection_breakpoint
-		logger.info(f"fuzzy cutoffs: {fuzzy_detected_cutoff}, {flimit}")
-
-		current_invalid_genotype = find_first_invalid_genotype(genotype_table, current_backgrounds, fuzzy_detected_cutoff, flimit, use_strict_filter)
-		logger.info(f"Invalid genotype: {current_invalid_genotype}")
-		if current_invalid_genotype is None:
-			break
-		else:
-			# Get a list of the trajectories that form this genotype.
-			invalid_members = genotype_members.loc[current_invalid_genotype].split('|')
-			logger.info("Invalid members: " + str(invalid_members))
-			# Remove these trajectories from the trajectories table.
-			filtered_trajectory_table = filtered_trajectory_table[~filtered_trajectory_table.index.isin(invalid_members)]
-			# Re-calculate the genotypes based on the remaining trajectories.
-			genotype_table, genotype_members, linkage_table = generate_genotypes(filtered_trajectory_table, options = goptions)
-
-	# cache.append((trajectory_table.copy(), genotype_table.copy()))
-	# Update the trajectories that comprise each genotype.
+	if breakpoints:
+		_iterations = 20  # arbitrary, used to make sure the program does not encounter an infinite loop.
 	else:
-		print(f"Could not filter the genotypes after {_iterations} iterations.")
-	return filtered_trajectory_table, genotype_table, genotype_members, linkage_table
+		_iterations = 0  # The for loop shouldn't excecute.
 
-
-if __name__ == "__main__":
-	pass
+	for index in range(_iterations):
+		invalid_members = filters.filter_genotypes(genotype_table, genotype_members, dlimit, breakpoints, use_strict_filter)
+		if invalid_members:
+			# Remove these trajectories from the trajectories table.
+			modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
+			# Re-calculate the genotypes based on the remaining trajectories.
+			genotype_table, genotype_members, linkage_matrix = calculate_genotypes(modified_trajectories,
+				dlimit, flimit,
+				similarity_breakpoint, difference_breakpoint,
+				method, metric,
+				starting_genotypes
+			)
+		else:
+			break
+	return genotype_table, genotype_members, linkage_matrix
