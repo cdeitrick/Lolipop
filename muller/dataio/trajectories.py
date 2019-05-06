@@ -4,6 +4,7 @@ from typing import Any, Optional, Tuple, Union
 
 import pandas
 from loguru import logger
+
 from widgets import get_numeric_columns
 from .tables import import_table
 

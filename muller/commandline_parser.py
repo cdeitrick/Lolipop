@@ -10,7 +10,9 @@ except ModuleNotFoundError:
 	import dataio
 
 from dataclasses import dataclass, fields
+
 __version__ = "0.4"
+
 
 # For convienience. Helps with autocomplete.
 @dataclass

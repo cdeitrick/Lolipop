@@ -58,6 +58,7 @@ class OutputFilenames:
 			if not path.exists():
 				path.mkdir()
 			return path.absolute()
+
 		output_folder = check_folder(output_folder)
 		supplementary_folder = check_folder(output_folder / "supplementary-files")
 		graphics_folder = check_folder(output_folder / "graphics")
