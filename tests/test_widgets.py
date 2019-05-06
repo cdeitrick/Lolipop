@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pandas
 
-import dataio
-import widgets
+#import dataio
+from muller import dataio, widgets
 
 
 def test_get_numeric_columns():
@@ -119,7 +119,7 @@ def test_get_valid_points_complex():
 	assert result['left'].tolist() == [] and result['right'].tolist() == []
 
 
-@patch('widgets._get_git_log')
+@patch('muller.widgets._get_git_log')
 def test_get_commit_hash(filename_mock):
 	test_file = """
 	045a5b605b03f566c527f6684586322708525522 045a5b605b03f566c527f6684586322708525522 cdeitrick <cld100@pitt.edu> 1551711670 -0500	checkout: moving from master to version0.2

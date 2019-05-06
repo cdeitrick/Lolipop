@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from clustering.methods import difference
+from muller.clustering.methods import difference
 
 
 @pytest.fixture

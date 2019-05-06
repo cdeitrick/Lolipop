@@ -3,7 +3,7 @@ from typing import Tuple
 import pandas
 import pytest
 
-from inheritance import order_by_area
+from muller.inheritance import order_by_area
 
 
 @pytest.fixture

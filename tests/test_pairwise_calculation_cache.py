@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from clustering.metrics import PairwiseCalculationCache
+from muller.clustering.metrics import PairwiseCalculationCache
 
 
 @pytest.fixture

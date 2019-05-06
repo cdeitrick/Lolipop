@@ -3,7 +3,7 @@ import math
 import pandas
 import pytest
 
-from clustering.metrics import calculation
+from muller.clustering.metrics import calculation
 
 
 @pytest.mark.parametrize("left,right,expected",

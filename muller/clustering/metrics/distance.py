@@ -5,8 +5,10 @@ import pandas
 try:
 	from inheritance.order_by_area import area_of_series, calculate_common_area
 except ModuleNotFoundError:
-	from ...inheritance.order_by_area import area_of_series, calculate_common_area
-
+	try:
+		from ...inheritance.order_by_area import area_of_series, calculate_common_area
+	except ValueError:
+		from muller.inheritance.order_by_area import area_of_series, calculate_common_area
 
 def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int = 2) -> float:
 	""" Calculates the minkowski distance between two series. Essentially just a generic lp-norm.

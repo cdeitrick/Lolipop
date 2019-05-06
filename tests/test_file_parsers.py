@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-import dataio
-from dataio import file_parsers, import_table
+from muller import dataio
+from muller.dataio import file_parsers, import_table
 
 
 @pytest.fixture

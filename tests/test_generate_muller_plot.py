@@ -1,6 +1,6 @@
 import pytest
 
-import dataio
+from muller import dataio
 from muller.graphics.generate_muller_plot import *
 
 

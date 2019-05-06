@@ -1,8 +1,8 @@
 import pandas
 import pytest
 
-from clustering.metrics.calculation import calculate_pairwise_metric
-from dataio import import_table
+from muller.clustering.metrics.calculation import calculate_pairwise_metric
+from muller.dataio import import_table
 
 
 @pytest.fixture

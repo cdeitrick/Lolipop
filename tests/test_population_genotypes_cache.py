@@ -1,6 +1,6 @@
 import pytest
 
-from clustering.methods.population_genotypes_cache import PopulationGenotypes
+from muller.clustering.methods.population_genotypes_cache import PopulationGenotypes
 
 
 @pytest.fixture

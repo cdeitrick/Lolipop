@@ -1,5 +1,5 @@
-import dataio
-from muller_output import flowchart
+from muller import dataio
+from muller.muller_output import flowchart
 
 
 def test_get_font_properties():

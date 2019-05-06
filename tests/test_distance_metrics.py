@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from clustering.metrics import distance
+from muller.clustering.metrics import distance
 
 
 @pytest.mark.parametrize("left,right,expected",

@@ -6,11 +6,11 @@ from typing import Dict, List
 import pandas
 
 try:
-	import colorset
-	import treetools
-except ModuleNotFoundError:
-	import treetools
 	from . import colorset
+	from .. import treetools
+except ModuleNotFoundError:
+	from muller import treetools
+	from muller.palettes import colorset
 
 
 def apply_clade_colorscheme(clade: List[str], colorscheme: str) -> Dict[str, str]:

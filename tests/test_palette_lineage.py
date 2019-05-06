@@ -1,6 +1,6 @@
 import seaborn
 
-from palettes import palette_lineage
+from muller.palettes import palette_lineage
 
 
 def test_apply_clade_colorscheme():
