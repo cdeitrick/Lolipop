@@ -279,7 +279,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
 	# ax.set_ylim(0, 1)
-	plt.tight_layout()
+	#plt.tight_layout()
 
 	for output_filename in output_filenames:
 		plt.savefig(str(output_filename))
