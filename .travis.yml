@@ -24,11 +24,11 @@ env:
   - PYGRAPHVIZ_VERSION=1.5
 
 install:
-  - pip install -q matplotlib=$MATPLOTLIB_VERSION
-  - pip install -q pandas=$PANDAS_VERSION
-  - pip install -q scipy=SCIPY_VERSION
-  - pip install -q seaborn=$SEABORN_VERSION
-  - pip install -q pygraphviz=$PYGRAPHVIZ_VERSION
+  - pip install -q matplotlib==$MATPLOTLIB_VERSION
+  - pip install -q pandas==$PANDAS_VERSION
+  - pip install -q scipy==SCIPY_VERSION
+  - pip install -q seaborn==$SEABORN_VERSION
+  - pip install -q pygraphviz==$PYGRAPHVIZ_VERSION
   - pip install -q -r requirements.txt
   - pip install -q .
 # command to run tests
