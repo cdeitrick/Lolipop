@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	import dataio
 
 from dataclasses import dataclass, fields
-
+__version__ = "0.4"
 
 # For convienience. Helps with autocomplete.
 @dataclass
@@ -123,6 +123,11 @@ def create_parser() -> argparse.ArgumentParser:
 	# --------------------------------------------------------- Required Parameters --------------------------------------------------------------
 	##############################################################################################################################################
 	parser.add_argument(
+		"-v", "--version",
+		action = 'version',
+		version = f"%(prog)s {__version__}"
+	)
+	parser.add_argument(
 		'-i', '--input',
 		help = "The table of trajectories to cluster.",
 		action = 'store',
@@ -137,6 +142,14 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = 'output_folder',
 		type = Path,
 		required = True
+	)
+	parser.add_argument(
+		"--name",
+		help = 'Prefix to use when naming the output files. defaults to the dataset filename.',
+		action = 'store',
+		type = str,
+		dest = 'name',
+		default = None
 	)
 	##############################################################################################################################################
 	# --------------------------------------------------------- Input Data Options ---------------------------------------------------------------
