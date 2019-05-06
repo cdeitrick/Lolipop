@@ -58,7 +58,6 @@ class OutputFilenames:
 			if not path.exists():
 				path.mkdir()
 			return path.absolute()
-
 		output_folder = check_folder(output_folder)
 		supplementary_folder = check_folder(output_folder / "supplementary-files")
 		graphics_folder = check_folder(output_folder / "graphics")
@@ -66,11 +65,11 @@ class OutputFilenames:
 		graphics_clade_folder = check_folder(graphics_folder / "clade")
 		tables_folder = check_folder(output_folder / "tables")
 		scripts_folder = check_folder(output_folder / "scripts")
-
 		# General Files
 		self.trajectory: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
 		self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
+		self.muller_plot_unannotated_general: Path = output_folder / (name + '.muller.unannotated.png')
 
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
@@ -98,9 +97,9 @@ class OutputFilenames:
 		self.genotype_plot_filtered: Path = output_folder / (name + f".genotypes.filtered.png")
 
 		## Geneology plots
-		self.lineage_render: Path = output_folder / (name + '.geneology.svg')
-		self.lineage_image_clade: Path = graphics_distinctive_folder / (name + f".geneology.distinctive.png")
-		self.lineage_image_distinct: Path = output_folder / (name + '.geneology.png')
+		self.lineage_render: Path = output_folder / (name + '.lineage.svg')
+		self.lineage_image_clade: Path = graphics_distinctive_folder / (name + f".lineage.distinctive.png")
+		self.lineage_image_distinct: Path = output_folder / (name + '.lineage.png')
 
 		## Other plots
 		self.distance_heatmap: Path = graphics_folder / (name + f".heatmap.distance.png")
@@ -131,7 +130,10 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, adjust_populations: bool):
 	# Set up the output folder
-	base_filename = workflow_data.filename.stem
+	if workflow_data.program_options['name']:
+		base_filename = workflow_data.program_options['name']
+	else:
+		base_filename = workflow_data.filename.stem
 	if workflow_data.program_options['sheetname'] and workflow_data.program_options['sheetname'] != 'Sheet1':
 		base_filename += '.' + workflow_data.program_options['sheetname']
 
@@ -244,6 +246,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 			filenames.muller_plot_annotated_distinctive_svg
 		]
 		generate_muller_plot(muller_df, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations)
+		generate_muller_plot(muller_df, genotype_colors_clade, [filenames.muller_plot_unannotated_general])
 		generate_muller_plot(muller_df, genotype_colors_distinct, distinctive_muller_plot_filenames)
 
 	##############################################################################################################################################
