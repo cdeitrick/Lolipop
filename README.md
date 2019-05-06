@@ -3,13 +3,15 @@
 
 # Contents
 -  [General Workflow](#general-workflow)
--  [requirements](#requirements)
+-  [Requirements](#requirements)
 -  [Script Options](#script-options)
 -  [Input Parameters](#input-dataset)
 -  [Sample Usage](#sample-usage)
--  [Output Files](#output-files)
--  [Genotype Plots](#genotype-plots)
--  [Lineage Diagram](#lineage-diagrams)
+-  [Output Files](#output)
+    -  [Output Tables](#tables)
+    -  [Muller Plots](#muller-plots)
+    -  [Genotype Plots](#trajectory-and-genotype-plots)
+    -  [Lineage Diagram](#lineage-diagrams)
 
 # Requirements
 The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install package`.
@@ -258,7 +260,7 @@ The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` 
 ## Graphics
 Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
 
-#### Muller Plots
+### Muller Plots
 - .muller.annotated.png
 - graphics/clade/.muller.annotated.svg
 - graphics/clade/.muller.annotated.png
