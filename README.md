@@ -10,7 +10,7 @@
 -  [Output Files](#output)
     -  [Output Tables](#tables)
     -  [Muller Plots](#muller-plots)
-    -  [Genotype Plots](#trajectory-and-genotype-plots)
+    -  [Genotype Plots](#timeseries-plots)
     -  [Lineage Diagram](#lineage-diagrams)
 
 # Requirements
@@ -184,7 +184,7 @@ All files are prefixed by the name of the original input table if the `--name` p
 
 ## Tables
 
-### Genotype and Trajectory tables
+### Timeseries tables
 - .muller_genotypes.tsv
 - .muller.trajectories.tsv
 - tables/.muller_genotypes.original.tsv
@@ -280,7 +280,7 @@ These are simple flowcharts indicating the relationship between genotypes and cl
 
 ![geneology](example/example.lineage.png)
 
-### Trajectory and genotype plots
+### Timeseries plots
 - .genotypes.png
 - .genotypes.filtered.png
 - .trajectories.distinctive.png
