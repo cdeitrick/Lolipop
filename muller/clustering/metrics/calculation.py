@@ -88,11 +88,5 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 
 	maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
 	pair_array = {k: (v if not math.isnan(v) else maximum_distance) for k, v in pair_array.items()}
-	# Log the values for debugging
-	keys = sorted(set(i[0] for i in pair_array.keys()))
-	for key in keys:
-		items = {k: v for k, v in pair_array.items() if k[0] == key}
-		for (l, r), v in sorted(items.items(), key = lambda s: s[-1], reverse = False):
-			line = f"{l}\t{r}\t{v:.2E}"
-			logger.debug(line)
+
 	return pair_array
