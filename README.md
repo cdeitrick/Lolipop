@@ -133,6 +133,10 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 Genotype names are generated during the clustering step,
                                 so this is only useful when re-running the analysis.
 
+## Graphics Options
+    --no-ouline
+                                Disables the white ouline surrounding each series in the muller plots.
+
 # Input Dataset
 
 The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
