@@ -129,6 +129,7 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, adjust_populations: bool):
 	# Set up the output folder
+	from pprint import pprint
 	if workflow_data.program_options['name']:
 		base_filename = workflow_data.program_options['name']
 	else:
@@ -244,9 +245,10 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 			filenames.muller_plot_annotated_distinctive,
 			filenames.muller_plot_annotated_distinctive_svg
 		]
-		generate_muller_plot(muller_df, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations)
-		generate_muller_plot(muller_df, genotype_colors_clade, [filenames.muller_plot_unannotated_general])
-		generate_muller_plot(muller_df, genotype_colors_distinct, distinctive_muller_plot_filenames)
+		use_outlines = not workflow_data.program_options['no_outline']
+		generate_muller_plot(muller_df, genotype_colors_clade, annotated_muller_plot_filenames, genotype_annotations, outlines = use_outlines)
+		generate_muller_plot(muller_df, genotype_colors_clade, [filenames.muller_plot_unannotated_general], outlines = use_outlines)
+		generate_muller_plot(muller_df, genotype_colors_distinct, distinctive_muller_plot_filenames, outlines = use_outlines)
 
 	##############################################################################################################################################
 	# ---------------------------------------------------- Generate supplementary files ----------------------------------------------------------
