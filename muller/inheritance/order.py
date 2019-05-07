@@ -63,8 +63,8 @@ def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit: float, ad
 			score_additive = scoring.calculate_additive_score(nested_genotype, unnested_trajectory, additive_cutoff)
 			score_subtractive = scoring.calculate_subtractive_score(nested_genotype, unnested_trajectory, flimit, subtractive_cutoff)
 			# The derivative score should only be computed using the timepoints where the series overlap.
-			detected = widgets.get_valid_points(nested_genotype, unnested_trajectory, dlimit = dlimit, inner = True)
-			score_derivative = scoring.calculate_derivative_score(detected['left'], detected['right'], detection_cutoff = dlimit,
+			detected_left, detected_right = widgets.get_valid_points(nested_genotype, unnested_trajectory, dlimit = dlimit, inner = True)
+			score_derivative = scoring.calculate_derivative_score(detected_left, detected_right, detection_cutoff = dlimit,
 				cutoff = derivative_cutoff)
 			score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory)
 

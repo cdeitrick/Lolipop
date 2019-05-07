@@ -105,6 +105,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 
 if __name__ == "__main__":
-	args = create_parser().parse_args()
+	args = create_parser().parse_args(["--input", "/home/cld100/Documents/github/B1_Muller_edited_2.tsv", "--output", "B1Complete"])
 
 	workflow(args.filename, args.output_folder, program_options = args)

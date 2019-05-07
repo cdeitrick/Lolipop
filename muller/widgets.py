@@ -1,7 +1,7 @@
 import csv
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pandas
 
@@ -37,8 +37,8 @@ def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, s
 	return trajectory_to_genotype
 
 
-def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, flimit: Optional[float] = None,
-		inner: bool = False) -> pandas.DataFrame:
+def get_valid_points(left_trajectory: pandas.Series, right_trajectory: pandas.Series, dlimit: float, flimit: Optional[float] = None,
+		inner: bool = False) -> Tuple[pandas.Series, pandas.Series]:
 	"""
 		Filters out timepoints that do not satisfy the detection criteria.
 	Parameters
@@ -56,13 +56,17 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 	-------
 
 	"""
-	df = pandas.concat([left, right], axis = 1)
+
 	if flimit is not None:
 		# Mask the values so they are considered below the detection limit.
-		# Assign a value of -1 so that they will be excluded wven if the detection limit is 0.
-		left = left.mask(lambda s: s > flimit, -1)
-		right = right.mask(lambda s: s > flimit, -1)
-	df.columns = ['left', 'right']  # Prevent an IndexError when `left` and `right` refer to the same series.
+		# Assign a value of -1 so that they will be excluded even if the detection limit is 0.
+		# list comprehension is ~6X faster than mask()
+		left = pandas.Series([(-1 if s > 0.97 else s) for s in left_trajectory.values], index = left_trajectory.index)
+		right = pandas.Series([(-1 if s > 0.97 else s) for s in right_trajectory.values], index = right_trajectory.index)
+	else:
+		left, right = left_trajectory, right_trajectory
+
+
 	if inner:
 		at_least_one_detected = (left > dlimit) & (right > dlimit)
 	else:
@@ -84,12 +88,14 @@ def get_valid_points(left: pandas.Series, right: pandas.Series, dlimit: float, f
 			position_index_min_value = at_least_one_detected_reduced.index[0]
 			position_index_max_value = at_least_one_detected_reduced.index[-1]
 
-		position_index_min = df.index.get_loc(position_index_min_value)
-		position_index_max = df.index.get_loc(position_index_max_value)
+		position_index_min = left.index.get_loc(position_index_min_value)
+		position_index_max = left.index.get_loc(position_index_max_value)
 		# Since we want to include the last index, increment position_index_max by one.
 		position_index_max += 1
-	result = df.iloc[position_index_min:position_index_max]
-	return result
+	result_left = left_trajectory[position_index_min:position_index_max]
+	result_right = right_trajectory[position_index_min:position_index_max]
+
+	return result_left, result_right
 
 
 get_detected_points = get_valid_points

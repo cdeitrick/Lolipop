@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
 import pandas
-
-#import dataio
+import pytest
 from muller import dataio, widgets
 
 
@@ -22,77 +21,65 @@ def test_map_trajectories_to_genotype():
 	output = widgets.map_trajectories_to_genotype(table['members'])
 	assert expected_map == output
 
+@pytest.mark.parametrize(
+	"left,right,index",
+	[
+		([0, 1, 1, 4, 5], [.23, .14, .13, 0, 0], [0,1,2,3,4]),
+		([0, 1, 0, 0.2, 0], [0, .14, 0, 0, 0], [1,2,3]),
+		([0, 0, 0, 0, 0], [0, .14, .23, 0, 0], [1,2]),
+		([0, 0, 0, 0, 0], [0, .14, 0, 0, 0], [1]),
+		([0, 0, 0, 0, 0], [0, .14, 0, 1, 1], [1, 2, 3, 4]),
+	]
+)
+def test_get_detected_points(left, right, index):
+	l = pandas.Series(left)
+	r = pandas.Series(right)
+	rl, rr = widgets.get_valid_points(l, r, 0.03)
+	assert list(rl.index) == list(rr.index)
+	assert list(rl.index) == index
 
-def test_get_detected_points():
-	left = pandas.Series([0, 1, 1, 4, 5])
-	right = pandas.Series([.23, .14, .13, 0, 0])
-	result = widgets.get_detected_points(left, right, 0.03)
-	assert [0, 1, 2, 3, 4] == list(result.index)
-
-	left = pandas.Series([0, 1, 0, 0.2, 0])
-	right = pandas.Series([0, .14, 0, 0, 0])
-	result = widgets.get_detected_points(left, right, 0.03)
-	assert [1, 2, 3] == list(result.index)
-
-	left = pandas.Series([0, 0, 0, 0, 0])
-	right = pandas.Series([0, .14, .23, 0, 0])
-	result = widgets.get_detected_points(left, right, 0.03)
-	assert [1, 2] == list(result.index)
-
-	left = pandas.Series([0, 0, 0, 0, 0])
-	right = pandas.Series([0, .14, 0, 0, 0])
-	result = widgets.get_detected_points(left, right, 0.03)
-	assert [1] == list(result.index)
-
+def test_get_detected_points_advanced():
 	left = pandas.Series([0, 0, 0, 0, 0])
 	right = pandas.Series([0, .14, 0, 1, 1])
-	result = widgets.get_detected_points(left, right, 0.03)
-	assert [1, 2, 3, 4] == list(result.index)
+	result_left, result_right = widgets.get_detected_points(left, right, 0.03, 0.97)
+	assert list(result_left.index) == list(result_right.index)
+	assert list(result_left.index) == [1]
 
-	left = pandas.Series([0, 0, 0, 0, 0])
-	right = pandas.Series([0, .14, 0, 1, 1])
-	result = widgets.get_detected_points(left, right, 0.03, 0.97)
-	assert [1] == list(result.index)
 
 	left = pandas.Series([0, 0, 0, 0, 0, 1, 1])
 	right = pandas.Series([0, 0, 0, .14, .53, 1, 1])
-	result = widgets.get_detected_points(left, right, 0.03, 0.97)
-	assert [3, 4] == list(result.index)
-
+	result_left, result_right = widgets.get_detected_points(left, right, 0.03, 0.97)
+	assert list(result_left.index) == list(result_right.index)
+	assert list(result_left.index) == [3,4]
 	# Check the `inner` option.
 	left = pandas.Series([0, 0, .3, .4, .4, .4, 1, 1])
 	right = pandas.Series([0, 0, 0, .1, .1, .1, .2, 1])
-	assert [2, 3, 4, 5, 6, 7] == list(widgets.get_detected_points(left, right, .03, inner = False).index)
-	assert [2, 3, 4, 5, 6] == list(widgets.get_detected_points(left, right, .03, .97, inner = False).index)
-	assert [3, 4, 5, 6, 7] == list(widgets.get_detected_points(left, right, .03, inner = True).index)
-	assert [3, 4, 5] == list(widgets.get_detected_points(left, right, .03, .97, inner = True).index)
+	assert [2, 3, 4, 5, 6, 7] == list(widgets.get_detected_points(left, right, .03, inner = False)[0].index)
+	assert [2, 3, 4, 5, 6] == list(widgets.get_detected_points(left, right, .03, .97, inner = False)[0].index)
+	assert [3, 4, 5, 6, 7] == list(widgets.get_detected_points(left, right, .03, inner = True)[0].index)
+	assert [3, 4, 5] == list(widgets.get_detected_points(left, right, .03, .97, inner = True)[0].index)
 
 
 def test_get_valid_points_simple():
 	left = pandas.Series([0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 0])
 	right = pandas.Series([0, 0, 0, .1, .2, .3, .3, .3, .3, 0, 0, 0])
 
-	expected = pandas.DataFrame({
-		'left':  [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1],
-		'right': [0, 0, .1, .2, .3, .3, .3, .3, 0, 0],
-	}, index = range(1, 11))
-	result = widgets.get_valid_points(left, right, 0.03)
-	pandas.testing.assert_frame_equal(expected, result)
+	result_left, result_right = widgets.get_valid_points(left, right, 0.03)
+	assert result_left.tolist() == [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1]
+	assert result_right.tolist() == [0, 0, .1, .2, .3, .3, .3, .3, 0, 0]
 
-	expected = pandas.DataFrame({
-		'left':  [.1, .2, .3, .4, .5, .6, .7, .8, .9],
-		'right': [0, 0, .1, .2, .3, .3, .3, .3, 0],
-	}, index = range(1, 10))
+	result_left, result_right = widgets.get_valid_points(left, right, 0.03, 0.97)
+	assert result_left.tolist() == [.1, .2, .3, .4, .5, .6, .7, .8, .9]
+	assert result_right.tolist() == [0, 0, .1, .2, .3, .3, .3, .3, 0]
 
-	result = widgets.get_valid_points(left, right, 0.03, 0.97)
-	pandas.testing.assert_frame_equal(expected, result)
 
 	expected = pandas.DataFrame({
 		'left':  [.3, .4, .5, .6, .7, .8],
 		'right': [.1, .2, .3, .3, .3, .3],
 	}, index = range(3, 9))
-	result = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
-	pandas.testing.assert_frame_equal(expected, result)
+	result_left, result_right = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
+	assert result_left.tolist() == [.3, .4, .5, .6, .7, .8]
+	assert result_right.tolist() == [.1, .2, .3, .3, .3, .3]
 
 
 def test_get_valid_points_complex():
@@ -101,22 +88,22 @@ def test_get_valid_points_complex():
 
 	expected_left = [0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042]
 	expected_right = [0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00]
-	result = widgets.get_valid_points(left, right, dlimit = 0.03)
-	assert result['left'].tolist() == expected_left
-	assert result['right'].tolist() == expected_right
+	result_left, result_right = widgets.get_valid_points(left, right, dlimit = 0.03)
+	assert result_left.tolist() == expected_left
+	assert result_right.tolist() == expected_right
 
-	switched_result = widgets.get_valid_points(right, left, 0.03)
-	assert switched_result['left'].tolist() == expected_right
-	assert switched_result['right'].tolist() == expected_left
+	switched_result_left, switched_result_right = widgets.get_valid_points(right, left, 0.03)
+	assert switched_result_left.tolist() == expected_right
+	assert switched_result_right.tolist() == expected_left
 
 	expected_left = [0.263, 0.07, 0.081, 0.069, 0.042]
 	expected_right = [1.00, 1.00, 1.00, 1.00, 1.00]
-	result = widgets.get_valid_points(left, right, 0.03, inner = True)
-	assert result['left'].tolist() == expected_left
-	assert result['right'].tolist() == expected_right
+	result_left, result_right = widgets.get_valid_points(left, right, 0.03, inner = True)
+	assert result_left.tolist() == expected_left
+	assert result_right.tolist() == expected_right
 
-	result = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
-	assert result['left'].tolist() == [] and result['right'].tolist() == []
+	result_left, result_right = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
+	assert result_left.tolist() == [] and result_right.tolist() == []
 
 
 @patch('muller.widgets._get_git_log')
