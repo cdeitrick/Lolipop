@@ -6,8 +6,8 @@ import pandas
 from loguru import logger
 
 try:
-	from clustering.metrics import distance
-	from widgets import get_valid_points
+	from muller.clustering.metrics import distance
+	from muller.widgets import get_valid_points
 except ModuleNotFoundError:
 	from . import distance
 	from ...widgets import get_valid_points
