@@ -6,8 +6,8 @@ import pandas
 from loguru import logger
 
 try:
-	from clustering.metrics import distance
-	from widgets import get_valid_points
+	from muller.clustering.metrics import distance
+	from muller.widgets import get_valid_points
 except ModuleNotFoundError:
 	from . import distance
 	from ...widgets import get_valid_points
@@ -75,11 +75,9 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 
 		# We only care about the timepoints such that `detection_cutoff` < f < `fixed_cutoff.
 		# For now, lets require that both timepoints are detected and not yet fixed.
-		detected_points = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
-		left_reduced = detected_points['left']
-		right_reduced = detected_points['right']
+		left_reduced, right_reduced = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
 
-		if left_reduced.empty:
+		if left_reduced.empty or right_reduced.empty:
 			distance_between_series = fixed_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		else:
 			distance_between_series = distance.calculate_distance(left_reduced, right_reduced, metric)

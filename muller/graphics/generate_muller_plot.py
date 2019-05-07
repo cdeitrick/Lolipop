@@ -236,7 +236,7 @@ def annotate_axes(ax: Axes, points: Dict[str, Tuple[float, float]], annotations:
 
 
 def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, str],
-		output_filename: Union[Path, List[Path]], annotations: Dict[str, List[str]] = None):
+		output_filename: Union[Path, List[Path]], annotations: Dict[str, List[str]] = None, outlines:bool = True):
 	"""
 		Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 	Parameters
@@ -248,6 +248,8 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 		plot in a number of different formats.
 	annotations: Dict[str, List[str]]
 		A map of genotype labels to add to the plot.
+	outlines: bool; default True
+		Whether to add a white outline to the series in the muller plot.
 	Returns
 	-------
 	ax: Axes
@@ -257,6 +259,11 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 		output_filenames = [output_filename]
 	else:
 		output_filenames = output_filename
+	if outlines:
+		edgecolor = '#FFFFFF'
+	else:
+		edgecolor = None
+
 	points = get_coordinates(muller_df)
 
 	# noinspection PyUnusedLocal,PyUnusedLocal
@@ -265,7 +272,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 
 	x, y, colors, labels = generate_muller_series(muller_df, color_palette)
 
-	ax.stackplot(x, y, colors = colors, labels = labels, edgecolor = '#FFFFFF', linewidth = 2, interpolate = True, joinstyle = 'round')
+	ax.stackplot(x, y, colors = colors, labels = labels, edgecolor = edgecolor, linewidth = 2, interpolate = True, joinstyle = 'round')
 	if annotations:
 		annotate_axes(ax, points, annotations, color_palette)
 	else:

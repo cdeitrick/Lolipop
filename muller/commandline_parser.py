@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 
 # For convienience. Helps with autocomplete.
@@ -327,5 +327,16 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = 'known_ancestry',
 		default = None,
 		type = Path
+	)
+
+
+	##############################################################################################################################################
+	# ------------------------------------------------------- Graphics Options -------------------------------------------------------------------
+	##############################################################################################################################################
+
+	parser.add_argument(
+		"--no-outline",
+		help = 'Disables the white outline in the muller plots.',
+		action = 'store_true'
 	)
 	return parser

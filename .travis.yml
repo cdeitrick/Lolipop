@@ -7,28 +7,8 @@ python:
   - 3.5
   - 3.6
   - 3.7
-# command to install dependencies
-env:
-  - MATPLOTLIB_VERSION=3.0.3
-  - MATPLOTLIB_VERSION=2.2.4
-  - MATPLOTLIB_VERSION=2.1.4
-  - MATPLOTLIB_VERSION=2.0.2
-  - PANDAS_VERSION=0.24.1
-  - PANDAS_VERSION=0.23.0
-  - PANDAS_VERSION=0.21.0
-  - PANDAS_VERSION=0.20.3
-  - SCIPY_VERSION=1.1.0
-  - SCIPY_VERSION=0.19.1
-  - SEABORN_VERSION=0.8.1
-  - PYGRAPHVIZ_VERSION=1.3
-  - PYGRAPHVIZ_VERSION=1.5
 
 install:
-  - pip install -q matplotlib==$MATPLOTLIB_VERSION
-  - pip install -q pandas==$PANDAS_VERSION
-  - pip install -q scipy==SCIPY_VERSION
-  - pip install -q seaborn==$SEABORN_VERSION
-  - pip install -q pygraphviz==$PYGRAPHVIZ_VERSION
   - pip install -q -r requirements.txt
   - pip install -q .
 # command to run tests

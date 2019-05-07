@@ -52,11 +52,11 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 		results in a score of 0.
 	"""
 	# Pandas implementation of the derivative check, since it basically just checks for covariance.
-	df = get_valid_points(left, right, detection_cutoff, flimit = 0.97)
-	if df.empty:
+	valid_left, valid_right = get_valid_points(left, right, detection_cutoff, flimit = 0.97)
+	if valid_left.empty:
 		covariance = math.nan
 	else:
-		covariance = df.iloc[:, 0].cov(df.iloc[:, 1])
+		covariance = valid_left.cov(valid_right)
 
 	if covariance > cutoff: score = 2
 	elif covariance < -cutoff: score = -2
@@ -76,14 +76,17 @@ def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pand
 
 	"""
 
+	# If the nested genotype is not fixed, group the remaining frequencies into an `other` category.
 	# noinspection PyTypeChecker
 	other_genotypes: pandas.Series = 1 - nested_genotype
-
+	area_nested = order_by_area.area_of_series(nested_genotype)
+	area_unnested = order_by_area.area_of_series(unnested_genotype)
+	area_other = order_by_area.area_of_series(other_genotypes)
 	common_area_nested = order_by_area.calculate_common_area(nested_genotype, unnested_genotype)
 	common_area_other = order_by_area.calculate_common_area(other_genotypes, unnested_genotype)
 
-	is_subset_nested = order_by_area.is_subset(nested_genotype, unnested_genotype)
-	is_subset_other = order_by_area.is_subset(other_genotypes, unnested_genotype)
+	is_subset_nested = order_by_area.is_subset(area_nested, area_unnested, common_area_nested)
+	is_subset_other = order_by_area.is_subset(area_other, area_unnested, common_area_other)
 
 	if is_subset_nested and is_subset_other:
 		score = int(common_area_nested > 2 * common_area_other)
