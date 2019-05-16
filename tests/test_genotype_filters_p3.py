@@ -35,6 +35,18 @@ def psdata() -> pandas.DataFrame:
 
 
 @pytest.fixture
+def trajectory_filter() -> filters.TrajectoryFilter:
+	t = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
+	return t
+
+
+@pytest.fixture
+def genotype_filter() -> filters.GenotypeFilter:
+	g = filters.GenotypeFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, frequencies = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
+	return g
+
+
+@pytest.fixture
 def genotype_table_a() -> pandas.DataFrame:
 	string = """Genotype	0	3	4	6	7	9	10	12
 		genotype-1	0	0.198	0.758	0.696	0.084	0.065	0.204	0
@@ -65,35 +77,34 @@ def genotype_table_b() -> pandas.DataFrame:
 	return data
 
 
-def test_trajectory_filters(psdata):
-	dlimit = 0.03
-	flimit = 0.97
+def test_trajectory_filters(psdata, trajectory_filter):
 
-	result = filters.filter_trajectories(psdata, dlimit, flimit)
+	result = trajectory_filter.run(psdata)
 	expected_index = list(map(str, range(1, 21)))
 	expected_index.remove("12")
 	assert expected_index == list(result.index)
 
 
-def test_get_fuzzy_backgrounds(genotype_table_a):
-	test_background, flimit = filters.get_fuzzy_backgrounds(genotype_table_a, [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
+def test_get_fuzzy_backgrounds(genotype_table_a, genotype_filter):
+	test_background  = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
 
-	assert pytest.approx(flimit, 0.7)
+	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff, 0.7)
 	assert len(test_background) == 1
 	assert list(test_background.index) == ['genotype-1']
 
 
-def test_find_first_invalid_genotype_a(genotype_table_a):
+def test_find_first_invalid_genotype_a(genotype_table_a, genotype_filter):
 	backgrounds = genotype_table_a.loc['genotype-1'].to_frame().transpose()
-	dlimit, flimit = 0.03, 0.7
 
-	first_invalid_genotype = filters.find_first_invalid_genotype(genotype_table_a, backgrounds, dlimit, flimit, False)
+	genotype_filter.fuzzy_fixed_cutoff = 0.7
+	first_invalid_genotype = genotype_filter.find_first_invalid_genotype(genotype_table_a, backgrounds)
 
 	assert first_invalid_genotype is None
 
 
-def test_find_first_invalid_genotype_b(genotype_table_b):
+def test_find_first_invalid_genotype_b(genotype_table_b, genotype_filter):
 	backgrounds = genotype_table_b.loc['genotype-1'].to_frame().transpose()
-	first_invalid_genotype = filters.find_first_invalid_genotype(genotype_table_b, backgrounds, 0.03, 0.7, False)
+	genotype_filter.fuzzy_fixed_cutoff = 0.7
+	first_invalid_genotype = genotype_filter.find_first_invalid_genotype(genotype_table_b, backgrounds)
 
-	assert first_invalid_genotype == None
+	assert first_invalid_genotype is None

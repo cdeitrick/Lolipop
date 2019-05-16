@@ -92,8 +92,17 @@ def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: fl
 		- A map of genotypes to members.
 		- A linkage matrix, if hierarchical clustering was used.
 	"""
-	use_strict_filter = False
+	trajectory_filter = filters.TrajectoryFilter(detection_cutoff = dlimit, fixed_cutoff = flimit)
+	genotype_filter = filters.GenotypeFilter(detection_cutoff = dlimit, fixed_cutoff = flimit, frequencies = breakpoints)
 	modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes
+	if breakpoints:
+		# The filters should run
+		_iterations = 20  # arbitrary, used to make sure the program does not encounter an infinite loop.
+		modified_trajectories = trajectory_filter.run(modified_trajectories)
+	else:
+		# The filters are disabled.
+		_iterations = 0  # The for loop shouldn't excecute.
+
 	genotype_table, genotype_members, linkage_matrix = calculate_genotypes(
 		modified_trajectories,
 		dlimit, flimit,
@@ -102,13 +111,8 @@ def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: fl
 		starting_genotypes
 	)
 
-	if breakpoints:
-		_iterations = 20  # arbitrary, used to make sure the program does not encounter an infinite loop.
-	else:
-		_iterations = 0  # The for loop shouldn't excecute.
-
 	for index in range(_iterations):
-		invalid_members = filters.filter_genotypes(genotype_table, genotype_members, dlimit, breakpoints, use_strict_filter)
+		invalid_members = genotype_filter.run(genotype_table, genotype_members)
 		if invalid_members:
 			# Remove these trajectories from the trajectories table.
 			modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]

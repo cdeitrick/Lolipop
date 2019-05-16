@@ -30,31 +30,43 @@ def genotypes() -> pandas.DataFrame:
 	return t
 
 
-def test_remove_single_point_series():
+@pytest.fixture
+def trajectory_filter() -> filters.TrajectoryFilter:
+	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
+	return f
+
+
+@pytest.fixture
+def genotype_filter() -> filters.GenotypeFilter:
+	g = filters.GenotypeFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, frequencies = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
+	return g
+
+
+def test_remove_single_point_series(trajectory_filter):
 	table = pandas.DataFrame([
 		[0, 0, 0, 1, 0, 0],
 		[1, 3, 2, 0, 1, 1],
 		[0.03, 1, 0, 0, 0, 0]
 	])
-	single_point_series = filters._remove_single_point_background(table, 0.03, 0.97)
+	single_point_series = trajectory_filter._remove_single_point_background(table)
 
 	assert [0] == list(single_point_series)
 
-	single_point_series = filters._remove_single_point_background(table, 0.04, 0.97)
+	trajectory_filter.dlimit = 0.04
+	single_point_series = trajectory_filter._remove_single_point_background(table)
 
 	assert [0, 2] == list(single_point_series)
 
 
-def test_get_first_timepoint_above_cutoff():
+def test_get_first_timepoint_above_cutoff(genotype_filter):
 	series = pandas.Series([0, .03, .04, .1, .2, .3, .4, .5, .6, .7, .8])
 
-	assert 2 == filters.get_first_timepoint_above_cutoff(series, 0.03)
-	assert 4 == filters.get_first_timepoint_above_cutoff(series, 0.1)
-	assert 1 == filters.get_first_timepoint_above_cutoff(series, 0)
+	assert 2 == genotype_filter.get_first_timepoint_above_cutoff(series, 0.03)
+	assert 4 == genotype_filter.get_first_timepoint_above_cutoff(series, 0.1)
+	assert 1 == genotype_filter.get_first_timepoint_above_cutoff(series, 0)
 
 
-def test_get_fuzzy_backgrounds(genotypes):
-	cutoffs = [0.9]
+def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 	expected = """
 		Genotype	0	17	25	44	66	75	90
 		genotype-1	0	0	0.261	1	1	1	1
@@ -62,8 +74,9 @@ def test_get_fuzzy_backgrounds(genotypes):
 		genotype-5	0	0	0	0.147	0.45	0.924	0.887
 		genotype-6	0	0	0	0.273	0.781	1	1"""
 	expected_table = import_table(expected, index = 'Genotype')
-	backgrounds, fuzzy_fixed_cutoff = filters.get_fuzzy_backgrounds(genotypes, cutoffs)
+	genotype_filter.frequencies = [0.9]
+	backgrounds = genotype_filter.get_fuzzy_backgrounds(genotypes)
 	expected_table = expected_table.astype(float)
-	assert pytest.approx(fuzzy_fixed_cutoff == 0.9)
+	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff == 0.9)
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
