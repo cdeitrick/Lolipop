@@ -41,11 +41,11 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			genotype_members = genotype_info['members']
 		except KeyError:
 			genotype_members = dict()
-		timepoints = info = linkage_matrix = None
+		timepoints = info = linkage_matrix = rejected_trajectories = None
 	else:
 		timepoints, info = dataio.parse_trajectory_table(input_filename, program_options.sheetname)
 		breakpoints = program_options.frequencies if program_options.use_filter else None
-		mean_genotypes, genotype_members, linkage_matrix = clustering.generate_genotypes(
+		mean_genotypes, genotype_members, rejected_trajectories, linkage_matrix = clustering.generate_genotypes(
 			timepoints,
 			dlimit = program_options.detection_breakpoint,
 			flimit = program_options.fixed_breakpoint,
@@ -85,6 +85,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		info = info,
 		original_trajectories = timepoints,
 		original_genotypes = mean_genotypes,
+		rejected_trajectories = rejected_trajectories,
 		trajectories = timepoints,
 		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,

@@ -34,6 +34,7 @@ class WorkflowData:
 	info: Optional[pandas.DataFrame]
 	original_trajectories: Optional[pandas.DataFrame]
 	original_genotypes: Optional[pandas.DataFrame]
+	rejected_trajectories: pandas.DataFrame
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
@@ -73,6 +74,7 @@ class OutputFilenames:
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
 		self.original_genotype: Path = tables_folder / (name + f'.muller_genotypes.original.{suffix}')
+		self.rejected_trajectories: Path = tables_folder / (name + f"trajectories.rejected.{suffix}")
 		self.population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
 		self.muller_table: Path = tables_folder / (name + f'.muller.csv')  # This is generated in r.
@@ -155,6 +157,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
+	if workflow_data.rejected_trajectories is not None:
+		workflow_data.rejected_trajectories.to_csv(filenames.rejected_trajectories, sep = delimiter)
 
 	##############################################################################################################################################
 	# ----------------------------------------- # Generate the input tables to ggmuller ----------------------------------------------------------

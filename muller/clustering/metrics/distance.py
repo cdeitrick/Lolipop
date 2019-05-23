@@ -96,12 +96,13 @@ def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 
 
 def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -> float:
-	if metric == 'pearson':
+	if metric == 'binomial':
+		#default option so placed first to minimize equality calculations.
+		distance_between_series = binomial_distance(left, right)
+	elif metric == 'pearson':
 		distance_between_series = pearson_correlation_distance(left, right)
 	elif metric == 'minkowski':
 		distance_between_series = minkowski_distance(left, right)
-	elif metric == 'binomial':
-		distance_between_series = binomial_distance(left, right)
 	elif metric == 'similarity' or metric == 'binomialp':
 		distance_between_series = binomial_probability(left, right)
 	elif metric == 'jaccard':

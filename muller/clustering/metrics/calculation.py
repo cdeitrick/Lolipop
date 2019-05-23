@@ -7,10 +7,10 @@ from loguru import logger
 
 try:
 	from muller.clustering.metrics import distance
-	from muller.widgets import get_valid_points
+	from muller import widgets
 except ModuleNotFoundError:
 	from . import distance
-	from ...widgets import get_valid_points
+	from ... import widgets
 
 
 def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
@@ -67,17 +67,28 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	logger.debug(f"\t metric: {metric}")
 
 	# noinspection PyTypeChecker
-	pair_combinations: Iterable[Tuple[str, str]] = itertools.combinations(trajectories.index, 2)
+	pair_combinations: Iterable[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
 	pair_array = dict()
-	for left, right in pair_combinations:
+	from tqdm import tqdm
+	for left, right in tqdm(pair_combinations):
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
 
 		# We only care about the timepoints such that `detection_cutoff` < f < `fixed_cutoff.
 		# For now, lets require that both timepoints are detected and not yet fixed.
-		left_reduced, right_reduced = get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
+		# There is an issue related to comparing fixed genotypes against non-fixed genotypes.
+		# These were grouped together:
+		# recG    0    0.14    0.319    1    1    1    1
+		# PA14_RS20565< 0    0.153    0.231    0    0    0    0
+		left_was_fixed = widgets.fixed(left_trajectory, fixed_cutoff)
+		right_was_fixed = widgets.fixed(right_trajectory, fixed_cutoff)
+		if left_was_fixed == right_was_fixed:
+			left_reduced, right_reduced = widgets.get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
+		else:
+			left_reduced, right_reduced = widgets.get_valid_points(left_trajectory, right_trajectory, detection_cutoff, inner = False)
 
 		if left_reduced.empty or right_reduced.empty:
+			# Treat both trajectories as fixed immediately.
 			distance_between_series = fixed_overlap(left_trajectory, right_trajectory, fixed_cutoff)
 		else:
 			distance_between_series = distance.calculate_distance(left_reduced, right_reduced, metric)

@@ -57,7 +57,7 @@ def calculate_genotypes(timepoints: pandas.DataFrame, dlimit: float, flimit: flo
 def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: float, similarity_breakpoint: float, difference_breakpoint: float,
 		method: str,
 		metric: str, breakpoints: List[float] = None, starting_genotypes: List[List[str]] = None) -> Tuple[
-	pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
+	pandas.DataFrame, pandas.Series, pandas.DataFrame, Optional[numpy.array]]:
 	"""
 	Parameters
 	----------
@@ -110,10 +110,12 @@ def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: fl
 		method, metric,
 		starting_genotypes
 	)
-
+	rejected_members = dict()
 	for index in range(_iterations):
 		invalid_members = genotype_filter.run(genotype_table, genotype_members)
 		if invalid_members:
+			for i in invalid_members:
+				rejected_members[i] = f"filtered-genotype-{index}"
 			# Remove these trajectories from the trajectories table.
 			modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
 			# Re-calculate the genotypes based on the remaining trajectories.
@@ -125,4 +127,9 @@ def generate_genotypes(trajectories: pandas.DataFrame, dlimit: float, flimit: fl
 			)
 		else:
 			break
-	return genotype_table, genotype_members, linkage_matrix
+
+	# Build a table of trajectories that were rejected.
+	rejected_trajectories = trajectories.loc[sorted(rejected_members.keys())]
+	rejected_trajectories['genotype'] = [rejected_members[i] for i in rejected_trajectories.index]
+
+	return genotype_table, genotype_members, rejected_trajectories, linkage_matrix
