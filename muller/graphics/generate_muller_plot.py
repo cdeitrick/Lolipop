@@ -255,6 +255,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax: Axes
 		The axes object containing the plot.
 	"""
+	# TODO add confidence to muller diagram and flowcharts.
 	if not isinstance(output_filename, list):
 		output_filenames = [output_filename]
 	else:

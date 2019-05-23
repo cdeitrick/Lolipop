@@ -34,7 +34,17 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		known_ancestry = dataio.read_map(program_options.known_ancestry)
 	else:
 		known_ancestry = dict()
-
+	breakpoints = program_options.frequencies if program_options.use_filter else None
+	genotype_generator = clustering.generate_genotypes.ClusterMutations(
+		method = program_options.method,
+		metric = program_options.metric,
+		dlimit = program_options.detection_breakpoint,
+		flimit = program_options.fixed_breakpoint,
+		sbreakpoint = program_options.significant_breakpoint,
+		dbreakpoint = program_options.detection_breakpoint,
+		breakpoints = breakpoints,
+		starting_genotypes = program_options.starting_genotypes
+	)
 	if program_options.is_genotype:
 		mean_genotypes, genotype_info = dataio.parse_genotype_table(input_filename, program_options.sheetname)
 		try:
@@ -42,20 +52,13 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		except KeyError:
 			genotype_members = dict()
 		timepoints = info = linkage_matrix = rejected_trajectories = None
+
 	else:
 		timepoints, info = dataio.parse_trajectory_table(input_filename, program_options.sheetname)
-		breakpoints = program_options.frequencies if program_options.use_filter else None
-		mean_genotypes, genotype_members, rejected_trajectories, linkage_matrix = clustering.generate_genotypes(
-			timepoints,
-			dlimit = program_options.detection_breakpoint,
-			flimit = program_options.fixed_breakpoint,
-			similarity_breakpoint = program_options.similarity_breakpoint,
-			difference_breakpoint = program_options.difference_breakpoint,
-			method = program_options.method,
-			metric = program_options.metric,
-			breakpoints = breakpoints,
-			starting_genotypes = program_options.starting_genotypes
-		)
+
+
+		mean_genotypes, genotype_members, rejected_trajectories, linkage_matrix = genotype_generator.run(timepoints)
+
 
 	logger.info("sorting muller_genotypes...")
 	sorted_genotypes = inheritance.sort_genotypes(
@@ -91,7 +94,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		genotype_members = genotype_members,
 		clusters = genotype_clusters,
 		program_options = vars(program_options),
-		p_values = clustering.generate.PAIRWISE_CALCULATIONS,
+		p_values = genotype_generator.pairwise_distances,
 		filter_cache = [],
 		linkage_matrix = linkage_matrix,
 		genotype_palette_filename = program_options.genotype_palette_filename

@@ -1,1 +1,1 @@
-from .generate import generate_genotypes
+from . import generate_genotypes
