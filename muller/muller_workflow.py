@@ -40,7 +40,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		metric = program_options.metric,
 		dlimit = program_options.detection_breakpoint,
 		flimit = program_options.fixed_breakpoint,
-		sbreakpoint = program_options.significant_breakpoint,
+		sbreakpoint = program_options.similarity_breakpoint,
 		dbreakpoint = program_options.detection_breakpoint,
 		breakpoints = breakpoints,
 		starting_genotypes = program_options.starting_genotypes
