@@ -1,6 +1,6 @@
 from muller import dataio
-from muller.muller_output import flowchart
-import pytest
+from graphics import flowchart
+
 
 def test_get_font_properties():
 	expected = {'label': "genotype-1\ngene1\ngene2", 'fontcolor': '#FFFFFF'}

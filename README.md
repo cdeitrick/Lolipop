@@ -23,6 +23,8 @@ The scripts require a few python packages to work. Each of these can be installe
 - scipy
 - seaborn
 
+If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
+
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
 
 # General Workflow

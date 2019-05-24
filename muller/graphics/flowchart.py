@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import pandas
 import pygraphviz
 
-from .. import widgets
+from muller import widgets
 
 
 def get_node_label_properties(identity: str, genotype_color: str, annotation: List[str]) -> Dict[str, str]:
@@ -24,13 +24,13 @@ def get_node_label_properties(identity: str, genotype_color: str, annotation: Li
 	return label_properties
 
 
-def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None,
-		filename: Optional[Path] = None):
+def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None):
 	"""
 		Creates a lineage plot showing the ancestry of each genotype.
 	Parameters
 	----------
-	edges
+	edges: pandas.DataFrame
+		Should have three columns: 'parent', 'identity', 'score'
 	palette
 	annotations
 	filename
@@ -47,7 +47,7 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	graph.node_attr['fontname'] = 'lato'
 	graph.edge_attr['dir'] = 'forward'
 
-	for identity in edges['Identity'].unique():
+	for identity in edges['identity'].unique():
 		genotype_color = palette.get(identity)
 		graph.add_node(identity, color = "#333333", fillcolor = genotype_color)
 		node = graph.get_node(identity)
@@ -55,10 +55,11 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		node.attr.update(node_label_properties)
 
 	for index, row in edges.iterrows():
-		parent = row['Parent']
-		identity = row['Identity']
-
-		graph.add_edge(parent, identity, tooltip = f"parent")
+		parent = row['parent']
+		identity = row['identity']
+		score = row['score']
+		if score < 0: score = 0
+		graph.add_edge(parent, identity, tooltip = f"parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
 	if filename:
 		graph.draw(str(filename), prog = 'dot')
 	return graph
