@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 import numpy
 import pandas
-
+from loguru import logger
 try:
 	from clustering import filters
 	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
@@ -76,7 +76,7 @@ class ClusterMutations:
 
 		# Calculate the distance between all possible pair of trajectories.
 		pair_array = calculate_pairwise_metric(
-			trajectories,
+			modified_trajectories,
 			detection_cutoff = self.dlimit,
 			fixed_cutoff = self.flimit,
 			metric = self.metric
@@ -168,7 +168,11 @@ class ClusterMutations:
 		"""
 		mean_genotypes = list()
 		for index, genotype in enumerate(all_genotypes, start = 1):
-			genotype_timeseries = timeseries.loc[genotype]
+			try:
+				genotype_timeseries = timeseries.loc[genotype]
+			except Exception as exception:
+				logger.critical(f"Missing Trajectory Labels: {genotype} - {timeseries.index}")
+				raise exception
 			mean_genotype_timeseries = self._calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)
 			mean_genotypes.append(mean_genotype_timeseries)
 
