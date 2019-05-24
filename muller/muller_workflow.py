@@ -51,13 +51,11 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 			genotype_members = genotype_info['members']
 		except KeyError:
 			genotype_members = dict()
-		timepoints = info = linkage_matrix = rejected_trajectories = None
+		timepoints = info = None
 
 	else:
 		timepoints, info = dataio.parse_trajectory_table(input_filename, program_options.sheetname)
-
-
-		mean_genotypes, genotype_members, rejected_trajectories, linkage_matrix = genotype_generator.run(timepoints)
+		mean_genotypes, genotype_members = genotype_generator.run(timepoints)
 
 
 	logger.info("sorting muller_genotypes...")
@@ -88,7 +86,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		info = info,
 		original_trajectories = timepoints,
 		original_genotypes = mean_genotypes,
-		rejected_trajectories = rejected_trajectories,
+		rejected_trajectories = genotype_generator.rejected_trajectories,
 		trajectories = timepoints,
 		genotypes = sorted_genotypes,
 		genotype_members = genotype_members,
@@ -96,7 +94,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		program_options = vars(program_options),
 		p_values = genotype_generator.pairwise_distances,
 		filter_cache = [],
-		linkage_matrix = linkage_matrix,
+		linkage_matrix = genotype_generator.linkage_table,
 		genotype_palette_filename = program_options.genotype_palette_filename
 	)
 	generate_output(

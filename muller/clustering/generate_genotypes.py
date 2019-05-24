@@ -57,7 +57,10 @@ class ClusterMutations:
 		self.dbreakpoint: float = dbreakpoint
 		self.breakpoints: List[float] = breakpoints
 		self.starting_genotypes: List[List[str]] = starting_genotypes
-		self.pairwise_distances: PairwiseCalculationCache = None
+
+		# These will be updated when run() is called.
+		self.pairwise_distances: PairwiseCalculationCache = PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
+		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 	def run(self, trajectories: pandas.DataFrame):
 		trajectory_filter = filters.TrajectoryFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit)
@@ -92,7 +95,7 @@ class ClusterMutations:
 				# Remove these trajectories from the trajectories table.
 				modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
 
-				#Need to remove trajectories from the distance matrix so they are not included in the clustering method.
+				# Need to remove trajectories from the distance matrix so they are not included in the clustering method.
 				self.pairwise_distances.reduce(modified_trajectories.index)
 				# Re-calculate the genotypes based on the remaining trajectories.
 
@@ -100,10 +103,14 @@ class ClusterMutations:
 			else:
 				break
 		# Build a table of trajectories that were rejected.
-		rejected_trajectories = trajectories.loc[sorted(rejected_members.keys())]
-		rejected_trajectories['genotype'] = [rejected_members[i] for i in rejected_trajectories.index]
+		self.rejected_trajectories = trajectories.loc[sorted(rejected_members.keys())]
+		self.rejected_trajectories['genotype'] = [rejected_members[i] for i in self.rejected_trajectories.index]
 
-		return genotype_table, genotype_members, rejected_trajectories, linkage_matrix
+		self.genotype_table = genotype_table
+		self.genotype_members = genotype_members
+		self.linkage_table = linkage_matrix
+
+		return genotype_table, genotype_members
 
 	def generate_genotypes(self, timepoints: pandas.DataFrame) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 		if self.method == "matlab" or self.method == 'twostep':

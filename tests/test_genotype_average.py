@@ -1,8 +1,23 @@
 import pandas
 import pytest
 
-from muller.clustering.average import _calculate_mean_frequencies_of_trajectories
+from muller.clustering.generate_genotypes import ClusterMutations
 from muller.dataio import import_table
+
+
+@pytest.fixture
+def genotype_generator() -> ClusterMutations:
+	generator = ClusterMutations(
+		method = 'hierarchy',
+		metric = 'binomial',
+		dlimit = 0.03,
+		flimit = 0.97,
+		sbreakpoint = 0.05,
+		dbreakpoint = 0.10,
+		breakpoints = [],
+		starting_genotypes = []
+	)
+	return generator
 
 
 @pytest.fixture
@@ -59,12 +74,12 @@ def genotype_table():
 	return table
 
 
-def test_calculate_mean_genotype(genotype_table, trajectory_table):
+def test_calculate_mean_genotype(genotype_table, trajectory_table, genotype_generator):
 	groups = trajectory_table.groupby(by = 'genotype')
 	for genotype_label, genotype_group in groups:
 		if genotype_label == 'filtered': continue
 		truth_genotype = genotype_table.loc[genotype_label]
-		mean_genotype = _calculate_mean_frequencies_of_trajectories(genotype_label, genotype_group, ['a', 'b', 'c'])
+		mean_genotype = genotype_generator._calculate_mean_frequencies_of_trajectories(genotype_label, genotype_group, ['a', 'b', 'c'])
 		members = mean_genotype.pop('members')
 		mean_genotype = mean_genotype.astype(float)
 		assert 'a|b|c' == members
