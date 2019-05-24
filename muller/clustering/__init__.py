@@ -1,1 +1,1 @@
-from .generate import generate_genotypes
+from .generate_genotypes import ClusterMutations

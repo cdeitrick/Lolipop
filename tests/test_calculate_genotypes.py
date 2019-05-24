@@ -1,8 +1,8 @@
 from io import StringIO
-
-from muller.clustering.generate import *
+import pandas
+from muller.clustering import ClusterMutations
 from muller.dataio import import_table
-
+import pytest
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
 				 "2,0,0.0,0.0,0.525,0.454,0.911,0.91\n" \
@@ -17,9 +17,22 @@ trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "14,0,0.38,0.432,0.0,0.0,0.0,0.0\n" \
 				 "16,0,0.0,0.0,0.0,0.209,0.209,0.0\n" \
 				 "20,0,0.0,0.0,0.138,0.295,0.0,0.081\n"
+@pytest.fixture
+def genotype_generator() -> ClusterMutations:
+	generator = ClusterMutations(
+		method = 'hierarchy',
+		metric = 'binomial',
+		dlimit = 0.03,
+		flimit = 0.97,
+		sbreakpoint = 0.05,
+		dbreakpoint = 0.10,
+		breakpoints = [],
+		starting_genotypes = []
+	)
+	return generator
 
 
-def test_calculate_mean_genotype():
+def test_calculate_mean_genotype(genotype_generator):
 	test_genotypes = [
 		['7'], ['4', '8'], ['3', '2'], ['13', '20', '11']
 	]
@@ -35,6 +48,6 @@ def test_calculate_mean_genotype():
 		genotype-4	0	0	0	0.082	0.234666666666667	0.019	0.052	13|20|11
 		"""
 	expected_mean = import_table(expected_csv, index = 'Genotype')
-	output = calculate_mean_genotype(test_genotypes, trajectories)
+	output = genotype_generator.calculate_mean_genotype(test_genotypes, trajectories)
 
 	pandas.testing.assert_frame_equal(expected_mean, output)

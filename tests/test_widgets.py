@@ -171,3 +171,27 @@ def test_format_linkage_matrix():
 	expected_table = dataio.import_table(expected_table)
 
 	pandas.testing.assert_frame_equal(test_table, expected_table)
+
+@pytest.mark.parametrize(
+	"series,expected",
+	[
+		([0,0,0,1,1,1], True),
+		([0,1,0,1,0,1], True),
+		([0,.2,1,1,1], False)
+	]
+)
+def test_fixes_imediately(series, expected):
+	s = pandas.Series(series)
+	assert widgets.fixed_immediately(s, 0.03, 0.97) == expected
+@pytest.mark.parametrize(
+	"series,expected",
+	[
+		([0,0,0,1,1,1], True),
+		([0,1,0,1,0,1], True),
+		([0,.2,1,1,1], True),
+		([0,.1,.2,.3, .4, .5], False)
+	]
+)
+def test_fixed(series,expected):
+	s = pandas.Series(series)
+	assert widgets.fixed(s, 0.97) == expected

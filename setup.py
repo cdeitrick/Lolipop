@@ -9,5 +9,6 @@ setup(
 	license = 'MIT',
 	author = 'chris deitrick',
 	author_email = 'cld100@pitt.edu',
-	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background'
+	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background',
+	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib', 'pygraphviz', 'seaborn', 'numpy']
 )

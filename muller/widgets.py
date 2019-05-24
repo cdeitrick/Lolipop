@@ -43,8 +43,8 @@ def get_valid_points(left_trajectory: pandas.Series, right_trajectory: pandas.Se
 		Filters out timepoints that do not satisfy the detection criteria.
 	Parameters
 	----------
-	left: pandas.Series
-	right: pandas.Series
+	left_trajectory: pandas.Series
+	right_trajectory: pandas.Series
 	dlimit: float
 		Removes the timepoint if both points do no exceed this value.
 	flimit: float
@@ -66,11 +66,12 @@ def get_valid_points(left_trajectory: pandas.Series, right_trajectory: pandas.Se
 	else:
 		left, right = left_trajectory, right_trajectory
 
-
 	if inner:
-		at_least_one_detected = (left > dlimit) & (right > dlimit)
+		# list comprehensions are ~10X faster than using the built-in pandas methods.
+		at_least_one_detected = [(l > dlimit and r > dlimit) for l, r in zip(left.values, right.values)]
 	else:
-		at_least_one_detected = (left > dlimit) | (right > dlimit)
+		at_least_one_detected = [(l > dlimit or r > dlimit) for l, r in zip(left.values, right.values)]
+	at_least_one_detected = pandas.Series(at_least_one_detected, index = left.index)
 
 	# Remove indicies where the series value falls below the detection limit. This should include the masked fixed values.
 	at_least_one_detected_reduced = at_least_one_detected[at_least_one_detected]
@@ -126,6 +127,16 @@ def format_inconsistency_matrix(inconsistency_matrix) -> pandas.DataFrame:
 	inconsistency_table = pandas.DataFrame(inconsistency_matrix, columns = ['mean', 'std', 'observations', 'statistic'])
 	inconsistency_table['observations'] = inconsistency_table['observations'].astype(int)
 	return inconsistency_table
+
+
+def fixed_immediately(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
+	mask1 = (trajectory <= dlimit)
+	mask2 = (trajectory >= flimit)
+	return (mask1.sum() + mask2.sum()) == len(trajectory)
+
+
+def fixed(trajectory: pandas.Series, flimit: float) -> bool:
+	return any(i > flimit for i in trajectory.values)
 
 
 def _get_git_log() -> str:

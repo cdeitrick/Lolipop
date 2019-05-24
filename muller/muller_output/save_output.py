@@ -16,14 +16,14 @@ try:
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
 	from muller import widgets, dataio, palettes
-	from muller.muller_output.flowchart import flowchart
+	from graphics.flowchart import flowchart
 except ModuleNotFoundError:
 	from .. import widgets, dataio, palettes
 	from ..clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 	from ..graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
 	from .generate_tables import *
 	from .generate_scripts import generate_r_script, execute_r_script
-	from .flowchart import flowchart
+	from graphics.flowchart import flowchart
 
 
 @dataclass
@@ -34,6 +34,7 @@ class WorkflowData:
 	info: Optional[pandas.DataFrame]
 	original_trajectories: Optional[pandas.DataFrame]
 	original_genotypes: Optional[pandas.DataFrame]
+	rejected_trajectories: pandas.DataFrame
 	trajectories: pandas.DataFrame
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
@@ -73,6 +74,7 @@ class OutputFilenames:
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
 		self.original_genotype: Path = tables_folder / (name + f'.muller_genotypes.original.{suffix}')
+		self.rejected_trajectories: Path = tables_folder / (name + f"trajectories.rejected.{suffix}")
 		self.population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
 		self.muller_table: Path = tables_folder / (name + f'.muller.csv')  # This is generated in r.
@@ -129,7 +131,6 @@ def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[
 
 def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_cutoff: float, adjust_populations: bool):
 	# Set up the output folder
-	from pprint import pprint
 	if workflow_data.program_options['name']:
 		base_filename = workflow_data.program_options['name']
 	else:
@@ -155,6 +156,8 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 		filtered_trajectories = generate_missing_trajectories_table(workflow_data.trajectories, workflow_data.original_trajectories)
 		trajectories = generate_trajectory_table(workflow_data.trajectories, parent_genotypes, workflow_data.info)
 		trajectories.to_csv(str(filenames.trajectory), sep = delimiter)
+	if workflow_data.rejected_trajectories is not None:
+		workflow_data.rejected_trajectories.to_csv(filenames.rejected_trajectories, sep = delimiter)
 
 	##############################################################################################################################################
 	# ----------------------------------------- # Generate the input tables to ggmuller ----------------------------------------------------------
@@ -197,6 +200,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	# ------------------------------------------------- Generate the lineage plots ---------------------------------------------------------------
 	##############################################################################################################################################
 	logger.info("Generating Lineage Plots...")
+	edges_table = workflow_data.clusters.priority_table()
 	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)

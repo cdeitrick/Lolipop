@@ -1,6 +1,6 @@
 from muller import dataio
-from muller.muller_output import flowchart
-import pytest
+from graphics import flowchart
+
 
 def test_get_font_properties():
 	expected = {'label': "genotype-1\ngene1\ngene2", 'fontcolor': '#FFFFFF'}
@@ -12,9 +12,9 @@ def test_get_font_properties():
 
 def test_flowchart():
 	edges_string = """
-	Parent	Identity
-	genotype-0	genotype-1
-	genotype-1	genotype-13
+	parent	identity	score
+	genotype-0	genotype-1	1
+	genotype-1	genotype-13	2
 	"""
 	edges_table = dataio.import_table(edges_string)
 	palette = {"genotype-13": '#222222', 'genotype-1': '#CCCCCC', 'genotype-0': '#000000'}
