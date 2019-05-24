@@ -200,7 +200,7 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	# ------------------------------------------------- Generate the lineage plots ---------------------------------------------------------------
 	##############################################################################################################################################
 	logger.info("Generating Lineage Plots...")
-	edges_table = workflow_data.clusters.to_table()
+	edges_table = workflow_data.clusters.priority_table()
 	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
 	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)

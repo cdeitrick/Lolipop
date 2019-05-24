@@ -80,7 +80,7 @@ class Cluster:
 	def as_dict(self) -> Mapping[str, str]:
 		return self.as_ancestry_table().to_dict()
 
-	def to_table(self) -> pandas.DataFrame:
+	def priority_table(self) -> pandas.DataFrame:
 		data = list()
 		for identity, background in self.nests.items():
 			# parent = self.get_highest_priority(identity)
@@ -94,4 +94,16 @@ class Cluster:
 				'score': score
 			}
 			data.append(row)
+		return pandas.DataFrame(data)
+
+	def to_table(self) -> pandas.DataFrame:
+		data = list()
+		for identity, candidates in self.confidence.items():
+			for candidate, score in candidates:
+				row = {
+					'identity':  identity,
+					'candidate': candidate,
+					'score':     score
+				}
+				data.append(row)
 		return pandas.DataFrame(data)
