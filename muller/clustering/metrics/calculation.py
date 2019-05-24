@@ -11,7 +11,10 @@ try:
 except ModuleNotFoundError:
 	from . import distance
 	from ... import widgets
-
+try:
+	from tqdm import tqdm
+except ModuleNotFoundError:
+	tqdm = None
 
 def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
 	"""
@@ -69,8 +72,13 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	# noinspection PyTypeChecker
 	pair_combinations: Iterable[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
 	pair_array = dict()
-	from tqdm import tqdm
-	for left, right in tqdm(pair_combinations):
+	if len(pair_combinations) > 10000 and tqdm:
+		progress_bar = tqdm(total = len(pair_combinations))
+	else:
+		progress_bar = None
+	for left, right in pair_combinations:
+		if progress_bar:
+			progress_bar.update(1)
 		left_trajectory = trajectories.loc[left]
 		right_trajectory = trajectories.loc[right]
 
@@ -95,7 +103,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 			distance_between_series = distance.calculate_distance(left_reduced, right_reduced, metric)
 
 		pair_array[left, right] = pair_array[right, left] = distance_between_series
-
+	if progress_bar: progress_bar.close()
 	# Assume that any pair with NAN values are the maximum possible distance from each other.
 
 	maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
