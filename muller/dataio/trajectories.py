@@ -1,9 +1,10 @@
 import re
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
-
+import math
 import pandas
 from loguru import logger
+import re
 try:
 	from ..widgets import get_numeric_columns
 	from .tables import import_table
@@ -28,15 +29,45 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 	""" Ensures the time table columns contain values between 0 and 1 and are of type `float`"""
 	new_data = old_data.copy(deep = True)
 	for column in old_data.columns:
-		if old_data[column].max() > 1.0:
+		try:
+			maximum_value = old_data[column].max()
+		except TypeError as exception:
+			logger.error(f"Some of the values in the column '{column}' could not be read as numbers.")
+			logger.error(f"The column had values of {old_data[column].values}")
+			raise exception
+		if maximum_value > 1.0:
 			logger.warning(f"The column `{column}` had values greater than 1.0. It will be converted to a float between 0 and 1.")
 			new_column = old_data[column] / 100
 		else:
 			new_column = old_data[column].astype(float)
 		new_data[column] = new_column
 	return new_data
+def convert_string_to_number(value:str)->float:
 
+	pattern = "[\d]+(?:[.][\d]+)?"
+	if isinstance(value, str):
+		match = re.search(pattern, value)
+		try:
+			result = float(match.group(0))
+		except AttributeError:
+			# No matches were found
+			logger.error(f"Could not convert '{value}' to a number.")
+			result = math.nan
+		except ValueError:
+			# The matched string could not be converted to a number
+			logger.error(f"Could not convert '{value}' to a number.")
+			result = math.nan
+	else:
+		result = value
+	return result
 
+def _fix_column_datatypes(table: pandas.DataFrame)->pandas.DataFrame:
+	# Try to extract numerical data from the table.
+
+	for column in table.columns:
+		converted_column = table[column].apply(convert_string_to_number)
+		table[column] = converted_column
+	return table
 def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Converts column headers to integers and moves all non-integer columns to a separate dataframe.
@@ -56,6 +87,13 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	time_table.columns = converted_frequency_columns
 	# Sort the table columns
 	time_table = time_table[sorted(time_table.columns)]
+
+	try:
+		# Test to see if the table was correctly converted to numerical datatypes.
+		time_table[time_table.columns[0]].max()
+	except TypeError:
+		logger.warning(f"Some of the values could not be interpreted as numerical data. Attempting to extract numerical data from these values...")
+		time_table = _fix_column_datatypes(time_table)
 
 	# Drop any trajectories which are never detected.
 	time_table = time_table[(time_table.T != 0).any()]
