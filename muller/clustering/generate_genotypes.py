@@ -4,13 +4,9 @@ import numpy
 import pandas
 from loguru import logger
 try:
-	from clustering import filters
-	from clustering.metrics import PairwiseCalculationCache, calculate_pairwise_metric
-	from clustering.methods import twostep_method, hierarchical_method
+	from clustering import filters, metrics, methods
 except ModuleNotFoundError:
-	from . import filters
-	from .metrics import PairwiseCalculationCache, calculate_pairwise_metric
-	from .methods import twostep_method, hierarchical_method
+	from . import filters, metrics, methods
 
 
 class ClusterMutations:
@@ -59,7 +55,7 @@ class ClusterMutations:
 		self.starting_genotypes: List[List[str]] = starting_genotypes
 
 		# These will be updated when run() is called.
-		self.pairwise_distances: PairwiseCalculationCache = PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
+		self.pairwise_distances: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 	def run(self, trajectories: pandas.DataFrame):
@@ -75,13 +71,13 @@ class ClusterMutations:
 			_iterations = 0  # The for loop shouldn't excecute.
 
 		# Calculate the distance between all possible pair of trajectories.
-		pair_array = calculate_pairwise_metric(
+		pair_array = metrics.calculate_pairwise_metric(
 			modified_trajectories,
 			detection_cutoff = self.dlimit,
 			fixed_cutoff = self.flimit,
 			metric = self.metric
 		)
-		self.pairwise_distances = PairwiseCalculationCache(pair_array)
+		self.pairwise_distances = metrics.PairwiseCalculationCache(pair_array)
 
 		# Calculate the initial genotypes
 		genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)
@@ -114,10 +110,10 @@ class ClusterMutations:
 
 	def generate_genotypes(self, timepoints: pandas.DataFrame) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 		if self.method == "matlab" or self.method == 'twostep':
-			genotypes = twostep_method(timepoints, self.pairwise_distances, self.sbreakpoint, self.dbreakpoint, self.starting_genotypes)
+			genotypes = methods.twostep_method(timepoints, self.pairwise_distances, self.sbreakpoint, self.dbreakpoint, self.starting_genotypes)
 			linkage_matrix = None
 		elif self.method == "hierarchy":
-			genotypes, linkage_matrix = hierarchical_method(self.pairwise_distances, self.sbreakpoint, starting_genotypes = self.starting_genotypes)
+			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.sbreakpoint, starting_genotypes = self.starting_genotypes)
 		else:
 			raise ValueError(f"Invalid clustering method: {self.method}")
 
