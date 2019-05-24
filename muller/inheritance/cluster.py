@@ -1,5 +1,5 @@
 from typing import Dict, List, Mapping, Optional, Tuple, Union
-
+import math
 import pandas
 
 
@@ -8,11 +8,13 @@ class Cluster:
 
 	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):
 		self.initial_background_label: str = initial_background.name
-		self.timepoints = timepoints.copy()
+		self.timepoints = timepoints.copy() # To  prevent unintended modifications to source table.
+		# Keep track of the parent and confidence for each new genotype.
 		self.confidence: Dict[str, List[Tuple[str, float]]] = dict()
-		initial_genotype = ['genotype-0']
+		self.ancestral_genotype = 'genotype-0'
 
-		self.nests: Dict[str, List[str]] = {initial_background.name: initial_genotype}
+		self.nests: Dict[str, List[str]] = dict()
+		self.add_genotype_to_background(initial_background.name, self.ancestral_genotype, 1)
 
 	def add_genotype_to_background(self, unnested_label: str, nested_label: str, priority: Union[int, float]) -> None:
 		if unnested_label not in self.nests:
@@ -40,28 +42,32 @@ class Cluster:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
 
-	def get_highest_priority(self, label: str) -> Optional[str]:
+	def get_highest_priority(self, label: str) -> Tuple[Optional[str], float]:
 		candidates = self.confidence.get(label, [])
 		if candidates:
 			# Explicity tell the sorting method to use the priority score.
 			# This will prevent the method from using the genotype name to sort the elements,
 			# So ties should be broken by whichever candidate was added as a candidate first.
 			candidate, score = max(candidates, key = lambda s: s[1])
-			if score < 1:
-				candidate = None
+
 		else:
 			# `candidates` was an empty sequence.
 			candidate = None
-		return candidate
+			score = math.nan
+
+		if score < 1:
+			candidate = None
+
+		return candidate, score
 
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()
 		for identity, background in self.nests.items():
 			# parent = self.get_highest_priority(identity)
 			# if parent is None:
-			parent = self.get_highest_priority(identity)
+			parent, score = self.get_highest_priority(identity)
 			if parent == identity or parent is None:
-				parent = 'genotype-0'
+				parent = self.ancestral_genotype
 			row = {
 				'Parent':   parent,
 				'Identity': identity
@@ -76,12 +82,16 @@ class Cluster:
 
 	def to_table(self) -> pandas.DataFrame:
 		data = list()
-		for identity, candidates in self.confidence.items():
-			for candidate, score in candidates:
-				row = {
-					'identity':  identity,
-					'candidate': candidate,
-					'score':     score
-				}
-				data.append(row)
+		for identity, background in self.nests.items():
+			# parent = self.get_highest_priority(identity)
+			# if parent is None:
+			parent, score = self.get_highest_priority(identity)
+			if parent == identity or parent is None:
+				parent = self.ancestral_genotype
+			row = {
+				'parent':   parent,
+				'identity': identity,
+				'score': score
+			}
+			data.append(row)
 		return pandas.DataFrame(data)
