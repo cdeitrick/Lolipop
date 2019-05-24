@@ -82,12 +82,12 @@ class ClusterMutations:
 		# Calculate the initial genotypes
 		genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)
 
-		rejected_members = dict()
+		rejected_members = {i:'filtered-genotype-0' for i in trajectories.index if i not in modified_trajectories}
 		for index in range(_iterations):
 			invalid_members = genotype_filter.run(genotype_table, genotype_members)
 			if invalid_members:
 				for i in invalid_members:
-					rejected_members[i] = f"filtered-genotype-{index}"
+					rejected_members[i] = f"filtered-genotype-{index+1}"
 				# Remove these trajectories from the trajectories table.
 				modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
 
