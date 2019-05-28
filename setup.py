@@ -30,5 +30,5 @@ setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	scripts = ["muller/muller_workflow.py"]
+	scripts = ["muller.py"]
 )
