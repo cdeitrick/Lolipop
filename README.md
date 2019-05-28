@@ -13,6 +13,12 @@
     -  [Genotype Plots](#timeseries-plots)
     -  [Lineage Diagram](#lineage-diagrams)
 
+# Installation
+These scripts are available on (pypi)[https://pypi.org/project/muller/] and can be installed with
+```bash
+pip install muller 
+```
+
 # Requirements
 The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install [package]`.
 - dataclasses (if using a python version below 3.7)
