@@ -8,11 +8,15 @@ python:
   - 3.7
 before_install:
   - sudo apt-get update
-  - sudo apt-get install python-dev graphviz libgraphviz-dev pkg-config
 install:
   - pip install -q -r requirements.txt
   - pip install -q .
 # command to run tests
 script: pytest 
-deploy:
-  skip_cleanup: true
+addons:
+  apt:
+    packages:
+      - python-dev
+      - graphviz
+      - libgraphviz-dev
+      - pkg-config
