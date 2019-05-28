@@ -12,7 +12,7 @@ setup(
 	author = 'chris deitrick',
 	author_email = 'chrisdeitrick1@gmail.com',
 	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background',
-	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib', 'pygraphviz', 'seaborn', 'numpy'],
+	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib','graphviz', 'pygraphviz', 'seaborn', 'numpy'],
 	classifiers = [
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",

@@ -29,6 +29,13 @@ The scripts require a few python packages to work. Each of these can be installe
 - scipy
 - seaborn
 
+If the package `pygraphviz` throws an error during installation, it is usually because it can't find the correct dependancies in the current environment.
+Install the dependancies using 
+```bash
+sudo apt-get install python-dev graphviz libgraphviz-dev pkg-config
+```
+or the equivalent package manager on your system.
+
 If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
 
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
