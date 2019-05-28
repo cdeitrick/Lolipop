@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 try:
 	from muller import dataio
 except ModuleNotFoundError:
-	import dataio
+	from . import dataio
 
 from dataclasses import dataclass, fields
 

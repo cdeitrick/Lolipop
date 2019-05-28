@@ -5,7 +5,7 @@ import pandas
 from muller.widgets import get_valid_points
 
 try:
-	from inheritance import order_by_area
+	from muller.inheritance import order_by_area
 except ModuleNotFoundError:
 	from . import order_by_area
 

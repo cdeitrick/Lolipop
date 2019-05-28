@@ -4,7 +4,7 @@ import numpy
 import pandas
 from loguru import logger
 try:
-	from clustering import filters, metrics, methods
+	from muller.clustering import filters, metrics, methods
 except ModuleNotFoundError:
 	from . import filters, metrics, methods
 

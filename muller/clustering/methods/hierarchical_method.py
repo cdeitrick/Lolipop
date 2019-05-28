@@ -7,7 +7,7 @@ from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
 try:
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
 except ModuleNotFoundError:
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
 

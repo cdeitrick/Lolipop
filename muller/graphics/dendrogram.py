@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster import hierarchy
 
 try:
-	from clustering.metrics import PairwiseCalculationCache
+	from muller.clustering.metrics import PairwiseCalculationCache
 except ModuleNotFoundError:
 	from ..clustering.metrics import PairwiseCalculationCache
 

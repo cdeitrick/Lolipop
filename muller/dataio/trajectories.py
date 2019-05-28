@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 import math
@@ -6,11 +5,12 @@ import pandas
 from loguru import logger
 import re
 try:
+	from muller.widgets import get_numeric_columns
+	from muller.dataio import import_table
+except ModuleNotFoundError:
 	from ..widgets import get_numeric_columns
-	from .tables import import_table
-except ValueError:
-	from widgets import get_numeric_columns
-	from dataio.tables import import_table
+	from . import import_table
+
 IOTYPE = Union[str, Path]
 
 

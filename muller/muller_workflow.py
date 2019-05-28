@@ -16,9 +16,9 @@ try:
 	from muller import dataio, clustering, inheritance
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
-	import dataio, clustering, inheritance
-	from commandline_parser import create_parser, parse_workflow_options
-	from muller_output import WorkflowData, generate_output
+	from . import dataio, clustering, inheritance
+	from .commandline_parser import create_parser, parse_workflow_options
+	from .muller_output import WorkflowData, generate_output
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):

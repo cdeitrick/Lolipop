@@ -18,7 +18,7 @@ plt.rcParams['svg.fonttype'] = 'none'
 try:
 	from muller.widgets import calculate_luminance
 except ModuleNotFoundError:
-	from widgets import calculate_luminance
+	from ..widgets import calculate_luminance
 
 from loguru import logger
 
