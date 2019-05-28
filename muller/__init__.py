@@ -1,1 +1,1 @@
-from . import muller_workflow
+from . import muller_workflow, commandline_parser
