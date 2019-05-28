@@ -28,6 +28,7 @@ The scripts require a few python packages to work. Each of these can be installe
 - pygraphviz
 - scipy
 - seaborn
+- xlrd (to read excel files)
 
 If the package `pygraphviz` throws an error during installation, it is usually because it can't find the correct dependancies in the current environment.
 Install the dependancies using 
