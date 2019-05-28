@@ -4,8 +4,8 @@
 # Contents
 -  [Installation](#installation)
 -  [Sample Usage](#sample-usage)
--  [General Workflow](#general-workflow)
 -  [Requirements](#requirements)
+-  [General Workflow](#general-workflow)
 -  [Script Options](#script-options)
 -  [Input Parameters](#input-dataset)
 -  [Output Files](#output)
