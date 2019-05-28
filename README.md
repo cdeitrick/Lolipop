@@ -19,6 +19,13 @@ These scripts are available on (pypi)[https://pypi.org/project/muller/] and can 
 pip install muller 
 ```
 
+It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
+```
+git clone https://github.com/cdeitrick/muller_diagrams.git
+cd muller_diagrams
+Muller.py [args]
+```
+
 # Requirements
 The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install [package]`.
 - dataclasses (if using a python version below 3.7)
@@ -190,13 +197,13 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
 Use python to call the "muller" folder:
 ```
-python muller --input [input filename] --output [output folder]
+Muller.py --input [input filename] --output [output folder]
 ```
 
 Run with default parameters.
 
 ```
-python muller --input [filename] --frequencies 0.05 --detected 0.10
+Muller.py --input [filename] --frequencies 0.05 --detected 0.10
 ```
 Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
