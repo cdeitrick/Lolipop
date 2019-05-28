@@ -10,7 +10,7 @@ try:
 except ModuleNotFoundError:
 	from . import scoring
 	from .cluster import Cluster
-	import widgets
+	from .. import widgets
 
 
 def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float,

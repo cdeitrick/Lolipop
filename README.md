@@ -2,16 +2,30 @@
 ![muller_plot](./example/example.muller.unannotated.png)
 
 # Contents
--  [General Workflow](#general-workflow)
+-  [Installation](#installation)
+-  [Sample Usage](#sample-usage)
 -  [Requirements](#requirements)
+-  [General Workflow](#general-workflow)
 -  [Script Options](#script-options)
 -  [Input Parameters](#input-dataset)
--  [Sample Usage](#sample-usage)
 -  [Output Files](#output)
     -  [Output Tables](#tables)
     -  [Muller Plots](#muller-plots)
     -  [Genotype Plots](#timeseries-plots)
     -  [Lineage Diagram](#lineage-diagrams)
+
+# Installation
+These scripts are available on (pypi)[https://pypi.org/project/muller/] and can be installed with
+```bash
+pip install muller 
+```
+
+It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
+```
+git clone https://github.com/cdeitrick/muller_diagrams.git
+cd muller_diagrams
+Muller.py [args]
+```
 
 # Requirements
 The scripts require a few python packages to work. Each of these can be installed using `pip install [package]` or `conda install [package]`.
@@ -22,10 +36,38 @@ The scripts require a few python packages to work. Each of these can be installe
 - pygraphviz
 - scipy
 - seaborn
+- xlrd (to read excel files)
+
+If the package `pygraphviz` throws an error during installation, it is usually because it can't find the correct dependancies in the current environment.
+Install the dependancies using 
+
+Linux:
+```bash
+sudo apt-get install python-dev graphviz libgraphviz-dev pkg-config
+```
+Mac:
+```bash
+brew install graphviz
+```
+or the equivalent package manager on your system.
 
 If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
 
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
+
+# Sample Usage
+The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
+Use python to call the "muller" folder:
+```
+Muller.py --input [input filename] --output [output folder]
+```
+
+Run with default parameters.
+
+```
+Muller.py --input [filename] --frequencies 0.05 --detected 0.10
+```
+Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 # General Workflow
 
@@ -136,7 +178,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 so this is only useful when re-running the analysis.
 
 ## Graphics Options
-    --no-ouline
+    --no-outline
                                 Disables the white ouline surrounding each series in the muller plots.
 
 # Input Dataset
@@ -172,19 +214,6 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 20            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
 | B2         | 21            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
-# Sample Usage
-The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
-Use python to call the "muller" folder:
-```
-python muller --input [input filename] --output [output folder]
-```
-
-Run with default parameters.
-
-```
-python muller --input [filename] --frequencies 0.05 --detected 0.10
-```
-Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 # Output
 All files are prefixed by the name of the original input table if the `--name` parameter is unfilled.

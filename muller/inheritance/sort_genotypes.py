@@ -4,7 +4,7 @@ import pandas
 from loguru import logger
 
 try:
-	from inheritance import timepoint_detection
+	from muller.inheritance import timepoint_detection
 except ModuleNotFoundError:
 	from . import timepoint_detection
 

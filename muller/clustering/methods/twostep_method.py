@@ -4,9 +4,9 @@ from typing import Dict, List, Tuple
 import pandas
 
 try:
-	from clustering.methods.difference import unlink_unrelated_trajectories
-	from clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from clustering.methods.population_genotypes_cache import PopulationGenotypes
+	from muller.clustering.methods.difference import unlink_unrelated_trajectories
+	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from muller.clustering.methods.population_genotypes_cache import PopulationGenotypes
 except ModuleNotFoundError:
 	from .difference import unlink_unrelated_trajectories
 	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache

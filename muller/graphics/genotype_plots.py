@@ -9,7 +9,7 @@ from typing import Dict, Optional
 try:
 	from muller.widgets import get_numeric_columns
 except ModuleNotFoundError:
-	from widgets import get_numeric_columns
+	from ..widgets import get_numeric_columns
 BASE_COLOR = "#333333"
 
 

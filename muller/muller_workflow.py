@@ -1,3 +1,4 @@
+#!python
 """
 	Main script to run the muller workflow.
 """
@@ -11,19 +12,17 @@ sys.path.append(str(Path(__file__).parent.parent)) # To deal with import errors.
 logger.add(sys.stderr, level = "INFO")
 # logger.add("muller_log.txt", level = 'DEBUG')
 try:
-	from muller.commandline_parser import create_parser, parse_workflow_options
-	from muller import dataio, clustering, inheritance
+	from muller import dataio, clustering, inheritance, commandline_parser
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
-	import dataio, clustering, inheritance
-	from commandline_parser import create_parser, parse_workflow_options
-	from muller_output import WorkflowData, generate_output
+	from . import dataio, clustering, inheritance, commandline_parser
+	from .muller_output import WorkflowData, generate_output
 
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	logger.info("parsing options...")
-	program_options = parse_workflow_options(program_options)
+	program_options = commandline_parser.parse_workflow_options(program_options)
 	logger.info("Program options:")
 	for k, v in vars(program_options).items():
 		logger.info(f"\t{k:<20}{v}")
@@ -81,6 +80,7 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	# TODO Make 'genotype-0' a variable rather than hard-coding it.
 	# TODO Add some options to control how the graphics are generated. Ex. the outlines.
 	workflow_data = WorkflowData(
+		version = commandline_parser.__VERSION__,
 		filename = input_filename,
 
 		info = info,
@@ -107,6 +107,6 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 
 if __name__ == "__main__":
-	args = create_parser().parse_args()
+	args = commandline_parser.create_parser().parse_args()
 
 	workflow(args.filename, args.output_folder, program_options = args)

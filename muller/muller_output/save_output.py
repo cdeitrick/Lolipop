@@ -12,23 +12,23 @@ OutputType = Tuple[pandas.DataFrame, pandas.DataFrame, str, Dict[str, Any]]
 
 try:
 	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from muller.graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
+	from muller.graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries, flowchart
 	from muller.muller_output.generate_tables import *
 	from muller.muller_output.generate_scripts import generate_r_script, execute_r_script
 	from muller import widgets, dataio, palettes
-	from graphics.flowchart import flowchart
+
 except ModuleNotFoundError:
 	from .. import widgets, dataio, palettes
 	from ..clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from ..graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries
+	from ..graphics import plot_genotypes, plot_heatmap, plot_dendrogram, generate_muller_plot, plot_timeseries, flowchart
 	from .generate_tables import *
 	from .generate_scripts import generate_r_script, execute_r_script
-	from graphics.flowchart import flowchart
 
 
 @dataclass
 class WorkflowData:
 	# Used to organize the output from the workflow.
+	version: str
 	filename: Path
 	program_options: Any
 	info: Optional[pandas.DataFrame]
@@ -125,6 +125,7 @@ class OutputFilenames:
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
 	parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
 	parameters['genotypeColors'] = genotype_colors
+	parameters['version'] = workflow_data.version
 
 	return parameters
 
@@ -201,9 +202,9 @@ def generate_output(workflow_data: WorkflowData, output_folder: Path, detection_
 	##############################################################################################################################################
 	logger.info("Generating Lineage Plots...")
 	edges_table = workflow_data.clusters.priority_table()
-	flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
-	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
-	flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)
+	flowchart.flowchart(edges_table, genotype_colors_clade, annotations = genotype_annotations, filename = filenames.lineage_image_distinct)
+	flowchart.flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_render)
+	flowchart.flowchart(edges_table, genotype_colors_distinct, annotations = genotype_annotations, filename = filenames.lineage_image_clade)
 
 	##############################################################################################################################################
 	# ------------------------------------------------- Generate and excecute the r script -------------------------------------------------------

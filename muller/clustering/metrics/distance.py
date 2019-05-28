@@ -3,7 +3,7 @@ import math
 import pandas
 
 try:
-	from inheritance.order_by_area import area_of_series, calculate_common_area
+	from muller.inheritance.order_by_area import area_of_series, calculate_common_area
 except ModuleNotFoundError:
 	try:
 		from ...inheritance.order_by_area import area_of_series, calculate_common_area

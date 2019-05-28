@@ -7,11 +7,11 @@ from typing import List, Optional, Union
 try:
 	from muller import dataio
 except ModuleNotFoundError:
-	import dataio
+	from . import dataio
 
 from dataclasses import dataclass, fields
 
-__version__ = "0.4.4"
+__VERSION__ = "0.5.0"
 
 
 # For convienience. Helps with autocomplete.
@@ -127,7 +127,7 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"-v", "--version",
 		action = 'version',
-		version = f"%(prog)s {__version__}"
+		version = f"%(prog)s {__VERSION__}"
 	)
 	parser.add_argument(
 		'-i', '--input',

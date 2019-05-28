@@ -1,5 +1,5 @@
 from muller import dataio
-from graphics import flowchart
+from muller.graphics import flowchart
 
 
 def test_get_font_properties():
