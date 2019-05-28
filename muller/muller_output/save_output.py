@@ -28,6 +28,7 @@ except ModuleNotFoundError:
 @dataclass
 class WorkflowData:
 	# Used to organize the output from the workflow.
+	version: str
 	filename: Path
 	program_options: Any
 	info: Optional[pandas.DataFrame]
@@ -124,6 +125,7 @@ class OutputFilenames:
 def get_workflow_parameters(workflow_data: WorkflowData, genotype_colors = Dict[str, str]) -> Dict[str, float]:
 	parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in workflow_data.program_options.items()}
 	parameters['genotypeColors'] = genotype_colors
+	parameters['version'] = workflow_data.version
 
 	return parameters
 
