@@ -1,5 +1,13 @@
 from setuptools import setup
 from muller import commandline_parser
+from pathlib import Path
+
+FOLDER = Path(__file__).parent
+README = FOLDER / "README.md"
+
+with README.open() as readmefile:
+    LONG_DESCRIPTION = readmefile.read()
+
 setup(
 	name = 'muller',
 	version = commandline_parser.__VERSION__,
@@ -13,6 +21,8 @@ setup(
 	author = 'chris deitrick',
 	author_email = 'chrisdeitrick1@gmail.com',
 	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background',
+	long_description = LONG_DESCRIPTION,
+	long_description_content_type='text/markdown',
 	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib','graphviz', 'pygraphviz', 'seaborn', 'numpy', 'xlrd'],
 	tests_requires = ['pytest'],
 	classifiers = [
