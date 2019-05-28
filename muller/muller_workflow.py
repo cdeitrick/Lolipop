@@ -1,3 +1,4 @@
+#!python
 """
 	Main script to run the muller workflow.
 """
