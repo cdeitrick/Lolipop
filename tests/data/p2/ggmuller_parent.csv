@@ -1,0 +1,12 @@
+Parent                                                                 ,Identity
+WT                                                                     ,coding(190/654nt)::ACX60_RS07895::TetR family transcriptional regulator
+coding(190/654nt)::ACX60_RS07895::TetR family transcriptional regulator,coding(8587/183nt)::ACX60_RS00600::hypothetical protein
+coding(190/654nt)::ACX60_RS07895::TetR family transcriptional regulator,S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A
+coding(190/654nt)::ACX60_RS07895::TetR family transcriptional regulator,coding(421432/1086nt)::ACX60_RS09115::twocomponent sensor histidine kinase AdeS
+coding(190/654nt)::ACX60_RS07895::TetR family transcriptional regulator,coding(1555/2277nt)::ACX60_RS08285::ATPdependent Clp protease ATPbinding subunit ClpA
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,intergenic(245/)::A1S_3470/::regulatory protein LysR/
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,D55A(GACGCC)::ACX60_RS18730::sulfonamideresistant dihydropteroate synthase Sul2
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,intergenic(190/197)::ACX60_RS04165/ACX60_RS04170::MFS transporter/glycerol kinase
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,F151Y(TTTTAT)::ACX60_RS17100::DNA topoisomerase IV subunit A
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,coding(50/327nt)::ACX60_RS16750::DNAbinding protein
+S81L(TCATTA)::ACX60_RS04430::DNA gyrase subunit A                      ,coding(467484/963nt)::ACX60_RS05355::protease SohB

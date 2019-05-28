@@ -1,0 +1,22 @@
+Trajectory	0	17	25	44	66	75	90	genotype	Amino	AminoAcid	Chromosome	Class	Class.1	Distance	Gene	Mutation	NearestDownstreamGene	Population	Population.1	Position
+1	0	0	0.261	1	1	1	1	genotype-1			1	SNP			Gene1	C>T		B2	1	38102
+20	0	0	0	0.138	0.295	0	0.081	genotype-10			1	SNP			Gene20	C>T		B2	1	299332
+4	0	0	0	0	0.211	0.811	0.813	genotype-11			1	SNP			Gene4	T>G		B2	1	96585
+8	0	0	0	0	0.345	0.833	0.793	genotype-11			1	SNP			Gene8	C>T		B2	1	205211
+16	0	0	0	0	0.209	0.209	0	genotype-12			1	SNP			Gene16	C>T		B2	1	299332
+13	0	0	0	0	0.258	0.057	0.075	genotype-12			1	SNP			Gene13	G>A		B2	1	299331
+15	0	0	0.066	0.104	0.062	0	0	genotype-13			1	SNP			Gene15	C>T		B2	1	299332
+11	0	0	0	0.108	0.151	0	0	genotype-13			1	SNP			Gene11	C>T		B2	1	264821
+17	0	0	0	0	0	0.266	0.312	genotype-14			1	SNP			Gene17	C>T		B2	1	299332
+9	0	0	0	0	0	0.269	0.34	genotype-14			1	SNP			Gene9	C>G		B2	1	223199
+18	0	0	0	0.115	0	0.131	0	genotype-15			1	SNP			Gene18	C>T		B2	1	299332
+21	0	0	0	0.114	0	0.11	0.123	genotype-15			1	SNP			Gene21	C>T		B2	1	299332
+14	0	0.38	0.432	0	0	0	0	genotype-2			1	SNP			Gene14	C>T		B2	1	299332
+6	0	0	0	0	0	1	1	genotype-3			1	SNP			Gene6	C>G		B2	1	156783
+2	0	0	0	0.525	0.454	0.911	0.91	genotype-4			1	SNP			Gene2	T>G		B2	1	62997
+3	0	0	0	0.147	0.45	0.924	0.887	genotype-5			1	SNP			Gene3	A>C		B2	1	78671
+7	0	0	0	0.273	0.781	1	1	genotype-6			1	SNP			Gene7	T>A		B2	1	176231
+19	0	0	0	0.188	0.171	0.232	0.244	genotype-7			1	SNP			Gene19	C>T		B2	1	299332
+5	0	0	0	0.403	0.489	0.057	0.08	genotype-8			1	SNP			Gene5	G>T		B2	1	115010
+10	0	0	0.117	0	0	0	0.103	genotype-9			1	SNP			Gene10	T>C		B2	1	262747
+12	0	0.125	0	0.153	0.181	0.175	0.191	filtered			1	SNP			Gene	asdjalj		B2	1	124
