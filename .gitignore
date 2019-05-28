@@ -58,10 +58,10 @@ docs/_build/
 target/
 
 .idea/
-*.csv
-*.xlsx
+#*.csv
+#*.xlsx
 #*.yaml
-*.json
+#*.json
 *.eps
 *.pptx
 # Ignore the folders used for testing
@@ -72,5 +72,5 @@ P*/
 b6/
 *.ipynb
 ~*
-tests/data
+#tests/data
 *env/

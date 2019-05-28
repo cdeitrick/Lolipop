@@ -4,12 +4,20 @@ branches:
     - master
 dist: xenial
 python:
-  - 3.5
   - 3.6
   - 3.7
-
+before_install:
+  - sudo apt-get update
 install:
   - pip install -q -r requirements.txt
   - pip install -q .
 # command to run tests
-script: pytest 
+script: pytest
+addons:
+  apt:
+    packages:
+      - python-dev
+      - graphviz
+      - libgraphviz-dev
+      - pkg-config
+      - r-base
