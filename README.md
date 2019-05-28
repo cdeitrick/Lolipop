@@ -2,11 +2,12 @@
 ![muller_plot](./example/example.muller.unannotated.png)
 
 # Contents
+-  [Installation](#installation)
+-  [Sample Usage](#sample-usage)
 -  [General Workflow](#general-workflow)
 -  [Requirements](#requirements)
 -  [Script Options](#script-options)
 -  [Input Parameters](#input-dataset)
--  [Sample Usage](#sample-usage)
 -  [Output Files](#output)
     -  [Output Tables](#tables)
     -  [Muller Plots](#muller-plots)
@@ -52,6 +53,20 @@ or the equivalent package manager on your system.
 If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
 
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
+
+# Sample Usage
+The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
+Use python to call the "muller" folder:
+```
+Muller.py --input [input filename] --output [output folder]
+```
+
+Run with default parameters.
+
+```
+Muller.py --input [filename] --frequencies 0.05 --detected 0.10
+```
+Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 # General Workflow
 
@@ -198,19 +213,6 @@ The `Trajectory` and `Genotype` columns can contain any kind of label, but must 
 | B2         | 20            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 13.8% | 29.5% | 0     | 8.1%  |
 | B2         | 21            | 1          | 299332   | SNP   | C>T      | 0 | 0     | 0     | 11.4% | 0     | 11%   | 12.3% |
 
-# Sample Usage
-The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
-Use python to call the "muller" folder:
-```
-Muller.py --input [input filename] --output [output folder]
-```
-
-Run with default parameters.
-
-```
-Muller.py --input [filename] --frequencies 0.05 --detected 0.10
-```
-Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
 
 # Output
 All files are prefixed by the name of the original input table if the `--name` parameter is unfilled.
