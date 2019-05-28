@@ -30,5 +30,5 @@ setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	scripts = ["muller.py"]
+	scripts = ["Muller.py"]
 )
