@@ -19,6 +19,10 @@ These scripts are available on (pypi)[https://pypi.org/project/muller/] and can 
 ```bash
 pip install muller 
 ```
+To update the scripts to the newest version, simply run 
+```bash
+pip install muller --upgrade
+```
 
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
