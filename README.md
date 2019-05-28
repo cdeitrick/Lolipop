@@ -40,6 +40,7 @@ The scripts require a few python packages to work. Each of these can be installe
 
 If the package `pygraphviz` throws an error during installation, it is usually because it can't find the correct dependancies in the current environment.
 Install the dependancies using 
+
 Linux:
 ```bash
 sudo apt-get install python-dev graphviz libgraphviz-dev pkg-config
