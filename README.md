@@ -178,7 +178,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 so this is only useful when re-running the analysis.
 
 ## Graphics Options
-    --no-ouline
+    --no-outline
                                 Disables the white ouline surrounding each series in the muller plots.
 
 # Input Dataset
