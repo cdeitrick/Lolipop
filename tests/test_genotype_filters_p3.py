@@ -81,8 +81,17 @@ def test_trajectory_filters(psdata, trajectory_filter):
 
 	result = trajectory_filter.run(psdata)
 	expected_index = list(map(str, range(1, 21)))
+
 	expected_index.remove("12")
-	assert expected_index == list(result.index)
+	expected_index.remove('14')
+	expected_index.remove('20')
+	expected_index.remove('13')
+	expected_index.remove('7')
+	expected_index.remove('8')
+	expected_index.remove('9')
+	expected_index.remove('10')
+	expected_index.remove('11')
+	assert list(result.index) == expected_index
 
 
 def test_get_fuzzy_backgrounds(genotype_table_a, genotype_filter):
