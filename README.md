@@ -114,6 +114,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            than mutational trajectories.
 	--no-filter                 
                                 Disables the genotype filtering step.
+    --include-single            
+                                Disables the filter which rejects trajectories detected at a single timepoint.
     --sheetname                 
                                 Specifies the sheet to use when the input is an excel file. Defaults to
                                 'Sheet1'
