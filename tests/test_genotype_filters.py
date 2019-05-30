@@ -32,7 +32,7 @@ def genotypes() -> pandas.DataFrame:
 
 @pytest.fixture
 def trajectory_filter() -> filters.TrajectoryFilter:
-	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
+	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, exclude_single = True)
 	return f
 
 

@@ -42,7 +42,8 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		sbreakpoint = program_options.similarity_breakpoint,
 		dbreakpoint = program_options.detection_breakpoint,
 		breakpoints = breakpoints,
-		starting_genotypes = program_options.starting_genotypes
+		starting_genotypes = program_options.starting_genotypes,
+		include_single = program_options.include_single
 	)
 	if program_options.is_genotype:
 		mean_genotypes, genotype_info = dataio.parse_genotype_table(input_filename, program_options.sheetname)

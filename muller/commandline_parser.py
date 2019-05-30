@@ -259,6 +259,12 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = 'use_filter'
 	)
 	parser.add_argument(
+		"--include-single",
+		help = "Whether to disable the filter which excludes trajectories which only exist at a single timepoint.",
+		action = "store_false",
+		dest = "include_single"
+	)
+	parser.add_argument(
 		"--strict-filter",
 		help = """By default, the filters allow trajectories to appear both before and after a genotype"""
 			   """fixes as long as they were undetected at the timepoint the sweep occurs. This generally"""
