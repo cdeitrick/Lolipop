@@ -55,9 +55,12 @@ brew install graphviz
 ```
 or the equivalent package manager on your system.
 
-If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
-
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
+
+## Optional Packages
+If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
+Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
+
 
 # Sample Usage
 The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
