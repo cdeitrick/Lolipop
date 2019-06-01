@@ -12,7 +12,14 @@ def _import_table_from_path(filename: Path, sheet_name: Optional[str] = None, in
 		data: pandas.DataFrame = pandas.read_excel(str(filename), sheet_name = sheet_name)
 	else:
 		sep = '\t' if filename.suffix in {'.tsv', '.tab'} else ','
-		data: pandas.DataFrame = pandas.read_csv(str(filename), sep = sep)
+		try:
+			data: pandas.DataFrame = pandas.read_csv(str(filename), sep = sep)
+		except UnicodeDecodeError:
+			from bs4 import UnicodeDammit
+			from io import StringIO
+			contents = filename.read_bytes()
+			unicode_contents = UnicodeDammit(contents)
+			data: pandas.DataFrame = pandas.read_csv(StringIO(unicode_contents.unicode_markup), sep = sep)
 
 	if index and index in data.columns:
 		data = data.set_index(index)
