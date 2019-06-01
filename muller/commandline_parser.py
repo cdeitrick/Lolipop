@@ -161,8 +161,7 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
 		action = 'store',
 		dest = 'sheetname',
-		default = 'Sheet1',
-		type = str
+		default = 0
 	)
 	parser.add_argument(
 		"--genotypes", "--cohorts",
