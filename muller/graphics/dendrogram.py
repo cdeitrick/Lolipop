@@ -12,10 +12,11 @@ except ModuleNotFoundError:
 
 def plot_dendrogram(linkage_table: Any, pair_array: PairwiseCalculationCache, filename: Path):
 	fig, ax = plt.subplots(figsize = (15, 15))
+	ax: plt.Axes
 	# plt.figure(figsize = (15, 15))
-	ax.set_title('Hierarchical Clustering Dendrogram', size = 30)
-	ax.set_xlabel('Trajectory Label', size = 20)
-	ax.set_ylabel('Distance', size = 20)
+	ax.set_title('Hierarchical Clustering Dendrogram', size = 40)
+	ax.set_xlabel('Trajectory Label', size = 32)
+	ax.set_ylabel('Distance', size = 32)
 	hierarchy.dendrogram(
 		linkage_table,
 		leaf_rotation = 90,  # rotates the x axis labels
@@ -23,5 +24,7 @@ def plot_dendrogram(linkage_table: Any, pair_array: PairwiseCalculationCache, fi
 		labels = pair_array.squareform().index,
 		ax = ax
 	)
+	for label in ax.get_xticklabels() + ax.get_yticklabels():
+		label.set_fontsize(20)
 
 	plt.savefig(filename, dpi = 500)

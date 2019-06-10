@@ -105,7 +105,7 @@ def get_coordinates(muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]
 	points: Dict[str, Tuple[int, float]]
 	A dictionary mapping each genotype to an estimate of the midpoint of the genotype's area.
 	"""
-	# TODO increase the font sizes of the labels
+
 	genotype_order = list()
 	for index, row in muller_df.iterrows():
 		genotype_label = row['Group_id']
@@ -255,7 +255,6 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax: Axes
 		The axes object containing the plot.
 	"""
-	# TODO add confidence to muller diagram and flowcharts.
 	if not isinstance(output_filename, list):
 		output_filenames = [output_filename]
 	else:
@@ -279,15 +278,16 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	else:
 		plt.legend(loc = 'right', bbox_to_anchor = (1.05, 0.5, 0.1, 0), title = 'Identity')
 	ax.set_facecolor("#FFFFFF")
-	ax.set_xlabel("Generation", fontsize = 20)
-	ax.set_ylabel("Frequency", fontsize = 20)
+	ax.set_xlabel("Generation", fontsize = 32)
+	ax.set_ylabel("Frequency", fontsize = 32)
+	for label in ax.get_xticklabels() + ax.get_yticklabels():
+		label.set_fontsize(20)
+
 
 	# Basic stacked area chart.
 	ax.spines['right'].set_visible(False)
 	ax.spines['top'].set_visible(False)
 	ax.set_xlim(0, max(x))
-	# ax.set_ylim(0, 1)
-	#plt.tight_layout()
 
 	for output_filename in output_filenames:
 		plt.savefig(str(output_filename))
