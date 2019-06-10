@@ -2,7 +2,7 @@ import pandas
 import pytest
 
 from muller.dataio import import_table
-from muller.inheritance import sort_genotypes
+from muller.inheritance import sort_genotypes,  reorder_genotypes
 from muller.inheritance.reorder_genotypes import SortGenotypeTableWorkflow
 
 
@@ -100,7 +100,7 @@ def genotype_table() -> pandas.DataFrame:
 	]
 )
 def test_timepoint_above_threshold(smalltable, threshold, expected):
-	result = _get_timepoint_above_threshold(smalltable.T, threshold)
+	result = reorder_genotypes._get_timepoint_above_threshold(smalltable.T, threshold)
 	assert expected == result.to_dict()
 
 

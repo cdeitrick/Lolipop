@@ -33,7 +33,8 @@ def test_order(genotypes):
 		'genotype-15': 'genotype-11',
 		'genotype-16': 'genotype-11'
 	}
-
-	result = order.order_clusters(genotypes, .03, .97, .03, .03, .01)
+	lineage_workflow = order.LineageWorkflow(.03, .97, .03, .03, .01)
+	result = lineage_workflow.run(genotypes)
+	#result = order.order_clusters(genotypes, .03, .97, .03, .03, .01)
 
 	assert result.as_dict() == expected

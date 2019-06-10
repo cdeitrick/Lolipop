@@ -46,6 +46,14 @@ class MullerWorkflow:
 			breakpoints = breakpoints
 		)
 
+		self.lineage_workflow = inheritance.order.LineageWorkflow(
+			dlimit = self.program_options.detection_breakpoint,
+			flimit = self.program_options.fixed_breakpoint,
+			additive_cutoff = self.program_options.additive_cutoff,
+			subtractive_cutoff = self.program_options.subtractive_cutoff,
+			derivative_cutoff = self.program_options.derivative_cutoff
+		)
+
 	def run(self, filename: Path, output_folder:Path):
 		"""
 			1. Read input data
@@ -62,6 +70,35 @@ class MullerWorkflow:
 		timepoints, mean_genotypes, genotype_members, info = self.generate_genotypes(filename)
 
 		sorted_genotypes = self.organize_genotypes_workflow.run(mean_genotypes)
+
+		genotype_clusters = self.lineage_workflow.run(sorted_genotypes, known_ancestry)
+
+		workflow_data = WorkflowData(
+			version = commandline_parser.__VERSION__,
+			filename = filename,
+
+			info = info,
+			original_trajectories = timepoints,
+			original_genotypes = mean_genotypes,
+			rejected_trajectories = self.genotype_generator.rejected_trajectories,
+			trajectories = timepoints,
+			genotypes = sorted_genotypes,
+			genotype_members = genotype_members,
+			clusters = genotype_clusters,
+			program_options = vars(self.program_options),
+			p_values = self.genotype_generator.pairwise_distances,
+			filter_cache = [],
+			linkage_matrix = self.genotype_generator.linkage_table,
+			genotype_palette_filename = self.program_options.genotype_palette_filename
+		)
+
+		generate_output(
+			workflow_data,
+			output_folder,
+			self.program_options.detection_breakpoint,
+			adjust_populations = True
+		)
+
 
 	def generate_genotypes(self, filename:Path):
 		if self.program_options.is_genotype:
@@ -82,7 +119,7 @@ class MullerWorkflow:
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry
 
-def workflow(input_filename: Path, output_folder: Path, program_options):
+def workflow2(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
 	logger.info("parsing options...")
 	program_options = commandline_parser.parse_workflow_options(program_options)
@@ -172,7 +209,4 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 	return genotype_clusters
 
 
-if __name__ == "__main__":
-	args = commandline_parser.create_parser().parse_args()
 
-	workflow(args.filename, args.output_folder, program_options = args)
