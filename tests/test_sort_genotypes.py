@@ -2,7 +2,8 @@ import pandas
 import pytest
 
 from muller.dataio import import_table
-from muller.inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
+from muller.inheritance import sort_genotypes
+from muller.inheritance.reorder_genotypes import SortGenotypeTableWorkflow
 
 
 @pytest.fixture
@@ -127,6 +128,29 @@ def test_sort_genotypes(table):
 	expected_result.index.name = None
 	pandas.testing.assert_frame_equal(result, expected_result)
 
+def test_sort_genotypes_class(table):
+	expected = """
+		Trajectory	0	17	25	44	66	75	90
+		1	0	0	0.261	1	1	1	1
+		7	0	0	0	0.273	0.781	1	1
+		6	0	0	0	0	0	1	1
+		2	0	0	0	0.525	0.454	0.911	0.91
+		3	0	0	0	0.147	0.45	0.924	0.887
+		14	0	0.38	0.432	0	0	0	0
+		9	0	0	0	0	0	0.269	0.34
+		17	0	0	0	0	0	0.266	0.312
+		20	0	0	0	0.138	0.295	0	0.081
+		13	0	0	0	0	0.258	0.057	0.075
+		16	0	0	0	0	0.209	0.209	0
+		10	0	0	0.117	0	0	0	0.103
+		15	0	0	0.066	0.104	0.062	0	0
+		11	0	0	0	0.108	0.151	0	0
+	"""
+	expected_result = import_table(expected, index = 'Trajectory')
+	sort_workflow = SortGenotypeTableWorkflow(0.03, 0.15, 0.97, [1, 0.97, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
+	result = sort_workflow.run(table)
+	expected_result.index.name = None
+	pandas.testing.assert_frame_equal(result, expected_result)
 
 def test_sort_genotypes_with_initial_values(mouse_table):
 	expected = """

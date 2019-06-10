@@ -2,13 +2,13 @@
 """
 	Main script to run the muller workflow.
 """
+import pandas
 from pathlib import Path
 
 from loguru import logger
 
 logger.remove()
 import sys
-sys.path.append(str(Path(__file__).parent.parent)) # To deal with import errors.
 logger.add(sys.stderr, level = "INFO")
 # logger.add("muller_log.txt", level = 'DEBUG')
 try:
@@ -18,6 +18,69 @@ except ModuleNotFoundError:
 	from . import dataio, clustering, inheritance, commandline_parser
 	from .muller_output import WorkflowData, generate_output
 
+class MullerWorkflow:
+	def __init__(self, program_options):
+		self.program_options = commandline_parser.parse_workflow_options(program_options)
+		logger.info("Program options:")
+		for k, v in vars(self.program_options).items():
+			logger.info(f"\t{k:<20}{v}")
+
+		breakpoints = self.program_options.frequencies if self.program_options.use_filter else None
+
+		self.genotype_generator = clustering.generate_genotypes.ClusterMutations(
+		method = self.program_options.method,
+		metric = self.program_options.metric,
+		dlimit = self.program_options.detection_breakpoint,
+		flimit = self.program_options.fixed_breakpoint,
+		sbreakpoint = self.program_options.similarity_breakpoint,
+		dbreakpoint = self.program_options.detection_breakpoint,
+		breakpoints = breakpoints,
+		starting_genotypes = self.program_options.starting_genotypes,
+		include_single = self.program_options.include_single
+		)
+
+		self.organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(
+			dlimit = self.program_options.detection_breakpoint,
+			slimit = self.program_options.significant_breakpoint,
+			flimit = self.program_options.fixed_breakpoint,
+			breakpoints = breakpoints
+		)
+
+	def run(self, filename: Path, output_folder:Path):
+		"""
+			1. Read input data
+			2. Read additional files
+			3. calculate the pairwise distances between each trajectory.
+			4. Generate Genotypes
+			5. Infer lineage
+			6. Generate Output.
+
+		"""
+
+		known_ancestry = self.read_additional_files()
+
+		timepoints, mean_genotypes, genotype_members, info = self.generate_genotypes(filename)
+
+		sorted_genotypes = self.organize_genotypes_workflow.run(mean_genotypes)
+
+	def generate_genotypes(self, filename:Path):
+		if self.program_options.is_genotype:
+			mean_genotypes, genotype_info = dataio.parse_genotype_table(filename, self.program_options.sheetname)
+			try:
+				genotype_members = genotype_info['members']
+			except KeyError:
+				genotype_members = dict()
+			timepoints = info = None
+
+		else:
+			timepoints, info = dataio.parse_trajectory_table(filename, self.program_options.sheetname)
+			mean_genotypes, genotype_members = self.genotype_generator.run(timepoints)
+
+		return timepoints, mean_genotypes, genotype_members, info
+
+	def read_additional_files(self):
+		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
+		return known_ancestry
 
 def workflow(input_filename: Path, output_folder: Path, program_options):
 	# as long as the sum of the other muller_genotypes that inherit from root is less than 1.
@@ -33,7 +96,9 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 		known_ancestry = dataio.read_map(program_options.known_ancestry)
 	else:
 		known_ancestry = dict()
+
 	breakpoints = program_options.frequencies if program_options.use_filter else None
+
 	genotype_generator = clustering.generate_genotypes.ClusterMutations(
 		method = program_options.method,
 		metric = program_options.metric,
@@ -59,13 +124,13 @@ def workflow(input_filename: Path, output_folder: Path, program_options):
 
 
 	logger.info("sorting muller_genotypes...")
-	sorted_genotypes = inheritance.sort_genotypes(
-		mean_genotypes,
+	organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(
 		dlimit = program_options.detection_breakpoint,
 		slimit = program_options.significant_breakpoint,
 		flimit = program_options.fixed_breakpoint,
-		breakpoints = program_options.frequencies
+		breakpoints = breakpoints
 	)
+	sorted_genotypes = organize_genotypes_workflow.run(mean_genotypes)
 	logger.info("nesting muller_genotypes...")
 
 	genotype_clusters = inheritance.order_clusters(
