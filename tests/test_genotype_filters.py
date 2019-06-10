@@ -101,3 +101,18 @@ def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff == 0.9)
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
+
+@pytest.mark.parametrize(
+	"data,expected",
+	[
+		([.9, .9, .9, .9, .9], False),
+		([0,0,0,0,0,0], False),
+		([1,0,0,0,0,0], True),
+		([1,1,1,1,1], True)
+	]
+)
+def test_remove_trajectoryies_that_start_fixed(trajectory_filter, data, expected):
+	series = pandas.Series(data)
+	result = trajectory_filter.trajectory_started_fixed(series)
+
+	assert result == expected

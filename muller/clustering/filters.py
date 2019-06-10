@@ -4,7 +4,6 @@ import pandas
 from loguru import logger
 
 
-# TODO Remove trajectories which start at 100% or remain at a constant frequency over time.
 class TrajectoryFilter:
 	""" Filters trajectories (not genotypes) based on a set of criteria aimed at removing erroneous measurements.
 		Parameters
@@ -38,7 +37,7 @@ class TrajectoryFilter:
 	def apply(self, trajectory:pandas.Series)->bool:
 		"""Applies each filter to the trajectory."""
 
-		filter_out = self.trajectory_is_constant(trajectory) or self.trajectory_started_fixed(trajectory)
+		filter_out = self.trajectory_is_constant(trajectory) or self.trajectory_started_fixed(trajectory) or self.trajectory_started_fixed(trajectory)
 		if self.exlude_single:
 			filter_out = filter_out or self.trajectory_only_detected_once(trajectory)
 		return filter_out
@@ -60,6 +59,9 @@ class TrajectoryFilter:
 
 		return maximum_difference < 0.10
 
+
+	def trajectory_starts_fixed(self, trajectory: pandas.Series)->bool:
+		return trajectory.iloc[0] > self.flimit
 
 class GenotypeFilter:
 	""" Filters genotypes (not trajectories) based on a set of criteria aimed at removing genotypes which do not make sense
