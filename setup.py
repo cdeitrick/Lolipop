@@ -1,7 +1,9 @@
 from setuptools import setup
 from muller import commandline_parser
 from pathlib import Path
-
+if commandline_parser.DEBUG:
+	message = "The scripts are currently in debug mode!"
+	raise ValueError(message)
 FOLDER = Path(__file__).parent
 README = FOLDER / "README.md"
 

@@ -2,21 +2,25 @@
 """
 	Main script to run the muller workflow.
 """
-import pandas
 from pathlib import Path
 
 from loguru import logger
 
 logger.remove()
 import sys
-logger.add(sys.stderr, level = "INFO")
-# logger.add("muller_log.txt", level = 'DEBUG')
+
+
 try:
 	from muller import dataio, clustering, inheritance, commandline_parser
 	from muller.muller_output import WorkflowData, generate_output
 except ModuleNotFoundError:
 	from . import dataio, clustering, inheritance, commandline_parser
 	from .muller_output import WorkflowData, generate_output
+
+if commandline_parser.DEBUG:
+	logger.add(sys.stderr, level = "INFO")
+else:
+	logger.add(sys.stderr, level = 'INFO', format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 class MullerWorkflow:
 	def __init__(self, program_options):
