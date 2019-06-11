@@ -70,8 +70,10 @@ class LineageWorkflow:
 			# evidence against the candidate background.
 			detected_left, detected_right = widgets.get_valid_points(nested_genotype, unnested_trajectory, dlimit = self.dlimit, inner = True)
 			# The derivative score should only be computed using the timepoints where the series overlap.
+
 			score_derivative = scoring.calculate_derivative_score(detected_left, detected_right, detection_cutoff = self.dlimit,
 				cutoff = self.derivative_cutoff)
+			# Note that a previous version accidentlly added the derivative cutoff to the total score.
 			total_score += score_derivative
 
 		return total_score
