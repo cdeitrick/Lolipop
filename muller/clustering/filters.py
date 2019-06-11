@@ -31,7 +31,8 @@ class TrajectoryFilter:
 		for index, row in trajectory_table.iterrows():
 			if self.apply(row):
 				filtered_trajectory_labels.append(index)
-		logger.info(f"These trajectories did not pass the trajectory filters: {filtered_trajectory_labels}")
+		if filtered_trajectory_labels:
+			logger.info(f"These trajectories did not pass the trajectory filters: {filtered_trajectory_labels}")
 		return trajectory_table[~trajectory_table.index.isin(filtered_trajectory_labels)]
 
 	def apply(self, trajectory:pandas.Series)->bool:
