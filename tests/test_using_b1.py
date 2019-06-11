@@ -3,6 +3,7 @@ import pytest
 
 from muller.dataio import import_table
 
+
 @pytest.fixture
 def b1_data() -> pandas.DataFrame:
 	string = """

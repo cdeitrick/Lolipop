@@ -4,9 +4,12 @@ import pytest
 from muller.dataio import import_table
 from muller.inheritance import order
 
+
 @pytest.fixture
-def lineage_workflow()->order.LineageWorkflow:
+def lineage_workflow() -> order.LineageWorkflow:
 	return order.LineageWorkflow(0.03, 0.97, 0.03, 0.03, 0.01)
+
+
 @pytest.fixture
 def three_genotypes() -> pandas.DataFrame:
 	string = """
@@ -57,7 +60,7 @@ def test_three_genotypes(three_genotypes, lineage_workflow):
 		'genotype-C': 'genotype-0'
 	}
 
-	#clusters = order.order_clusters(three_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
+	# clusters = order.order_clusters(three_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
 	clusters = lineage_workflow.run(three_genotypes)
 	assert clusters.as_dict() == expected
 
@@ -71,7 +74,7 @@ def test_five_genotypes(five_genotypes, lineage_workflow):
 		'genotype-E': 'genotype-A'
 	}
 	result = lineage_workflow.run(five_genotypes)
-	#result = order.order_clusters(five_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
+	# result = order.order_clusters(five_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
 	assert result.as_dict() == expected
 
 
@@ -92,6 +95,6 @@ def test_ten_genotypes(ten_genotypes, lineage_workflow):
 	expected['genotype-H'] = 'genotype-J'
 	expected['genotype-I'] = 'genotype-C'
 	expected['genotype-D'] = 'genotype-J'
-	#result = order.order_clusters(ten_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
+	# result = order.order_clusters(ten_genotypes, 0.03, 0.97, 0.03, 0.03, 0.01)
 	result = lineage_workflow.run(ten_genotypes)
 	assert result.as_dict() == expected

@@ -78,7 +78,6 @@ def genotype_table_b() -> pandas.DataFrame:
 
 
 def test_trajectory_filters(psdata, trajectory_filter):
-
 	result = trajectory_filter.run(psdata)
 	expected_index = list(map(str, range(1, 21)))
 
@@ -95,7 +94,7 @@ def test_trajectory_filters(psdata, trajectory_filter):
 
 
 def test_get_fuzzy_backgrounds(genotype_table_a, genotype_filter):
-	test_background  = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
+	test_background = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
 
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff, 0.7)
 	assert len(test_background) == 1

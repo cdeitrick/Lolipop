@@ -30,7 +30,8 @@ def test_similiarity_cutoff(output_folder, cutoff):
 	args = create_parser().parse_args([str(i) for i in args])
 	muller_workflow.MullerWorkflow(args).run(args.filename, args.output_folder)
 
-	#muller_workflow.workflow(args.filename, args.output_folder, program_options = args)
+
+# muller_workflow.workflow(args.filename, args.output_folder, program_options = args)
 
 
 @pytest.mark.skip

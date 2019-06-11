@@ -1,5 +1,6 @@
 import pandas
 import pytest
+
 from muller import dataio
 from muller.inheritance import order
 
@@ -35,6 +36,6 @@ def test_order(genotypes):
 	}
 	lineage_workflow = order.LineageWorkflow(.03, .97, .03, .03, .01)
 	result = lineage_workflow.run(genotypes)
-	#result = order.order_clusters(genotypes, .03, .97, .03, .03, .01)
+	# result = order.order_clusters(genotypes, .03, .97, .03, .03, .01)
 
 	assert result.as_dict() == expected

@@ -41,18 +41,20 @@ def genotype_filter() -> filters.GenotypeFilter:
 	g = filters.GenotypeFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, frequencies = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
 	return g
 
+
 @pytest.mark.parametrize(
 	"values,expected",
 	[
 		([0.00, 0.00, 0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00], False),
-		([ 0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042], False),
+		([0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042], False),
 		([0.00, 0.02, 0.03, 0.04, 0.05], True)
 	]
 )
-def test_trajectory_is_constant(trajectory_filter, values,expected):
+def test_trajectory_is_constant(trajectory_filter, values, expected):
 	series = pandas.Series(values)
 
 	assert trajectory_filter.trajectory_is_constant(series) == expected
+
 
 @pytest.mark.parametrize(
 	"data,expected",
@@ -62,10 +64,11 @@ def test_trajectory_is_constant(trajectory_filter, values,expected):
 		([[0.03, 1, 0, 0, 0, 0], True])
 	]
 )
-def test_is_single_point_series(trajectory_filter,data,expected):
+def test_is_single_point_series(trajectory_filter, data, expected):
 	series = pandas.Series(data)
 
 	assert trajectory_filter.trajectory_only_detected_once(series) == expected
+
 
 @pytest.mark.parametrize(
 	"data,expected",
@@ -78,6 +81,7 @@ def test_is_single_point_series(trajectory_filter,data,expected):
 def test_trajectory_started_fixed(trajectory_filter, data, expected):
 	series = pandas.Series(data)
 	assert trajectory_filter.trajectory_started_fixed(series) == expected
+
 
 def test_get_first_timepoint_above_cutoff(genotype_filter):
 	series = pandas.Series([0, .03, .04, .1, .2, .3, .4, .5, .6, .7, .8])
@@ -102,13 +106,14 @@ def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
 
+
 @pytest.mark.parametrize(
 	"data,expected",
 	[
 		([.9, .9, .9, .9, .9], False),
-		([0,0,0,0,0,0], False),
-		([1,0,0,0,0,0], True),
-		([1,1,1,1,1], True)
+		([0, 0, 0, 0, 0, 0], False),
+		([1, 0, 0, 0, 0, 0], True),
+		([1, 1, 1, 1, 1], True)
 	]
 )
 def test_remove_trajectoryies_that_start_fixed(trajectory_filter, data, expected):

@@ -104,39 +104,6 @@ class LineageWorkflow:
 		return self.genotype_nests
 
 
-def order_clusters(sorted_df: pandas.DataFrame, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float,
-		derivative_cutoff: float,
-		known_ancestry: Dict[str, str] = None) -> Cluster:
-	"""
-		Orders genotypes by which background they belong to.
-	Parameters
-	----------
-	sorted_df: pandas.DataFrame
-		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
-	dlimit: float
-		The detection limit
-	flimit: float
-		The cutoff value to consider a genotype "fixed"
-	additive_cutoff: float
-		Used when testing whther a nested genotype is consistently greater than an unnested genotype
-	subtractive_cutoff: float
-		Used to test whether the combined frequencies of the nested/unnested genotype are consistently greater than the fixed cutoff.
-	derivative_cutoff: float
-		Used when testing whether two genotypes are correlated, not correlated, or anticorrelated. correlated/anticorrelated genotypes
-		must have a covariance outside the range [-`derivative_cutoff`, `derivative_cutoff`].
-	known_ancestry: Dict[str,str]
-		Manually-assigned ancestry values. For now, the parent genotype is automatically assigned to the root genotype to prevent
-		circular links from forming.
-
-	Returns
-	-------
-	ClusterType
-	"""
-	# By default the backgrounds should occupy the first n lines of the dataframe
-	workflow = LineageWorkflow(dlimit, flimit, additive_cutoff, subtractive_cutoff, derivative_cutoff)
-	return workflow.run(sorted_df, known_ancestry)
-
-
 def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:
 	if genotype_deltas:
 		correlated_label, correlated_delta = max(genotype_deltas, key = lambda s: s[1])
