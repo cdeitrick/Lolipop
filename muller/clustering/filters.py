@@ -100,7 +100,7 @@ class GenotypeFilter:
 		if invalid_genotype:
 			# Get a list of the trajectories that form this genotype.
 			invalid_members = genotype_members.loc[invalid_genotype].split('|')
-			logger.info("Invalid members: " + str(invalid_members))
+			logger.info("These trajectories failed the genotype filters: " + str(invalid_members)[1:-1])
 			return invalid_members
 		else:
 			return []
