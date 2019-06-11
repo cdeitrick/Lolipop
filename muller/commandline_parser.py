@@ -63,7 +63,6 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 	if program_options.subtractive_cutoff is None:
 		program_options.subtractive_cutoff = program_options.detection_breakpoint
 
-	# TODO read the additional input files here rather than at the end of the analysis.
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
 		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)

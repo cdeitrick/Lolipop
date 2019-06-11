@@ -13,13 +13,6 @@ class ClusterMutations:
 	"""
 	Parameters
 	----------
-	trajectories: pandas.DataFrame
-		A timeseries dataframe, usually generated from `import_table.import_trajectory_table`.
-			- Index -> str
-				Names unique to each trajectory.
-			- Columns -> int
-				The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
-				Each trajectory/timepoint will include the observed frequency at each timepoint.
 	dlimit, flimit:float
 		The detection, significant, and fixed cutoff values, respectively
 	sbreakpoint: float
@@ -60,6 +53,18 @@ class ClusterMutations:
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 	def run(self, trajectories: pandas.DataFrame):
+		"""
+			Run the genotype clustering workflow.
+		Parameters
+		----------
+		trajectories: pandas.DataFrame
+			A timeseries dataframe, usually generated from `import_table.import_trajectory_table`.
+				- Index -> str
+					Names unique to each trajectory.
+				- Columns -> int
+					The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
+					Each trajectory/timepoint will include the observed frequency at each timepoint.
+		"""
 		trajectory_filter = filters.TrajectoryFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, exclude_single = not self.include_single)
 		genotype_filter = filters.GenotypeFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, frequencies = self.breakpoints)
 		modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes

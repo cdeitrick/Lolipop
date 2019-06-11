@@ -11,6 +11,7 @@ except ModuleNotFoundError:
 
 
 def plot_dendrogram(linkage_table: Any, pair_array: PairwiseCalculationCache, filename: Path):
+	# noinspection PyUnusedLocal
 	fig, ax = plt.subplots(figsize = (15, 15))
 	ax: plt.Axes
 	# plt.figure(figsize = (15, 15))
@@ -24,7 +25,7 @@ def plot_dendrogram(linkage_table: Any, pair_array: PairwiseCalculationCache, fi
 		labels = pair_array.squareform().index,
 		ax = ax
 	)
-	for label in ax.get_xticklabels() + ax.get_yticklabels():
+	for label in list(ax.get_xticklabels()) + list(ax.get_yticklabels()):
 		label.set_fontsize(20)
 
 	plt.savefig(filename, dpi = 500)

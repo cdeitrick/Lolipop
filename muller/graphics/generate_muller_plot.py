@@ -280,7 +280,7 @@ def generate_muller_plot(muller_df: pandas.DataFrame, color_palette: Dict[str, s
 	ax.set_facecolor("#FFFFFF")
 	ax.set_xlabel("Generation", fontsize = 32)
 	ax.set_ylabel("Frequency", fontsize = 32)
-	for label in ax.get_xticklabels() + ax.get_yticklabels():
+	for label in list(ax.get_xticklabels()) + list(ax.get_yticklabels()):
 		label.set_fontsize(20)
 
 

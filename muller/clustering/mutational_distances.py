@@ -4,12 +4,10 @@ from typing import Dict, Iterable, List, Tuple
 
 import pandas
 
-try:
-	from muller.clustering.metrics import distance
-	from muller.widgets import get_valid_points
-except ModuleNotFoundError:
-	from . import distance
-	from ..widgets import get_valid_points
+
+from muller.clustering.metrics import distance
+from muller.widgets import get_valid_points
+
 
 
 class CalculateMutationalDistances:
@@ -42,6 +40,7 @@ class CalculateMutationalDistances:
 	def _generate_pairwise_combinations(keys: Iterable[str]) -> List[Tuple[str, str]]:
 		""" Generates a list of all possible pair of elements contained in `keys`"""
 
+		# noinspection PyTypeChecker
 		pair_combinations: Iterable[Tuple[str, str]] = itertools.combinations(keys, 2)
 		return list(pair_combinations)
 
@@ -57,11 +56,6 @@ class CalculateMutationalDistances:
 		----------
 		left:pandas.Series
 		right:pandas.Series
-		fixed_cutoff: float
-
-		Returns
-		-------
-		float
 		"""
 		left_fixed: pandas.Series = left[left.gt(self.flimit)].dropna()
 		right_fixed: pandas.Series = right[right.gt(self.flimit)].dropna()

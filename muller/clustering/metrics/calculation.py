@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Dict, Iterable, Tuple
+from typing import Dict, List, Tuple
 
 import pandas
 from loguru import logger
@@ -70,7 +70,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 	logger.debug(f"\t metric: {metric}")
 
 	# noinspection PyTypeChecker
-	pair_combinations: Iterable[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
+	pair_combinations: List[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
 	pair_array = dict()
 	if len(pair_combinations) > 10000 and tqdm:
 		progress_bar = tqdm(total = len(pair_combinations))

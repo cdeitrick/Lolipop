@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import pandas
 from loguru import logger
@@ -18,8 +18,6 @@ class LineageWorkflow:
 		Orders genotypes by which background they belong to.
 	Parameters
 	----------
-	sorted_df: pandas.DataFrame
-		A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
 	dlimit: float
 		The detection limit
 	flimit: float
@@ -31,13 +29,6 @@ class LineageWorkflow:
 	derivative_cutoff: float
 		Used when testing whether two genotypes are correlated, not correlated, or anticorrelated. correlated/anticorrelated genotypes
 		must have a covariance outside the range [-`derivative_cutoff`, `derivative_cutoff`].
-	known_ancestry: Dict[str,str]
-		Manually-assigned ancestry values. For now, the parent genotype is automatically assigned to the root genotype to prevent
-		circular links from forming.
-
-	Returns
-	-------
-	ClusterType
 	"""
 
 	def __init__(self, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float, derivative_cutoff: float,):
@@ -46,7 +37,7 @@ class LineageWorkflow:
 		self.additive_cutoff = additive_cutoff
 		self.subtractive_cutoff = subtractive_cutoff
 		self.derivative_cutoff = derivative_cutoff
-		self.genotype_nests: Cluster = None
+		self.genotype_nests: Optional[Cluster] = None
 
 	def add_known_lineages(self, known_ancestry:Dict[str,str]):
 		for identity, parent in known_ancestry.items():
@@ -85,6 +76,16 @@ class LineageWorkflow:
 			logger.debug(f"{genotype_label}\t{candidate}")
 
 	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str,str] = None) -> Cluster:
+		"""
+			Infers the lineage from the given genotype table.
+		Parameters
+		----------
+		sorted_genotypes: pandas.DataFrame
+			A dataframe of sorted genotypes based on when the genotype was first detected and first fixed.
+		known_ancestry: Dict[str,str]
+			Manually-assigned ancestry values. For now, the parent genotype is automatically assigned to the root genotype to prevent
+			circular links from forming.
+		"""
 		initial_background = sorted_genotypes.iloc[0]
 		self.genotype_nests = Cluster(initial_background, timepoints = sorted_genotypes)
 		self.add_known_lineages(known_ancestry if known_ancestry else dict())

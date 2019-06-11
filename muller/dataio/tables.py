@@ -5,6 +5,7 @@ from typing import Optional, Union
 import pandas
 
 
+# noinspection PyProtectedMember
 def _import_table_from_path(filename: Path, sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
 	""" Imports a file as a pandas.DataFrame. Infers filetype from the filename extension/suffix.
 	"""
