@@ -1,8 +1,11 @@
 from io import StringIO
+
 import pandas
+import pytest
+
 from muller.clustering import ClusterMutations
 from muller.dataio import import_table
-import pytest
+
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "1,0,0.0,0.261,1.0,1.0,1.0,1.0\n" \
 				 "2,0,0.0,0.0,0.525,0.454,0.911,0.91\n" \
@@ -17,6 +20,8 @@ trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 				 "14,0,0.38,0.432,0.0,0.0,0.0,0.0\n" \
 				 "16,0,0.0,0.0,0.0,0.209,0.209,0.0\n" \
 				 "20,0,0.0,0.0,0.138,0.295,0.0,0.081\n"
+
+
 @pytest.fixture
 def genotype_generator() -> ClusterMutations:
 	generator = ClusterMutations(
@@ -27,7 +32,8 @@ def genotype_generator() -> ClusterMutations:
 		sbreakpoint = 0.05,
 		dbreakpoint = 0.10,
 		breakpoints = [],
-		starting_genotypes = []
+		starting_genotypes = [],
+		include_single = True
 	)
 	return generator
 

@@ -1,7 +1,9 @@
 from setuptools import setup
 from muller import commandline_parser
 from pathlib import Path
-
+if commandline_parser.DEBUG:
+	message = "The scripts are currently in debug mode!"
+	raise ValueError(message)
 FOLDER = Path(__file__).parent
 README = FOLDER / "README.md"
 
@@ -15,6 +17,10 @@ setup(
 		'muller', 'muller.clustering', 'muller.dataio', 'muller.graphics', 'muller.inheritance',
 		'muller.muller_output', 'muller.palettes', 'muller.clustering.metrics', 'muller.clustering.methods'
 	],
+	extras_require = {
+		'Show progressbar for large datasets': ['tqdm'],
+		'Additional support for parsing files': ['beautifulsoup4']
+	},
 	provides = 'muller',
 	url = 'https://github.com/cdeitrick/muller_diagrams',
 	license = 'MIT',

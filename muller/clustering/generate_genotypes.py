@@ -13,13 +13,6 @@ class ClusterMutations:
 	"""
 	Parameters
 	----------
-	trajectories: pandas.DataFrame
-		A timeseries dataframe, usually generated from `import_table.import_trajectory_table`.
-			- Index -> str
-				Names unique to each trajectory.
-			- Columns -> int
-				The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
-				Each trajectory/timepoint will include the observed frequency at each timepoint.
 	dlimit, flimit:float
 		The detection, significant, and fixed cutoff values, respectively
 	sbreakpoint: float
@@ -44,7 +37,7 @@ class ClusterMutations:
 	"""
 
 	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, breakpoints: List[float],
-			starting_genotypes: List[List[str]]):
+			starting_genotypes: List[List[str]], include_single:bool):
 		self.method: str = method
 		self.metric: str = metric
 		self.dlimit: float = dlimit
@@ -53,13 +46,26 @@ class ClusterMutations:
 		self.dbreakpoint: float = dbreakpoint
 		self.breakpoints: List[float] = breakpoints
 		self.starting_genotypes: List[List[str]] = starting_genotypes
+		self.include_single = include_single
 
 		# These will be updated when run() is called.
 		self.pairwise_distances: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 	def run(self, trajectories: pandas.DataFrame):
-		trajectory_filter = filters.TrajectoryFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit)
+		"""
+			Run the genotype clustering workflow.
+		Parameters
+		----------
+		trajectories: pandas.DataFrame
+			A timeseries dataframe, usually generated from `import_table.import_trajectory_table`.
+				- Index -> str
+					Names unique to each trajectory.
+				- Columns -> int
+					The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
+					Each trajectory/timepoint will include the observed frequency at each timepoint.
+		"""
+		trajectory_filter = filters.TrajectoryFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, exclude_single = not self.include_single)
 		genotype_filter = filters.GenotypeFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, frequencies = self.breakpoints)
 		modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes
 		if self.breakpoints:

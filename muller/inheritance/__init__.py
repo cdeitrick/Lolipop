@@ -1,2 +1,2 @@
-from .sort_genotypes import sort_genotypes
-from .order import order_clusters
+from .reorder_genotypes import SortGenotypeTableWorkflow
+from .order import LineageWorkflow

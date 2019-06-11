@@ -2,7 +2,12 @@ import pandas
 import pytest
 
 from muller.dataio import import_table
-from muller.inheritance.sort_genotypes import _get_timepoint_above_threshold, sort_genotypes
+from muller.inheritance.reorder_genotypes import SortGenotypeTableWorkflow
+
+
+@pytest.fixture
+def genotype_sorter() -> SortGenotypeTableWorkflow:
+	return SortGenotypeTableWorkflow(0.03, 0.15, 0.97, [1, 0.97, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
 
 
 @pytest.fixture
@@ -91,19 +96,7 @@ def genotype_table() -> pandas.DataFrame:
 	return t
 
 
-@pytest.mark.parametrize(
-	"threshold,expected",
-	[
-		(0.03, {'1': '25', '20': '44', '16': '66', '15': '25', '9': '75', '10': '25'}),
-		(0.97, {'1': '44', '20': '0', '16': '0', '15': '0', '9': '0', '10': '0'})
-	]
-)
-def test_timepoint_above_threshold(smalltable, threshold, expected):
-	result = _get_timepoint_above_threshold(smalltable.T, threshold)
-	assert expected == result.to_dict()
-
-
-def test_sort_genotypes(table):
+def test_sort_genotypes(table, genotype_sorter):
 	expected = """
 		Trajectory	0	17	25	44	66	75	90
 		1	0	0	0.261	1	1	1	1
@@ -123,12 +116,36 @@ def test_sort_genotypes(table):
 	"""
 	expected_result = import_table(expected, index = 'Trajectory')
 
-	result = sort_genotypes(table, 0.03, 0.15, 0.97, [1, 0.97, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
+	result = genotype_sorter.run(table)
 	expected_result.index.name = None
 	pandas.testing.assert_frame_equal(result, expected_result)
 
 
-def test_sort_genotypes_with_initial_values(mouse_table):
+def test_sort_genotypes_class(table, genotype_sorter):
+	expected = """
+		Trajectory	0	17	25	44	66	75	90
+		1	0	0	0.261	1	1	1	1
+		7	0	0	0	0.273	0.781	1	1
+		6	0	0	0	0	0	1	1
+		2	0	0	0	0.525	0.454	0.911	0.91
+		3	0	0	0	0.147	0.45	0.924	0.887
+		14	0	0.38	0.432	0	0	0	0
+		9	0	0	0	0	0	0.269	0.34
+		17	0	0	0	0	0	0.266	0.312
+		20	0	0	0	0.138	0.295	0	0.081
+		13	0	0	0	0	0.258	0.057	0.075
+		16	0	0	0	0	0.209	0.209	0
+		10	0	0	0.117	0	0	0	0.103
+		15	0	0	0.066	0.104	0.062	0	0
+		11	0	0	0	0.108	0.151	0	0
+	"""
+	expected_result = import_table(expected, index = 'Trajectory')
+	result = genotype_sorter.run(table)
+	expected_result.index.name = None
+	pandas.testing.assert_frame_equal(result, expected_result)
+
+
+def test_sort_genotypes_with_initial_values(mouse_table, genotype_sorter):
 	expected = """
 		Genotype	0	1	2	3	4	5	6	7	8	9	10
 		genotype-1	0	0	0.045	0.197	0.261	0.096	0.26	0.596	0.66	0.877	0.969
@@ -149,6 +166,7 @@ def test_sort_genotypes_with_initial_values(mouse_table):
 	"""
 	expected_result = import_table(expected, index = 'Genotype')
 	expected_result.index.name = None
-
-	result = sort_genotypes(mouse_table, 0.03, 0.15, 0.97, [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
+	from loguru import logger
+	logger.info(f"{genotype_sorter.breakpoints}")
+	result = genotype_sorter.run(mouse_table)
 	pandas.testing.assert_frame_equal(expected_result, result)

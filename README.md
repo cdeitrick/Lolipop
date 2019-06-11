@@ -19,6 +19,10 @@ These scripts are available on (pypi)[https://pypi.org/project/muller/] and can 
 ```bash
 pip install muller 
 ```
+To update the scripts to the newest version, simply run 
+```bash
+pip install muller --upgrade
+```
 
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
@@ -51,9 +55,12 @@ brew install graphviz
 ```
 or the equivalent package manager on your system.
 
-If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
-
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
+
+## Optional Packages
+If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
+Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
+
 
 # Sample Usage
 The scripts currently default to hierarchical clustering using the binomial distance. More information is available in the "description" folder.
@@ -110,6 +117,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 	                            than mutational trajectories.
 	--no-filter                 
                                 Disables the genotype filtering step.
+    --include-single            
+                                Disables the filter which rejects trajectories detected at a single timepoint.
     --sheetname                 
                                 Specifies the sheet to use when the input is an excel file. Defaults to
                                 'Sheet1'

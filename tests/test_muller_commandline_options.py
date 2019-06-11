@@ -20,7 +20,7 @@ def test_parse_commandline_options_set_all_manually():
 	expected_frequencies = [.9, .6, .3, 0]
 	assert program_options.filename == Path.cwd() / "test_table"
 	assert program_options.output_folder == Path.cwd() / "output_files"
-	assert program_options.sheetname == 'Sheet1'
+	assert program_options.sheetname == 0
 	assert program_options.fixed_breakpoint == 0.4
 	assert program_options.detection_breakpoint == 0.04
 	assert program_options.significant_breakpoint == 1.11

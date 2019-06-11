@@ -96,6 +96,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 		time_table = _fix_column_datatypes(time_table)
 
 	# Drop any trajectories which are never detected.
+	# noinspection PyUnresolvedReferences
 	time_table = time_table[(time_table.T != 0).any()]
 
 	# Make sure the table values are between 0 and 1 and are of type `float`

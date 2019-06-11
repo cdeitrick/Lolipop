@@ -28,8 +28,10 @@ def test_similiarity_cutoff(output_folder, cutoff):
 	filename = DATA_FOLDER / "5_genotypes.timeseries.tsv"
 	args = ["--input", str(filename), "--output", str(output_folder), '--similarity-cutoff', cutoff]
 	args = create_parser().parse_args([str(i) for i in args])
+	muller_workflow.MullerWorkflow(args).run(args.filename, args.output_folder)
 
-	muller_workflow.workflow(args.filename, args.output_folder, program_options = args)
+
+# muller_workflow.workflow(args.filename, args.output_folder, program_options = args)
 
 
 @pytest.mark.skip

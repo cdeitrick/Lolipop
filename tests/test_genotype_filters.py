@@ -32,7 +32,7 @@ def genotypes() -> pandas.DataFrame:
 
 @pytest.fixture
 def trajectory_filter() -> filters.TrajectoryFilter:
-	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
+	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, exclude_single = True)
 	return f
 
 
@@ -42,20 +42,45 @@ def genotype_filter() -> filters.GenotypeFilter:
 	return g
 
 
-def test_remove_single_point_series(trajectory_filter):
-	table = pandas.DataFrame([
-		[0, 0, 0, 1, 0, 0],
-		[1, 3, 2, 0, 1, 1],
-		[0.03, 1, 0, 0, 0, 0]
-	])
-	single_point_series = trajectory_filter._remove_single_point_background(table)
+@pytest.mark.parametrize(
+	"values,expected",
+	[
+		([0.00, 0.00, 0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00], False),
+		([0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042], False),
+		([0.00, 0.02, 0.03, 0.04, 0.05], True)
+	]
+)
+def test_trajectory_is_constant(trajectory_filter, values, expected):
+	series = pandas.Series(values)
 
-	assert [0] == list(single_point_series)
+	assert trajectory_filter.trajectory_is_constant(series) == expected
 
-	trajectory_filter.dlimit = 0.04
-	single_point_series = trajectory_filter._remove_single_point_background(table)
 
-	assert [0, 2] == list(single_point_series)
+@pytest.mark.parametrize(
+	"data,expected",
+	[
+		([0, 0, 0, 1, 0, 0], True),
+		([1, 3, 2, 0, 1, 1], False),
+		([[0.03, 1, 0, 0, 0, 0], True])
+	]
+)
+def test_is_single_point_series(trajectory_filter, data, expected):
+	series = pandas.Series(data)
+
+	assert trajectory_filter.trajectory_only_detected_once(series) == expected
+
+
+@pytest.mark.parametrize(
+	"data,expected",
+	[
+		([0, 0, 0, 1, 0, 0], False),
+		([1, 3, 2, 0, 1, 1], True),
+		([[0.03, 1, 0, 0, 0, 0], False])
+	]
+)
+def test_trajectory_started_fixed(trajectory_filter, data, expected):
+	series = pandas.Series(data)
+	assert trajectory_filter.trajectory_started_fixed(series) == expected
 
 
 def test_get_first_timepoint_above_cutoff(genotype_filter):
@@ -80,3 +105,19 @@ def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff == 0.9)
 
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
+
+
+@pytest.mark.parametrize(
+	"data,expected",
+	[
+		([.9, .9, .9, .9, .9], False),
+		([0, 0, 0, 0, 0, 0], False),
+		([1, 0, 0, 0, 0, 0], True),
+		([1, 1, 1, 1, 1], True)
+	]
+)
+def test_remove_trajectoryies_that_start_fixed(trajectory_filter, data, expected):
+	series = pandas.Series(data)
+	result = trajectory_filter.trajectory_started_fixed(series)
+
+	assert result == expected

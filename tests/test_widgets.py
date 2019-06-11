@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pandas
 import pytest
+
 from muller import dataio, widgets
 
 
@@ -21,12 +22,13 @@ def test_map_trajectories_to_genotype():
 	output = widgets.map_trajectories_to_genotype(table['members'])
 	assert expected_map == output
 
+
 @pytest.mark.parametrize(
 	"left,right,index",
 	[
-		([0, 1, 1, 4, 5], [.23, .14, .13, 0, 0], [0,1,2,3,4]),
-		([0, 1, 0, 0.2, 0], [0, .14, 0, 0, 0], [1,2,3]),
-		([0, 0, 0, 0, 0], [0, .14, .23, 0, 0], [1,2]),
+		([0, 1, 1, 4, 5], [.23, .14, .13, 0, 0], [0, 1, 2, 3, 4]),
+		([0, 1, 0, 0.2, 0], [0, .14, 0, 0, 0], [1, 2, 3]),
+		([0, 0, 0, 0, 0], [0, .14, .23, 0, 0], [1, 2]),
 		([0, 0, 0, 0, 0], [0, .14, 0, 0, 0], [1]),
 		([0, 0, 0, 0, 0], [0, .14, 0, 1, 1], [1, 2, 3, 4]),
 	]
@@ -38,6 +40,7 @@ def test_get_detected_points(left, right, index):
 	assert list(rl.index) == list(rr.index)
 	assert list(rl.index) == index
 
+
 def test_get_detected_points_advanced():
 	left = pandas.Series([0, 0, 0, 0, 0])
 	right = pandas.Series([0, .14, 0, 1, 1])
@@ -45,12 +48,11 @@ def test_get_detected_points_advanced():
 	assert list(result_left.index) == list(result_right.index)
 	assert list(result_left.index) == [1]
 
-
 	left = pandas.Series([0, 0, 0, 0, 0, 1, 1])
 	right = pandas.Series([0, 0, 0, .14, .53, 1, 1])
 	result_left, result_right = widgets.get_detected_points(left, right, 0.03, 0.97)
 	assert list(result_left.index) == list(result_right.index)
-	assert list(result_left.index) == [3,4]
+	assert list(result_left.index) == [3, 4]
 	# Check the `inner` option.
 	left = pandas.Series([0, 0, .3, .4, .4, .4, 1, 1])
 	right = pandas.Series([0, 0, 0, .1, .1, .1, .2, 1])
@@ -72,7 +74,6 @@ def test_get_valid_points_simple():
 	assert result_left.tolist() == [.1, .2, .3, .4, .5, .6, .7, .8, .9]
 	assert result_right.tolist() == [0, 0, .1, .2, .3, .3, .3, .3, 0]
 
-
 	expected = pandas.DataFrame({
 		'left':  [.3, .4, .5, .6, .7, .8],
 		'right': [.1, .2, .3, .3, .3, .3],
@@ -83,7 +84,7 @@ def test_get_valid_points_simple():
 
 
 def test_get_valid_points_complex():
-	left = pandas.Series([ 0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042])
+	left = pandas.Series([0.00, 0.00, 0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042])
 	right = pandas.Series([0.00, 0.00, 0.170, 0.55, 0.947, 1.00, 1.00, 1.00, 1.00, 1.00])
 
 	expected_left = [0.000, 0.00, 0.00, 0.263, 0.07, 0.081, 0.069, 0.042]
@@ -172,26 +173,29 @@ def test_format_linkage_matrix():
 
 	pandas.testing.assert_frame_equal(test_table, expected_table)
 
+
 @pytest.mark.parametrize(
 	"series,expected",
 	[
-		([0,0,0,1,1,1], True),
-		([0,1,0,1,0,1], True),
-		([0,.2,1,1,1], False)
+		([0, 0, 0, 1, 1, 1], True),
+		([0, 1, 0, 1, 0, 1], True),
+		([0, .2, 1, 1, 1], False)
 	]
 )
 def test_fixes_imediately(series, expected):
 	s = pandas.Series(series)
 	assert widgets.fixed_immediately(s, 0.03, 0.97) == expected
+
+
 @pytest.mark.parametrize(
 	"series,expected",
 	[
-		([0,0,0,1,1,1], True),
-		([0,1,0,1,0,1], True),
-		([0,.2,1,1,1], True),
-		([0,.1,.2,.3, .4, .5], False)
+		([0, 0, 0, 1, 1, 1], True),
+		([0, 1, 0, 1, 0, 1], True),
+		([0, .2, 1, 1, 1], True),
+		([0, .1, .2, .3, .4, .5], False)
 	]
 )
-def test_fixed(series,expected):
+def test_fixed(series, expected):
 	s = pandas.Series(series)
 	assert widgets.fixed(s, 0.97) == expected

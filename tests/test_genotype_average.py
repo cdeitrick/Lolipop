@@ -15,7 +15,8 @@ def genotype_generator() -> ClusterMutations:
 		sbreakpoint = 0.05,
 		dbreakpoint = 0.10,
 		breakpoints = [],
-		starting_genotypes = []
+		starting_genotypes = [],
+		include_single = True
 	)
 	return generator
 

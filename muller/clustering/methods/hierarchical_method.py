@@ -28,8 +28,8 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 	-------
 
 	"""
-	logger.info(f"similarity_cutoff: {similarity_cutoff}")
-	logger.info(f"cluster_method: {cluster_method}")
+	logger.debug(f"similarity_cutoff: {similarity_cutoff}")
+	logger.debug(f"cluster_method: {cluster_method}")
 
 	# If known genotypes are given, modify the pair_array so that they will be grouped together.
 	if starting_genotypes:
@@ -54,7 +54,7 @@ def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff:
 
 		similarity_cutoff = distances.quantile(similarity_cutoff)
 
-		logger.info(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
+		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
 		clusters = hierarchy.fcluster(Z, t = similarity_cutoff, criterion = 'distance')
 	elif cluster_method == 'monocrit':

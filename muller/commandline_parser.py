@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 from dataclasses import dataclass, fields
 
 __VERSION__ = "0.5.1"
-
+DEBUG = False
 
 # For convienience. Helps with autocomplete.
 @dataclass
@@ -63,7 +63,6 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 	if program_options.subtractive_cutoff is None:
 		program_options.subtractive_cutoff = program_options.detection_breakpoint
 
-	# TODO read the additional input files here rather than at the end of the analysis.
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
 		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)
@@ -161,8 +160,7 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Indicates the sheet to use if the input table is an excel workbook and the data is not in Sheet1",
 		action = 'store',
 		dest = 'sheetname',
-		default = 'Sheet1',
-		type = str
+		default = 0
 	)
 	parser.add_argument(
 		"--genotypes", "--cohorts",
@@ -257,6 +255,12 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "Disables genotype filtering.",
 		action = 'store_false',
 		dest = 'use_filter'
+	)
+	parser.add_argument(
+		"--include-single",
+		help = "Whether to disable the filter which excludes trajectories which only exist at a single timepoint.",
+		action = "store_false",
+		dest = "include_single"
 	)
 	parser.add_argument(
 		"--strict-filter",

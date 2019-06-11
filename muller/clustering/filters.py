@@ -5,15 +5,21 @@ from loguru import logger
 
 
 class TrajectoryFilter:
-	""" Filters trajectories (not genotypes) based on a set of criteria aimed at removing erroneous measurements."""
+	""" Filters trajectories (not genotypes) based on a set of criteria aimed at removing erroneous measurements.
+		Parameters
+		----------
+		detection_cutoff,fixed_cutoff: float
+			The detection/fixed cutoffs for this population.
+		exclude_single: bool
+			Whether to exclude trajectories which only exist at a single timepoint.
+	"""
 
-	def __init__(self, detection_cutoff: float, fixed_cutoff: float):
-		self.dlimit = detection_cutoff
-		self.flimit = fixed_cutoff
-	def run(self, trajectories:pandas.DataFrame)->pandas.DataFrame:
-		invalid_trajectory_labels = self.filter_trajectories(trajectories)
-		return trajectories[~trajectories.index.isin(invalid_trajectory_labels)]
-	def filter_trajectories(self, trajectory_table: pandas.DataFrame) -> pandas.DataFrame:
+	def __init__(self, detection_cutoff: float, fixed_cutoff: float, exclude_single:bool):
+		self.dlimit:float = detection_cutoff
+		self.flimit:float = fixed_cutoff
+		self.exlude_single:bool = exclude_single
+
+	def run(self, trajectory_table: pandas.DataFrame) -> pandas.DataFrame:
 		"""
 			Filters out individual trajectories that fail certain filters.
 		Parameters
@@ -21,33 +27,49 @@ class TrajectoryFilter:
 		trajectory_table:pandas.DataFrame
 		"""
 		# Remove trajectories that only exist at one timepoint and exceed the fixed cutoff limit.
-		trajectories_failed_single_point_test = self._remove_single_point_background(trajectory_table)
-		logger.info("These trajectories did not pass the trajectory filters: " + str(list(trajectories_failed_single_point_test)))
-		return trajectories_failed_single_point_test
+		filtered_trajectory_labels = list()
+		for index, row in trajectory_table.iterrows():
+			if self.apply(row):
+				filtered_trajectory_labels.append(index)
+		if filtered_trajectory_labels:
+			logger.info(f"These trajectories did not pass the trajectory filters: {filtered_trajectory_labels}")
+		return trajectory_table[~trajectory_table.index.isin(filtered_trajectory_labels)]
 
-	def _remove_single_point_background(self, genotypes: pandas.DataFrame) -> List[str]:
+	def apply(self, trajectory:pandas.Series)->bool:
+		"""Applies each filter to the trajectory."""
+
+		filter_out = self.trajectory_is_constant(trajectory) or self.trajectory_started_fixed(trajectory) or self.trajectory_started_fixed(trajectory)
+		if self.exlude_single:
+			filter_out = filter_out or self.trajectory_only_detected_once(trajectory)
+		return filter_out
+
+	def trajectory_started_fixed(self, trajectory:pandas.Series):
+		return trajectory.iloc[0] > self.flimit
+	def trajectory_only_detected_once(self, trajectory: pandas.Series) -> bool:
+		within_range: List[bool] = [(self.dlimit < s) for s in trajectory.values] # faster than using .apply()
+		return sum(within_range) < 2
+
+	@staticmethod
+	def trajectory_is_constant(trajectory: pandas.Series) -> bool:
 		"""
-			Identifies backgrounds which are only detected at a only single timepoint. Returns a list of labels that fail the filter.
-		Parameters
-		----------
-		genotypes: pandas.DataFrame
-
-		Returns
-		-------
-		pandas.DataFrame
-			A list of backgrounds that fail the filter.
+			Determines whether a specific trajectory remains at a reletively constant frequency throughout the experiment.
+			Trajectories must change in frequency by at least 10% over the course of the experiment.
 		"""
-		backgrounds = genotypes[genotypes.max(axis = 1) >= self.flimit]
-		invalid_backgrounds = backgrounds[backgrounds.sum(axis = 1) < (self.flimit + (2 * self.dlimit))]
 
-		return invalid_backgrounds.index
+		maximum_difference = trajectory.max() - trajectory.min()
 
+		return maximum_difference < 0.10
+
+
+	def trajectory_starts_fixed(self, trajectory: pandas.Series)->bool:
+		return trajectory.iloc[0] > self.flimit
 
 class GenotypeFilter:
 	""" Filters genotypes (not trajectories) based on a set of criteria aimed at removing genotypes which do not make sense
 		in the context of an evolutionary experiment. Mainly, genotypes which fix should wipe out all other genotypes not contained
 		within the fixed background.
 	"""
+
 	def __init__(self, detection_cutoff: float, fixed_cutoff: float, frequencies: List[float], strict: bool = False):
 		self.detection_cutoff = detection_cutoff
 		self.fixed_cutoff = fixed_cutoff
@@ -78,7 +100,7 @@ class GenotypeFilter:
 		if invalid_genotype:
 			# Get a list of the trajectories that form this genotype.
 			invalid_members = genotype_members.loc[invalid_genotype].split('|')
-			logger.info("Invalid members: " + str(invalid_members))
+			logger.info("These trajectories failed the genotype filters: " + str(invalid_members)[1:-1])
 			return invalid_members
 		else:
 			return []

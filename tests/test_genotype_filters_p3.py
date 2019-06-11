@@ -36,7 +36,7 @@ def psdata() -> pandas.DataFrame:
 
 @pytest.fixture
 def trajectory_filter() -> filters.TrajectoryFilter:
-	t = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
+	t = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, exclude_single = True)
 	return t
 
 
@@ -78,15 +78,23 @@ def genotype_table_b() -> pandas.DataFrame:
 
 
 def test_trajectory_filters(psdata, trajectory_filter):
-
 	result = trajectory_filter.run(psdata)
 	expected_index = list(map(str, range(1, 21)))
+
 	expected_index.remove("12")
-	assert expected_index == list(result.index)
+	expected_index.remove('14')
+	expected_index.remove('20')
+	expected_index.remove('13')
+	expected_index.remove('7')
+	expected_index.remove('8')
+	expected_index.remove('9')
+	expected_index.remove('10')
+	expected_index.remove('11')
+	assert list(result.index) == expected_index
 
 
 def test_get_fuzzy_backgrounds(genotype_table_a, genotype_filter):
-	test_background  = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
+	test_background = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
 
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff, 0.7)
 	assert len(test_background) == 1

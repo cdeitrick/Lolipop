@@ -129,6 +129,7 @@ def format_inconsistency_matrix(inconsistency_matrix) -> pandas.DataFrame:
 	return inconsistency_table
 
 
+# noinspection PyTypeChecker,PyUnresolvedReferences
 def fixed_immediately(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	mask1 = (trajectory <= dlimit)
 	mask2 = (trajectory >= flimit)
