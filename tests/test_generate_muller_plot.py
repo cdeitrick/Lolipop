@@ -1,7 +1,7 @@
 import pytest
 
 from muller import dataio
-from muller.graphics.generate_muller_plot import *
+from muller.graphics.muller_plot import *
 
 
 def test_relocate_point_simple():

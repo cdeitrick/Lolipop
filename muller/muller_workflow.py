@@ -10,12 +10,10 @@ logger.remove()
 import sys
 
 
-try:
-	from muller import dataio, clustering, inheritance, commandline_parser
-	from muller.muller_output import WorkflowData, generate_output
-except ModuleNotFoundError:
-	from . import dataio, clustering, inheritance, commandline_parser
-	from .muller_output import WorkflowData, generate_output
+
+from muller import dataio, clustering, inheritance, commandline_parser
+from muller.dataio import WorkflowData, MullerOutputGenerator
+
 
 if commandline_parser.DEBUG:
 	logger.add(sys.stderr, level = "INFO")
@@ -58,6 +56,8 @@ class MullerWorkflow:
 			derivative_cutoff = self.program_options.derivative_cutoff
 		)
 
+
+
 	def run(self, filename: Path, output_folder:Path):
 		"""
 			1. Read input data
@@ -96,12 +96,8 @@ class MullerWorkflow:
 			genotype_palette_filename = self.program_options.genotype_palette_filename
 		)
 
-		generate_output(
-			workflow_data,
-			output_folder,
-			self.program_options.detection_breakpoint,
-			adjust_populations = True
-		)
+
+		MullerOutputGenerator(workflow_data, output_folder, adjust_populations = True)
 
 
 	def generate_genotypes(self, filename:Path):

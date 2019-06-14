@@ -2,7 +2,7 @@ import pandas
 import pytest
 
 from muller import dataio
-from muller.dataio import file_parsers, import_table
+from muller.dataio import import_file, import_table
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def test_extract_annotations(annotations):
 		'4': "gapN A95E"
 	}
 
-	result = file_parsers.extract_annotations(annotations)
+	result = import_file.extract_annotations(annotations)
 
 	assert result == expected
 
@@ -41,7 +41,7 @@ def test_extract_annotations(annotations):
 	]
 )
 def test_clean_gene_label(test_label: str, expected_label: str):
-	clean_result = file_parsers._clean_gene_label(test_label)
+	clean_result = import_file._clean_gene_label(test_label)
 	assert expected_label == clean_result
 
 
@@ -70,7 +70,7 @@ def test_parse_annotations():
 		'genotype-3': ["intergenic", "bglK_1", "dnaI"]
 	}
 
-	test_result = file_parsers.parse_genotype_annotations(genotype_members, info_table)
+	test_result = import_file.parse_genotype_annotations(genotype_members, info_table)
 
 	assert expected_result == test_result
 
@@ -86,7 +86,7 @@ def test_read_map():
 	genotype-1	#D342A1
 	removed	#333311	garbage1	garbage2
 	"""
-	result = file_parsers.read_map(palette)
+	result = import_file.read_map(palette)
 
 	assert expected == result
 
@@ -97,7 +97,7 @@ def test_read_map():
 		genotype-1	#D342A1	extra whitespace
 	removed	#333311
 	"""
-	result = file_parsers.read_map(palette_with_garbage)
+	result = import_file.read_map(palette_with_garbage)
 	assert result == expected
 
 
@@ -113,6 +113,6 @@ def test_parse_known_genotypes():
 		["trajectory-7"],
 		["t5", "t6"]
 	]
-	result = file_parsers.parse_known_genotypes(known_genotypes)
+	result = import_file.parse_known_genotypes(known_genotypes)
 
 	assert expected == result

@@ -42,7 +42,7 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 	Parameters
 	----------
 	timeseries: pandas.DataFrame
-		The table with each trajectory used to generate the muller_genotypes.
+		The table with each trajectory used to generate the genotypes.
 	filename: Optional[Path]
 		Path to save the genotype plot.
 	mutational_genotypes: pandas.DataFrame
@@ -50,9 +50,6 @@ def plot_genotypes(timeseries: pandas.DataFrame, mutational_genotypes: pandas.Da
 		A mapping of muller_genotypes to their corresponding colors.
 	trajectory_palette: Dict[str,str]
 		Maps trajectories to their respective genotype color.
-	Returns
-	-------
-
 	"""
 	if 'members' in mutational_genotypes:
 		mutational_genotypes.pop('members')

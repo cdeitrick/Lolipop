@@ -61,6 +61,7 @@ def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str,
 	-------
 	x, y, colors, labels
 	"""
+	# TODO Add a method to highlight clades based on a gene or mutation of interest.
 	genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
 	x = list(unique_everseen(muller_df['Generation'].tolist()))

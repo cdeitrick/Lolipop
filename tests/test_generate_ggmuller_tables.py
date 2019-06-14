@@ -3,7 +3,7 @@ import unittest
 import pandas
 
 from muller.dataio import import_table
-from muller.muller_output.generate_tables import _append_genotype_0, _compile_parent_linkage, _convert_genotype_table_to_population_table
+from muller.dataio.generate_tables import _append_genotype_0, _compile_parent_linkage, _convert_genotype_table_to_population_table
 
 edges_table = """
 	Parent	Identity
