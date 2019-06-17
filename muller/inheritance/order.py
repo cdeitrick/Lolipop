@@ -73,7 +73,7 @@ class LineageWorkflow:
 		logger.debug("Final Ancestry:")
 		for genotype_label in sorted_genotypes.index:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
-			logger.debug(f"{genotype_label}\t{candidate}")
+			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
 
 	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str,str] = None) -> Cluster:
 		"""

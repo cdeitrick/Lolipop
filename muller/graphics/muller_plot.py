@@ -190,7 +190,7 @@ def relocate_point(point: Tuple[float, float], locations: List[Tuple[float, floa
 		y_is_almost_close = math.isclose(y_loc, closest_neighbor[1], abs_tol = .3)
 		x_is_close = math.isclose(x_loc, closest_neighbor[0], abs_tol = 2)
 		x_large = x_loc >= closest_neighbor[0]
-		logger.debug(f"{x_loc}\t{y_loc}\t{closest_neighbor}\t{y_is_close}\t{y_is_almost_close}\t{x_is_close}\t{x_large}")
+		logger.log('COMPLETE', f"{x_loc}\t{y_loc}\t{closest_neighbor}\t{y_is_close}\t{y_is_almost_close}\t{x_is_close}\t{x_large}")
 		if distance(closest_neighbor, (x_loc, y_loc)) > 1: break
 		if y_is_close:
 			if y_loc > closest_neighbor[1]:

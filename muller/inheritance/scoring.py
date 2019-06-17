@@ -62,7 +62,7 @@ def calculate_derivative_score(left: pandas.Series, right: pandas.Series, detect
 	elif covariance < -cutoff: score = -2
 	else: score = 0
 	from loguru import logger
-	logger.debug(f"{right.name}\t{left.name}\t{score}\t{covariance}")
+	logger.log("COMPLETE", f"{right.name}\t{left.name}\t{score}\t{covariance}")
 	return score
 
 

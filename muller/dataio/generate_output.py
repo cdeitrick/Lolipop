@@ -201,7 +201,7 @@ class MullerOutputGenerator:
 		population_table = generate_ggmuller_population_table(
 			self.workflow_data.genotypes,
 			edges_table,
-			self.workflow_data.program_options.detection_cutoff,
+			self.workflow_data.program_options['detection_breakpoint'],
 			self.adjust_populations
 		)
 
