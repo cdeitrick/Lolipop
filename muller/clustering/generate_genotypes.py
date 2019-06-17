@@ -37,7 +37,7 @@ class ClusterMutations:
 	"""
 
 	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, breakpoints: List[float],
-			starting_genotypes: List[List[str]], include_single:bool):
+			starting_genotypes: List[List[str]], trajectory_filter: filters.TrajectoryFilter):
 		self.method: str = method
 		self.metric: str = metric
 		self.dlimit: float = dlimit
@@ -46,11 +46,16 @@ class ClusterMutations:
 		self.dbreakpoint: float = dbreakpoint
 		self.breakpoints: List[float] = breakpoints
 		self.starting_genotypes: List[List[str]] = starting_genotypes
-		self.include_single = include_single
-
+		self.trajectory_filter = trajectory_filter
 		# These will be updated when run() is called.
 		self.pairwise_distances: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
+
+		self.genotype_filter = filters.GenotypeFilter(
+			detection_cutoff = self.dlimit,
+			fixed_cutoff = self.flimit,
+			frequencies = self.breakpoints
+		)
 
 	def run(self, trajectories: pandas.DataFrame):
 		"""
@@ -65,13 +70,13 @@ class ClusterMutations:
 					The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
 					Each trajectory/timepoint will include the observed frequency at each timepoint.
 		"""
-		trajectory_filter = filters.TrajectoryFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, exclude_single = not self.include_single)
-		genotype_filter = filters.GenotypeFilter(detection_cutoff = self.dlimit, fixed_cutoff = self.flimit, frequencies = self.breakpoints)
+
 		modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes
+		if self.trajectory_filter:
+			modified_trajectories = self.trajectory_filter.run(modified_trajectories)
 		if self.breakpoints:
 			# The filters should run
 			_iterations = 20  # arbitrary, used to make sure the program does not encounter an infinite loop.
-			modified_trajectories = trajectory_filter.run(modified_trajectories)
 		else:
 			# The filters are disabled.
 			_iterations = 0  # The for loop shouldn't excecute.
@@ -90,7 +95,7 @@ class ClusterMutations:
 
 		rejected_members = {i:'filtered-genotype-0' for i in trajectories.index if i not in modified_trajectories}
 		for index in range(_iterations):
-			invalid_members = genotype_filter.run(genotype_table, genotype_members)
+			invalid_members = self.genotype_filter.run(genotype_table, genotype_members)
 			if invalid_members:
 				for i in invalid_members:
 					rejected_members[i] = f"filtered-genotype-{index+1}"

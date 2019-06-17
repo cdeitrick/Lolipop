@@ -10,14 +10,20 @@ class TrajectoryFilter:
 		----------
 		detection_cutoff,fixed_cutoff: float
 			The detection/fixed cutoffs for this population.
-		exclude_single: bool
-			Whether to exclude trajectories which only exist at a single timepoint.
+		filter_consistency: float
+			The amount by which a mutational trajectory must change in order to not be filtered out.
+		filter_single: bool
+			Whether to filter out mutational trajectories which only exist at a single timepoint.
+		filter_startfixed: bool
+			Whether to filter out mutational trajectories which begin the experiment fixed.
 	"""
 
-	def __init__(self, detection_cutoff: float, fixed_cutoff: float, exclude_single:bool):
+	def __init__(self, detection_cutoff: float, fixed_cutoff: float, filter_consistency:float, filter_single:bool, filter_startfixed:bool):
 		self.dlimit:float = detection_cutoff
 		self.flimit:float = fixed_cutoff
-		self.exlude_single:bool = exclude_single
+		self.filter_consistency:float = filter_consistency
+		self.use_filter_single:float = filter_single
+		self.use_filter_startfixed:bool = filter_startfixed
 
 	def run(self, trajectory_table: pandas.DataFrame) -> pandas.DataFrame:
 		"""
@@ -28,19 +34,24 @@ class TrajectoryFilter:
 		"""
 		# Remove trajectories that only exist at one timepoint and exceed the fixed cutoff limit.
 		filtered_trajectory_labels = list()
-		for index, row in trajectory_table.iterrows():
-			if self.apply(row):
-				filtered_trajectory_labels.append(index)
-		if filtered_trajectory_labels:
-			logger.info(f"These trajectories did not pass the trajectory filters: {filtered_trajectory_labels}")
-		return trajectory_table[~trajectory_table.index.isin(filtered_trajectory_labels)]
+		filtered_trajectories = trajectory_table.apply(self.apply, axis = 1)
+		filtered_trajectories = filtered_trajectories[filtered_trajectories]
+		if len(filtered_trajectories) > 0:
+			logger.info(f"These trajectories did not pass the trajectory filters: {list(filtered_trajectories.index)}")
+		return trajectory_table[~trajectory_table.index.isin(filtered_trajectories.index)]
 
 	def apply(self, trajectory:pandas.Series)->bool:
 		"""Applies each filter to the trajectory."""
-
-		filter_out = self.trajectory_is_constant(trajectory) or self.trajectory_started_fixed(trajectory) or self.trajectory_started_fixed(trajectory)
-		if self.exlude_single:
+		filter_out = False
+		if self.use_filter_single:
 			filter_out = filter_out or self.trajectory_only_detected_once(trajectory)
+
+		if self.use_filter_startfixed:
+			filter_out = filter_out or self.trajectory_started_fixed(trajectory)
+
+		if self.filter_consistency > 0:
+			filter_out = filter_out or self.trajectory_is_constant(trajectory)
+
 		return filter_out
 
 	def trajectory_started_fixed(self, trajectory:pandas.Series):
@@ -49,8 +60,7 @@ class TrajectoryFilter:
 		within_range: List[bool] = [(self.dlimit < s) for s in trajectory.values] # faster than using .apply()
 		return sum(within_range) < 2
 
-	@staticmethod
-	def trajectory_is_constant(trajectory: pandas.Series) -> bool:
+	def trajectory_is_constant(self, trajectory: pandas.Series) -> bool:
 		"""
 			Determines whether a specific trajectory remains at a reletively constant frequency throughout the experiment.
 			Trajectories must change in frequency by at least 10% over the course of the experiment.
@@ -58,11 +68,9 @@ class TrajectoryFilter:
 
 		maximum_difference = trajectory.max() - trajectory.min()
 
-		return maximum_difference < 0.10
+		return maximum_difference <= self.filter_consistency
 
 
-	def trajectory_starts_fixed(self, trajectory: pandas.Series)->bool:
-		return trajectory.iloc[0] > self.flimit
 
 class GenotypeFilter:
 	""" Filters genotypes (not trajectories) based on a set of criteria aimed at removing genotypes which do not make sense

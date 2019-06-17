@@ -16,10 +16,12 @@ from muller.dataio import WorkflowData, MullerOutputGenerator
 
 
 if commandline_parser.DEBUG:
-	logger.add(sys.stderr, level = "INFO")
+	logger.level("COMPLETE", no = 1)
+	logger.add(sys.stderr, level = "DEBUG")
 else:
 	logger.add(sys.stderr, level = 'INFO', format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
-
+# TODO: Add annotations to filtered trajectories table
+# TODO: fix the discrepancy between the filtered trajectory table and the main trajectory table missing genotype labels.
 class MullerWorkflow:
 	def __init__(self, program_options):
 		self.program_options = commandline_parser.parse_workflow_options(program_options)
@@ -29,7 +31,18 @@ class MullerWorkflow:
 
 		breakpoints = self.program_options.frequencies if self.program_options.use_filter else None
 
-		self.genotype_generator = clustering.generate_genotypes.ClusterMutations(
+		if self.program_options.use_filter:
+			self.trajectory_filter = clustering.TrajectoryFilter(
+				detection_cutoff = self.program_options.detection_breakpoint,
+				fixed_cutoff = self.program_options.fixed_breakpoint,
+				filter_consistency = self.program_options.filter_constant,
+				filter_single = self.program_options.use_filter_single,
+				filter_startfixed = self.program_options.use_filter_startfixed
+			)
+		else:
+			self.trajectory_filter = False
+
+		self.genotype_generator = clustering.ClusterMutations(
 		method = self.program_options.method,
 		metric = self.program_options.metric,
 		dlimit = self.program_options.detection_breakpoint,
@@ -97,7 +110,7 @@ class MullerWorkflow:
 		)
 
 
-		MullerOutputGenerator(workflow_data, output_folder, adjust_populations = True)
+		MullerOutputGenerator(workflow_data, output_folder, adjust_populations = True).run()
 
 
 	def generate_genotypes(self, filename:Path):

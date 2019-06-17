@@ -246,21 +246,14 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "difference_breakpoint",
 		type = float
 	)
-
 	##############################################################################################################################################
-	# --------------------------------------------------- Genotype Clustering Options ------------------------------------------------------------
+	# --------------------------------------------------- Genotype Filtering Options -------------------------------------------------------------
 	##############################################################################################################################################
 	parser.add_argument(
-		"--no-filter",
+		"--disable-all-filters",
 		help = "Disables genotype filtering.",
 		action = 'store_false',
 		dest = 'use_filter'
-	)
-	parser.add_argument(
-		"--include-single",
-		help = "Whether to disable the filter which excludes trajectories which only exist at a single timepoint.",
-		action = "store_false",
-		dest = "include_single"
 	)
 	parser.add_argument(
 		"--strict-filter",
@@ -271,6 +264,30 @@ def create_parser() -> argparse.ArgumentParser:
 		action = "store_true",
 		dest = "use_strict_filter"
 	)
+	parser.add_argument(
+		"--disable-filter-single",
+		help = "Whether to remove trajectories which only exist at a single timepoint.",
+		action = "store_false",
+		dest = "use_filter_single"
+	)
+	parser.add_argument(
+		"--disable-filter-startsfixed",
+		help = "Whether to remove mutations which are 'fixed' at the first timepoint.",
+		action = "store_false",
+		dest = "use_filter_startsfixed"
+	)
+	parser.add_argument(
+		"--filter-constant",
+		help = "Sets the delta value by which a mutational trajectory must vary by to not be removed for being a constant mutation. Set to 0 to disable",
+		action = "store",
+		dest = "filter_constant",
+		default = 0.1,
+		type = float
+	)
+	##############################################################################################################################################
+	# --------------------------------------------------- Genotype Clustering Options ------------------------------------------------------------
+	##############################################################################################################################################
+
 	parser.add_argument(
 		'-m', '--method',
 		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
