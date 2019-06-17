@@ -1,19 +1,19 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 
-import pandas
 from loguru import logger
 
+from muller import dataio, palettes, widgets
 from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-from muller.graphics import plot_genotypes, plot_heatmap, plot_dendrogram, AnnotatedMullerDiagram, plot_timeseries, flowchart
-from muller.dataio.generate_tables import *
 from muller.dataio.generate_scripts import generate_r_script
-from muller import widgets, dataio, palettes
+from muller.dataio.generate_tables import *
+from muller.graphics import AnnotatedMullerDiagram, flowchart, plot_dendrogram, plot_genotypes, plot_heatmap, plot_timeseries
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "removed"
+
 
 @dataclass
 class WorkflowData:
@@ -59,8 +59,6 @@ class OutputFilenames:
 		# General Files
 		self.trajectory_table: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype_table: Path = output_folder / (name + f'.muller_genotypes.{suffix}')
-		#self.muller_plot_annotated: Path = output_folder / (name + '.muller.annotated.png')
-		#self.muller_plot_unannotated_general: Path = output_folder / (name + '.muller.unannotated.png')
 
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
@@ -79,11 +77,8 @@ class OutputFilenames:
 		# The muller diagram generator will automatically add filetype extensions and an svg render of each file.
 		self.muller_diagram_clade_annotated: Path = graphics_clade_folder / (name + '.clade.annotated')
 		self.muller_diagram_clade_unannotated: Path = graphics_clade_folder / (name + '.clade.unannotated')
-		self.muller_diagram_distinct_annotated:Path = graphics_distinctive_folder / (name + '.distinct.annotated')
-		self.muller_diagram_distinct_unannotated:Path = graphics_distinctive_folder / (name + '.distinct.unannotated')
-
-		#self.muller_plot_basic: Path = graphics_clade_folder / (name + '.muller.basic.png')
-		#self.muller_plot_annotated_distinctive: Path = graphics_distinctive_folder / (name + '.muller.annotated.distinctive.png')
+		self.muller_diagram_distinct_annotated: Path = graphics_distinctive_folder / (name + '.distinct.annotated')
+		self.muller_diagram_distinct_unannotated: Path = graphics_distinctive_folder / (name + '.distinct.unannotated')
 
 		##Timeseries plots
 		self.genotype_plot: Path = graphics_distinctive_folder / (name + '.genotypes.distinctive.png')
@@ -102,6 +97,7 @@ class OutputFilenames:
 
 		# scripts
 		self.r_script: Path = scripts_folder / (name + '.r')
+		self.muller_diagram_r_script: Path = graphics_folder / (name + '.rscript.png')
 		self.mermaid_script: Path = scripts_folder / (name + '.mermaid.md')
 
 		# supplementary files
@@ -129,7 +125,6 @@ class MullerOutputGenerator:
 			outlines = self.workflow_data.program_options['draw_outline'],
 			render = self.workflow_data.program_options['render']
 		)
-
 
 		if self.workflow_data.program_options['name']:
 			base_filename = self.workflow_data.program_options['name']
@@ -178,7 +173,7 @@ class MullerOutputGenerator:
 			population = self.filenames.ggmuller_population,
 			edges = self.filenames.ggmuller_edges,
 			table_filename = self.filenames.muller_table,
-			plot_filename = self.filenames.muller_plot_basic,
+			plot_filename = self.filenames.muller_diagram_r_script,
 			script_filename = self.filenames.r_script,
 			color_palette = palette,
 			genotype_labels = population_table['Identity'].unique().tolist()
@@ -286,9 +281,8 @@ class MullerOutputGenerator:
 		self.muller_generator.run(muller_df, clade_palette, self.filenames.muller_diagram_clade_unannotated)
 
 		# Draw the distinctive muller diagrams
-		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_clade_annotated, genotype_annotations)
-		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_clade_unannotated)
-
+		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_annotated, genotype_annotations)
+		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_unannotated)
 
 	def save_linkage_files(self):
 		num_trajectories = len(self.workflow_data.trajectories)
@@ -296,21 +290,17 @@ class MullerOutputGenerator:
 
 		linkage_table.to_csv(str(self.filenames.linkage_matrix_table), sep = self.filenames.delimiter, index = False)
 
-
 		plot_dendrogram(self.workflow_data.linkage_matrix, self.workflow_data.p_values, self.filenames.linkage_plot)
 
 	def save_trajectory_distance_information(self):
 		self.workflow_data.p_values.save(self.filenames.distance_table)
 
-
 		squareform = self.workflow_data.p_values.squareform()
 		squareform.to_csv(self.filenames.distance_matrix)
-
 
 		pvalues_matrix = self.workflow_data.p_values.squareform()
 
 		plot_heatmap(pvalues_matrix, self.filenames.distance_heatmap)
-
 
 	def save_supplementary_files(self):
 		##############################################################################################################################################
@@ -318,5 +308,3 @@ class MullerOutputGenerator:
 		##############################################################################################################################################
 
 		self.workflow_data.clusters.to_table().to_csv(self.filenames.genotype_scores, sep = '\t')
-
-

@@ -20,8 +20,6 @@ try:
 except ModuleNotFoundError:
 	from ..widgets import calculate_luminance
 
-from loguru import logger
-
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -73,7 +71,6 @@ def relocate_point(point: Tuple[float, float], locations: List[Tuple[float, floa
 		y_is_almost_close = math.isclose(y_loc, closest_neighbor[1], abs_tol = .3)
 		x_is_close = math.isclose(x_loc, closest_neighbor[0], abs_tol = 2)
 		x_large = x_loc >= closest_neighbor[0]
-		logger.log('COMPLETE', f"{x_loc}\t{y_loc}\t{closest_neighbor}\t{y_is_close}\t{y_is_almost_close}\t{x_is_close}\t{x_large}")
 		if distance(closest_neighbor, (x_loc, y_loc)) > 1: break
 		if y_is_close:
 			if y_loc > closest_neighbor[1]:
@@ -213,7 +210,6 @@ class BaseGenerateMullerDiagram:
 		x, y, colors, labels
 		"""
 		# TODO Add a method to highlight clades based on a gene or mutation of interest.
-		logger.info(list(muller_df.columns))
 		genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
 		x_values = list(unique_everseen(muller_df['Generation'].tolist()))

@@ -37,7 +37,7 @@ class MullerWorkflow:
 				fixed_cutoff = self.program_options.fixed_breakpoint,
 				filter_consistency = self.program_options.filter_constant,
 				filter_single = self.program_options.use_filter_single,
-				filter_startfixed = self.program_options.use_filter_startfixed
+				filter_startfixed = self.program_options.use_filter_startsfixed
 			)
 		else:
 			self.trajectory_filter = False
@@ -51,7 +51,7 @@ class MullerWorkflow:
 		dbreakpoint = self.program_options.detection_breakpoint,
 		breakpoints = breakpoints,
 		starting_genotypes = self.program_options.starting_genotypes,
-		include_single = self.program_options.include_single
+		trajectory_filter = self.trajectory_filter
 		)
 
 		self.organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(

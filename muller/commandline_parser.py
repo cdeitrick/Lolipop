@@ -322,6 +322,12 @@ def create_parser() -> argparse.ArgumentParser:
 		default = None,
 		dest = "genotype_palette_filename"
 	)
+	parser.add_argument(
+		"--no-render",
+		help = "The svg files will not be generated.",
+		action = "store_false",
+		dest = "render"
+	)
 
 	##############################################################################################################################################
 	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
