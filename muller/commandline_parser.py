@@ -358,6 +358,7 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"--no-outline",
 		help = 'Disables the white outline in the muller plots.',
-		action = 'store_true'
+		action = 'store_false',
+		dest = 'draw_outline'
 	)
 	return parser
