@@ -11,9 +11,8 @@ import sys
 
 from muller import dataio, clustering, inheritance, commandline_parser
 from muller.generate_output import WorkflowData, MullerOutputGenerator
-
+logger.level("COMPLETE", no = 1)
 if commandline_parser.DEBUG:
-	logger.level("COMPLETE", no = 1)
 	logger.add(sys.stderr, level = "DEBUG")
 else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
@@ -26,7 +25,7 @@ class MullerWorkflow:
 		self.program_options = commandline_parser.parse_workflow_options(program_options)
 		logger.info("Program options:")
 		for k, v in vars(self.program_options).items():
-			logger.info(f"\t{k:<20}{v}")
+			logger.info(f"\t{k:<25}{v}")
 
 		breakpoints = self.program_options.frequencies if self.program_options.use_filter else None
 
