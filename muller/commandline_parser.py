@@ -11,8 +11,8 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__VERSION__ = "0.5.2"
-DEBUG = False
+__VERSION__ = "0.5.3"
+DEBUG = True
 
 
 # For convienience. Helps with autocomplete.
