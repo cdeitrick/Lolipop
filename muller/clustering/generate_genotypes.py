@@ -1,8 +1,10 @@
-from typing import List, Optional, Tuple
+import itertools
+from typing import Dict, List, Optional, Tuple
 
 import numpy
 import pandas
 from loguru import logger
+
 try:
 	from muller.clustering import filters, metrics, methods
 except ModuleNotFoundError:
@@ -57,7 +59,7 @@ class ClusterMutations:
 			frequencies = self.breakpoints
 		)
 
-	def run(self, trajectories: pandas.DataFrame):
+	def run(self, trajectories: pandas.DataFrame) -> Tuple[pandas.DataFrame, Dict[str, List[str]]]:
 		"""
 			Run the genotype clustering workflow.
 		Parameters
@@ -93,12 +95,9 @@ class ClusterMutations:
 		# Calculate the initial genotypes
 		genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)
 
-		rejected_members = {i:'filtered-genotype-0' for i in trajectories.index if i not in modified_trajectories}
 		for index in range(_iterations):
 			invalid_members = self.genotype_filter.run(genotype_table, genotype_members)
 			if invalid_members:
-				for i in invalid_members:
-					rejected_members[i] = f"filtered-genotype-{index+1}"
 				# Remove these trajectories from the trajectories table.
 				modified_trajectories = modified_trajectories[~modified_trajectories.index.isin(invalid_members)]
 
@@ -109,22 +108,26 @@ class ClusterMutations:
 				genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)
 			else:
 				break
-		# Build a table of trajectories that were rejected.
-		self.rejected_trajectories = trajectories.loc[sorted(rejected_members.keys())]
-		self.rejected_trajectories['genotype'] = [rejected_members[i] for i in self.rejected_trajectories.index]
 
 		self.genotype_table = genotype_table
-		self.genotype_members = genotype_members
 		self.linkage_table = linkage_matrix
 
-		return genotype_table, genotype_members
+		self.genotype_members = {k: v.split('|') for k, v in genotype_members.items()}
+
+		nonfiltered_trajectories = list(itertools.chain.from_iterable(self.genotype_members.values()))
+		filtered_trajectories = [i for i in trajectories.index if i not in nonfiltered_trajectories]
+
+		self.genotype_members['genotype-filtered'] = filtered_trajectories
+
+		return self.genotype_table, self.genotype_members
 
 	def generate_genotypes(self, timepoints: pandas.DataFrame) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 		if self.method == "matlab" or self.method == 'twostep':
 			genotypes = methods.twostep_method(timepoints, self.pairwise_distances, self.sbreakpoint, self.dbreakpoint, self.starting_genotypes)
 			linkage_matrix = None
 		elif self.method == "hierarchy":
-			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.sbreakpoint, starting_genotypes = self.starting_genotypes)
+			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.sbreakpoint,
+				starting_genotypes = self.starting_genotypes)
 		else:
 			raise ValueError(f"Invalid clustering method: {self.method}")
 

@@ -19,10 +19,10 @@ def annotations() -> pandas.DataFrame:
 
 def test_extract_annotations(annotations):
 	expected = {
-		'1': 'speA C127Y',
-		'2': 'rlmCD_1 H441H',
-		'3': "PROKKA_00173|PROKKA_00174 intergenic",
-		'4': "gapN A95E"
+		'1': ['speA', 'C127Y'],
+		'2': ['rlmCD_1', 'H441H'],
+		'3': ["PROKKA_00173|PROKKA_00174", "intergenic"],
+		'4': ["gapN", "A95E"]
 	}
 
 	result = import_file.extract_annotations(annotations)

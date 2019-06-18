@@ -19,7 +19,8 @@ setup(
 	],
 	extras_require = {
 		'Show progressbar for large datasets': ['tqdm'],
-		'Additional support for parsing files': ['beautifulsoup4']
+		'Additional support for parsing files': ['beautifulsoup4'],
+		'List similar annotations when selecting genotypes': ['fuzzywuzzy']
 	},
 	provides = 'muller',
 	url = 'https://github.com/cdeitrick/muller_diagrams',

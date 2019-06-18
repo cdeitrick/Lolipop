@@ -16,6 +16,7 @@ try:
 except ModuleNotFoundError:
 	tqdm = None
 
+
 def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float) -> float:
 	"""
 		Calculates the overlap of two series that are both undetected or fixed at all timepoints.
@@ -88,7 +89,7 @@ def calculate_pairwise_metric(trajectories: pandas.DataFrame, detection_cutoff: 
 		# These were grouped together:
 		# recG    0    0.14    0.319    1    1    1    1
 		# PA14_RS20565< 0    0.153    0.231    0    0    0    0
-		#left_reduced, right_reduced = widgets.get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
+		# left_reduced, right_reduced = widgets.get_valid_points(left_trajectory, right_trajectory, detection_cutoff, fixed_cutoff, inner = False)
 		left_was_fixed = widgets.fixed(left_trajectory, fixed_cutoff)
 		right_was_fixed = widgets.fixed(right_trajectory, fixed_cutoff)
 		if left_was_fixed == right_was_fixed:

@@ -9,17 +9,16 @@ from loguru import logger
 logger.remove()
 import sys
 
-
-
 from muller import dataio, clustering, inheritance, commandline_parser
-from muller.dataio import WorkflowData, MullerOutputGenerator
-
+from muller.generate_output import WorkflowData, MullerOutputGenerator
 
 if commandline_parser.DEBUG:
 	logger.level("COMPLETE", no = 1)
 	logger.add(sys.stderr, level = "DEBUG")
 else:
-	logger.add(sys.stderr, level = 'INFO', format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
+	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
+
+
 # TODO: Add annotations to filtered trajectories table
 # TODO: fix the discrepancy between the filtered trajectory table and the main trajectory table missing genotype labels.
 class MullerWorkflow:
@@ -43,15 +42,15 @@ class MullerWorkflow:
 			self.trajectory_filter = False
 
 		self.genotype_generator = clustering.ClusterMutations(
-		method = self.program_options.method,
-		metric = self.program_options.metric,
-		dlimit = self.program_options.detection_breakpoint,
-		flimit = self.program_options.fixed_breakpoint,
-		sbreakpoint = self.program_options.similarity_breakpoint,
-		dbreakpoint = self.program_options.detection_breakpoint,
-		breakpoints = breakpoints,
-		starting_genotypes = self.program_options.starting_genotypes,
-		trajectory_filter = self.trajectory_filter
+			method = self.program_options.method,
+			metric = self.program_options.metric,
+			dlimit = self.program_options.detection_breakpoint,
+			flimit = self.program_options.fixed_breakpoint,
+			sbreakpoint = self.program_options.similarity_breakpoint,
+			dbreakpoint = self.program_options.detection_breakpoint,
+			breakpoints = breakpoints,
+			starting_genotypes = self.program_options.starting_genotypes,
+			trajectory_filter = self.trajectory_filter
 		)
 
 		self.organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(
@@ -69,9 +68,7 @@ class MullerWorkflow:
 			derivative_cutoff = self.program_options.derivative_cutoff
 		)
 
-
-
-	def run(self, filename: Path, output_folder:Path):
+	def run(self, filename: Path, output_folder: Path):
 		"""
 			1. Read input data
 			2. Read additional files
@@ -97,7 +94,6 @@ class MullerWorkflow:
 			info = info,
 			original_trajectories = timepoints,
 			original_genotypes = mean_genotypes,
-			rejected_trajectories = self.genotype_generator.rejected_trajectories,
 			trajectories = timepoints,
 			genotypes = sorted_genotypes,
 			genotype_members = genotype_members,
@@ -109,11 +105,9 @@ class MullerWorkflow:
 			genotype_palette_filename = self.program_options.genotype_palette_filename
 		)
 
-
 		MullerOutputGenerator(workflow_data, output_folder, adjust_populations = True).run()
 
-
-	def generate_genotypes(self, filename:Path):
+	def generate_genotypes(self, filename: Path):
 		if self.program_options.is_genotype:
 			mean_genotypes, genotype_info = dataio.parse_genotype_table(filename, self.program_options.sheetname)
 			try:
@@ -131,7 +125,3 @@ class MullerWorkflow:
 	def read_additional_files(self):
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry
-
-
-
-

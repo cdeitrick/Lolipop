@@ -4,10 +4,8 @@ from typing import Dict, Iterable, List, Tuple
 
 import pandas
 
-
 from muller.clustering.metrics import distance
 from muller.widgets import get_valid_points
-
 
 
 class CalculateMutationalDistances:

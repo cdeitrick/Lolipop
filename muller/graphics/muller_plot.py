@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas
 from matplotlib import pyplot as plt
@@ -163,7 +163,7 @@ class BaseGenerateMullerDiagram:
 
 		ax = self._format_plot(ax, max(x))
 
-		self.savefigure(basename)
+		self.save_figure(basename)
 
 		return ax
 
@@ -188,7 +188,7 @@ class BaseGenerateMullerDiagram:
 
 		return ax
 
-	def savefigure(self, basename: Path):
+	def save_figure(self, basename: Path):
 		""" Saves the diagram in every format available in self.filetypes"""
 		for suffix in self.filetypes:
 			filename = str(basename) + suffix

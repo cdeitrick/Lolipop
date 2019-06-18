@@ -114,13 +114,6 @@ def generate_ggmuller_population_table(mean_genotypes: pandas.DataFrame, edges: 
 	return population_table
 
 
-def generate_missing_trajectories_table(trajectories: pandas.DataFrame, original_trajectories: pandas.DataFrame) -> pandas.DataFrame:
-	missing_trajectories = original_trajectories[~original_trajectories.index.isin(trajectories.index)]
-	concat_trajectories = pandas.concat([trajectories, missing_trajectories], sort = False)
-
-	return concat_trajectories
-
-
 def generate_trajectory_table(trajectories: pandas.DataFrame, parent_genotypes: Union[pandas.Series, Dict[str, str]],
 		info: pandas.DataFrame) -> pandas.DataFrame:
 	# Sorts the trajectory table and adds additional columns from the original table.

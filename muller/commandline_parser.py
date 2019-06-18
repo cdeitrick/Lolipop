@@ -14,6 +14,7 @@ from dataclasses import dataclass, fields
 __VERSION__ = "0.5.2"
 DEBUG = True
 
+
 # For convienience. Helps with autocomplete.
 @dataclass
 class ProgramOptions(argparse.Namespace):
@@ -355,7 +356,6 @@ def create_parser() -> argparse.ArgumentParser:
 		default = None,
 		type = Path
 	)
-
 
 	##############################################################################################################################################
 	# ------------------------------------------------------- Graphics Options -------------------------------------------------------------------
