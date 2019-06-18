@@ -29,11 +29,16 @@ To update the scripts to the newest version, simply run
 pip install muller --upgrade
 ```
 
+Then run the scripts using 
+```
+mullerplot [args]
+```
+
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
 git clone https://github.com/cdeitrick/muller_diagrams.git
 cd muller_diagrams
-Muller.py [args]
+mullerplot [args]
 ```
 
 # Requirements
