@@ -33,7 +33,7 @@ def genotype_generator() -> ClusterMutations:
 		dbreakpoint = 0.10,
 		breakpoints = [],
 		starting_genotypes = [],
-		include_single = True
+		trajectory_filter = None
 	)
 	return generator
 

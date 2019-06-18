@@ -32,7 +32,13 @@ def genotypes() -> pandas.DataFrame:
 
 @pytest.fixture
 def trajectory_filter() -> filters.TrajectoryFilter:
-	f = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, exclude_single = True)
+	f = filters.TrajectoryFilter(
+		detection_cutoff = 0.03,
+		fixed_cutoff = 0.97,
+		filter_consistency = 0.1,
+		filter_startfixed = True,
+		filter_single = True
+	)
 	return f
 
 
@@ -40,6 +46,23 @@ def trajectory_filter() -> filters.TrajectoryFilter:
 def genotype_filter() -> filters.GenotypeFilter:
 	g = filters.GenotypeFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, frequencies = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
 	return g
+
+
+@pytest.fixture
+def trajectory_table() -> pandas.DataFrame:
+	data = [
+		[0.9, 0.1, 0, 0, 0, 0, 0],  # A: Passes all filters
+		[.98, 0, 0, 0, 0, 0, 0],  # B: Fails startsfixed, singlepoint
+		[.98, .1, .1, .1, .1, .1],  # C: fails startsfixed
+		[.1, .1, .1, .1, .2, .1],  # D: fails consistency
+		[0, 0, 0, .5, 0, 0, 0],  # E: fails singlepoint
+		[.1, .15, .1, .15, .15, .1, .1],  # F: fails consistency
+		[0, .1, .05, .05, 0, 0, 0],  # G: Fails consistency,
+		[0, .15, .15, .15, .1, .06, .1]  # H: Passes unless consistency is set at 0.15.
+	]
+	df = pandas.DataFrame(data)
+	df.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+	return df
 
 
 @pytest.mark.parametrize(
@@ -68,19 +91,6 @@ def test_is_single_point_series(trajectory_filter, data, expected):
 	series = pandas.Series(data)
 
 	assert trajectory_filter.trajectory_only_detected_once(series) == expected
-
-
-@pytest.mark.parametrize(
-	"data,expected",
-	[
-		([0, 0, 0, 1, 0, 0], False),
-		([1, 3, 2, 0, 1, 1], True),
-		([[0.03, 1, 0, 0, 0, 0], False])
-	]
-)
-def test_trajectory_started_fixed(trajectory_filter, data, expected):
-	series = pandas.Series(data)
-	assert trajectory_filter.trajectory_started_fixed(series) == expected
 
 
 def test_get_first_timepoint_above_cutoff(genotype_filter):
@@ -113,7 +123,10 @@ def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 		([.9, .9, .9, .9, .9], False),
 		([0, 0, 0, 0, 0, 0], False),
 		([1, 0, 0, 0, 0, 0], True),
-		([1, 1, 1, 1, 1], True)
+		([1, 1, 1, 1, 1], True),
+		([0, 0, 0, 1, 0, 0], False),
+		([1, 3, 2, 0, 1, 1], True),
+		([0.03, 1, 0, 0, 0, 0], False)
 	]
 )
 def test_remove_trajectoryies_that_start_fixed(trajectory_filter, data, expected):
@@ -121,3 +134,41 @@ def test_remove_trajectoryies_that_start_fixed(trajectory_filter, data, expected
 	result = trajectory_filter.trajectory_started_fixed(series)
 
 	assert result == expected
+
+
+def test_trajectory_filter_only_detected_once(trajectory_filter, trajectory_table):
+	trajectory_filter.use_filter_startfixed = False
+	trajectory_filter.filter_consistency = 0
+
+	result = trajectory_filter.run(trajectory_table)
+
+	assert list(result.index) == list("ACDFGH")
+
+
+def test_trajectory_filter_filter_single_is_disabled(trajectory_table, trajectory_filter):
+	trajectory_filter.use_filter_single = False
+
+	result = trajectory_filter.run(trajectory_table)
+
+	assert list(result.index) == list('AEH')
+
+
+def test_trajectory_filter_startsfixed_is_disabled(trajectory_table, trajectory_filter):
+	trajectory_filter.use_filter_startfixed = False
+
+	result = trajectory_filter.run(trajectory_table)
+
+	assert list(result.index) == list("ACH")
+
+
+def test_trajectory_filter_consistency_is_disabled(trajectory_table, trajectory_filter):
+	trajectory_filter.filter_consistency = 0
+
+	result = trajectory_filter.run(trajectory_table)
+	assert list(result.index) == list("ADFGH")
+
+
+def test_trajectory_filter_consistency_is_strict(trajectory_table, trajectory_filter):
+	trajectory_filter.filter_consistency = 0.15
+	result = trajectory_filter.run(trajectory_table)
+	assert list(result.index) == list("A")

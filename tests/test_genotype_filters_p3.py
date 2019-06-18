@@ -36,7 +36,7 @@ def psdata() -> pandas.DataFrame:
 
 @pytest.fixture
 def trajectory_filter() -> filters.TrajectoryFilter:
-	t = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97, exclude_single = True)
+	t = filters.TrajectoryFilter(detection_cutoff = 0.03, fixed_cutoff = 0.97)
 	return t
 
 

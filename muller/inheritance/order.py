@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pandas
 from loguru import logger
@@ -31,7 +31,7 @@ class LineageWorkflow:
 		must have a covariance outside the range [-`derivative_cutoff`, `derivative_cutoff`].
 	"""
 
-	def __init__(self, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float, derivative_cutoff: float,):
+	def __init__(self, dlimit: float, flimit: float, additive_cutoff: float, subtractive_cutoff: float, derivative_cutoff: float, ):
 		self.dlimit = dlimit
 		self.flimit = flimit
 		self.additive_cutoff = additive_cutoff
@@ -39,7 +39,7 @@ class LineageWorkflow:
 		self.derivative_cutoff = derivative_cutoff
 		self.genotype_nests: Optional[Cluster] = None
 
-	def add_known_lineages(self, known_ancestry:Dict[str,str]):
+	def add_known_lineages(self, known_ancestry: Dict[str, str]):
 		for identity, parent in known_ancestry.items():
 			# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
 			# TODO Also need to add a way to specify a genotype by one of the linked annotations.
@@ -73,9 +73,9 @@ class LineageWorkflow:
 		logger.debug("Final Ancestry:")
 		for genotype_label in sorted_genotypes.index:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
-			logger.debug(f"{genotype_label}\t{candidate}")
+			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
 
-	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str,str] = None) -> Cluster:
+	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> Cluster:
 		"""
 			Infers the lineage from the given genotype table.
 		Parameters

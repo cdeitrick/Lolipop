@@ -5,7 +5,7 @@ from typing import Dict, List, Mapping, Optional, Union
 import pandas
 
 
-def read_map(contents: Union[None,str, Path]) -> Dict[str, str]:
+def read_map(contents: Union[None, str, Path]) -> Dict[str, str]:
 	"""
 		Parses the contents of any file used to specify a key-value pair. This is used when defining palettes and gene aliases.
 	Parameters
@@ -135,7 +135,7 @@ def _extract_value(row: Mapping[str, str], column: str) -> Optional[str]:
 	return value
 
 
-def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, str]:
+def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, List[str]]:
 	if alias_filename:
 		alias_map = read_map(alias_filename)
 	else:
@@ -146,12 +146,21 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 	trajectory_annotations = dict()
 	for trajectory_label, row in info.iterrows():
 		gene_value = _extract_value(row, gene_column)
-		annotation_value = _extract_value(row, annotation_column)
 		gene = _clean_gene_label(gene_value)
 		gene = alias_map.get(gene, gene)
+
+		annotation_value = _extract_value(row, annotation_column)
 		annotation = _clean_annotation_label(annotation_value)
-		value = " ".join(i for i in [gene, annotation] if i)
-		trajectory_annotations[trajectory_label] = value
+
+		result = list()
+		if gene:
+			result.append(gene)
+		if annotation:
+			result.append(annotation)
+		amino_acid_value = _extract_value(row, 'amino acid')
+		if amino_acid_value:
+			result.append(amino_acid_value)
+		trajectory_annotations[trajectory_label] = result
 	return trajectory_annotations
 
 
@@ -164,7 +173,9 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 	for genotype_label, members in genotype_members.items():
 		if isinstance(members, str):
 			members = members.split('|')
-		member_values: List[Optional[str]] = [trajectory_annotations.get(i) for i in members]
+		member_values = list()
+		for i in members:
+			member_values += trajectory_annotations.get(i, [])
 		# Remove missing annotations
 		member_values: List[str] = [i for i in member_values if i]
 		genotype_annotations[genotype_label] = member_values

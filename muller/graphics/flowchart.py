@@ -58,7 +58,6 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		parent = row['parent']
 		identity = row['identity']
 		score = row['score']
-		#if score < 0: score = 0
 		graph.add_edge(parent, identity, tooltip = f"parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
 	if filename:
 		graph.draw(str(filename), prog = 'dot')

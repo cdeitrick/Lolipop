@@ -10,6 +10,7 @@ except ModuleNotFoundError:
 	except ValueError:
 		from muller.inheritance.order_by_area import area_of_series, calculate_common_area
 
+
 def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int = 2) -> float:
 	""" Calculates the minkowski distance between two series. Essentially just a generic lp-norm.
 		Parameters
@@ -97,7 +98,7 @@ def jaccard_distance(left: pandas.Series, right: pandas.Series) -> float:
 
 def calculate_distance(left: pandas.Series, right: pandas.Series, metric: str) -> float:
 	if metric == 'binomial':
-		#default option so placed first to minimize equality calculations.
+		# default option so placed first to minimize equality calculations.
 		distance_between_series = binomial_distance(left, right)
 	elif metric == 'pearson':
 		distance_between_series = pearson_correlation_distance(left, right)

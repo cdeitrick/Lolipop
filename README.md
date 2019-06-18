@@ -7,6 +7,11 @@
 -  [Requirements](#requirements)
 -  [General Workflow](#general-workflow)
 -  [Script Options](#script-options)
+	-  [General Options](#general-options)
+	-  [Filtering Options](#filtering-options)
+	-  [Clustering Options](#clustering-options)
+	-  [Nesting Options](#nesting-options)
+	-  [Graphics Options](#graphics-options)
 -  [Input Parameters](#input-dataset)
 -  [Output Files](#output)
     -  [Output Tables](#tables)
@@ -24,11 +29,16 @@ To update the scripts to the newest version, simply run
 pip install muller --upgrade
 ```
 
+Then run the scripts using 
+```
+mullerplot [args]
+```
+
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
 git clone https://github.com/cdeitrick/muller_diagrams.git
 cd muller_diagrams
-Muller.py [args]
+mullerplot [args]
 ```
 
 # Requirements
@@ -114,26 +124,25 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 the filtering step and the nesting step.
 	                            For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...
 	--genotypes                 Indicates that the input table contains genotypes rather
-	                            than mutational trajectories.
-	--no-filter                 
-                                Disables the genotype filtering step.
-    --include-single            
-                                Disables the filter which rejects trajectories detected at a single timepoint.
+	                            than mutational trajectories. This will skip the filtering and clustering steps.
     --sheetname                 
                                 Specifies the sheet to use when the input is an excel file. Defaults to
-                                'Sheet1'
-    --strict-filter             
-                                By default, the filters allow trajectories to appear both before and after a genotype
-                                fixes as long as they were undetected at the timepoint the sweep occurs. This generally
-                                represents mutations which appear, are removed during a genotype sweep, and reappear
-                                afterwards. Using `--strict-filter` would remove these trajectories.
-    --genotype-colors           Path to a file with a custom genotype colorscheme. The file should be tab-delimited
-                                with a genotype name (ex. 'genotype-13') in the first column and a HEX color code
-                                (ex. '#F5674A') in the second. These colors will override the default colorscheme.
+                                the first sheet in the spreadsheet.
     --gene-alias ALIAS_FILENAME
                                 An optional two-column file with more accurate gene
                                 names. This is useful when using a reference
                                 annotated via prokka.
+
+## Filtering Options
+	--dasable-all-filters                 
+                                Disables the genotype filtering step.
+    --disable-filter-single            
+                                Keep trajectories only detected at a single timepoint.
+    --disable-filter-startsfixed
+                                Keeps mutational trajectories which begin the experiment fixed.
+    --filter-constant           
+                                [0.10] Sets the delta value by which a mutational trajectory must vary by to not 
+                                be removed for being a constant mutation. Set to 0 to disable
 
 ## Clustering Options
     -m, --method                Selects the clustering method to use. 'two-step' will use the original two-step
@@ -154,7 +163,6 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 Maximum p-value difference to consider trajectories related when using
                                 the two-step method, and selects the maximum distance to consider
                                 trajectories related when `--method` is `hierarchy`.
-
     -d, --difference-cutoff     [0.10] Only used when `--method` is `twostep`.
                                 Used to unlink unrelated trajectories present in a genotype. Is not used
                                 when using hierarchical clustering.
@@ -187,6 +195,9 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 so this is only useful when re-running the analysis.
 
 ## Graphics Options
+    --genotype-colors           Path to a file with a custom genotype colorscheme. The file should be tab-delimited
+                                with a genotype name (ex. 'genotype-13') in the first column and a HEX color code
+                                (ex. '#F5674A') in the second. These colors will override the default colorscheme.
     --no-outline
                                 Disables the white ouline surrounding each series in the muller plots.
 

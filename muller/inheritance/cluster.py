@@ -1,5 +1,6 @@
-from typing import Dict, List, Mapping, Optional, Tuple, Union
 import math
+from typing import Dict, List, Mapping, Optional, Tuple, Union
+
 import pandas
 
 
@@ -8,7 +9,7 @@ class Cluster:
 
 	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):
 		self.initial_background_label: str = initial_background.name
-		self.timepoints = timepoints.copy() # To  prevent unintended modifications to source table.
+		self.timepoints = timepoints.copy()  # To  prevent unintended modifications to source table.
 		# Keep track of the parent and confidence for each new genotype.
 		self.confidence: Dict[str, List[Tuple[str, float]]] = dict()
 		self.ancestral_genotype = 'genotype-0'
@@ -91,7 +92,7 @@ class Cluster:
 			row = {
 				'parent':   parent,
 				'identity': identity,
-				'score': score
+				'score':    score
 			}
 			data.append(row)
 		return pandas.DataFrame(data)

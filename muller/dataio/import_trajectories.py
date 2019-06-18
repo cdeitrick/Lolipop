@@ -1,9 +1,11 @@
+import math
+import re
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
-import math
+
 import pandas
 from loguru import logger
-import re
+
 try:
 	from muller.widgets import get_numeric_columns
 	from muller.dataio import import_table
@@ -42,8 +44,9 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 			new_column = old_data[column].astype(float)
 		new_data[column] = new_column
 	return new_data
-def convert_string_to_number(value:str)->float:
 
+
+def convert_string_to_number(value: str) -> float:
 	pattern = "[\d]+(?:[.][\d]+)?"
 	if isinstance(value, str):
 		match = re.search(pattern, value)
@@ -61,13 +64,16 @@ def convert_string_to_number(value:str)->float:
 		result = value
 	return result
 
-def _fix_column_datatypes(table: pandas.DataFrame)->pandas.DataFrame:
+
+def _fix_column_datatypes(table: pandas.DataFrame) -> pandas.DataFrame:
 	# Try to extract numerical data from the table.
 
 	for column in table.columns:
 		converted_column = table[column].apply(convert_string_to_number)
 		table[column] = converted_column
 	return table
+
+
 def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Converts column headers to integers and moves all non-integer columns to a separate dataframe.
