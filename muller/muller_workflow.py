@@ -18,8 +18,7 @@ else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 
-# TODO: Add annotations to filtered trajectories table
-# TODO: fix the discrepancy between the filtered trajectory table and the main trajectory table missing genotype labels.
+# TODO Add a --highlight and --highlight color options.
 class MullerWorkflow:
 	def __init__(self, program_options):
 		self.program_options = commandline_parser.parse_workflow_options(program_options)

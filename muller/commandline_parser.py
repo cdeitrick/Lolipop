@@ -306,29 +306,6 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "metric",
 		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
 	)
-	##############################################################################################################################################
-	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
-	##############################################################################################################################################
-	parser.add_argument(
-		"--annotate-all",
-		help = "Adds all gene labels to the muller plots, instead of the top three.",
-		action = "store_true",
-		dest = "annotate_all"
-	)
-	parser.add_argument(
-		"--genotype-colors",
-		help = "An optional map of genotypes to specified colors.",
-		action = "store",
-		type = Path,
-		default = None,
-		dest = "genotype_palette_filename"
-	)
-	parser.add_argument(
-		"--no-render",
-		help = "The svg files will not be generated.",
-		action = "store_false",
-		dest = "render"
-	)
 
 	##############################################################################################################################################
 	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
@@ -358,13 +335,45 @@ def create_parser() -> argparse.ArgumentParser:
 	)
 
 	##############################################################################################################################################
-	# ------------------------------------------------------- Graphics Options -------------------------------------------------------------------
+	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
 	##############################################################################################################################################
-
+	parser.add_argument(
+		"--annotate-all",
+		help = "Adds all gene labels to the muller plots, instead of the top three.",
+		action = "store_true",
+		dest = "annotate_all"
+	)
+	parser.add_argument(
+		"--genotype-colors",
+		help = "An optional map of genotypes to specified colors.",
+		action = "store",
+		type = Path,
+		default = None,
+		dest = "genotype_palette_filename"
+	)
+	parser.add_argument(
+		"--no-render",
+		help = "The svg files will not be generated.",
+		action = "store_false",
+		dest = "render"
+	)
 	parser.add_argument(
 		"--no-outline",
 		help = 'Disables the white outline in the muller plots.',
 		action = 'store_false',
 		dest = 'draw_outline'
+	)
+	parser.add_argument(
+		"--highlight",
+		help = "A comma-separated list of genotype names or annotations to highlight in the generated graphics.",
+		action = "store",
+		dest = "highlight"
+	)
+	parser.add_argument(
+		"--highlight-color",
+		help = "What the color of highlighted genotypes should be. Only HEX color codes are supported.",
+		action = 'store',
+		dest = 'highlight_color',
+		default = "#FFFF00"
 	)
 	return parser

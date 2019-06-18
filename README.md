@@ -200,6 +200,12 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 (ex. '#F5674A') in the second. These colors will override the default colorscheme.
     --no-outline
                                 Disables the white ouline surrounding each series in the muller plots.
+	--no-render                 
+	                            Disables `.svg` renders.
+	--highlight                
+	                            A comma-separated list of genotype names or annotations to highlight in the generated graphics.
+	--highlight-color 
+	                            [#F34A20] What the color of highlighted genotypes should be. Only HEX color codes are supported.
 
 # Input Dataset
 

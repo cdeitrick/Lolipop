@@ -55,6 +55,14 @@ class MullerOutputGenerator:
 		self.genotype_annotations = self.read_genotype_annotations()
 		self.custom_palette = dataio.read_map(self.data.genotype_palette_filename)
 
+		# Now modify the highlighted genotypes
+		highlight = self.data.program_options['highlight']
+
+		if highlight:
+			highlight_color = self.data.program_options['highlight_color']
+			for genotype_identifier in highlight.split(','):
+				self.custom_palette[genotype_identifier] = highlight_color
+
 	def run(self):
 		filtered_trajectories = self.save_filtered_trajectories_table()
 
@@ -129,6 +137,7 @@ class MullerOutputGenerator:
 					for genotype_label in selected_genotypes:
 						selected_genotype = genotype_information_collection[genotype_label]
 						selected_genotype.color_custom = color
+
 
 		return genotype_information_collection
 
