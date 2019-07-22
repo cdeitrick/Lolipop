@@ -20,7 +20,7 @@ def test_calculate_additive_score(left: List[float], right: List[float], expecte
 	left = pandas.Series(left)
 	right = pandas.Series(right)
 
-	result = scoring.calculate_additive_score(left, right, 0.03)
+	result = scoring.calculate_subtractive_score(left, right, 0.03)
 
 	assert result == expected
 

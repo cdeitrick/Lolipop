@@ -49,8 +49,8 @@ class LineageWorkflow:
 			self.genotype_nests.add_genotype_to_background(identity, parent, priority = 100)
 
 	def score_pair(self, nested_genotype: pandas.Series, unnested_trajectory) -> float:
-		score_additive = scoring.calculate_additive_score(nested_genotype, unnested_trajectory, self.additive_cutoff)
-		score_subtractive = scoring.calculate_subtractive_score(nested_genotype, unnested_trajectory, self.flimit, self.subtractive_cutoff)
+		score_additive = scoring.calculate_subtractive_score(nested_genotype, unnested_trajectory, self.additive_cutoff)
+		score_subtractive = scoring.calculate_summation_score(nested_genotype, unnested_trajectory, self.flimit, self.subtractive_cutoff)
 		score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory)
 
 		total_score = score_additive + score_subtractive + score_area

@@ -213,7 +213,7 @@ def create_parser() -> argparse.ArgumentParser:
 		dest = "subtractive_cutoff"
 	)
 	parser.add_argument(
-		"--derivative",
+		"--covariance",
 		help = "Controls how much a nested and unnested genotype should be correlated/anticorrelated to be considered significant",
 		default = 0.01,
 		dest = "derivative_cutoff",

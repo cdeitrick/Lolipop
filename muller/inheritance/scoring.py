@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	from . import order_by_area
 
 
-def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
+def calculate_subtractive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
 	"""
 		Tests whether the nested genotype is consistenty larger than  the nested genotype. The scoring is as follows:
 		`nested_genotype` always larger than `unnested_genotype`: 1
@@ -98,7 +98,7 @@ def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pand
 	return score
 
 
-def calculate_subtractive_score(left: pandas.Series, right: pandas.Series, fixed_cutoff: float, cutoff: float) -> int:
+def calculate_summation_score(left: pandas.Series, right: pandas.Series, fixed_cutoff: float, cutoff: float) -> int:
 	"""
 		Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
 		is in the background of the other, since otherwise the maximum combined frequency should, at most, be equal to the fixed cutoff value.
