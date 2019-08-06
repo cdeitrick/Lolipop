@@ -1,0 +1,10 @@
+Trajectory	0	1	2	3	5	6	7	8	9	10	genotype	Population	Population number	Chromosome	Position	Class	Mutation	Gene	Annotation	Class.1	Amino	Description	Distance	Unnamed: 23	Unnamed: 24	Unnamed: 25	Unnamed: 26
+1	0.0	0.043	0.018000000000000002	0.0	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	132,731	SNP	A>C	PROKKA_00139/>glyA	nc	nc	intergenic	aminoalkylphosphonic acid Nacetyltransferase/Serine hydroxymethyltransferase				Stats	
+2	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.073	0.087	0.09	genotype-filtered	M3	1	1	236,325	SNP	T>G	gapN/>glgB	nc	nc	intergenic(+296/153)	NADPdependent glyceraldehyde3phosphate dehydrogenase/1,4alphaglucan branching enzyme GlgB				Non	24.0
+4	0.053	0.041	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	486,456	SNP	C>T	PROKKA_00487<	L93L(TTG>TTA)	SYN	L->L		hypothetical protein			NC	4.0
+7	0.0	0.0	0.021	0.158	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	716,227	SNP	G>T	bglK_1<	A168D(GCT>GAT)	Non	A->V	Betaglucoside kinase					
+9	0.071	0.051	0.022	0.0	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	757,062	INS	(T)5>6	PROKKA_00764	coding(159/768nt)	INS		ABC2 family transporter protein					
+10	0.0	0.066	0.013	0.0	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	782,907	SNP	C>A	Ribonuclease Y	A7A(GCG>GCT)	SYN		Ribonuclease Y					
+19	0.028	0.033	0.015	0.0	0.0	0.0	0.0	0.0	0.0	0.0	genotype-filtered	M3	1	1	1,218,621	SNP	C>T	patA_1<	W285*(TGG>TAG)	Non		Peptidoglycan Oacetyltransferase					
+21	0.0	0.0	0.009000000000000001	0.006999999999999999	0.013	0.04	0.027000000000000003	0.0	0.0	0.0	genotype-filtered	M3	1	1	1,238,869	SNP	T>G	lytB_5<	D625A(GAT>GCT)	Non		Putative endobetaNacetylglucosaminidase precursor					
+29	0.0	0.0	0.0	0.0	0.0	0.0	0.094	0.0	0.08	0.073	genotype-filtered	M3	1	1	1,712,340	SNP	C>A	accD	T213K(ACA>AAA)	Non		Acetylcoenzyme A carboxylase carboxyl transferase subunit beta					

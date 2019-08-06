@@ -2,22 +2,35 @@
 ![muller_plot](./example/example.muller.unannotated.png)
 
 # Contents
--  [Installation](#installation)
--  [Sample Usage](#sample-usage)
--  [Requirements](#requirements)
--  [General Workflow](#general-workflow)
--  [Script Options](#script-options)
-	-  [General Options](#general-options)
-	-  [Filtering Options](#filtering-options)
-	-  [Clustering Options](#clustering-options)
-	-  [Nesting Options](#nesting-options)
-	-  [Graphics Options](#graphics-options)
--  [Input Parameters](#input-dataset)
--  [Output Files](#output)
-    -  [Output Tables](#tables)
-    -  [Muller Plots](#muller-plots)
-    -  [Genotype Plots](#timeseries-plots)
-    -  [Lineage Diagram](#lineage-diagrams)
+- [A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background](#a-set-of-scripts-to-cluster-mutational-trajectories-into-genotypes-and-cluster-genotypes-by-background)
+- [Contents](#contents)
+- [Installation](#installation)
+- [Requirements](#requirements)
+	- [Optional Packages](#optional-packages)
+- [Sample Usage](#sample-usage)
+- [General Workflow](#general-workflow)
+- [Script Options](#script-options)
+	- [General Options](#general-options)
+	- [Filtering Options](#filtering-options)
+	- [Clustering Options](#clustering-options)
+	- [Nesting Options](#nesting-options)
+	- [Graphics Options](#graphics-options)
+- [Input Dataset](#input-dataset)
+- [Output](#output)
+	- [Tables](#tables)
+		- [Timeseries tables](#timeseries-tables)
+		- [Tables for ggmuller](#tables-for-ggmuller)
+		- [Linkage matrix](#linkage-matrix)
+		- [Distance Matrix](#distance-matrix)
+		- [Muller table](#muller-table)
+	- [Graphics](#graphics)
+		- [Muller Plots](#muller-plots)
+		- [Lineage Diagrams](#lineage-diagrams)
+		- [Timeseries plots](#timeseries-plots)
+		- [Distance Heatmap](#distance-heatmap)
+		- [Dendrogram](#dendrogram)
+	- [Scripts](#scripts)
+	- [Supplementary files](#supplementary-files)
 
 # Installation
 These scripts are available on (pypi)[https://pypi.org/project/muller/] and can be installed with
@@ -332,7 +345,7 @@ Each of the output plots use the same palette for genotypes and trajectories. A 
 
 The main value of a muller plot is to quickly visualize abundance and geneology of genotypes over the course of an evolution experiment.
 
-![muller](example/example.muller.annotated.png)
+![muller](example/example.trajectories.clade.annotated.png)
 
 ### Lineage Diagrams
 - .lineage.png
@@ -340,7 +353,7 @@ The main value of a muller plot is to quickly visualize abundance and geneology 
 
 These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
 
-![geneology](example/example.lineage.png)
+![geneology](example/example.trajectories.lineage.clade.png)
 
 ### Timeseries plots
 - .genotypes.png
@@ -349,20 +362,20 @@ These are simple flowcharts indicating the relationship between genotypes and cl
 
 Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
 
-![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
+![timeseries](example/graphics/clade/example.trajectories.clade.unannotated.png)
 
 ### Distance Heatmap
 - graphics/.heatmap.distance.png
 
 A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
-![heatmap](example/graphics/example.heatmap.distance.png)
+![heatmap](example/graphics/example.trajectories.pairwisedistance.svg)
 
 ### Dendrogram
 - graphics/.dendrogram.png
 Shows the arrangement and distance between clusters and member trajectories. Not available with `--method twostep`.
 
-![dendrogram](example/graphics/example.dendrogram.png)
+![dendrogram](example/graphics/example.trajectories.dendrogram.png)
 
 ## Scripts
 - scripts/example.r
