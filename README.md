@@ -33,7 +33,7 @@
 	- [Supplementary files](#supplementary-files)
 
 # Installation
-These scripts are available on (pypi)[https://pypi.org/project/muller/] and can be installed with
+These scripts are available on [pypi](https://pypi.org/project/muller/) and can be installed with
 ```bash
 pip install muller 
 ```
@@ -81,8 +81,8 @@ or the equivalent package manager on your system.
 Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
 
 ## Optional Packages
-If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
-Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
+- `tqdm`: If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
+- `beautifulsoup4`: Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
 
 
 # Sample Usage
