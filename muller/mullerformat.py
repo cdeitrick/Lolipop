@@ -416,8 +416,8 @@ class GenerateMullerDataFrame:
 		ages = self.get_genotype_ages(population_sorted)
 
 		clean_edges = AdjacencyMatrix(edges, ages)
-		path_vector: Vector = clean_edges.path_vector()
-		path_vector: List[int] = path_vector[::-1]  # Convert to list and reverse it to match ggmuller scripts.
+		path_vector: List[str] = clean_edges.path_vector()
+		path_vector: List[str] = path_vector[::-1]  # Convert to list and reverse it to match ggmuller scripts.
 		muller_ordered = self.reorder_by_vector(muller_df, path_vector)
 		# Replace each age in the path vector with the corresponding genotype name
 		# Rearrange the columns so pandas.testing.assert_frame_equal doesn't complain.

@@ -42,7 +42,6 @@ class LineageWorkflow:
 	def add_known_lineages(self, known_ancestry: Dict[str, str]):
 		for identity, parent in known_ancestry.items():
 			# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
-			# TODO Also need to add a way to specify a genotype by one of the linked annotations.
 			logger.debug(f"Adding {parent} as a potential background for {identity}")
 			self.genotype_nests.add_genotype_to_background(parent, 'genotype-0', priority = 100)
 			# Use a dummy priority so that it is selected before other backgrounds.

@@ -63,7 +63,7 @@ class MullerOutputGenerator:
 			for genotype_identifier in highlight.split(','):
 				self.custom_palette[genotype_identifier] = highlight_color
 
-	def run(self):
+	def run(self)->None:
 		filtered_trajectories = self.save_filtered_trajectories_table()
 
 		edges_table, population_table = self.save_ggmuller_files()
@@ -226,13 +226,13 @@ class MullerOutputGenerator:
 		edges_table.to_csv(str(self.filenames.ggmuller_edges), sep = self.filenames.delimiter, index = False)
 		return edges_table, population_table
 
-	def save_linkage_files(self):
+	def save_linkage_files(self)->None:
 		num_trajectories = len(self.data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(self.data.linkage_matrix, num_trajectories)
 		linkage_table.to_csv(str(self.filenames.linkage_matrix_table), sep = self.filenames.delimiter, index = False)
 		plot_dendrogram(self.data.linkage_matrix, self.data.p_values, self.filenames.linkage_plot)
 
-	def save_lineage_plots(self, genotypes: dataio.GenotypeCollection):
+	def save_lineage_plots(self, genotypes: dataio.GenotypeCollection)->None:
 		""" Generate the lineage plots."""
 		logger.info("Generating Lineage Plots...")
 		edges_table = self.data.clusters.priority_table()
@@ -269,7 +269,6 @@ class MullerOutputGenerator:
 
 	def save_r_script(self, palette: Dict[str, str], population_table: pandas.DataFrame) -> pandas.DataFrame:
 		# Generate the rscript and ggmuller DataFrame
-		# TODO replicate how the r script generates the muller_df file so that we don't have to run the rscript.
 		muller_df = dataio.generate_r_script(
 			trajectory = self.filenames.trajectory_table,
 			population = self.filenames.ggmuller_population,
@@ -282,7 +281,7 @@ class MullerOutputGenerator:
 		)
 		return muller_df
 
-	def pairwise_distance_information(self):
+	def pairwise_distance_information(self)->None:
 		""" Save the pairwise distances for each trajectory."""
 		squareform = self.data.p_values.squareform()
 		squareform.to_csv(self.filenames.distance_matrix)
@@ -294,7 +293,7 @@ class MullerOutputGenerator:
 	##############################################################################################################################################
 	# ---------------------------------------------------- Generate supplementary files ----------------------------------------------------------
 	##############################################################################################################################################
-	def save_workflow_parameters(self, clade_palette, distinct_palette):
+	def save_workflow_parameters(self, clade_palette, distinct_palette)->None:
 		parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in self.data.program_options.items()}
 		parameters['genotypeColorsClade'] = clade_palette
 		parameters['genotypeColorsDistinct'] = distinct_palette

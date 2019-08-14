@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Generator, Iterable, Callable
 
 import pandas
 from matplotlib import pyplot as plt
@@ -32,7 +32,7 @@ pandas.set_option('display.width', 250)
 ###################################################################################################################################################
 
 
-def unique_everseen(iterable, key = None):
+def unique_everseen(iterable: Iterable[Any], key:Optional[Callable[[Any], str]] = None)->Generator[Any, None,None]:
 	"""	List unique elements, preserving order. Remember all elements ever seen."
 		unique_everseen('AAAABBBCCDAABBB') --> A B C D
 		unique_everseen('ABBCcAD', str.lower) --> A B C D
@@ -198,7 +198,7 @@ class BaseGenerateMullerDiagram:
 	def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[
 		List[float], List[List[float]], List[str], List[str]]:
 		"""
-			Generates the required inputs for matplotlib to generate a mullerplot.
+			Generates the required inputs for matplotlib to generate a lineage.
 		Parameters
 		----------
 		muller_df: pandas.DataFrame
@@ -286,7 +286,7 @@ class BaseGenerateMullerDiagram:
 
 class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
 	# Separates the logic used to annotate the muller diagram from the simpler logic used to actually plot it.
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, **kwargs)->None:
 		super().__init__(*args, **kwargs)
 
 	def add_genotype_annotations_to_plot(self, ax: Axes, points: Dict[str, Tuple[float, float]], annotations: Dict[str, List[str]],

@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from loguru import logger
-
+from typing import Dict, List
 logger.remove()
 import sys
 
@@ -18,9 +18,8 @@ else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 
-# TODO Add a --highlight and --highlight color options.
 class MullerWorkflow:
-	def __init__(self, program_options):
+	def __init__(self, program_options)->None:
 		self.program_options = commandline_parser.parse_workflow_options(program_options)
 		logger.info("Program options:")
 		for k, v in vars(self.program_options).items():
@@ -120,6 +119,6 @@ class MullerWorkflow:
 
 		return timepoints, mean_genotypes, genotype_members, info
 
-	def read_additional_files(self):
+	def read_additional_files(self)->Dict[str,str]:
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry

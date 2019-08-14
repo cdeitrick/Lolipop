@@ -36,7 +36,7 @@ class PairwiseCalculationCache:
 	def asdict(self) -> PairwiseArrayType:
 		return self.pairwise_values
 
-	def squareform(self):
+	def squareform(self)->pandas.DataFrame:
 		""" Converts a dictionary with all pairwise values for a set of points into a square matrix representation.
 		"""
 		keys = sorted(set(itertools.chain.from_iterable(self.pairwise_values.keys())))
