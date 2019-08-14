@@ -1,12 +1,10 @@
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional
-
-import pandas
+from typing import Dict, List
 
 
-def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path, script_filename: Path,
-		color_palette: Dict[str, str], genotype_labels: List[str]) -> Optional[pandas.DataFrame]:
+def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path,
+		color_palette: Dict[str, str], genotype_labels: List[str]) -> str:
 	# `color_palette` should be an OrderedDict.
 	genotype_labels = sorted(genotype_labels)
 
@@ -43,21 +41,19 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, table_fil
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
-	execute_r_script(script_filename, script)
-	if table_filename.exists():
-		muller_df = pandas.read_csv(table_filename)
-	else:
-		muller_df = None
-	return muller_df
+	return script
 
 
 def execute_r_script(path: Path, script: str) -> Path:
+	""" Executes `script` by first saving it to `path` then calling `Rscript` to run it."""
 	path.write_text(script)
 	subprocess.run(
 		['Rscript', '--vanilla', '--silent', path],
 		stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE
 	)
+	# Running the script will generate an Rplots.pdf file which we don't care about.
+	# `ggsave` is used to save the plot instead.
 	_extra_file = Path.cwd() / "Rplots.pdf"
 	if _extra_file.exists():
 		_extra_file.unlink()

@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from loguru import logger
-from typing import Dict, List
+from typing import Dict
 logger.remove()
 import sys
 

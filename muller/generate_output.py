@@ -48,6 +48,7 @@ class MullerOutputGenerator:
 			outlines = self.data.program_options['draw_outline'],
 			render = self.data.program_options['render']
 		)
+		self.muller_formatter = dataio.GenerateMullerDataFrame()
 
 		self.filenames = dataio.OutputFilenames(output_folder, self.get_base_filename())
 
@@ -74,7 +75,10 @@ class MullerOutputGenerator:
 		self.save_genotype_plots(genotypes, filtered_trajectories)
 		self.save_lineage_plots(genotypes)
 		logger.info("Generating r script...")
-		muller_df = self.save_r_script(genotypes.get('color_clade'), population_table)
+		self.save_r_script(genotypes.get('color_clade'), population_table)
+
+		muller_df = self.muller_formatter.run(edges_table, population_table)
+
 		logger.info("Generating muller plots...")
 		if muller_df is not None:
 			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
@@ -267,19 +271,19 @@ class MullerOutputGenerator:
 		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_annotated, genotype_annotations)
 		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_unannotated)
 
-	def save_r_script(self, palette: Dict[str, str], population_table: pandas.DataFrame) -> pandas.DataFrame:
+	def save_r_script(self, palette: Dict[str, str], population_table: pandas.DataFrame) -> None:
 		# Generate the rscript and ggmuller DataFrame
-		muller_df = dataio.generate_r_script(
+
+		script_content = dataio.generate_r_script(
 			trajectory = self.filenames.trajectory_table,
 			population = self.filenames.ggmuller_population,
 			edges = self.filenames.ggmuller_edges,
 			table_filename = self.filenames.muller_table,
 			plot_filename = self.filenames.muller_diagram_r_script,
-			script_filename = self.filenames.r_script,
 			color_palette = palette,
 			genotype_labels = population_table['Identity'].unique().tolist()
 		)
-		return muller_df
+		self.filenames.r_script.write_text(script_content)
 
 	def pairwise_distance_information(self)->None:
 		""" Save the pairwise distances for each trajectory."""

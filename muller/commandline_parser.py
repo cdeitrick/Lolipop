@@ -116,6 +116,7 @@ class FixedBreakpointParser(argparse.Action):
 		setattr(namespace, self.dest, values)
 
 
+# noinspection PyTypeChecker
 def create_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
 		description = "Generates muller diagrams based on a set of mutational trajectories.",

@@ -6,7 +6,7 @@ import pandas
 import pytest
 from loguru import logger
 
-from muller.mullerformat import AdjacencyMatrix, GenerateMullerDataFrame
+from muller.dataio.mullerformat import AdjacencyMatrix, GenerateMullerDataFrame
 
 
 @pytest.fixture
