@@ -94,11 +94,12 @@ def test_trajectory_filters(psdata, trajectory_filter):
 
 
 def test_get_fuzzy_backgrounds(genotype_table_a, genotype_filter):
+	genotype_filter.frequencies = [0.7]
 	test_background = genotype_filter.get_fuzzy_backgrounds(genotype_table_a)
 
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff, 0.7)
-	assert len(test_background) == 1
-	assert list(test_background.index) == ['genotype-1']
+	assert len(test_background) == 2
+	assert list(test_background.index) == ['genotype-1', 'genotype-2']
 
 
 def test_find_first_invalid_genotype_a(genotype_table_a, genotype_filter):

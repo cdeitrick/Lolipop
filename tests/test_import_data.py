@@ -67,7 +67,14 @@ def truth_genotype_table():
 	return table
 
 
-@pytest.mark.parametrize('filename', list((DATA_FOLDER / "test_trajectory_tables").iterdir()))
+@pytest.mark.parametrize(
+	'filename',
+	[
+		DATA_FOLDER / "tables_input_trajectories" / "B1_muller_try1.trajectories.original.tsv",
+		DATA_FOLDER / "tables_input_trajectories" / "B1_muller_try1.trajectories.tsv",
+		DATA_FOLDER / "tables_input_trajectories" / "B1_muller_try1.xlsx"
+	]
+)
 def test_import_trajectory_table(filename, truth_trajectory_table):
 	test_table, info = parse_trajectory_table(filename)
 	pandas.testing.assert_frame_equal(truth_trajectory_table, test_table)
@@ -76,14 +83,14 @@ def test_import_trajectory_table(filename, truth_trajectory_table):
 @pytest.mark.parametrize(
 	'filename',
 	[
-		"B1_muller_try1.muller_genotypes.original.tsv",
-		"B1_muller_try1.muller_genotypes.original.xls",
-		"B1_muller_try1.muller_genotypes.original.xlsx"
+		DATA_FOLDER / "tables_input_genotypes" / "B1_muller_try1.muller_genotypes.original.tsv",
+		DATA_FOLDER / "tables_input_genotypes" / "B1_muller_try1.muller_genotypes.original.xls",
+		DATA_FOLDER / "tables_input_genotypes" / "B1_muller_try1.muller_genotypes.original.xlsx"
 	]
 )
 def test_import_genotype_tables(filename, truth_genotype_table):
-	folder = DATA_FOLDER / "test_genotype_tables"
-	test_table, info = parse_genotype_table(folder / filename)
+
+	test_table, info = parse_genotype_table(filename)
 	pandas.testing.assert_frame_equal(truth_genotype_table, test_table)
 
 
@@ -114,7 +121,7 @@ class TestImportTable(unittest.TestCase):
 		self.assertEqual(1, _convert_to_integer('abc', default = 1))
 
 	def test_import_genotype_table_does_not_crash(self):
-		df, info = parse_genotype_table(DATA_FOLDER / "3_genotypes.genotypes.tsv")
+		df, info = parse_genotype_table(DATA_FOLDER /"tables_input_genotypes" /  "3_genotypes.genotypes.tsv")
 
 
 if __name__ == "__main__":
