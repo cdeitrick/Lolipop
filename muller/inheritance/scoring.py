@@ -108,7 +108,7 @@ def calculate_summation_score(left: pandas.Series, right: pandas.Series, fixed_c
 	fixed_cutoff: The fixed breakpoint.
 	cutoff: Governs whether two series consistently sum to a value greater than `fixed_cutoff`. Should be in the range [0,1]
 	"""
-
+	#TODO: Maybe the cutoff should be the variance as calculated from the clustering step.
 	combined = left + right
 	above_fixed = combined - fixed_cutoff
 

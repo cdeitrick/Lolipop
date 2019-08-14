@@ -73,15 +73,17 @@ class MullerOutputGenerator:
 		self.save_supplementary_files(genotypes)
 		self.save_genotype_plots(genotypes, filtered_trajectories)
 		self.save_lineage_plots(genotypes)
+		logger.info("Generating r script...")
 		muller_df = self.save_r_script(genotypes.get('color_clade'), population_table)
-
+		logger.info("Generating muller plots...")
 		if muller_df is not None:
 			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
-
+		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
 			self.save_linkage_files()
 
 		if self.data.trajectories is not None:
+			logger.info("Saving pairwise distances...")
 			self.pairwise_distance_information()
 
 	##############################################################################################################################################

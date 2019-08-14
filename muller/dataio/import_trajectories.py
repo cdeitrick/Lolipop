@@ -13,8 +13,6 @@ except ModuleNotFoundError:
 	from ..widgets import get_numeric_columns
 	from . import import_table
 
-IOTYPE = Union[str, Path]
-
 
 def _convert_to_integer(value: Any, default: Optional[int] = None) -> int:
 	""" Attempts to convert the input value to an integer. Returns `default` otherwise."""
@@ -37,7 +35,7 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 			logger.error(f"Some of the values in the column '{column}' could not be read as numbers.")
 			logger.error(f"The column had values of {old_data[column].values}")
 			raise exception
-		if maximum_value > 1.0:
+		if maximum_value > 1.1:
 			logger.warning(f"The column `{column}` had values greater than 1.0. It will be converted to a float between 0 and 1.")
 			new_column = old_data[column] / 100
 		else:
@@ -52,12 +50,9 @@ def convert_string_to_number(value: str) -> float:
 		match = re.search(pattern, value)
 		try:
 			result = float(match.group(0))
-		except AttributeError:
-			# No matches were found
-			logger.error(f"Could not convert '{value}' to a number.")
-			result = math.nan
-		except ValueError:
-			# The matched string could not be converted to a number
+		except (AttributeError, ValueError):
+			# AttributeError: No matches were found
+			# ValueError: THe matched string could not be converted to a number
 			logger.error(f"Could not convert '{value}' to a number.")
 			result = math.nan
 	else:
@@ -73,13 +68,22 @@ def _fix_column_datatypes(table: pandas.DataFrame) -> pandas.DataFrame:
 		table[column] = converted_column
 	return table
 
+def _add_key_column(table:pandas.DataFrame, key_column:str)->pandas.DataFrame:
+	upper_limit = len(table)+1
+	if key_column.lower() == "genotype":
+		table[key_column] = [f"genotype-{i}" for i in range(1,upper_limit)]
+	else:
+		table[key_column] = list(range(1,upper_limit))
+
+	return table
 
 def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Converts column headers to integers and moves all non-integer columns to a separate dataframe.
 	"""
 	# Make sure the column with the series names is the index of the table.
-
+	if key_column not in raw_table.columns:
+		raw_table = _add_key_column(raw_table, key_column)
 	raw_table = raw_table.sort_values(by = key_column)
 	raw_table[key_column] = [str(i) for i in raw_table[key_column].tolist()]
 	raw_table.set_index(key_column, inplace = True)
@@ -156,7 +160,7 @@ def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pa
 	return genotype_timeseries, genotype_info
 
 
-def parse_trajectory_table(filename: IOTYPE, sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+def parse_trajectory_table(filename: Union[str, Path], sheet_name = 'Sheet1') -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 	"""
 		Reads an excel or csv file. Assumes that the file has a `Trajectory` column and a column for each timepoint.
 	Parameters

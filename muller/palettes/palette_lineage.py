@@ -2,8 +2,9 @@
 Generates a palette using the information.
 """
 from typing import Dict, List
-
+import itertools
 import pandas
+import random
 
 try:
 	from . import colorset
@@ -37,7 +38,10 @@ def generate_lineage_palette(edges: pandas.DataFrame) -> Dict[str, str]:
 	groups = clades.groupby(by = 'majorClade')
 
 	palette = dict()
-	for clade_label, colorscheme in zip(clades['majorClade'].unique(), colorset.distinctive_colorschemes):
+	_schemes = colorset.distinctive_colorschemes + colorset.distinctive_colorschemes + colorset.distinctive_colorschemes # In case there are a very large number of clades.
+	for clade_label, colorscheme in zip(clades['majorClade'].unique(), _schemes):
+		if colorscheme is None:
+			colorscheme = random.choice(colorset.distinctive_colorschemes)
 		group = groups.get_group(clade_label)
 		clade_palette = apply_clade_colorscheme(group.index, colorscheme)
 		palette.update(clade_palette)

@@ -33,7 +33,8 @@ misc_colorschemes = [
 	'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
 	'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
 	'gist_rainbow', 'rainbow', 'jet', 'nipy_spectral', 'gist_ncar']
-distinctive_colorschemes = distinctive_colorschemes + sequential_colorschemes + sequential2_colorschemes + misc_colorschemes
+# For some reason seaborn doesn't like the misc colorschemes
+distinctive_colorschemes = distinctive_colorschemes + sequential_colorschemes + sequential2_colorschemes# + misc_colorschemes
 
 
 def load_colorscheme(string: str, size: int) -> List[str]:
