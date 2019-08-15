@@ -15,7 +15,7 @@ add_start_points <- function(pop_df, start_positions = 0.5) {
 	delta_debug <- min(diff(all_gens_list))
 	start_positions <- max(start_positions, delta)
 	start_positions <- min(start_positions, 1 - delta)
-	
+	start_positions <- max(start_positions, 0.5) # Manual change for large datasets (LTEE)
 	# set small initial population size:
 	init_size <- 0
 	

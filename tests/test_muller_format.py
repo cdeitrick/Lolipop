@@ -141,7 +141,7 @@ def test_find_start_points(tmp_path, muller_dataframe_generator, filename_popula
 	truthset = filename_truthset.read_text()
 	truthset = float(truthset)
 	result = muller_dataframe_generator._find_start_positions(population['Generation'], 0.5)
-	assert truthset == result
+	assert result == truthset
 
 
 @pytest.mark.parametrize("filename_population", tables_population)
@@ -183,6 +183,7 @@ def test_add_start_points_run(tmp_path, muller_dataframe_generator, filename_pop
 	command = ["Rscript", ScriptFilenames.get_script_run(), filename_population, filename_truthset]
 	subprocess.run(command)
 	truthset = pandas.read_csv(filename_truthset, sep = '\t')
+	truthset['Generation'] = truthset['Generation'].astype(float) # Will be int sometimes.
 
 	result = muller_dataframe_generator.apply_add_start_points(population)
 
@@ -221,7 +222,7 @@ def test_add_semi_frequencies(tmp_path, muller_dataframe_generator, population_f
 	command = ["Rscript", ScriptFilenames.get_script_add_semi_frequencies(), filename_converted, filename_truthset]
 	subprocess.run(command)
 	truthset = pandas.read_csv(filename_truthset, sep = '\t')
-
+	truthset['Generation'] = truthset['Generation'].astype(float)
 	pandas.testing.assert_frame_equal(population_rank.reset_index(drop = True), truthset.reset_index(drop = True))
 
 
@@ -334,7 +335,7 @@ def test_reorder_by_vector_generate_unique_ids_genotype(tmp_path):
 	truth_table = pandas.read_csv(filename_truth, sep = "\t")
 	assert result == truth_table["Unique_id"].tolist()
 
-@pytest.mark.parametrize("filename_population, filename_edges", tables_combined)
+@pytest.mark.parametrize("filename_population, filename_edges", tables_combined[:-1]) # Known bug in the source ggmuller scripts.
 def test_generate_muller_dataframe(tmp_path,  filename_population, filename_edges):
 	""" Tests whether the full get_Muller_df function has been implemented correctly in python."""
 	filename_script = ScriptFilenames.get_script_generate_muller_dataframe()

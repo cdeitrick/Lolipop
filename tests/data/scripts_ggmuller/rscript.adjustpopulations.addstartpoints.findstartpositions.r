@@ -7,7 +7,7 @@ find_start_positions <- function(pop_df, start_positions = 0.5) {
 	delta <- abs(min(1E-2 * min(diff(all_gens_list)), 1E-4 * (max(all_gens_list) - min(all_gens_list))))
 	start_positions <- max(start_positions, delta)
 	start_positions <- min(start_positions, 1 - delta)
-	
+	start_positions <- max(start_positions, 0.5) # Manual change to account for very large datasets (LTEE)
 	return(start_positions)
 }
 
