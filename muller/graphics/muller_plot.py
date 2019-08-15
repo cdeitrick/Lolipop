@@ -231,10 +231,11 @@ class BaseGenerateMullerDiagram:
 
 	def merge_muller_table(self, muller_df: pandas.DataFrame) -> pandas.DataFrame:
 		""" The muller dataframe splits genotypes into halves so they can be plotted as a normal stacked area chart.
-			We want to merge these halve if they are plotted adjacent to each other.
+			We want to merge these halves if they are plotted adjacent to each other.
 		"""
 		# Get the order that each series appears.
 		genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
+		# Each genotype should have a corresponding second-half table.
 		groups = muller_df.groupby(by = 'Group_id')
 		seen = set()
 		merged_table = list()
@@ -247,7 +248,7 @@ class BaseGenerateMullerDiagram:
 				next_label = genotype_order[index + 1]
 			except IndexError:
 				next_label = "   "  # Three spaces, so the following subscription works
-
+			# Check whether the genotype label is the same, and that the second label has an additional `a` character at the end.
 			if label == next_label[:-1] and next_label[-1].isalpha():  # make sure it ends with a letter.
 				# The two halves of this specific genotype are next to each other. combine them and skip the next iteration.
 				seen.add(next_label)
@@ -267,6 +268,7 @@ class BaseGenerateMullerDiagram:
 		right = right.set_index('Generation')
 		frequencies = left['Frequency'].add(right['Frequency'], fill_value = 0)
 		populations = left['Population'].add(right['Population'], fill_value = 0)
+
 		df = pandas.DataFrame([frequencies, populations]).transpose()
 		# Add the other columns to the dataframe
 		reference = left.iloc[0]

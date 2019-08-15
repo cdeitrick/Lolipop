@@ -79,6 +79,7 @@ class MullerOutputGenerator:
 
 		muller_df = self.muller_formatter.run(edges_table, population_table)
 
+		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
 		logger.info("Generating muller plots...")
 		if muller_df is not None:
 			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
@@ -278,7 +279,6 @@ class MullerOutputGenerator:
 			trajectory = self.filenames.trajectory_table,
 			population = self.filenames.ggmuller_population,
 			edges = self.filenames.ggmuller_edges,
-			table_filename = self.filenames.muller_table,
 			plot_filename = self.filenames.muller_diagram_r_script,
 			color_palette = palette,
 			genotype_labels = population_table['Identity'].unique().tolist()

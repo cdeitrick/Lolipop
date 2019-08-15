@@ -8,7 +8,7 @@ from loguru import logger
 Numeric = Union[int, float]
 
 
-def lag_gens(x: int, values: Iterable[Numeric]) -> Numeric:
+def lag_gens(x: int, values: Iterable[int]) -> int:
 	# function to get the generation previous to a specified generation:
 	# Implemented in-line so that we can use the population['Genotypes'] within the method.
 	candidates = [i for i in values if i < x]
@@ -188,7 +188,10 @@ class GenerateMullerDataFrame:
 
 		# Initial population size. Will probably never be changed.
 		self.initial_population_size = 0
+		self.initial_start_positions = 0.5
 		self.detection_limit = 0  # Would normally use 0.05 * 100, but the original script uses 0.
+
+
 
 	# Add the sub-workflows that will be used.
 	@staticmethod
@@ -200,13 +203,14 @@ class GenerateMullerDataFrame:
 
 		# adjust generations of copied rows
 		partial_lag_gens = partial(lag_gens, values = population['Generation'].unique())
-		adjusted_generation = new_rows['Generation'] - start_positions * (new_rows['Generation'] - new_rows['Generation'].apply(partial_lag_gens))
+		adjusted_generation:List[float] = new_rows['Generation'] - start_positions * (new_rows['Generation'] - new_rows['Generation'].apply(partial_lag_gens))
+
 		adjusted_population = ((1 - start_positions) * new_rows['Population']) + (start_positions * prev_rows['Population'])
 
 		new_rows['Generation'] = adjusted_generation
 		new_rows['Population'] = adjusted_population
 
-		return new_rows
+		return new_rows.reset_index(drop = True) # To make the tale more consistent
 
 	@staticmethod
 	def _clean_population_table(population: pandas.DataFrame) -> pandas.DataFrame:
@@ -215,8 +219,8 @@ class GenerateMullerDataFrame:
 		"""
 		return population
 
-	@staticmethod
-	def _find_start_positions(series: pandas.Series, start_positions: float) -> float:
+
+	def _find_start_positions(self, series: pandas.Series, start_positions: float) -> float:
 		all_generations = series.unique()
 		difference_time_diff = series.diff().abs().min()  # .diff() is reversed from r, so use abs to correct it.
 		difference_time_absolute = max(all_generations) - min(all_generations)
@@ -224,6 +228,11 @@ class GenerateMullerDataFrame:
 
 		start_positions = max(start_positions, delta)
 		start_positions = min(start_positions, 1 - delta)
+
+		# I think the ggmuller scripts assumed there would be relatively small time intervals, such as `35 days` or `120` minutes
+		# The LTEE has several thousand, so the above code results in a negative value. For now replace negative values with the original
+		# values of `start_positions`.
+		start_positions = max(start_positions, self.initial_start_positions)
 
 		return start_positions
 
@@ -256,7 +265,7 @@ class GenerateMullerDataFrame:
 
 		# Remove `generation-0` to match the ggmuller script
 		df = df[df['start_time'] != 0]
-		return df
+		return df.reset_index(drop = True) # The index isn't needed, so reset it to make it more consistent with the other tables.
 
 	@staticmethod
 	def expand(left_values: Iterable[Any], right_values: Iterable[Any]) -> pandas.DataFrame:
@@ -293,7 +302,7 @@ class GenerateMullerDataFrame:
 
 		# Add the new columns to the original population dataframe
 		pop_df = pandas.concat([population, new_rows])
-		pop_df = pop_df.sort_values(by = ["Generation", "Identity"])
+		pop_df = pop_df.sort_values(by = ["Generation", "Identity"]).reset_index(drop = True)
 
 		# adjust generations in reference list
 		first_generation['Generation'] = first_generation["start_time"] - start_positions * (
@@ -369,7 +378,6 @@ class GenerateMullerDataFrame:
 			else:
 				seen.add(key)
 			uid = f"{name}_{generation}"
-			logger.debug(f"UID: {uid}")
 			uids.append(uid)
 		return uids
 
@@ -390,10 +398,10 @@ class GenerateMullerDataFrame:
 				seen.add(element)
 		return unique_ids
 
-	def adjust_population(self, population: pandas.DataFrame) -> pandas.DataFrame:
+	def correct_population_values(self, population: pandas.DataFrame) -> pandas.DataFrame:
 		""" Adjusts the values in the population dataframe to make sure it can be plotted correctly."""
 		# add rows to population to ensure genotype starting positions are plotted correctly.
-		population = self.apply_add_start_points(population)
+		population = self.apply_add_start_points(population, self.initial_start_positions)
 		# Construct a dataframe with the "Age" of each genotype.
 		population_sorted = population.sort_values(by = ["Generation", "Population"], ascending = [True, False])
 		# Add semi-frequencies
@@ -411,7 +419,7 @@ class GenerateMullerDataFrame:
 		population_sorted = population.sort_values(by = ["Generation", "Population"], ascending = [True, False])
 
 		# Generate a dataframe with the adjusted generations and populations.
-		muller_df = self.adjust_population(population)
+		muller_df = self.correct_population_values(population)
 
 		ages = self.get_genotype_ages(population_sorted)
 
@@ -423,3 +431,15 @@ class GenerateMullerDataFrame:
 		# Rearrange the columns so pandas.testing.assert_frame_equal doesn't complain.
 		muller_ordered = muller_ordered[['Generation', 'Identity', 'Population', 'Frequency', 'Group_id', 'Unique_id']]
 		return muller_ordered
+
+
+if __name__ == "__main__":
+	filename_edges = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.edges.tsv"
+	filename_population = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.populations.tsv"
+
+	table_edges = pandas.read_csv(filename_edges, sep = "\t")
+	table_population = pandas.read_csv(filename_population, sep = "\t")
+
+	mw = GenerateMullerDataFrame()
+	df = mw.run(table_edges, table_population)
+	print("F")

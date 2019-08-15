@@ -15,6 +15,7 @@ add_start_points <- function(pop_df, start_positions = 0.5) {
 	delta_debug <- min(diff(all_gens_list))
 	start_positions <- max(start_positions, delta)
 	start_positions <- min(start_positions, 1 - delta)
+	start_positions <- max(start_positions, 0.5)
 	
 	# set small initial population size:
 	init_size <- 0
@@ -66,7 +67,7 @@ add_start_points <- function(pop_df, start_positions = 0.5) {
 	return(pop_df)
 }
 args = commandArgs(trailingOnly=TRUE)
-#filename <- "/home/cld100/Documents/github/muller_diagrams/5G/tables/5_genotypes.timeseries.ggmuller.populations.tsv"
+#filename <- "/home/cld100/Documents/github/muller_diagrams/tests/data/tables_ggmuller/m5_correct.ggmuller.populations.tsv"
 filename <- args[1]
 start_positions <- 0.5
 pop_df <- read.csv(filename, sep = "\t", header = TRUE)

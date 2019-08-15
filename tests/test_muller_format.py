@@ -20,7 +20,9 @@ tables_combined = [
 	(DATA_FOLDER / "B1_Muller.ggmuller.populations.tsv", DATA_FOLDER / "B1_Muller.ggmuller.edges.tsv"),
 	(DATA_FOLDER / "Planktonic3.ggmuller.populations.tsv", DATA_FOLDER / "Planktonic_3_mullerinput.ggmuller.edges.tsv"),
 	(DATA_FOLDER / "mullerinputbio1.ggmuller.populations.tsv", DATA_FOLDER / "mullerinputbio1.ggmuller.edges.tsv"),
-	(DATA_FOLDER / "P1_Final_Muller.ggmuller.populations.tsv", DATA_FOLDER / "P1_Final_Muller.ggmuller.edges.tsv")
+	(DATA_FOLDER / "P1_Final_Muller.ggmuller.populations.tsv", DATA_FOLDER / "P1_Final_Muller.ggmuller.edges.tsv"),
+	# The LTEE tables are causing an issue where timepoints are getting duplicated.
+	(DATA_FOLDER / "m5_correct.ggmuller.populations.tsv", DATA_FOLDER / "m5_correct.ggmuller.edges.tsv")
 ]
 
 tables_population = [i[0] for i in tables_combined]
@@ -105,7 +107,7 @@ def get_lookup_table(population_filename) -> pandas.Series:
 
 def get_muller_df(filename: Path) -> pandas.DataFrame:
 	df = pandas.read_csv(filename, sep = "\t")
-	return GenerateMullerDataFrame().adjust_population(df)
+	return GenerateMullerDataFrame().correct_population_values(df)
 
 
 @pytest.mark.parametrize("populationfilename", tables_population)
@@ -115,6 +117,7 @@ def test_add_start_points(tmp_path, muller_dataframe_generator, populationfilena
 	command = ["Rscript", ScriptFilenames.get_script_full(), populationfilename, filename_truthset]
 	subprocess.run(command)
 	truthset = pandas.read_csv(filename_truthset, sep = "\t")
+	truthset['Generation'] = truthset['Generation'].astype(float)
 
 	result = muller_dataframe_generator.apply_add_start_points(population)
 
@@ -152,7 +155,7 @@ def test_get_initial_generations(tmp_path, muller_dataframe_generator, filename_
 
 	result = muller_dataframe_generator._get_initial_generations(population)
 
-	pandas.testing.assert_frame_equal(result, truthset)
+	pandas.testing.assert_frame_equal(result.reset_index(drop = True), truthset.reset_index(drop = True))
 
 
 @pytest.mark.parametrize("filename_population", tables_population)
@@ -163,6 +166,9 @@ def test_adjust_population_table(tmp_path, muller_dataframe_generator, filename_
 	command = ["Rscript", ScriptFilenames.get_script_adjust_population(), filename_population, filename_truth]
 	subprocess.run(command)
 	truthset = pandas.read_csv(filename_truth, sep = '\t')
+	truthset['Generation'] = truthset['Generation'].astype(float)
+	# Make sure the truthset generations column is `float`
+	truthset['Generation'] = truthset['Generation'].astype(float)
 
 	first_gens = muller_dataframe_generator._get_initial_generations(population)
 	result = muller_dataframe_generator._adjust_population_table(population, first_gens, 0.5)

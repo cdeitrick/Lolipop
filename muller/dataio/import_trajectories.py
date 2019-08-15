@@ -29,17 +29,37 @@ def _correct_math_scale(old_data: pandas.DataFrame) -> pandas.DataFrame:
 	""" Ensures the time table columns contain values between 0 and 1 and are of type `float`"""
 	new_data = old_data.copy(deep = True)
 	for column in old_data.columns:
+		old_column = old_data[column]
 		try:
-			maximum_value = old_data[column].max()
+			maximum_value = old_column.max()
+			minimum_value = old_column.min()
 		except TypeError as exception:
 			logger.error(f"Some of the values in the column '{column}' could not be read as numbers.")
-			logger.error(f"The column had values of {old_data[column].values}")
+			logger.error(f"The column had values of {old_data[column].tolist()}")
 			raise exception
-		if maximum_value > 1.1:
+
+		# Test the most common case first
+		if (0.0 <= minimum_value <= 1.0) and (0.0 <= maximum_value <= 1.0):
+			# The table is fine.
+			new_column = old_column.astype(float) # To match the other columns.
+		elif maximum_value > 2.0:
+			# A little fuzzy here in case the max is something like 1.01. This should be masked instead.
+			# This column uses a 0-100 range. convert to 0-1
 			logger.warning(f"The column `{column}` had values greater than 1.0. It will be converted to a float between 0 and 1.")
-			new_column = old_data[column] / 100
+			new_column = old_column / 100
 		else:
-			new_column = old_data[column].astype(float)
+			# The table is formatted strangely, likely due to human error.
+			# Try to coerce the column values into the 0-1 range.
+			# Basically, mask values that exceed the lower and upper limits.
+			below_o = (old_column < 0).sum()
+			above_1 = (old_column > 1).sum()
+			message = f"The column '{column}' had values outside the range [0,1], but not in the range [0,100]. It will be coerced to [0,1]."
+			message += f"There were {below_o} negative values and {above_1} values above 1.0."
+			logger.warning(message)
+
+			new_column = old_column.mask(lambda s: s < 0, 0)
+			new_column = new_column.mask(lambda s: s > 1, 1)
+
 		new_data[column] = new_column
 	return new_data
 
@@ -116,6 +136,7 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	if 0 not in time_table.columns:
 		time_table[0] = 0.0  # Should be a float to match the dtype of the other columns
 		logger.warning("Warning: The input table did not have values for timepoint 0. Adding 0% for each trajectory at timepoint 0")
+
 	# Make sure there are no missing values.
 	time_table = time_table.fillna(0)
 	# Extract metadata for each series.

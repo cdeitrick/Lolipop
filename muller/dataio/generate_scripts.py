@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List
 
 
-def generate_r_script(trajectory: Path, population: Path, edges: Path, table_filename: Path, plot_filename: Path,
+def generate_r_script(trajectory: Path, population: Path, edges: Path, plot_filename: Path,
 		color_palette: Dict[str, str], genotype_labels: List[str]) -> str:
 	# `color_palette` should be an OrderedDict.
 	genotype_labels = sorted(genotype_labels)
@@ -18,7 +18,6 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, table_fil
 	edges <- read.table("{edges}", header=TRUE)
 
 	Muller_df <- get_Muller_df(edges, population)
-	write.csv(Muller_df, "{path}", sep = "\\t", col.names = NA)
 	palette <- c({palette})
 
 	ggplot(Muller_df, aes_string(x = "Generation", y = "Frequency", group = "Group_id", fill = "Identity", colour = "Identity")) + 
@@ -36,8 +35,7 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, table_fil
 		population = population.absolute(),
 		edges = edges.absolute(),
 		output = plot_filename.absolute(),
-		palette = script_colors,
-		path = table_filename
+		palette = script_colors
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))
 
