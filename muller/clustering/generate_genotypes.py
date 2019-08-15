@@ -1,6 +1,6 @@
 import itertools
 from typing import Dict, List, Optional, Tuple
-
+from pathlib import Path
 import numpy
 import pandas
 from loguru import logger
@@ -30,6 +30,8 @@ class ClusterMutations:
 	starting_genotypes: List[List[str]]
 		A list of genotypes to start the clustering algorithm with. The distance metrics will be modified so that the trajectories specified are
 		grouped together.
+	filename_pairwise: Optional[Path]
+		Path to a tables/.distance.tsv file from a previous run using the same input parameters and table.
 	Returns
 	-------
 	pandas.DataFrame, pandas.Series, numpy.array
@@ -39,7 +41,7 @@ class ClusterMutations:
 	"""
 
 	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, breakpoints: List[float],
-			starting_genotypes: List[List[str]], trajectory_filter: filters.TrajectoryFilter):
+			starting_genotypes: List[List[str]], trajectory_filter: filters.TrajectoryFilter, filename_pairwise:Optional[Path] = None):
 		self.method: str = method
 		self.metric: str = metric
 		self.dlimit: float = dlimit
@@ -49,8 +51,10 @@ class ClusterMutations:
 		self.breakpoints: List[float] = breakpoints
 		self.starting_genotypes: List[List[str]] = starting_genotypes
 		self.trajectory_filter = trajectory_filter
+		self.filename_pairwise = filename_pairwise
 		# These will be updated when run() is called.
 		self.pairwise_distances: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
+		self.pairwise_distances_full: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 		self.genotype_filter = filters.GenotypeFilter(
@@ -58,6 +62,35 @@ class ClusterMutations:
 			fixed_cutoff = self.flimit,
 			frequencies = self.breakpoints
 		)
+	@staticmethod
+	def _load_pairwise_distances(filename:Path)->Dict[Tuple[str,str], float]:
+		""" Reads pre-computed pairwise distances from a previous run. Typically found in the /tables/.distance.tsv table."""
+		table_distance_pairwise = pandas.read_csv(filename, sep = "\t")
+
+		pair_array = dict()
+		for index, row in table_distance_pairwise.iterrows():
+			values = {(index,i): row[i] for i in table_distance_pairwise.columns}
+			values_inverse = {k[::-1]:v for k,v in values.items()} # Faster to include reversed keys rather than trying to get (l,r) and (r,l) keys.
+
+			pair_array.update(values)
+			pair_array.update(values_inverse)
+
+		return pair_array
+
+	def get_pairwise_distances(self, trajectories:pandas.DataFrame):
+
+		if self.filename_pairwise:
+			pair_array = self._load_pairwise_distances(self.filename_pairwise)
+		else:
+			pair_array = metrics.calculate_pairwise_metric(
+				trajectories,
+				detection_cutoff = self.dlimit,
+				fixed_cutoff = self.flimit,
+				metric = self.metric
+			)
+
+		self.pairwise_distances_full = metrics.PairwiseCalculationCache(pair_array) # Keep a record of the pairwise distances before filtering.
+		return self.pairwise_distances_full
 
 	def run(self, trajectories: pandas.DataFrame) -> Tuple[pandas.DataFrame, Dict[str, List[str]]]:
 		"""
@@ -84,13 +117,8 @@ class ClusterMutations:
 			_iterations = 0  # The for loop shouldn't excecute.
 
 		# Calculate the distance between all possible pair of trajectories.
-		pair_array = metrics.calculate_pairwise_metric(
-			modified_trajectories,
-			detection_cutoff = self.dlimit,
-			fixed_cutoff = self.flimit,
-			metric = self.metric
-		)
-		self.pairwise_distances = metrics.PairwiseCalculationCache(pair_array)
+
+		self.pairwise_distances =self.get_pairwise_distances(modified_trajectories)
 
 		# Calculate the initial genotypes
 		genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)

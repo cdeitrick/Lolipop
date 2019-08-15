@@ -78,11 +78,12 @@ class MullerOutputGenerator:
 		self.save_r_script(genotypes.get('color_clade'), population_table)
 
 		muller_df = self.muller_formatter.run(edges_table, population_table)
-
 		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
+
 		logger.info("Generating muller plots...")
 		if muller_df is not None:
 			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
+
 		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
 			self.save_linkage_files()
@@ -288,7 +289,7 @@ class MullerOutputGenerator:
 	def pairwise_distance_information(self)->None:
 		""" Save the pairwise distances for each trajectory."""
 		squareform = self.data.p_values.squareform()
-		squareform.to_csv(self.filenames.distance_matrix)
+		squareform.to_csv(self.filenames.distance_matrix, sep = "\t")
 
 		pvalues_matrix = self.data.p_values.squareform()
 
