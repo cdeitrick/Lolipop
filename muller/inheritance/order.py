@@ -39,6 +39,8 @@ class LineageWorkflow:
 		self.derivative_cutoff = derivative_cutoff
 		self.genotype_nests: Optional[Cluster] = None
 
+		#TODO: Add configurable weights for the score tests.
+
 	def add_known_lineages(self, known_ancestry: Dict[str, str]):
 		for identity, parent in known_ancestry.items():
 			# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
