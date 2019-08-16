@@ -78,8 +78,6 @@ brew install graphviz
 ```
 or the equivalent package manager on your system.
 
-Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
-
 ## Optional Packages
 - `tqdm`: If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
 - `beautifulsoup4`: Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
@@ -117,6 +115,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 The delimiter will be inferred from the file extension.
 	-o,  --output               
                                 The output folder to save the files to.
+    --threads                   [2] 
+                                The number of processes to use. This is only relevant for very large datasets.
 	-d, --detection             
                                 The uncertainty to apply when performing
 	                            frequency-based calculations. For
@@ -183,6 +183,11 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 Path to a file listing trajectories which are known to be in the same genotype.
                                 Each line in the file represents a single genotype, and each line should be a
                                 comma-separated list of trajectory labels as they appear in the input dataset.
+    --filename-pairwise         
+                                A table of pairwise distance calculations computed in a previous run using
+                                identical input parameters. This is only usefull if the dataset being re-run 
+                                would other wise take a very onlg time to process (such as data from the 
+                                Long Term Evolution Experiment).
 
 ## Nesting Options
     --additive
