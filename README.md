@@ -44,14 +44,14 @@ pip install muller --upgrade
 
 Then run the scripts using 
 ```
-mullerplot [args]
+lineage [args]
 ```
 
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
 git clone https://github.com/cdeitrick/muller_diagrams.git
 cd muller_diagrams
-mullerplot [args]
+lineage [args]
 ```
 
 # Requirements
