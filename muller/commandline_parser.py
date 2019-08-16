@@ -174,8 +174,8 @@ def create_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"--filename-pairwise",
 		help = "Path to a table with pairwise distance calculations from a previous run using identical input parameters. Should be located " \
-			"in `tables/.distances.tsv in the output folder generated from the previous run. This table will be used rather than re-calculating " \
-			"all the pairwise distances again which may take a long time for very large datasets.",
+			   "in `tables/.distances.tsv in the output folder generated from the previous run. This table will be used rather than re-calculating " \
+			   "all the pairwise distances again which may take a long time for very large datasets.",
 		action = "store",
 		dest = "filename_pairwise",
 		type = Path,
@@ -190,7 +190,8 @@ def create_parser() -> argparse.ArgumentParser:
 		help = "The number of processes to use. Adding more threads than available cpu cores provides no speedup.",
 		action = "store",
 		dest = "threads",
-		default = None
+		type = int,
+		default = 2
 	)
 	parser.add_argument(
 		'--fixed',
