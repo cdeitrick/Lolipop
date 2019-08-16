@@ -158,10 +158,10 @@ class BaseGenerateMullerDiagram:
 
 		# Make sure the graph is not too big to be plotted.
 		if scale_x > self.scale_max:
-			logger.warning(f"Reducing x scale from {scale_x} to 5.")
+			logger.warning(f"Reducing x scale from {scale_x} to {self.scale_max}.")
 			scale_x = self.scale_max
 		if scale_y > self.scale_max:
-			logger.warning(f"Reducing y scale from {scale_y} to 5.")
+			logger.warning(f"Reducing y scale from {scale_y} to {self.scale_max}.")
 			scale_y = self.scale_max
 
 		# Disable the white outlines if the dataset is very large.
