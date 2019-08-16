@@ -7,8 +7,9 @@ import random
 from itertools import filterfalse
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Tuple
-from loguru import logger
+
 import pandas
+from loguru import logger
 from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
@@ -119,9 +120,10 @@ class BaseGenerateMullerDiagram:
 		self.genotype_annotation_font_color_light = "#FFFFFF"  # Font color to use when background is dark
 		self.genotype_annotation_font_color_dark = "#333333"  # Font color to use when the background is light.
 
-		self.scale_max = 3 # The maximum scale that the plots can be scalled to in order to avoid image limitations.
+		self.scale_max = 3  # The maximum scale that the plots can be scalled to in order to avoid image limitations.
 
-	def run(self, muller_df: pandas.DataFrame, color_palette: Dict[str, str], basename: Path, annotations: Optional[Dict[str, List[str]]] = None):
+	def run(self, muller_df: pandas.DataFrame, color_palette: Dict[str, str], basename: Path, annotations: Optional[Dict[str, List[str]]] = None,
+			title: Optional[str] = None):
 		"""
 			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 		Parameters
@@ -158,10 +160,10 @@ class BaseGenerateMullerDiagram:
 
 		# Make sure the graph is not too big to be plotted.
 		if scale_x > self.scale_max:
-			logger.warning(f"Reducing x scale from {scale_x} to {self.scale_max}.")
+			logger.debug(f"Mullerplot: Reducing x scale from {scale_x} to {self.scale_max}.")
 			scale_x = self.scale_max
 		if scale_y > self.scale_max:
-			logger.warning(f"Reducing y scale from {scale_y} to {self.scale_max}.")
+			logger.debug(f"Mullerplot: Reducing y scale from {scale_y} to {self.scale_max}.")
 			scale_y = self.scale_max
 
 		# Disable the white outlines if the dataset is very large.
@@ -184,7 +186,7 @@ class BaseGenerateMullerDiagram:
 		if annotations:
 			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
 
-		ax = self._format_plot(ax, max(x), scale_x, scale_y)
+		ax = self._format_plot(ax, title, max(x), scale_x, scale_y)
 
 		self.save_figure(basename)
 
@@ -202,7 +204,7 @@ class BaseGenerateMullerDiagram:
 		fig, ax = plt.subplots(figsize = (figsize_x, figsize_y))
 		return fig, ax
 
-	def _format_plot(self, ax: plt.Axes, maximum_x: float, scale_x: int, scale_y: int):
+	def _format_plot(self, ax: plt.Axes, title: Optional[str], maximum_x: float, scale_x: int, scale_y: int):
 		"""
 			Addes labels and such to the graph.
 		Parameters
@@ -213,11 +215,15 @@ class BaseGenerateMullerDiagram:
 		"""
 		scale = min(scale_x, scale_y)
 		axes_label_fontsize = 32 * scale
+		axes_title_fontsize = 40 * scale
 		axes_label_tick_fontsize = 20 * scale
 
 		ax.set_facecolor(self.root_genotype_color)
 
 		# Add labels to the x and y axes.
+		if not title:
+			title = "Genotype Frequency"
+		ax.set_title(title, fontsize = axes_title_fontsize)
 		ax.set_xlabel("Generation", fontsize = axes_label_fontsize)
 		ax.set_ylabel("Frequency", fontsize = axes_label_fontsize)
 
