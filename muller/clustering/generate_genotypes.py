@@ -57,6 +57,7 @@ class ClusterMutations:
 		self.pairwise_distances_full: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
+		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric)
 		self.genotype_filter = filters.GenotypeFilter(
 			detection_cutoff = self.dlimit,
 			fixed_cutoff = self.flimit,
@@ -82,12 +83,16 @@ class ClusterMutations:
 		if self.filename_pairwise:
 			pair_array = self._load_pairwise_distances(self.filename_pairwise)
 		else:
+			"""
 			pair_array = metrics.calculate_pairwise_metric(
 				trajectories,
 				detection_cutoff = self.dlimit,
 				fixed_cutoff = self.flimit,
 				metric = self.metric
 			)
+			"""
+			pair_array = self.distance_calculator.run(trajectories)
+
 
 		self.pairwise_distances_full = metrics.PairwiseCalculationCache(pair_array) # Keep a record of the pairwise distances before filtering.
 		return self.pairwise_distances_full
