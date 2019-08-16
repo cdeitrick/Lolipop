@@ -48,7 +48,8 @@ class MullerWorkflow:
 			breakpoints = breakpoints,
 			starting_genotypes = self.program_options.starting_genotypes,
 			trajectory_filter = self.trajectory_filter,
-			filename_pairwise = self.program_options.filename_pairwise
+			filename_pairwise = self.program_options.filename_pairwise,
+			threads = self.program_options.threads
 		)
 
 		self.organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(

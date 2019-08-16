@@ -28,8 +28,6 @@ class DistanceCalculator:
 		self.fixed_limit = fixed_limit
 		self.metric = metric
 		self.threads = threads
-		#logger.warning(f"Set the threads manually...")
-		self.threads = 8
 		# Basically used as a cache. Should save memory compared to loading each pair of trajectories directly into `pair_combinations`.
 		self.trajectories: Optional[pandas.DataFrame] = None
 
@@ -55,14 +53,14 @@ class DistanceCalculator:
 		""" Implements the actual loop over all pairs of trajectoies. """
 
 		# Initialize a progressbar if the dataset has a lot of combinations.
-		#if len(pair_combinations) >= self.progress_bar_minimum_points and tqdm:
+		# if len(pair_combinations) >= self.progress_bar_minimum_points and tqdm:
 		#	self.progress_bar = tqdm(total = len(pair_combinations))
-		#else:
+		# else:
 		#	self.progress_bar = None
 
 		pair_array: Dict[Tuple[str, str], float] = dict()
 
-		if self.threads:
+		if self.threads and self.threads > 1: #One process is slower than using the serial method.
 			pool = multiprocessing.Pool(processes = 4)
 			for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
 				key, value = i.get()
@@ -71,7 +69,8 @@ class DistanceCalculator:
 			for element in pair_combinations:
 				key, value = calculate_distance(self, element, self.trajectories)
 				pair_array[key] = value
-				pair_array[key[1], key[0]] = value # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
+				pair_array[
+					key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
 
 		# Assume that any pair with NAN values are the maximum possible distance from each other.
 		maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
@@ -80,6 +79,7 @@ class DistanceCalculator:
 		return pair_array
 
 
+# Keep this as a separate function. Class methods are finicky when used with multiprocessing.
 def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
@@ -87,9 +87,6 @@ def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple
 	left, right = element
 	left_trajectory = trajectories.loc[left]
 	right_trajectory = trajectories.loc[right]
-
-	#if process.progress_bar:
-	#	process.progress_bar.update(1)
 
 	# We only care about the timepoints such that `detection_cutoff` < f < `fixed_cutoff.
 	# For now, lets require that both timepoints are detected and not yet fixed.
@@ -107,8 +104,7 @@ def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple
 		# Treat both trajectories as fixed immediately.
 		distance_between_series = fixed_overlap(left_trajectory, right_trajectory, process.fixed_limit)
 	else:
-		# distance_between_series = distance.calculate_distance(left_reduced, right_reduced, process.metric)
-		distance_between_series = distance.binomial_distance(left_trajectory, right_trajectory)
+		distance_between_series = distance.calculate_distance(left_reduced, right_reduced, process.metric)
 	return element, distance_between_series
 
 
@@ -138,3 +134,51 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 	result = 0 if p_value else math.nan
 
 	return result
+
+
+def plot_results(benchmarks):
+	import matplotlib.pyplot as plt
+	import seaborn
+	labels = list()
+	values = list()
+	for k, v in benchmarks.items():
+		labels.append(k)
+		values.append(v)
+	fig, ax = plt.subplots(figsize = (12, 10))
+	seaborn.barplot(x = values, y = labels)
+
+	plt.xlabel('time in seconds', fontsize = 14)
+	plt.ylabel('number of processes', fontsize = 14)
+	plt.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
+	plt.grid()
+
+	plt.savefig("benchmarkresults.png")
+
+
+def benchmark():
+	import time
+	filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/tables_input_trajectories/B1_Muller.xlsx"
+	table = pandas.read_excel(filename)
+	table = table.set_index('Trajectory')
+	table = table[widgets.get_numeric_columns(table.columns)]
+	combinations = list(itertools.combinations(table.index, 2))
+	benchmarks = dict()
+	for index in [None] + list(range(1, 9)):
+		logger.info(f"Running iteration {index}")
+		distance_calculator = DistanceCalculator(.03, .97, 'binomial', threads = index)
+		start = time.time()
+		if index is None:
+			results = [calculate_distance(distance_calculator, e, table) for e in combinations]
+		else:
+			pool = multiprocessing.Pool(processes = index)
+			results = [pool.apply_async(calculate_distance, args = (distance_calculator, e, table)) for e in combinations]
+			results = [i.get() for i in results]
+		duration = time.time() - start
+		label = str(index)
+		benchmarks[label] = duration
+	return benchmarks
+
+
+if __name__ == "__main__":
+	b = benchmark()
+	plot_results(b)

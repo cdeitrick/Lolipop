@@ -186,6 +186,13 @@ def create_parser() -> argparse.ArgumentParser:
 	# ------------------------------------------------------ General Analysis Options ------------------------------------------------------------
 	##############################################################################################################################################
 	parser.add_argument(
+		"--threads",
+		help = "The number of processes to use. Adding more threads than available cpu cores provides no speedup.",
+		action = "store",
+		dest = "threads",
+		default = None
+	)
+	parser.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
