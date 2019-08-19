@@ -177,6 +177,7 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 		for i in members:
 			member_values += trajectory_annotations.get(i, [])
 		# Remove missing annotations
-		member_values: List[str] = [i for i in member_values if i]
+		# Also remove ecess whitespace
+		member_values: List[str] = [i.strip() for i in member_values if i]
 		genotype_annotations[genotype_label] = member_values
 	return genotype_annotations
