@@ -61,7 +61,7 @@ class DistanceCalculator:
 		pair_array: Dict[Tuple[str, str], float] = dict()
 
 		if self.threads and self.threads > 1: #One process is slower than using the serial method.
-			pool = multiprocessing.Pool(processes = 4)
+			pool = multiprocessing.Pool(processes = self.threads)
 			for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
 				key, value = i.get()
 				pair_array[key] = value
