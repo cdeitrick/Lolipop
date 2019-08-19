@@ -64,7 +64,7 @@ class MullerOutputGenerator:
 			for genotype_identifier in highlight.split(','):
 				self.custom_palette[genotype_identifier] = highlight_color
 
-	def run(self)->None:
+	def run(self) -> None:
 		filtered_trajectories = self.save_filtered_trajectories_table()
 
 		edges_table, population_table = self.save_ggmuller_files()
@@ -72,8 +72,7 @@ class MullerOutputGenerator:
 
 		self.save_base_tables(genotypes.get_trajectory_map())
 		self.save_supplementary_files(genotypes)
-		self.save_genotype_plots(genotypes, filtered_trajectories)
-		self.save_lineage_plots(genotypes)
+
 		logger.info("Generating r script...")
 		self.save_r_script(genotypes.get('color_clade'), population_table)
 
@@ -81,8 +80,6 @@ class MullerOutputGenerator:
 		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
 
 		logger.info("Generating muller plots...")
-		if muller_df is not None:
-			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
 
 		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
@@ -91,6 +88,14 @@ class MullerOutputGenerator:
 		if self.data.trajectories is not None:
 			logger.info("Saving pairwise distances...")
 			self.pairwise_distance_information()
+		# Save the plots last
+
+		self.save_genotype_plots(genotypes, filtered_trajectories)
+
+		self.save_lineage_plots(genotypes)
+
+		if muller_df is not None:
+			self.save_muller_plots(muller_df, genotypes.get('color_clade'), genotypes.get('color_unique'), genotypes.get('annotations'))
 
 	##############################################################################################################################################
 	# ---------------------------------------------------------- General Utilites ----------------------------------------------------------------
@@ -145,7 +150,6 @@ class MullerOutputGenerator:
 					for genotype_label in selected_genotypes:
 						selected_genotype = genotype_information_collection[genotype_label]
 						selected_genotype.color_custom = color
-
 
 		return genotype_information_collection
 
@@ -232,13 +236,13 @@ class MullerOutputGenerator:
 		edges_table.to_csv(str(self.filenames.ggmuller_edges), sep = self.filenames.delimiter, index = False)
 		return edges_table, population_table
 
-	def save_linkage_files(self)->None:
+	def save_linkage_files(self) -> None:
 		num_trajectories = len(self.data.trajectories)
 		linkage_table = widgets.format_linkage_matrix(self.data.linkage_matrix, num_trajectories)
 		linkage_table.to_csv(str(self.filenames.linkage_matrix_table), sep = self.filenames.delimiter, index = False)
 		plot_dendrogram(self.data.linkage_matrix, self.data.p_values, self.filenames.linkage_plot)
 
-	def save_lineage_plots(self, genotypes: dataio.GenotypeCollection)->None:
+	def save_lineage_plots(self, genotypes: dataio.GenotypeCollection) -> None:
 		""" Generate the lineage plots."""
 		logger.info("Generating Lineage Plots...")
 		edges_table = self.data.clusters.priority_table()
@@ -286,7 +290,7 @@ class MullerOutputGenerator:
 		)
 		self.filenames.r_script.write_text(script_content)
 
-	def pairwise_distance_information(self)->None:
+	def pairwise_distance_information(self) -> None:
 		""" Save the pairwise distances for each trajectory."""
 		squareform = self.data.p_values.squareform()
 		squareform.to_csv(self.filenames.distance_matrix, sep = "\t")
@@ -298,7 +302,7 @@ class MullerOutputGenerator:
 	##############################################################################################################################################
 	# ---------------------------------------------------- Generate supplementary files ----------------------------------------------------------
 	##############################################################################################################################################
-	def save_workflow_parameters(self, clade_palette, distinct_palette)->None:
+	def save_workflow_parameters(self, clade_palette, distinct_palette) -> None:
 		parameters = {k: (v if not isinstance(v, Path) else str(v)) for k, v in self.data.program_options.items()}
 		parameters['genotypeColorsClade'] = clade_palette
 		parameters['genotypeColorsDistinct'] = distinct_palette
