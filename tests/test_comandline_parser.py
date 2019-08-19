@@ -14,7 +14,7 @@ def output_folder(tmpdir) -> Path:
 	return tmpdir / "output_folder"
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_minimum_commandline_parser(output_folder):
 	filename = DATA_FOLDER / "tables_input_trajectories" / "5_genotypes.timeseries.tsv"
 	args = ["--input", str(filename), "--output", str(output_folder)]
@@ -31,7 +31,7 @@ def test_similiarity_cutoff(output_folder, cutoff):
 	muller_workflow.MullerWorkflow(args).run(args.filename, args.output_folder)
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_twostep_method(output_folder):
 	filename = DATA_FOLDER / "tables_input_trajectories" / "5_genotypes.timeseries.tsv"
 	args = ["--input", str(filename), "--output", str(output_folder), "--method", 'twostep']
