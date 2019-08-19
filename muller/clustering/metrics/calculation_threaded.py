@@ -136,7 +136,7 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 	return result
 
 
-def plot_benchmark_results(benchmarks):
+def plot_benchmark_results(benchmarks, output_filename):
 	import matplotlib.pyplot as plt
 	import seaborn
 	labels = list()
@@ -152,7 +152,7 @@ def plot_benchmark_results(benchmarks):
 	plt.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
 	plt.grid()
 
-	plt.savefig("benchmarkresults.png")
+	plt.savefig(output_filename)
 
 
 def benchmark(filename):
