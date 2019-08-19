@@ -136,7 +136,7 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 	return result
 
 
-def plot_results(benchmarks):
+def plot_benchmark_results(benchmarks):
 	import matplotlib.pyplot as plt
 	import seaborn
 	labels = list()
@@ -155,9 +155,9 @@ def plot_results(benchmarks):
 	plt.savefig("benchmarkresults.png")
 
 
-def benchmark():
+def benchmark(filename):
 	import time
-	filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/tables_input_trajectories/B1_Muller.xlsx"
+
 	table = pandas.read_excel(filename)
 	table = table.set_index('Trajectory')
 	table = table[widgets.get_numeric_columns(table.columns)]
@@ -181,4 +181,4 @@ def benchmark():
 
 if __name__ == "__main__":
 	b = benchmark()
-	plot_results(b)
+	plot_benchmark_results(b)
