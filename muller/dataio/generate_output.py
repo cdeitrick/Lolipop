@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas
 from loguru import logger
 
-from muller import dataio, palettes, widgets
-from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-from muller.graphics import AnnotatedMullerDiagram, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap
+from muller import dataio, widgets
+from muller.clustering.metrics.distance_cache import DistanceCache
+from muller.graphics import AnnotatedMullerDiagram, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "genotype-filtered"
@@ -28,7 +28,7 @@ class WorkflowData:
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
 	clusters: Any
-	p_values: PairwiseCalculationCache
+	p_values: DistanceCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
 	genotype_palette_filename: Optional[Path]

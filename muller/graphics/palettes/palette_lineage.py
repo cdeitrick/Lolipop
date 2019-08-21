@@ -7,10 +7,10 @@ import random
 
 try:
 	from . import colorset
-	from .. import treetools
+	from muller import treetools
 except ModuleNotFoundError:
 	from muller import treetools
-	from muller.palettes import colorset
+	from muller.graphics.palettes import colorset
 
 
 def apply_clade_colorscheme(clade: List[str], colorscheme: str) -> Dict[str, str]:

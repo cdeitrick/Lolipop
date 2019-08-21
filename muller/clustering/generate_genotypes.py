@@ -53,8 +53,8 @@ class ClusterMutations:
 		self.trajectory_filter = trajectory_filter
 		self.filename_pairwise = filename_pairwise
 		# These will be updated when run() is called.
-		self.pairwise_distances: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
-		self.pairwise_distances_full: metrics.PairwiseCalculationCache = metrics.PairwiseCalculationCache()  # Empty cache that will be replaced in generate_genotypes().
+		self.pairwise_distances: metrics.DistanceCache = metrics.DistanceCache()  # Empty cache that will be replaced in generate_genotypes().
+		self.pairwise_distances_full: metrics.DistanceCache = metrics.DistanceCache()  # Empty cache that will be replaced in generate_genotypes().
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric, threads = threads)
@@ -86,7 +86,7 @@ class ClusterMutations:
 			pair_array = self.distance_calculator.run(trajectories)
 
 
-		self.pairwise_distances_full = metrics.PairwiseCalculationCache(pair_array) # Keep a record of the pairwise distances before filtering.
+		self.pairwise_distances_full = metrics.DistanceCache(pair_array) # Keep a record of the pairwise distances before filtering.
 		return self.pairwise_distances_full
 
 	def run(self, trajectories: pandas.DataFrame) -> Tuple[pandas.DataFrame, Dict[str, List[str]]]:

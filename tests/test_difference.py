@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller.clustering.methods import difference
+from muller.clustering.methods import twostep_unlink
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def trajectories() -> pandas.Series:
 
 
 def test_find_weakest_pair(trajectories):
-	assert difference._find_weakest_pair(trajectories, .1) == ('2', '4')
+	assert twostep_unlink._find_weakest_pair(trajectories, .1) == ('2', '4')
 
 
 def test_divide_genotype(trajectories):
@@ -34,7 +34,7 @@ def test_divide_genotype(trajectories):
 	expected_genotype1 = ['2', '1', '3']
 	expected_genotype2 = ['4']
 
-	result1, result2 = difference._divide_genotype(genotype, trajectories, 0.1)
+	result1, result2 = twostep_unlink._divide_genotype(genotype, trajectories, 0.1)
 
 	assert expected_genotype1 == result1
 	assert expected_genotype2 == result2
@@ -45,6 +45,6 @@ def test_unlink_unrelated_trajectories(trajectories):
 
 	expected = [['4'], ['2', '1', '3']]
 
-	result = difference.unlink_unrelated_trajectories(genotypes, trajectories.to_dict(), 0.1)
+	result = twostep_unlink.unlink_unrelated_trajectories(genotypes, trajectories.to_dict(), 0.1)
 
 	assert result == expected

@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
 	if 'dataset' in dir(args):
 		# The benchmarking utility was activated
-		from muller.clustering.metrics.calculation_threaded import benchmark, plot_benchmark_results
+		from muller.clustering.metrics.distance_calculator import benchmark, plot_benchmark_results
 
 		dataset = args.dataset
 		output_filename = args.output

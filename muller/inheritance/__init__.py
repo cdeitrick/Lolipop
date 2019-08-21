@@ -1,2 +1,2 @@
-from .order import LineageWorkflow
-from .reorder_genotypes import SortGenotypeTableWorkflow
+from .genotype_lineage import LineageWorkflow
+from .genotype_reorder import SortGenotypeTableWorkflow

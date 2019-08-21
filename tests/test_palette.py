@@ -3,7 +3,8 @@ import re
 import pandas
 import pytest
 
-from muller import palettes, treetools
+from muller import treetools
+from muller.graphics import palettes
 from muller.dataio import import_table
 
 

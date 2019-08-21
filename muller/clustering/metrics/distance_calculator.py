@@ -13,10 +13,10 @@ except ModuleNotFoundError:
 	tqdm = None
 
 try:
-	from muller.clustering.metrics import distance
+	from muller.clustering.metrics import distance_methods
 	from muller import widgets
 except ModuleNotFoundError:
-	from . import distance
+	from . import distance_methods
 	from ... import widgets
 
 
@@ -104,7 +104,7 @@ def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple
 		# Treat both trajectories as fixed immediately.
 		distance_between_series = fixed_overlap(left_trajectory, right_trajectory, process.fixed_limit)
 	else:
-		distance_between_series = distance.calculate_distance(left_reduced, right_reduced, process.metric)
+		distance_between_series = distance_methods.calculate_distance(left_reduced, right_reduced, process.metric)
 	return element, distance_between_series
 
 

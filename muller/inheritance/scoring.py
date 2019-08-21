@@ -5,9 +5,9 @@ import pandas
 from muller.widgets import get_valid_points
 
 try:
-	from muller.inheritance import order_by_area
+	from muller.inheritance import areascore
 except ModuleNotFoundError:
-	from . import order_by_area
+	from . import areascore
 
 
 def calculate_subtractive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
@@ -79,14 +79,14 @@ def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pand
 	# If the nested genotype is not fixed, group the remaining frequencies into an `other` category.
 	# noinspection PyTypeChecker
 	other_genotypes: pandas.Series = 1 - nested_genotype
-	area_nested = order_by_area.area_of_series(nested_genotype)
-	area_unnested = order_by_area.area_of_series(unnested_genotype)
-	area_other = order_by_area.area_of_series(other_genotypes)
-	common_area_nested = order_by_area.calculate_common_area(nested_genotype, unnested_genotype)
-	common_area_other = order_by_area.calculate_common_area(other_genotypes, unnested_genotype)
+	area_nested = areascore.area_of_series(nested_genotype)
+	area_unnested = areascore.area_of_series(unnested_genotype)
+	area_other = areascore.area_of_series(other_genotypes)
+	common_area_nested = areascore.calculate_common_area(nested_genotype, unnested_genotype)
+	common_area_other = areascore.calculate_common_area(other_genotypes, unnested_genotype)
 
-	is_subset_nested = order_by_area.is_subset(area_nested, area_unnested, common_area_nested)
-	is_subset_other = order_by_area.is_subset(area_other, area_unnested, common_area_other)
+	is_subset_nested = areascore.is_subset(area_nested, area_unnested, common_area_nested)
+	is_subset_other = areascore.is_subset(area_other, area_unnested, common_area_other)
 
 	if is_subset_nested and is_subset_other:
 		score = int(common_area_nested > 2 * common_area_other)

@@ -5,11 +5,11 @@ from loguru import logger
 
 try:
 	from muller.inheritance import scoring
-	from muller.inheritance.cluster import Cluster
+	from muller.inheritance.genotype_ancestry import Ancestry
 	from muller import widgets
 except ModuleNotFoundError:
 	from . import scoring
-	from .cluster import Cluster
+	from .genotype_ancestry import Ancestry
 	from .. import widgets
 
 
@@ -37,7 +37,7 @@ class LineageWorkflow:
 		self.additive_cutoff = additive_cutoff
 		self.subtractive_cutoff = subtractive_cutoff
 		self.derivative_cutoff = derivative_cutoff
-		self.genotype_nests: Optional[Cluster] = None
+		self.genotype_nests: Optional[Ancestry] = None
 
 		#TODO: Add configurable weights for the score tests.
 
@@ -76,7 +76,7 @@ class LineageWorkflow:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
 			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
 
-	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> Cluster:
+	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> Ancestry:
 		"""
 			Infers the lineage from the given genotype table.
 		Parameters
@@ -88,7 +88,7 @@ class LineageWorkflow:
 			circular links from forming.
 		"""
 		initial_background = sorted_genotypes.iloc[0]
-		self.genotype_nests = Cluster(initial_background, timepoints = sorted_genotypes)
+		self.genotype_nests = Ancestry(initial_background, timepoints = sorted_genotypes)
 		self.add_known_lineages(known_ancestry if known_ancestry else dict())
 
 		for unnested_label, unnested_trajectory in sorted_genotypes[1:].iterrows():

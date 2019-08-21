@@ -1,4 +1,4 @@
-from muller.palettes.palette_annotation import generate_annotation_palette
+from muller.graphics.palettes.palette_annotation import generate_annotation_palette
 
 
 def test_generate_annotation_palette():

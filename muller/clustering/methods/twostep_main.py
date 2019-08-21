@@ -4,13 +4,13 @@ from typing import Dict, List, Tuple
 import pandas
 
 try:
-	from muller.clustering.methods.difference import unlink_unrelated_trajectories
-	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from muller.clustering.methods.population_genotypes_cache import PopulationGenotypes
+	from muller.clustering.methods.twostep_unlink import unlink_unrelated_trajectories
+	from muller.clustering.metrics.distance_cache import DistanceCache
+	from muller.clustering.methods.population_genotypes import PopulationGenotypes
 except ModuleNotFoundError:
-	from .difference import unlink_unrelated_trajectories
-	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
-	from .population_genotypes_cache import PopulationGenotypes
+	from .twostep_unlink import unlink_unrelated_trajectories
+	from ..metrics.distance_cache import DistanceCache
+	from .population_genotypes import PopulationGenotypes
 
 
 def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], relative_cutoff: float, base_genotypes: List[List[str]] = None) -> List[
@@ -51,7 +51,7 @@ def _group_trajectories_into_genotypes(pairs: Dict[Tuple[str, str], float], rela
 	return genotype_candidates
 
 
-def twostep_method(timeseries: pandas.DataFrame, pair_array: PairwiseCalculationCache, similarity_breakpoint: float, difference_breakpoint: float,
+def twostep_method(timeseries: pandas.DataFrame, pair_array: DistanceCache, similarity_breakpoint: float, difference_breakpoint: float,
 		starting_genotypes: List[List[str]]) -> List[List[str]]:
 	"""
 		Clusters trajectories into muller_genotypes.

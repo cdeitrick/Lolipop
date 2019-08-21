@@ -26,7 +26,7 @@ def test_minimum_commandline_parser(output_folder):
 @pytest.mark.parametrize("cutoff", [.11, .25, .77])
 def test_similiarity_cutoff(output_folder, cutoff):
 	filename = DATA_FOLDER / "tables_input_trajectories" / "5_genotypes.timeseries.tsv"
-	args = ["--input", str(filename), "--output", str(output_folder), '--similarity-cutoff', cutoff]
+	args = ["lineage", "--input", str(filename), "--output", str(output_folder), '--similarity-cutoff', cutoff]
 	args = create_parser().parse_args([str(i) for i in args])
 	muller_workflow.MullerWorkflow(args).run(args.filename, args.output_folder)
 

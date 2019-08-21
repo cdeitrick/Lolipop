@@ -5,6 +5,7 @@ from muller.commandline_parser import _parse_frequency_option
 def test_parse_commandline_options_set_all_manually():
 	commandline_parser = create_parser()
 	arguments = [
+		"lineage",
 		"--input", str(Path.cwd() / "test_table"),
 		"--output", str(Path.cwd() / "output_files"),
 		"--fixed", "0.4",
@@ -36,6 +37,7 @@ def test_parse_commandline_options_by_breakpoints():
 	commandline_parser = create_parser()
 	detection_cutoff = .012
 	arguments = [
+		"lineage",
 		"--input", "test_table",
 		"--output", "output_files",
 		"--detection", str(detection_cutoff)
@@ -65,6 +67,7 @@ def test_parse_lf_options():
 	fixed_cutoff = .5
 	difference = .15
 	arguments = [
+		"lineage",
 		"--input", "test_table",
 		"--output", "output_files",
 		"--difference-cutoff", str(difference),

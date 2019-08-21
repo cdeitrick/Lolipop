@@ -8,7 +8,7 @@ from scipy.spatial import distance
 PairwiseArrayType = Dict[Tuple[str, str], float]
 
 
-class PairwiseCalculationCache:
+class DistanceCache:
 	"""
 		Calculates and holds the calculations for all pairwise elements.
 
@@ -61,7 +61,7 @@ class PairwiseCalculationCache:
 			result = self.pairwise_values.get((right, left), default)
 		return result
 
-	def reduce(self, labels: Iterable[str]) -> 'PairwiseCalculationCache':
+	def reduce(self, labels: Iterable[str]) -> 'DistanceCache':
 		"""
 			Removes all labels from `self.pairwise_values` that are not present in `labels`
 		"""
@@ -73,7 +73,7 @@ class PairwiseCalculationCache:
 		self.pairwise_values = pair_array
 		return self
 
-	def update(self, pair_array: PairwiseArrayType) -> 'PairwiseCalculationCache':
+	def update(self, pair_array: PairwiseArrayType) -> 'DistanceCache':
 		for (left, right), value in pair_array.items():
 			self.pairwise_values[left, right] = value
 			self.pairwise_values[right, left] = value
@@ -96,7 +96,7 @@ class PairwiseCalculationCache:
 				output.write(line)
 
 	@classmethod
-	def read(cls, filename: Path) -> 'PairwiseCalculationCache':
+	def read(cls, filename: Path) -> 'DistanceCache':
 		contents = filename.read_text().split('\n')
 		contents = [i.split('\t') for i in contents]
 		data = dict()
@@ -105,4 +105,4 @@ class PairwiseCalculationCache:
 			value = float(value)
 			data[left, right] = value
 			data[right, left] = value
-		return PairwiseCalculationCache(data)
+		return DistanceCache(data)

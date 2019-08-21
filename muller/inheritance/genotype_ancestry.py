@@ -4,7 +4,7 @@ from typing import Dict, List, Mapping, Optional, Tuple, Union
 import pandas
 
 
-class Cluster:
+class Ancestry:
 	""" Holds the possible ancestry candidates as well as the confidance score for each."""
 
 	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):

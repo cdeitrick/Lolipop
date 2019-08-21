@@ -11,7 +11,7 @@ logger.remove()
 import sys
 
 from muller import dataio, clustering, inheritance, commandline_parser
-from muller.generate_output import WorkflowData, MullerOutputGenerator
+from muller.dataio.generate_output import WorkflowData, MullerOutputGenerator
 
 logger.level("COMPLETE", no = 1)
 if commandline_parser.DEBUG:
@@ -61,7 +61,7 @@ class MullerWorkflow:
 			breakpoints = breakpoints
 		)
 
-		self.lineage_workflow = inheritance.order.LineageWorkflow(
+		self.lineage_workflow = inheritance.genotype_lineage.LineageWorkflow(
 			dlimit = self.program_options.detection_breakpoint,
 			flimit = self.program_options.fixed_breakpoint,
 			additive_cutoff = self.program_options.additive_cutoff,

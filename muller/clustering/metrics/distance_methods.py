@@ -3,12 +3,12 @@ import math
 import pandas
 
 try:
-	from muller.inheritance.order_by_area import area_of_series, calculate_common_area
+	from muller.inheritance.areascore import area_of_series, calculate_common_area
 except ModuleNotFoundError:
 	try:
-		from ...inheritance.order_by_area import area_of_series, calculate_common_area
+		from ...inheritance.areascore import area_of_series, calculate_common_area
 	except ValueError:
-		from muller.inheritance.order_by_area import area_of_series, calculate_common_area
+		from muller.inheritance.areascore import area_of_series, calculate_common_area
 
 
 def minkowski_distance(left: pandas.Series, right: pandas.Series, p: int = 2) -> float:
