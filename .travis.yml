@@ -9,8 +9,8 @@ python:
 before_install:
   - sudo apt-get update
 install:
-  - pip install -q -r requirements.txt
-  - pip install -q .
+  - pip install -v -r requirements.txt
+  - pip install -v .
 # command to run tests
 script: pytest
 addons:
