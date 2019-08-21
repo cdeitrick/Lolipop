@@ -455,6 +455,11 @@ def create_parser() -> argparse.ArgumentParser:
 		description = "Infers genotypes and lineage based on mutation frequency timeseries data observed over the course of an evolutionary biology experiment.",
 		formatter_class = argparse.ArgumentDefaultsHelpFormatter
 	)
+	parser_parent.add_argument(
+		"-v", "--version",
+		action = 'version',
+		version = f"%(prog)s {__VERSION__}"
+	)
 
 	subparsers = parser_parent.add_subparsers(dest = 'name')  # Each subparser can be identifies by the `name` attribute.
 	create_main_parser(subparsers)
@@ -465,11 +470,6 @@ def create_parser() -> argparse.ArgumentParser:
 
 def create_main_parser(subparsers) -> argparse.ArgumentParser:
 	parser = subparsers.add_parser("lineage")
-	parser.add_argument(
-		"-v", "--version",
-		action = 'version',
-		version = f"%(prog)s {__VERSION__}"
-	)
 
 	# Broke up the indivisual groups into their own functions because this function was large enough to make browsing it annoying.
 	_create_parser_group_main(parser)
