@@ -13,7 +13,7 @@ except ModuleNotFoundError:
 from dataclasses import dataclass, fields
 
 __VERSION__ = "0.6.0"
-DEBUG = True
+DEBUG = False
 
 
 # For convienience. Helps with autocomplete.
