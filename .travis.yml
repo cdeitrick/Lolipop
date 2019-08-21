@@ -21,3 +21,5 @@ addons:
       - libgraphviz-dev
       - pkg-config
       - r-base
+      - r-cran-dplyr
+      - r-cran-ggplot2
