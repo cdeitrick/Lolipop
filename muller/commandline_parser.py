@@ -12,8 +12,8 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__VERSION__ = "0.6.0"
-DEBUG = False
+__VERSION__ = "0.6.1"
+DEBUG = True
 
 
 # For convienience. Helps with autocomplete.
@@ -146,35 +146,6 @@ class FixedBreakpointParser(argparse.Action):
 		else:
 			values = float(values)
 		setattr(namespace, self.dest, values)
-
-
-# noinspection PyTypeChecker
-
-def create_utility_parser(subparsers) -> argparse.ArgumentParser:
-	""" Defines options for utilities that complement the scripts.
-		TODO: Add a script to directly convert breseq output to muller input.
-	"""
-	parser_benchmark: argparse.ArgumentParser = subparsers.add_parser(
-		"benchmark",
-		help = "Runs a series of benchmarks to test the time required to calculate all pairwise distances of a dataset based on available processes."
-	)
-	parser_benchmark.add_argument(
-		"--benchmark",
-		help = "",
-		action = "store_true",
-	)
-	parser_benchmark.add_argument(
-		"--dataset",
-		help = "The location of a test dataset to use. Should be large enough that adding additional processes will actually imrpove parsing speed.",
-		type = Path
-	)
-	parser_benchmark.add_argument(
-		"--output",
-		help = "The filenme of the output graph. Should be a .png file.",
-		type = Path
-	)
-
-	return parser_benchmark
 
 
 def _create_parser_group_graphics(parser: argparse.ArgumentParser):
@@ -485,7 +456,14 @@ def create_parser() -> argparse.ArgumentParser:
 		formatter_class = argparse.ArgumentDefaultsHelpFormatter
 	)
 
-	subparsers = parser_parent.add_subparsers()
+	subparsers = parser_parent.add_subparsers(dest = 'name')  # Each subparser can be identifies by the `name` attribute.
+	create_main_parser(subparsers)
+	create_benchmark_parser(subparsers)
+	create_muller_parser(subparsers)
+	return parser_parent
+
+
+def create_main_parser(subparsers) -> argparse.ArgumentParser:
 	parser = subparsers.add_parser("lineage")
 	parser.add_argument(
 		"-v", "--version",
@@ -500,5 +478,56 @@ def create_parser() -> argparse.ArgumentParser:
 	_create_parser_group_analysis(parser)
 	_create_parser_group_filter(parser)
 	_create_parser_group_graphics(parser)
-	create_utility_parser(subparsers)
-	return parser_parent
+
+	return parser
+
+
+def create_benchmark_parser(subparsers) -> argparse.ArgumentParser:
+	""" Defines options for utilities that complement the scripts.
+		TODO: Add a script to directly convert breseq output to muller input.
+	"""
+	parser_benchmark: argparse.ArgumentParser = subparsers.add_parser(
+		"benchmark",
+		help = "Runs a series of benchmarks to test the time required to calculate all pairwise distances of a dataset based on available processes."
+	)
+	parser_benchmark.add_argument(
+		"--dataset",
+		help = "The location of a test dataset to use. Should be large enough that adding additional processes will actually imrpove parsing speed.",
+		type = Path
+	)
+	parser_benchmark.add_argument(
+		"--output",
+		help = "The filenme of the output graph. Should be a .png file.",
+		type = Path
+	)
+
+	return parser_benchmark
+
+
+def create_muller_parser(subparsers) -> argparse.ArgumentParser:
+	parser_muller: argparse.ArgumentParser = subparsers.add_parser(
+		"muller",
+		help = "Generates muller plots from a pair od `population` and `edges` tables."
+	)
+
+	parser_muller.add_argument(
+		"population",
+		help = "Path to the population table.",
+		type = Path,
+		required = True
+	)
+
+	parser_muller.add_argument(
+		"edges",
+		help = "Path to the edges table delineating the lineage of the population genotypes.",
+		type = Path,
+		required = True
+	)
+	parser_muller.add_argument(
+		"output",
+		help = "Path to save the generated muller plot as.",
+		type = Path,
+		required = True
+	)
+
+	return parser_muller

@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Iterable
 
 import pandas
 
@@ -8,7 +8,7 @@ from .palette_distinctive import generate_distinctive_palette
 from .palette_lineage import generate_lineage_palette
 
 
-def generate_palette(genotypes: Union[List[str], pandas.DataFrame], custom_palette: Dict[str, str] = None, annotations: Dict[str, List[str]] = None,
+def generate_palette(genotypes: Union[Iterable[str], pandas.DataFrame], custom_palette: Dict[str, str] = None, annotations: Dict[str, List[str]] = None,
 		kind = 'distinctive') -> Dict[str, str]:
 	"""
 	Parameters

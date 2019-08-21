@@ -270,12 +270,12 @@ class MullerOutputGenerator:
 
 		# Draw the muller diagrams
 		# Start with the annotated and unannotated clade palettes.
-		self.muller_generator.run(muller_df, clade_palette, self.filenames.muller_diagram_clade_annotated, genotype_annotations)
-		self.muller_generator.run(muller_df, clade_palette, self.filenames.muller_diagram_clade_unannotated)
+		self.muller_generator.run(muller_df, self.filenames.muller_diagram_clade_annotated, clade_palette, genotype_annotations)
+		self.muller_generator.run(muller_df, self.filenames.muller_diagram_clade_unannotated, clade_palette)
 
 		# Draw the distinctive muller diagrams
-		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_annotated, genotype_annotations)
-		self.muller_generator.run(muller_df, distinct_palette, self.filenames.muller_diagram_distinct_unannotated)
+		self.muller_generator.run(muller_df, self.filenames.muller_diagram_distinct_annotated, distinct_palette, genotype_annotations)
+		self.muller_generator.run(muller_df, self.filenames.muller_diagram_distinct_unannotated, distinct_palette)
 
 	def save_r_script(self, palette: Dict[str, str], population_table: pandas.DataFrame) -> None:
 		# Generate the rscript and ggmuller DataFrame

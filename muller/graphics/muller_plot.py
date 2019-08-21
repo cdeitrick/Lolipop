@@ -122,7 +122,8 @@ class BaseGenerateMullerDiagram:
 
 		self.scale_max = 3  # The maximum scale that the plots can be scalled to in order to avoid image limitations.
 
-	def run(self, muller_df: pandas.DataFrame, color_palette: Dict[str, str], basename: Path, annotations: Optional[Dict[str, List[str]]] = None,
+	def run(self, muller_df: pandas.DataFrame, basename: Path, color_palette: Dict[str, str] = None,
+			annotations: Optional[Dict[str, List[str]]] = None,
 			title: Optional[str] = None):
 		"""
 			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
@@ -139,6 +140,8 @@ class BaseGenerateMullerDiagram:
 		ax: Axes
 			The axes object containing the plot.
 		"""
+		if color_palette is None:
+			color_palette = self.get_default_palette(muller_df['Group_id'].unique())
 		if len(basename.suffix) == 4:
 			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
 			basename = basename.parent / basename.stem
@@ -240,6 +243,12 @@ class BaseGenerateMullerDiagram:
 		ax.set_xlim(0, maximum_x)
 
 		return ax
+
+	@staticmethod
+	def get_default_palette(labels: Iterable[str]) -> Dict[str, str]:
+		from . import palettes
+
+		return palettes.generate_palette(labels)
 
 	def save_figure(self, basename: Path):
 		""" Saves the diagram in every format available in self.filetypes"""
