@@ -16,6 +16,8 @@ install:
 script: pytest
 addons:
   apt:
+    sources:
+      - "deb http://us.archive.ubuntu.com/ubuntu/ bionic universe"
     packages:
       - python-dev
       - graphviz
