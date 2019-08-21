@@ -8,6 +8,7 @@ python:
   - 3.7
 before_install:
   - sudo apt-get update
+  - sudo apt-get install r-cran-dplyr
 install:
   - pip install -v -r requirements.txt
   - pip install -v .
@@ -21,5 +22,3 @@ addons:
       - libgraphviz-dev
       - pkg-config
       - r-base
-      - r-cran-dplyr
-      - r-cran-ggplot2
