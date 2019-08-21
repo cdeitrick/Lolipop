@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__VERSION__ = "0.5.3"
+__VERSION__ = "0.6.0"
 DEBUG = True
 
 
