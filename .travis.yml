@@ -6,6 +6,8 @@ dist: xenial
 python:
   - 3.6
   - 3.7
+before_script:
+  - echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
 before_install:
   - sudo apt-get update
 install:
@@ -15,8 +17,6 @@ install:
 script: pytest
 addons:
   apt:
-    sources:
-      - "deb http://us.archive.ubuntu.com/ubuntu/ bionic universe"
     packages:
       - python-dev
       - graphviz
