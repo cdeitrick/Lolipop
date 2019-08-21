@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 import pandas
 import pygraphviz
-
+from loguru import logger
 from muller import widgets
 
 
@@ -60,5 +60,8 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		score = row['score']
 		graph.add_edge(parent, identity, tooltip = f"parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
 	if filename:
-		graph.draw(str(filename), prog = 'dot')
+		try:
+			graph.draw(str(filename), prog = 'dot')
+		except Exception as exception:
+			logger.error(f"Could not generate lineage plot: {exception}")
 	return graph

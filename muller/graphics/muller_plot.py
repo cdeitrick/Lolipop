@@ -6,9 +6,10 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Tuple
 
 import pandas
+from loguru import logger
 from matplotlib import pyplot as plt
 # plt.switch_backend('agg')
 from matplotlib.figure import Axes  # For autocomplete
@@ -32,7 +33,7 @@ pandas.set_option('display.width', 250)
 ###################################################################################################################################################
 
 
-def unique_everseen(iterable, key = None):
+def unique_everseen(iterable: Iterable[Any], key: Optional[Callable[[Any], str]] = None) -> Generator[Any, None, None]:
 	"""	List unique elements, preserving order. Remember all elements ever seen."
 		unique_everseen('AAAABBBCCDAABBB') --> A B C D
 		unique_everseen('ABBCcAD', str.lower) --> A B C D
@@ -119,7 +120,10 @@ class BaseGenerateMullerDiagram:
 		self.genotype_annotation_font_color_light = "#FFFFFF"  # Font color to use when background is dark
 		self.genotype_annotation_font_color_dark = "#333333"  # Font color to use when the background is light.
 
-	def run(self, muller_df: pandas.DataFrame, color_palette: Dict[str, str], basename: Path, annotations: Optional[Dict[str, List[str]]] = None):
+		self.scale_max = 3  # The maximum scale that the plots can be scalled to in order to avoid image limitations.
+
+	def run(self, muller_df: pandas.DataFrame, color_palette: Dict[str, str], basename: Path, annotations: Optional[Dict[str, List[str]]] = None,
+			title: Optional[str] = None):
 		"""
 			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 		Parameters
@@ -138,14 +142,35 @@ class BaseGenerateMullerDiagram:
 		if len(basename.suffix) == 4:
 			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
 			basename = basename.parent / basename.stem
-
 		points = self.get_coordinates(muller_df)
 
-		# noinspection PyUnusedLocal,PyUnusedLocal
-		fig, ax = plt.subplots(figsize = (12, 10))
-		ax: Axes  # For typing
-
 		merged_table = self.merge_muller_table(muller_df)
+
+		# Need to scale the graph so very large datasets are still easily distinguishable.
+		number_of_timepoints = len(muller_df['Generation'].unique())
+		number_of_series = len(muller_df['Group_id'].unique())
+
+		# The current values seem to work well with datasets of 10 to 20 genotypes and 15 to 20 timepoints.
+		reference_x = 20
+		reference_y = 20
+
+		# Calculate what the scale should be given the dataset shape. Any dataset smaller than the reference is automatically converted to 1.
+		scale_x = math.ceil(number_of_timepoints / reference_x)
+		scale_y = math.ceil(number_of_series / reference_y)
+
+		# Make sure the graph is not too big to be plotted.
+		if scale_x > self.scale_max:
+			logger.debug(f"Mullerplot: Reducing x scale from {scale_x} to {self.scale_max}.")
+			scale_x = self.scale_max
+		if scale_y > self.scale_max:
+			logger.debug(f"Mullerplot: Reducing y scale from {scale_y} to {self.scale_max}.")
+			scale_y = self.scale_max
+
+		# Disable the white outlines if the dataset is very large.
+		if scale_y or scale_x > 2:
+			self.outline_color = None  # Disable the white outlines.
+
+		fig, ax = self._init_plot(scale_x, scale_y)
 		x, y, colors, labels = self.generate_muller_series(merged_table, color_palette)
 
 		ax.stackplot(
@@ -161,22 +186,50 @@ class BaseGenerateMullerDiagram:
 		if annotations:
 			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
 
-		ax = self._format_plot(ax, max(x))
+		ax = self._format_plot(ax, title, max(x), scale_x, scale_y)
 
 		self.save_figure(basename)
 
 		return ax
 
-	def _format_plot(self, ax: plt.Axes, maximum_x):
+	@staticmethod
+	def _init_plot(size_x: int, size_y: int) -> Tuple[plt.Figure, plt.Axes]:
+		"""
+			A typical plot will have about 10 to 20 genotypes and 10-20 timepoints. The current defaults work well for
+			datasets of that size, but need to scale the plot size for anything larger.
+		"""
+		figsize_x = size_x * 12
+		figsize_y = size_y * 10
+
+		fig, ax = plt.subplots(figsize = (figsize_x, figsize_y))
+		return fig, ax
+
+	def _format_plot(self, ax: plt.Axes, title: Optional[str], maximum_x: float, scale_x: int, scale_y: int):
+		"""
+			Addes labels and such to the graph.
+		Parameters
+		----------
+		ax: THe plt.Axes object the graph was plotted on.
+		maximum_x: The maximum x-value observed in the dataset.
+		scale_x, scale_y: What the plot labels should be scalled by to be easily visible on a large plot.
+		"""
+		scale = min(scale_x, scale_y)
+		axes_label_fontsize = 32 * scale
+		axes_title_fontsize = 40 * scale
+		axes_label_tick_fontsize = 20 * scale
+
 		ax.set_facecolor(self.root_genotype_color)
 
 		# Add labels to the x and y axes.
-		ax.set_xlabel("Generation", fontsize = 32)
-		ax.set_ylabel("Frequency", fontsize = 32)
+		if not title:
+			title = "Genotype Frequency"
+		ax.set_title(title, fontsize = axes_title_fontsize)
+		ax.set_xlabel("Generation", fontsize = axes_label_fontsize)
+		ax.set_ylabel("Frequency", fontsize = axes_label_fontsize)
 
 		# Increase the font size of the frequency and timepoint labels
 		for label in list(ax.get_xticklabels()) + list(ax.get_yticklabels()):
-			label.set_fontsize(20)
+			label.set_fontsize(axes_label_tick_fontsize)
 
 		# Basic stacked area chart.
 		# Remove extra ticks
@@ -192,13 +245,14 @@ class BaseGenerateMullerDiagram:
 		""" Saves the diagram in every format available in self.filetypes"""
 		for suffix in self.filetypes:
 			filename = str(basename) + suffix
-			plt.savefig(filename)
+			plt.savefig(filename, dpi = 500 if suffix != '.svg' else None)  # Not sure if setting DPI for svgs raises an error.
 
+	# TODO: Add metadata to png images? https://matplotlib.org/3.1.1/api/backend_agg_api.html#matplotlib.backends.backend_agg.FigureCanvasAgg.print_png
 	@staticmethod
 	def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[
 		List[float], List[List[float]], List[str], List[str]]:
 		"""
-			Generates the required inputs for matplotlib to generate a mullerplot.
+			Generates the required inputs for matplotlib to generate a lineage.
 		Parameters
 		----------
 		muller_df: pandas.DataFrame
@@ -231,10 +285,11 @@ class BaseGenerateMullerDiagram:
 
 	def merge_muller_table(self, muller_df: pandas.DataFrame) -> pandas.DataFrame:
 		""" The muller dataframe splits genotypes into halves so they can be plotted as a normal stacked area chart.
-			We want to merge these halve if they are plotted adjacent to each other.
+			We want to merge these halves if they are plotted adjacent to each other.
 		"""
 		# Get the order that each series appears.
 		genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
+		# Each genotype should have a corresponding second-half table.
 		groups = muller_df.groupby(by = 'Group_id')
 		seen = set()
 		merged_table = list()
@@ -247,7 +302,7 @@ class BaseGenerateMullerDiagram:
 				next_label = genotype_order[index + 1]
 			except IndexError:
 				next_label = "   "  # Three spaces, so the following subscription works
-
+			# Check whether the genotype label is the same, and that the second label has an additional `a` character at the end.
 			if label == next_label[:-1] and next_label[-1].isalpha():  # make sure it ends with a letter.
 				# The two halves of this specific genotype are next to each other. combine them and skip the next iteration.
 				seen.add(next_label)
@@ -267,6 +322,7 @@ class BaseGenerateMullerDiagram:
 		right = right.set_index('Generation')
 		frequencies = left['Frequency'].add(right['Frequency'], fill_value = 0)
 		populations = left['Population'].add(right['Population'], fill_value = 0)
+
 		df = pandas.DataFrame([frequencies, populations]).transpose()
 		# Add the other columns to the dataframe
 		reference = left.iloc[0]
@@ -278,7 +334,8 @@ class BaseGenerateMullerDiagram:
 		return df
 
 	def add_genotype_annotations_to_plot(self, *args, **kwargs):
-		raise NotImplementedError
+		""" Not neaded for a basic muller plot """
+		return None
 
 	def get_coordinates(self, *args, **kwargs):
 		raise NotImplementedError
@@ -286,7 +343,7 @@ class BaseGenerateMullerDiagram:
 
 class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
 	# Separates the logic used to annotate the muller diagram from the simpler logic used to actually plot it.
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
 
 	def add_genotype_annotations_to_plot(self, ax: Axes, points: Dict[str, Tuple[float, float]], annotations: Dict[str, List[str]],

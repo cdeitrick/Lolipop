@@ -13,16 +13,18 @@ The two-step method was originally devised by Katya Kosheleva in 2012 to model t
 
 \begin{enumerate}
 \item The separation between two mutational trajectories that belong to the same genotype is due to measurement error and the error is normally distributed.
-\item Each sampled timepoint over the course of an evolutionary experiment is perfectly representative of the population as a whole. That is, mutations that first appear at large frequencies (i.e. 60%) must have appeared and risen to that level since the most resently sampled timepoint (i.e. it was not simply missed during the sampling step).
+\item Each sampled timepoint over the course of an evolutionary experiment is perfectly representative of the population as a whole. That is, mutations that first appear at large frequencies (i.e. 60\%) must have appeared and risen to that level since the most resently sampled timepoint (i.e. it was not simply missed during the sampling step).
 \item Any two mutational trajectories will have at least one common timepoint where both are detected and not fixed.
 \end{enumerate}
 
 Assumption 3 is particularly troublesum, since there are typically a few mutational trajectories which do not satisfy this assumption, and these cases must be handled differently (described after the calculation method).
-The two-step method also requires the user to specify a couple arbitrary variables:
+The two-step method also requires the user to specify a couple variables:
 
 \begin{description}
-\item[similarity cutoff] defaults to 0.05. Used during the agglomerative clustering step to group trajectories into initial genotypes.
-\item[link cutoff] defaults to 0.25. Used during the unlinking step to determine if a genotype contains at least one pair of mutational trajectories that do not belong to the same genotype.
+\item[similarity cutoff] \verb|--similarity-cutoff 0.05| Used during the agglomerative clustering step for both methods to group trajectories into initial genotypes.
+\item[link cutoff] \verb|--link-cutoff 0.25| Used during the unlinking step to determine if a genotype contains at least one pair of mutational 
+  trajectories that do not belong to the same genotype.
+  \textbf{Note: This is only used if the two-step clustering method is being used.}
 \end{description}
 
 The two-step method essentially tests whether the average distance between two series is statistically significant given the uncertainty in the data. If the difference is not statistically significant, the two genotypes are grouped into the same genotype. This is done for all possible pairs of mutational trajectories in the dataset.
@@ -192,22 +194,32 @@ The two genotypes with the least similarity are A1 and B1. Since at least one pa
 \end{table}
 
 \subsection{Hierarchical Method}
-The second clustering method implemented relied on hierarchical clustering based on a specified distance metric (a measurement of the similarity of two series). It was implemented in an attempt to address the assumptions made by the two step method.
+The second clustering method implemented relied on hierarchical clustering based on a specified distance metric (a measurement of the similarity of two series). 
+It was implemented in an attempt to address the assumptions made by the two step method.
 
-Hierarchical clustering attempts to group elements together based on a measure of similarity. Each mutational trajectory is first assigned to its own cluster, then clusters are progressively combined based on a specified similarity metric until the maximum distance between any two points in a cluster exceeds a given breakpoint. Hierarchical clustering does not require a pre-defined number of clusters (compared to k-means clustering) which is advantageous since the resulting number of genotypes is unknown.
+Hierarchical clustering attempts to group elements together based on a measure of similarity. 
+Each mutational trajectory is first assigned to its own cluster, 
+then clusters are progressively combined based on a specified similarity metric until the maximum distance between any two points in a cluster exceeds a given breakpoint. 
+Hierarchical clustering does not require a pre-defined number of clusters (compared to k-means clustering) 
+which is advantageous since the resulting number of genotypes is unknown.
 
 \subsubsection{Distance metrics}
-There are currently 3 distance metrics implemented in the scripts: binomial distance (described above), pearson's distance, and minkowski's distance. Each is designed to measure the similarity of two series but do so by measuring different features.
+There are currently 3 distance metrics implemented in the scripts: binomial distance (described above), pearson's distance, and minkowski's distance. 
+Each is designed to measure the similarity of two series but do so by measuring different features.
 
 
 \subsubsection{Pearson's distance}
-Pearson's distance (based on Pearson's correlation coefficient) measures the similarity of two series based on how well they correlate. It essentially checks whether a proportional increase seen in one series is also seen in the other. It is best used when there are a large number of measurements available in both series, but can be adjusted (see below) to work with small datasets.
+Pearson's distance (based on Pearson's correlation coefficient) measures the similarity of two series based on how well they correlate. 
+It essentially checks whether a proportional increase seen in one series is also seen in the other. 
+It is best used when there are a large number of measurements available in both series, but can be adjusted (see below) to work with small datasets.
 
 Pearson's correlation coefficient is a measure of the linear correlation between two series.
 It has a value between -1 and 1 which can be interpreted as such:
-  1. A value of 1 indicates perfect correlation between two series
-  2. A value of 0 indicates there is no correlation between two series
-  3. A value of -1 indicates perfect negative correlation between two series.
+\begin{enumerate}
+  \item A value of 1 indicates perfect correlation between two series
+  \item A value of 0 indicates there is no correlation between two series
+  \item A value of -1 indicates perfect negative correlation between two series.
+\end{enumerate}
 
 Pearsons's correlation coefficient can be calculated as
 
@@ -235,9 +247,13 @@ d_m=\bigg[\sum_{i=0}^n|X_i-Y_i|^p\bigg]^\frac{1}{p}, p \ge 1
 
 where $p=2$ (equivilent to the euclidean distance) for these scripts.
 
-\subsubsection{Clustering}
+\subsubsection{Nearest-neighbor Clustering}
 
-Once the distance between all possible pairs of mutational trajectories has been calculated, each trajectory can be grouped with other trajectories that are sufficiently similar. Trajectories are first assigned to their own cluster, then clusters are merged with similar clusters until the mean distance between trajectories in the cluster exceeds a specified breakpoint.
+Once the distance between all possible pairs of mutational trajectories has been calculated, 
+each trajectory can be grouped with other trajectories that are sufficiently similar. 
+Trajectories are first assigned to their own cluster, 
+then clusters are merged with similar clusters until the mean distance between trajectories in the cluster exceeds the quantile of all no-zero distances
+specified by the similarity cutoff.
 
 \subsubsection{Default Clustering Methods}
 

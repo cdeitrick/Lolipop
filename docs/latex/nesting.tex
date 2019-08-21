@@ -3,29 +3,55 @@
 \usepackage{amsmath, nccmath}
 \usepackage{geometry}
 \newtheorem{ex}{\bf Example}[section]
+% Use variables to refer to the nested/unnested genotypes in case I was to change the nomenclature later.
+\newcommand{\unnestedlabel}{unnested genotype}
+\newcommand{\ancestorlabel}{potential ancestor}
+
+% Used to identify the parameters which affect this step of the workflow.
+\newcommand{\parameteradditive}{additivecutoff}
+\newcommand{\parametersubtractive}{subtractivecutoff}
+\newcommand{\parametercovariance}{covariancecutoff}
 \begin{document}
 \chapter{Nesting successive genotypes}
 
-\section{Nesting Checks}
-After grouping mutational trajectories into genotypes, the scripts then attempt which genotypes arise in the background of which other genotypes.
+\section{Relevant Parameters}
+These parameters control how the lineage of genotypes is inferred:
+\begin{description}
+  \item[--additive 0.05] The \parameteradditive{} value controls when the sum of a pair of genotypes is considered consistently greater than the fixed cutoff value.
+    The default value is controlled by the \verb|detection| parameter. 
+  \item[--subtractive 0.05] The \parametersubtractive{} value controls when a \ancestorlabel{} is considered greater than an \unnestedlabel{} and \textit{vis versa}.
+  \item[--covariance 0.01] Defines how each of the three possible covariance scenarios are defined (see below).
+\end{description}  
+
+\section{Evidence of lineage}
+After grouping mutational trajectories into genotypes, the scripts infer the lineage of each genotype based on the frequency measurements.
 Genotypes are nested according to a few basic rules:
 
 \subsection{Summation}
-Check whether the unnested and nested genotype consistently sum to greater than 1. This is weak evidence that one of the genotypes is a background and the other arises in the background of the first. The implementation currently checks whether the sum of both trajectories is greater than 1.15 (chosen based on the original implementation) at least once, or greater than 1.03 (based on the user-specified uncertainty option) at least twice. Future versions of the script will implement this consistency check in a more statistically-relevant way.
+Checks whether the \unnestedlabel{} and \ancestorlabel{} consistently sum to greater than the fixed cutoff limit (typically 0.97 to 1). 
+This is weak evidence that one of the genotypes is a background and the other arises in the background of the first. 
 
 \subsection{Genotype Size}
-This checks Whether one of the genotypes is consistently larger than the other. A genotype is considered consistently greater than another if the difference between the two frequencies exceeds a value of 0.15 (based on original scripts) at least once or exceeds 0.03 (based on the uncertainty option) at least twice. Future versions of the script will define this in a more statistically-relevant manner.
+This checks whether one of the genotypes is consistently larger than the other. 
+A genotype is considered consistently greater than another if the difference between the two frequencies exceeds a value of 0.15 
+(based on original scripts) at least once or exceeds 0.03 (based on the uncertainty option) at least twice. 
+\textbf{Note: This is currently combined with the subtractive check when scoring each genotype pair.}
 
-\subsection{Correlation}
-The covariance between two series of random variables provides a measure of the correlation between both series. This is also used to calculate the pearson distance metric. A genotype which arises in the background of another genotype must be correlated with the parent genotype.
+\subsection{Covariance}
+The covariance between two series of random variables provides a measure of the correlation between both series. 
+A genotype which arises in the background of another genotype must be correlated with the parent genotype.
+A negative covariance between two genotypes indicates that they are competing genotypes with one outcompeting the other.
 The covariance of two series $X$ and $Y$ is defined as
 \begin{equation}
 Cov(X,Y) = \frac{1}{n}\sum_{i=0}^n (X_i-\bar{X})(Y_i-\bar{Y})
 \end{equation}
 
-\subsection{The Jaccard Distance}
 
-The jaccard distance is a measurement of the dissimilarity of two sample sets. Since each frequency measurement describes the abundance of a mutation at a sampled timepoint, we can use the jaccard distance to compare the abundance of two genotypes over the course of an experiment.
+\subsection{Expected vs. Observed Jaccard Distance}
+
+The jaccard distance is a measurement of the dissimilarity of two sample sets. 
+Since each frequency measurement describes the abundance of a mutation at a sampled timepoint, 
+we can use the jaccard distance to compare the abundance of two genotypes over the course of an experiment.
 Since each genotype represents a set of abundance measurements, the jaccard distance between two genotypes $X$ and $Y$ can be calculated as follows:
 \begin{equation}
 J(X,Y)=1 - \frac{|X\cup Y|}{|X|+|Y|+|X \cap Y|}\equiv \frac{|X\cup Y|-|X \cap Y|}{|X \cup Y|}
@@ -86,7 +112,7 @@ J_{expected}(X,Y) = \frac{|X|-|Y|}{|X|}=\frac{3.054-1.029}{3.054}=0.663
 
 Since $0.718\ne 0.663$, We cannot say that $Y$ arises in the background of $X$.
 
-
+\subsection{Example}
 Let's test if genotype-3 arises in the background of genotype-6:
 
 \begin{align*}
@@ -107,14 +133,46 @@ J_{expected}(X,Y) = \frac{|X|-|Y|}{|X|}=\frac{3.054-1.835}{3.054}=0.425
 Since $J = J_{expected}$ there is evidence that genotype-3 arises in the background of genotype-6.
 
 
+\section{Scoring}
+Each of the above checks is used to calculate a score between each \unnestedlabel{} and a \ancestorlabel{}. 
+The parent genotype is then chosen as the potential ancestor with the greatest score when compared against the given genotype.
 
-\section{Ruleset}
+\begin{description}
+  \item[additive score] \textbf{[0,1]} Tests whether the combined \unnestedlabel{} and \ancestorlabel{} consistenty sum to greater than $1$. 
+  The only scenario where this should occur is if the \unnestedlabel{} arises in the background of \ancestorlabel{}.
+  \begin{description}
+    \item[1] The average sum of the \unnestedlabel{} and the \ancestorlabel{} is greater than 1.
+    \item[0] The average sum of the \unnestedlabel{} and the \ancestorlabel{} is equal or below 1. 
+  \end{description}
+  \item[subtractive score] \textbf{[-1,1]} The subtractive score adds weak evidence for/against the hypothesis that the \ancestorlabel{} is a true ancestor of the \unnestedlabel{}.
+    \begin{description}
+      \item[1]  The \unnestedlabel{} is always detected at a lower frequency than the \ancestorlabel{}.
+      \item[0]  The \unnestedlabel{} is occasionally detected at a greater frequency than the \ancestorlabel{}.
+      \item[-1] The \unnestedlabel{} is always detected at a greater frequency than the \ancestorlabel{}.
+    \end{description}
+  \item[jaccard score] \textbf{[-2,2]} The \unnestedlabel{} is compared against both the \ancestorlabel{} and a hypothetical genotype consisting of the remaining
+    population not represented by the \ancestorlabel{}. This hypothetical genotype is assigned a frequency of $0$ for all timepoints where \ancestorlabel{} is 
+    fixed and a frequency of $1-f_i$ for all timepoints that the \ancestorlabel{} is not fixed. 
+    \begin{description}
+      \item[2]  The \unnestedlabel{} is only a subset of the \ancestorlabel{}.
+      \item[1]  The \unnestedlabel{} is a subset of both the \ancestorlabel{} and the hypothetical genotype, but overlaps with the \ancestorlabel{} twice as much
+        as the hypothetical genotype.
+      \item[0]  The \unnestedlabel{} is a subset of both the \ancestorlabel{} and the hypothetical genotype, 
+        but shares a similar or smaller overlap with the \ancestorlabel{} as it does with the hypothetical genotype. 
+      \item[-2] The \unnestedlabel{} is a subset of only the hypothetical genotype, and is not a subset of the \ancestorlabel{}
+    \end{description}  
 
-Given the above checks, this is the ruleset for determining if a nested genotype is a potential background for the unnested genotype being tested.
-\begin{enumerate}
-\item If the genotypes are negatively correlated, the nested genotype is not a background candidate for the current genotype.
-\item If the unnested genotype contains more elements than the nested genotype, it cannot be a background candidate.
-\item If the nested genotype is consistently larger than the unnested genotype, is positively correlated with the unnested genotype, and the jaccard distance indicates the unnested genotype is a subset of the nested genotype, then the nested genotype is assigned as the background for the unnested genotype. The newly nested genotype is then available as a potential background candidate for subsequent unnested genotypes.
-\item If the unnested genotype is consistently smaller than the nested genotype or is determined to be a subset of the nested genotype, the nested genotype is considered a potential background for the unnested genotype. The unnested genotype will continue to be tested against all other nested genotypes. If no other genotype has greater evidence for being the background of the unnested genotype, the script prioritises the nested genotype with the greatest maximum frequency which was detected closest to when the unnested genotype was first detected.
-\end{enumerate}
+  \item[covariance score]  \textbf{[-2,2]} Tests whether the two genotypes are competing against each other or mutually evolving together.
+    The covariance $Cov(X,Y)$ between the two genotypes is compared against a cutoff value $d$ (see the program options for more information) to test which 
+    scenario this pair of genotypes falls under. 
+    \textbf{Note: This is only checked if the sum of the previous scores is positive.}
+    \begin{description}
+      \item[2]  $Cov(X,Y) > d$
+      \item[0]  $-d \le Cov(X,Y) \le d$
+      \item[-2] $Cov(X,Y) < -d$ 
+    \end{description} 
+\end{description}
+
+\subsection{Example}
+
 \end{document}

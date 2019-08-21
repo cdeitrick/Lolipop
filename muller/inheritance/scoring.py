@@ -5,12 +5,12 @@ import pandas
 from muller.widgets import get_valid_points
 
 try:
-	from muller.inheritance import order_by_area
+	from muller.inheritance import areascore
 except ModuleNotFoundError:
-	from . import order_by_area
+	from . import areascore
 
 
-def calculate_additive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
+def calculate_subtractive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
 	"""
 		Tests whether the nested genotype is consistenty larger than  the nested genotype. The scoring is as follows:
 		`nested_genotype` always larger than `unnested_genotype`: 1
@@ -79,14 +79,14 @@ def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pand
 	# If the nested genotype is not fixed, group the remaining frequencies into an `other` category.
 	# noinspection PyTypeChecker
 	other_genotypes: pandas.Series = 1 - nested_genotype
-	area_nested = order_by_area.area_of_series(nested_genotype)
-	area_unnested = order_by_area.area_of_series(unnested_genotype)
-	area_other = order_by_area.area_of_series(other_genotypes)
-	common_area_nested = order_by_area.calculate_common_area(nested_genotype, unnested_genotype)
-	common_area_other = order_by_area.calculate_common_area(other_genotypes, unnested_genotype)
+	area_nested = areascore.area_of_series(nested_genotype)
+	area_unnested = areascore.area_of_series(unnested_genotype)
+	area_other = areascore.area_of_series(other_genotypes)
+	common_area_nested = areascore.calculate_common_area(nested_genotype, unnested_genotype)
+	common_area_other = areascore.calculate_common_area(other_genotypes, unnested_genotype)
 
-	is_subset_nested = order_by_area.is_subset(area_nested, area_unnested, common_area_nested)
-	is_subset_other = order_by_area.is_subset(area_other, area_unnested, common_area_other)
+	is_subset_nested = areascore.is_subset(area_nested, area_unnested, common_area_nested)
+	is_subset_other = areascore.is_subset(area_other, area_unnested, common_area_other)
 
 	if is_subset_nested and is_subset_other:
 		score = int(common_area_nested > 2 * common_area_other)
@@ -98,7 +98,7 @@ def calculate_area_score(nested_genotype: pandas.Series, unnested_genotype: pand
 	return score
 
 
-def calculate_subtractive_score(left: pandas.Series, right: pandas.Series, fixed_cutoff: float, cutoff: float) -> int:
+def calculate_summation_score(left: pandas.Series, right: pandas.Series, fixed_cutoff: float, cutoff: float) -> int:
 	"""
 		Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
 		is in the background of the other, since otherwise the maximum combined frequency should, at most, be equal to the fixed cutoff value.
@@ -108,7 +108,7 @@ def calculate_subtractive_score(left: pandas.Series, right: pandas.Series, fixed
 	fixed_cutoff: The fixed breakpoint.
 	cutoff: Governs whether two series consistently sum to a value greater than `fixed_cutoff`. Should be in the range [0,1]
 	"""
-
+	#TODO: Maybe the cutoff should be the variance as calculated from the clustering step.
 	combined = left + right
 	above_fixed = combined - fixed_cutoff
 

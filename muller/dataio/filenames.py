@@ -34,7 +34,8 @@ class OutputFilenames:
 
 		self.ggmuller_population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.ggmuller_edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
-		self.muller_table: Path = tables_folder / (name + f'.mullerdataframe.csv')  # This is generated in r.
+		#self.muller_table: Path = tables_folder / (name + f'.mullerdataframe.csv')  # This is generated in r.
+		self.table_muller: Path = tables_folder / (name + f".mullerdataframe.{suffix}")
 
 		self.linkage_matrix_table = tables_folder / (name + f".linkagematrix.tsv")
 		self.distance_matrix: Path = tables_folder / (name + f".distance.{suffix}")

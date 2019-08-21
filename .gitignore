@@ -74,3 +74,4 @@ b6/
 ~*
 #tests/data
 *env/
+.Rhistory

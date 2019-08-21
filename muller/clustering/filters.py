@@ -127,7 +127,8 @@ class GenotypeFilter:
 		""" Extracts the backgrounds using a list of frequency breakpoints and sets the `fuzzy_fixed_cutoff` attribute."""
 		for cutoff in self.frequencies:
 			backgrounds = genotypes[genotypes.max(axis = 1) > cutoff]
-			backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2]  # Check if background appears at multiple timepoints.
+			# Assume that backgrounds with a single timepoint are filtered during the filtering step.
+			#backgrounds = backgrounds[backgrounds.sum(axis = 1) > 2*cutof]  # Check if background appears at multiple timepoints.
 			if not backgrounds.empty:
 				fuzzy_fixed_cutoff = cutoff
 				break

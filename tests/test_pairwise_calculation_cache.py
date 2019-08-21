@@ -1,12 +1,12 @@
 import pandas
 import pytest
 
-from muller.clustering.metrics import PairwiseCalculationCache
+from muller.clustering.metrics import DistanceCache
 
 
 @pytest.fixture
 def empty_cache():
-	return PairwiseCalculationCache()
+	return DistanceCache()
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def small_cache():
 		('3', '4'): .8
 	}
 
-	return PairwiseCalculationCache(data)
+	return DistanceCache(data)
 
 
 def test_cache_empty(empty_cache, small_cache):

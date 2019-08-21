@@ -7,12 +7,12 @@ from scipy.cluster import hierarchy
 from scipy.spatial import distance
 
 try:
-	from muller.clustering.metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from muller.clustering.metrics.distance_cache import DistanceCache
 except ModuleNotFoundError:
-	from ..metrics.pairwise_calculation_cache import PairwiseCalculationCache
+	from ..metrics.distance_cache import DistanceCache
 
 
-def hierarchical_method(pair_array: PairwiseCalculationCache, similarity_cutoff: float, cluster_method: str = 'distance',
+def hierarchical_method(pair_array: DistanceCache, similarity_cutoff: float, cluster_method: str = 'distance',
 		starting_genotypes: List[List[str]] = None) -> Tuple[List[List[str]], Any]:
 	"""
 

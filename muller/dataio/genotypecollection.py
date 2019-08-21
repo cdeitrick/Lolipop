@@ -44,9 +44,7 @@ class GenotypeCollection(collections.UserDict):
 					data[annotation] = [k]
 				else:
 					data[annotation].append(k)
-		# for key, value in data.items():
-		#	if len(value) > 1:
-		#		logger.warning(f"Found multiple genotypes for annotation '{key}': {[i.label for i in value]}")
+
 		return data
 
 	def get_genotype_from_annotation(self, value: str) -> List[Genotype]:

@@ -6,11 +6,13 @@ dist: xenial
 python:
   - 3.6
   - 3.7
+before_script:
+  - echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic universe" | sudo tee -a /etc/apt/sources.list
 before_install:
   - sudo apt-get update
 install:
-  - pip install -q -r requirements.txt
-  - pip install -q .
+  - pip install -v -r requirements.txt
+  - pip install -v .
 # command to run tests
 script: pytest
 addons:
@@ -21,3 +23,4 @@ addons:
       - libgraphviz-dev
       - pkg-config
       - r-base
+      - r-cran-dplyr

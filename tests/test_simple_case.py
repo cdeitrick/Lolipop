@@ -2,12 +2,12 @@ import pandas
 import pytest
 
 from muller.dataio import import_table
-from muller.inheritance import order
+from muller.inheritance import genotype_lineage
 
 
 @pytest.fixture
-def lineage_workflow() -> order.LineageWorkflow:
-	return order.LineageWorkflow(0.03, 0.97, 0.03, 0.03, 0.01)
+def lineage_workflow() -> genotype_lineage.LineageWorkflow:
+	return genotype_lineage.LineageWorkflow(0.03, 0.97, 0.03, 0.03, 0.01)
 
 
 @pytest.fixture

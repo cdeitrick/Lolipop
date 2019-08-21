@@ -2,7 +2,7 @@ import pandas
 import pytest
 
 from muller.dataio import import_table
-from muller.inheritance.reorder_genotypes import SortGenotypeTableWorkflow
+from muller.inheritance.genotype_reorder import SortGenotypeTableWorkflow
 
 
 @pytest.fixture

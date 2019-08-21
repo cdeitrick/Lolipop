@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 from scipy.cluster import hierarchy
 
 try:
-	from muller.clustering.metrics import PairwiseCalculationCache
+	from muller.clustering.metrics import DistanceCache
 except ModuleNotFoundError:
-	from ..clustering.metrics import PairwiseCalculationCache
+	from ..clustering.metrics import DistanceCache
 
 
-def plot_dendrogram(linkage_table: Any, pair_array: PairwiseCalculationCache, filename: Path):
+def plot_dendrogram(linkage_table: Any, pair_array: DistanceCache, filename: Path):
 	# noinspection PyUnusedLocal
 	fig, ax = plt.subplots(figsize = (15, 15))
 	ax: plt.Axes

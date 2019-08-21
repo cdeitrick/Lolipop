@@ -105,15 +105,19 @@ def test_get_fuzzy_backgrounds(genotypes, genotype_filter):
 	expected = """
 		Genotype	0	17	25	44	66	75	90
 		genotype-1	0	0	0.261	1	1	1	1
+		genotype-3	0	0	0	0	0	1	1
 		genotype-4	0	0	0	0.525	0.454	0.911	0.91
 		genotype-5	0	0	0	0.147	0.45	0.924	0.887
-		genotype-6	0	0	0	0.273	0.781	1	1"""
+		genotype-6	0	0	0	0.273	0.781	1	1
+	"""
 	expected_table = import_table(expected, index = 'Genotype')
 	genotype_filter.frequencies = [0.9]
 	backgrounds = genotype_filter.get_fuzzy_backgrounds(genotypes)
 	expected_table = expected_table.astype(float)
 	assert pytest.approx(genotype_filter.fuzzy_fixed_cutoff == 0.9)
-
+	from loguru import logger
+	logger.debug(expected_table)
+	logger.debug(backgrounds)
 	pandas.testing.assert_frame_equal(expected_table, backgrounds)
 
 

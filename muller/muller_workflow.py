@@ -3,6 +3,7 @@
 	Main script to run the muller workflow.
 """
 from pathlib import Path
+from typing import Dict
 
 from loguru import logger
 
@@ -10,7 +11,8 @@ logger.remove()
 import sys
 
 from muller import dataio, clustering, inheritance, commandline_parser
-from muller.generate_output import WorkflowData, MullerOutputGenerator
+from muller.dataio.generate_output import WorkflowData, MullerOutputGenerator
+
 logger.level("COMPLETE", no = 1)
 if commandline_parser.DEBUG:
 	logger.add(sys.stderr, level = "DEBUG")
@@ -18,10 +20,8 @@ else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 
-# TODO: Add annotations to filtered trajectories table
-# TODO: fix the discrepancy between the filtered trajectory table and the main trajectory table missing genotype labels.
 class MullerWorkflow:
-	def __init__(self, program_options):
+	def __init__(self, program_options) -> None:
 		self.program_options = commandline_parser.parse_workflow_options(program_options)
 		logger.info("Program options:")
 		for k, v in vars(self.program_options).items():
@@ -49,7 +49,9 @@ class MullerWorkflow:
 			dbreakpoint = self.program_options.detection_breakpoint,
 			breakpoints = breakpoints,
 			starting_genotypes = self.program_options.starting_genotypes,
-			trajectory_filter = self.trajectory_filter
+			trajectory_filter = self.trajectory_filter,
+			filename_pairwise = self.program_options.filename_pairwise,
+			threads = self.program_options.threads
 		)
 
 		self.organize_genotypes_workflow = inheritance.SortGenotypeTableWorkflow(
@@ -59,7 +61,7 @@ class MullerWorkflow:
 			breakpoints = breakpoints
 		)
 
-		self.lineage_workflow = inheritance.order.LineageWorkflow(
+		self.lineage_workflow = inheritance.genotype_lineage.LineageWorkflow(
 			dlimit = self.program_options.detection_breakpoint,
 			flimit = self.program_options.fixed_breakpoint,
 			additive_cutoff = self.program_options.additive_cutoff,
@@ -121,6 +123,6 @@ class MullerWorkflow:
 
 		return timepoints, mean_genotypes, genotype_members, info
 
-	def read_additional_files(self):
+	def read_additional_files(self) -> Dict[str, str]:
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry

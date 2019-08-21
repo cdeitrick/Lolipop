@@ -1,0 +1,282 @@
+{
+  "genotype-0": {
+    "annotations": [],
+    "color_clade": "#FFFFFF",
+    "color_custom": null,
+    "color_unique": "#FFFFFF",
+    "label": "genotype-0",
+    "members": [],
+    "parent": null
+  },
+  "genotype-1": {
+    "annotations": [
+      "PROKKA_00838",
+      "P431L"
+    ],
+    "color_clade": "#4bb062",
+    "color_custom": null,
+    "color_unique": "#e6194b",
+    "label": "genotype-1",
+    "members": [
+      "11"
+    ],
+    "parent": null
+  },
+  "genotype-10": {
+    "annotations": [
+      "nrnA_2",
+      "S191Y",
+      "glnM",
+      "I92S",
+      "dnaI",
+      "R14S"
+    ],
+    "color_clade": "#3787c0",
+    "color_custom": null,
+    "color_unique": "#fabebe",
+    "label": "genotype-10",
+    "members": [
+      "23",
+      "31",
+      "8"
+    ],
+    "parent": null
+  },
+  "genotype-11": {
+    "annotations": [
+      "PROKKA_01506",
+      "A136S",
+      "PROKKA_00438",
+      "A452G",
+      "PROKKA_00512",
+      "E35V"
+    ],
+    "color_clade": "#2f974e",
+    "color_custom": null,
+    "color_unique": "#008080",
+    "label": "genotype-11",
+    "members": [
+      "25",
+      "3",
+      "5"
+    ],
+    "parent": null
+  },
+  "genotype-12": {
+    "annotations": [
+      "ruvB",
+      "A310T"
+    ],
+    "color_clade": "#ffca00",
+    "color_custom": null,
+    "color_unique": "#e6beff",
+    "label": "genotype-12",
+    "members": [
+      "26"
+    ],
+    "parent": null
+  },
+  "genotype-13": {
+    "annotations": [
+      "tig",
+      "A151V"
+    ],
+    "color_clade": "#fb694a",
+    "color_custom": null,
+    "color_unique": "#9a6324",
+    "label": "genotype-13",
+    "members": [
+      "27"
+    ],
+    "parent": null
+  },
+  "genotype-14": {
+    "annotations": [
+      "recD2",
+      "T316T"
+    ],
+    "color_clade": "#b8e3b2",
+    "color_custom": null,
+    "color_unique": "#fffac8",
+    "label": "genotype-14",
+    "members": [
+      "28"
+    ],
+    "parent": null
+  },
+  "genotype-15": {
+    "annotations": [
+      "intergenic"
+    ],
+    "color_clade": "#98d594",
+    "color_custom": null,
+    "color_unique": "#800000",
+    "label": "genotype-15",
+    "members": [
+      "6"
+    ],
+    "parent": null
+  },
+  "genotype-2": {
+    "annotations": [
+      "PROKKA_00838",
+      "A21V",
+      "copA",
+      "D584Y"
+    ],
+    "color_clade": "#d3eecd",
+    "color_custom": null,
+    "color_unique": "#3cb44b",
+    "label": "genotype-2",
+    "members": [
+      "12",
+      "18"
+    ],
+    "parent": null
+  },
+  "genotype-3": {
+    "annotations": [
+      "malK_1",
+      "A83S",
+      "PROKKA_01382",
+      "T8P"
+    ],
+    "color_clade": "#73c476",
+    "color_custom": null,
+    "color_unique": "#ffe119",
+    "label": "genotype-3",
+    "members": [
+      "13",
+      "24"
+    ],
+    "parent": null
+  },
+  "genotype-4": {
+    "annotations": [
+      "PROKKA_00981",
+      "L83V"
+    ],
+    "color_clade": "#abd0e6",
+    "color_custom": null,
+    "color_unique": "#4363d8",
+    "label": "genotype-4",
+    "members": [
+      "14"
+    ],
+    "parent": null
+  },
+  "genotype-5": {
+    "annotations": [
+      "PROKKA_01052",
+      "Q231K"
+    ],
+    "color_clade": "#006428",
+    "color_custom": null,
+    "color_unique": "#f58231",
+    "label": "genotype-5",
+    "members": [
+      "15"
+    ],
+    "parent": null
+  },
+  "genotype-6": {
+    "annotations": [
+      "mepA_2",
+      "*427Q",
+      "PROKKA_01887",
+      "A363D"
+    ],
+    "color_clade": "#157f3b",
+    "color_custom": null,
+    "color_unique": "#911eb4",
+    "label": "genotype-6",
+    "members": [
+      "16",
+      "30"
+    ],
+    "parent": null
+  },
+  "genotype-7": {
+    "annotations": [
+      "mutS",
+      "L353F"
+    ],
+    "color_clade": "#9e9ac8",
+    "color_custom": null,
+    "color_unique": "#46f0f0",
+    "label": "genotype-7",
+    "members": [
+      "17"
+    ],
+    "parent": null
+  },
+  "genotype-8": {
+    "annotations": [
+      "patA_1",
+      "Q111*"
+    ],
+    "color_clade": "#ea0000",
+    "color_custom": null,
+    "color_unique": "#f032e6",
+    "label": "genotype-8",
+    "members": [
+      "20"
+    ],
+    "parent": null
+  },
+  "genotype-9": {
+    "annotations": [
+      "PROKKA_01281",
+      "A256V",
+      "PROKKA_02115|parC",
+      "intergenic"
+    ],
+    "color_clade": "#e9f7e5",
+    "color_custom": null,
+    "color_unique": "#bcf60c",
+    "label": "genotype-9",
+    "members": [
+      "22",
+      "32"
+    ],
+    "parent": null
+  },
+  "genotype-filtered": {
+    "annotations": [
+      "PROKKA_00139|glyA",
+      "nc",
+      "gapN|glgB",
+      "nc",
+      "PROKKA_00487",
+      "L93L",
+      "bglK_1",
+      "A168D",
+      "PROKKA_00764",
+      "coding",
+      "Ribonuclease Y",
+      "A7A",
+      "patA_1",
+      "W285*",
+      "lytB_5",
+      "D625A",
+      "accD",
+      "T213K"
+    ],
+    "color_clade": "#333333",
+    "color_custom": null,
+    "color_unique": "#333333",
+    "label": "genotype-filtered",
+    "members": [
+      "1",
+      "2",
+      "4",
+      "7",
+      "9",
+      "10",
+      "19",
+      "21",
+      "29"
+    ],
+    "parent": null
+  }
+}

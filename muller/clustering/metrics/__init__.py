@@ -1,2 +1,2 @@
-from .calculation import calculate_pairwise_metric
-from .pairwise_calculation_cache import PairwiseCalculationCache
+from .distance_cache import DistanceCache
+from .distance_calculator import DistanceCalculator

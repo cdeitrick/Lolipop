@@ -2,25 +2,38 @@
 ![muller_plot](./example/example.muller.unannotated.png)
 
 # Contents
--  [Installation](#installation)
--  [Sample Usage](#sample-usage)
--  [Requirements](#requirements)
--  [General Workflow](#general-workflow)
--  [Script Options](#script-options)
-	-  [General Options](#general-options)
-	-  [Filtering Options](#filtering-options)
-	-  [Clustering Options](#clustering-options)
-	-  [Nesting Options](#nesting-options)
-	-  [Graphics Options](#graphics-options)
--  [Input Parameters](#input-dataset)
--  [Output Files](#output)
-    -  [Output Tables](#tables)
-    -  [Muller Plots](#muller-plots)
-    -  [Genotype Plots](#timeseries-plots)
-    -  [Lineage Diagram](#lineage-diagrams)
+- [A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background](#a-set-of-scripts-to-cluster-mutational-trajectories-into-genotypes-and-cluster-genotypes-by-background)
+- [Contents](#contents)
+- [Installation](#installation)
+- [Requirements](#requirements)
+	- [Optional Packages](#optional-packages)
+- [Sample Usage](#sample-usage)
+- [General Workflow](#general-workflow)
+- [Script Options](#script-options)
+	- [General Options](#general-options)
+	- [Filtering Options](#filtering-options)
+	- [Clustering Options](#clustering-options)
+	- [Nesting Options](#nesting-options)
+	- [Graphics Options](#graphics-options)
+- [Input Dataset](#input-dataset)
+- [Output](#output)
+	- [Tables](#tables)
+		- [Timeseries tables](#timeseries-tables)
+		- [Tables for ggmuller](#tables-for-ggmuller)
+		- [Linkage matrix](#linkage-matrix)
+		- [Distance Matrix](#distance-matrix)
+		- [Muller table](#muller-table)
+	- [Graphics](#graphics)
+		- [Muller Plots](#muller-plots)
+		- [Lineage Diagrams](#lineage-diagrams)
+		- [Timeseries plots](#timeseries-plots)
+		- [Distance Heatmap](#distance-heatmap)
+		- [Dendrogram](#dendrogram)
+	- [Scripts](#scripts)
+	- [Supplementary files](#supplementary-files)
 
 # Installation
-These scripts are available on (pypi)[https://pypi.org/project/muller/] and can be installed with
+These scripts are available on [pypi](https://pypi.org/project/muller/) and can be installed with
 ```bash
 pip install muller 
 ```
@@ -31,14 +44,14 @@ pip install muller --upgrade
 
 Then run the scripts using 
 ```
-mullerplot [args]
+lineage [args]
 ```
 
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
 git clone https://github.com/cdeitrick/muller_diagrams.git
 cd muller_diagrams
-mullerplot [args]
+lineage [args]
 ```
 
 # Requirements
@@ -65,11 +78,9 @@ brew install graphviz
 ```
 or the equivalent package manager on your system.
 
-Additionally, `r` should be installed on your system in order to run the generated rscript file with the packages `ggplot2` and `ggmuller`.
-
 ## Optional Packages
-If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
-Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
+- `tqdm`: If `tqdm` is also installed, the scripts will display a progressbar for large datasets.
+- `beautifulsoup4`: Sometimes the encoding of csv files is ambiguous (the scripts throw a UnicodeDecodeError). If `beautifulsoup4` is installed the scripts will attempt to correct encoding errors.
 
 
 # Sample Usage
@@ -104,6 +115,8 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 The delimiter will be inferred from the file extension.
 	-o,  --output               
                                 The output folder to save the files to.
+    --threads                   [2] 
+                                The number of processes to use. This is only relevant for very large datasets.
 	-d, --detection             
                                 The uncertainty to apply when performing
 	                            frequency-based calculations. For
@@ -170,6 +183,11 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 Path to a file listing trajectories which are known to be in the same genotype.
                                 Each line in the file represents a single genotype, and each line should be a
                                 comma-separated list of trajectory labels as they appear in the input dataset.
+    --filename-pairwise         
+                                A table of pairwise distance calculations computed in a previous run using
+                                identical input parameters. This is only usefull if the dataset being re-run 
+                                would other wise take a very onlg time to process (such as data from the 
+                                Long Term Evolution Experiment).
 
 ## Nesting Options
     --additive
@@ -200,6 +218,12 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 (ex. '#F5674A') in the second. These colors will override the default colorscheme.
     --no-outline
                                 Disables the white ouline surrounding each series in the muller plots.
+	--no-render                 
+	                            Disables `.svg` renders.
+	--highlight                
+	                            A comma-separated list of genotype names or annotations to highlight in the generated graphics.
+	--highlight-color 
+	                            [#F34A20] What the color of highlighted genotypes should be. Only HEX color codes are supported.
 
 # Input Dataset
 
@@ -326,7 +350,7 @@ Each of the output plots use the same palette for genotypes and trajectories. A 
 
 The main value of a muller plot is to quickly visualize abundance and geneology of genotypes over the course of an evolution experiment.
 
-![muller](example/example.muller.annotated.png)
+![muller](example/example.trajectories.clade.annotated.png)
 
 ### Lineage Diagrams
 - .lineage.png
@@ -334,7 +358,7 @@ The main value of a muller plot is to quickly visualize abundance and geneology 
 
 These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
 
-![geneology](example/example.lineage.png)
+![geneology](example/example.trajectories.lineage.clade.png)
 
 ### Timeseries plots
 - .genotypes.png
@@ -343,20 +367,20 @@ These are simple flowcharts indicating the relationship between genotypes and cl
 
 Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
 
-![timeseries](example/graphics/distinctive/example.genotypes.distinctive.png)
+![timeseries](example/graphics/clade/example.trajectories.clade.unannotated.png)
 
 ### Distance Heatmap
 - graphics/.heatmap.distance.png
 
 A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
-![heatmap](example/graphics/example.heatmap.distance.png)
+![heatmap](example/graphics/example.trajectories.pairwisedistance.svg)
 
 ### Dendrogram
 - graphics/.dendrogram.png
 Shows the arrangement and distance between clusters and member trajectories. Not available with `--method twostep`.
 
-![dendrogram](example/graphics/example.dendrogram.png)
+![dendrogram](example/graphics/example.trajectories.dendrogram.png)
 
 ## Scripts
 - scripts/example.r

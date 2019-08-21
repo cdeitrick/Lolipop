@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller.clustering.metrics import distance
+from muller.clustering.metrics import distance_methods
 
 
 @pytest.mark.parametrize("left,right,expected",
@@ -14,7 +14,7 @@ from muller.clustering.metrics import distance
 def test_minkowski_distance(left, right, expected: float):
 	left = pandas.Series(left)
 	right = pandas.Series(right)
-	result = distance.minkowski_distance(left, right, 2)
+	result = distance_methods.minkowski_distance(left, right, 2)
 	assert pytest.approx(result, rel = 1E-4) == expected
 
 
@@ -29,7 +29,7 @@ def test_pearson_distance(left, right, expected: float):
 	left = pandas.Series(left)
 	right = pandas.Series(right)
 
-	result = distance.pearson_correlation_distance(left, right, adjusted = False)
+	result = distance_methods.pearson_correlation_distance(left, right, adjusted = False)
 	assert pytest.approx(result, rel = 1E-4) == expected
 
 
@@ -43,12 +43,12 @@ def test_pearson_distance(left, right, expected: float):
 def test_calculate_distance(left, right):
 	left = pandas.Series(left)
 	right = pandas.Series(right)
-	pearson = distance.pearson_correlation_distance(left, right)
-	minkowski = distance.minkowski_distance(left, right)
-	jaccard = distance.jaccard_distance(left, right)
-	binomial = distance.binomial_distance(left, right)
+	pearson = distance_methods.pearson_correlation_distance(left, right)
+	minkowski = distance_methods.minkowski_distance(left, right)
+	jaccard = distance_methods.jaccard_distance(left, right)
+	binomial = distance_methods.binomial_distance(left, right)
 
-	assert pearson == distance.calculate_distance(left, right, 'pearson')
-	assert minkowski == distance.calculate_distance(left, right, 'minkowski')
-	assert jaccard == distance.calculate_distance(left, right, 'jaccard')
-	assert binomial == distance.calculate_distance(left, right, 'binomial')
+	assert pearson == distance_methods.calculate_distance(left, right, 'pearson')
+	assert minkowski == distance_methods.calculate_distance(left, right, 'minkowski')
+	assert jaccard == distance_methods.calculate_distance(left, right, 'jaccard')
+	assert binomial == distance_methods.calculate_distance(left, right, 'binomial')

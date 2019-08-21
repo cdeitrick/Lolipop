@@ -1,19 +1,27 @@
+
 \documentclass{report}
 \begin{document}
 \chapter{Genotype Filters}
 Some of the detected trajectories or genotypes do not represent real mutations, and need to be removed from the analysis. 
-Since all pre-existing variation is removed when a specific genotype sweeps and fixes, any mutation that is seen before, during, 
-and after the timepoint where the sweep occured are likely due to measurement error.
 
 Common situations where a trajectory or genotype should be removed:
 
 \begin{enumerate}
-\item A mutation appears before and after a genotype sweeps and removes all pre-existing variation. Since the mutation should have been removed when the genotype fixed
+\item A mutation appears before and after a genotype sweeps and removes all pre-existing variation. 
+        Since the mutation should have been removed when the genotype fixed
 \item A mutation fixes immediately during the same timepoint it is detected (there are no intermediate values), then becomes undetected again.
+        This is likely due to a sampling error.
+\item Similar to above, a mutation is detected at a single timepoint. 
+        These mutation do not provide much information and complicate the analysis, so they are filtered out.
+        \verb|--disable-filter-single| disables both this and the above filter.
+\item The first timepoint shows that a mutation has already fixed. 
+        This contradicts the known biology of the experiment.
+        \verb|--disable-filter-startsfixed| disables this filter.
+\item A mutation is relatively constant throughout the experiment and is not affected by the movement of other mutations.
+        This filter can be disabled by setting \verb|--filter-constant| to 0.
 \end{enumerate}
 
 An exception has been made for the case where a mutation appears both before and after a genotype sweeps, but is undetected at the timepoint where this occurs. 
 This represents a mutation arising, being removed during a genotype sweep, then arising again.
 Note that when a genotype is removed, all of the trajectories that comprise that genotype are removed and the clustering algorithm is re-run on the remaining dataset. 
-
 \end{document}

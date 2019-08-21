@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller.clustering.metrics.calculation import calculate_pairwise_metric
+from muller.clustering.metrics import DistanceCalculator
 from muller.dataio import import_table
 
 
@@ -36,7 +36,8 @@ def b1_data() -> pandas.DataFrame:
 
 @pytest.fixture
 def pairwise_values(b1_data):
-	pairwise_values = calculate_pairwise_metric(b1_data, 0.03, 0.97, 'binomial')
+	dc = DistanceCalculator(0.03, 0.97, 'binomial')
+	pairwise_values = dc.run(b1_data)
 	return pairwise_values
 
 

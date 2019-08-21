@@ -3,7 +3,7 @@ import math
 import pandas
 import pytest
 
-from muller.clustering.metrics import calculation
+from muller.clustering.metrics import distance_calculator
 
 
 @pytest.mark.parametrize("left,right,expected",
@@ -20,7 +20,7 @@ from muller.clustering.metrics import calculation
 def test_fixed_overlap(left, right, expected):
 	left = pandas.DataFrame(left)
 	right = pandas.DataFrame(right)
-	result = calculation.fixed_overlap(left, right, 0.97)
+	result = distance_calculator.fixed_overlap(left, right, 0.97)
 	if math.isnan(result):
 		result = 1
 	assert expected == result
