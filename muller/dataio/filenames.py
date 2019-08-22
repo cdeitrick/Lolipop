@@ -31,6 +31,7 @@ class OutputFilenames:
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')
 		self.rejected_trajectories: Path = tables_folder / (name + f"trajectories.rejected.{suffix}")
 		self.original_genotype: Path = tables_folder / (name + f'.genotypes.original.{suffix}')
+		self.filename_score_records: Path = tables_folder / (name + f".scorerecords.{suffix}")
 
 		self.ggmuller_population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.ggmuller_edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')

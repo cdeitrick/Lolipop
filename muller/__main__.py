@@ -35,6 +35,7 @@ if __name__ == "__main__":
 	program_parser = create_parser()
 	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
 	program_parser.set_default_subparser('lineage')  # Only works when using sys.args rather than providing the args directly
+
 	args = program_parser.parse_args()
 
 	if args.name == 'benchmark':

@@ -28,6 +28,7 @@ class WorkflowData:
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
 	clusters: Any
+	score_history: List[Dict[str,float]]
 	p_values: DistanceCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
@@ -72,6 +73,7 @@ class MullerOutputGenerator:
 
 		self.save_base_tables(genotypes.get_trajectory_map())
 		self.save_supplementary_files(genotypes)
+		pandas.DataFrame(self.data.score_history).to_csv(self.filenames.filename_score_records, sep = self.filenames.delimiter)
 
 		logger.info("Generating r script...")
 		self.save_r_script(genotypes.get('color_clade'), population_table)

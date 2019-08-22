@@ -14,7 +14,7 @@ def test_summation_score(left, right, expected):
 	left_series = pandas.Series(left)
 	right_series = pandas.Series(right)
 
-	result  = scoring.calculate_subtractive_score(left_series, right_series, 0.1)
+	result  = scoring.calculate_greater_score(left_series, right_series, 0.1)
 
 	assert result == expected
 

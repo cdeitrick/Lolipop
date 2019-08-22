@@ -31,7 +31,7 @@ setup(
 	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background',
 	long_description = LONG_DESCRIPTION,
 	long_description_content_type='text/markdown',
-	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib','graphviz', 'pygraphviz', 'seaborn', 'numpy', 'xlrd'],
+	install_requires = ['pandas>=0.24.0', 'loguru', 'scipy>=1.3.0', 'matplotlib>=3.0.0','graphviz', 'pygraphviz', 'seaborn', 'numpy>=1.16.2', 'xlrd'],
 	tests_requires = ['pytest'],
 	classifiers = [
 		"Programming Language :: Python :: 3",

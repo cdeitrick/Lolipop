@@ -41,6 +41,8 @@ class LineageWorkflow:
 
 		#TODO: Add configurable weights for the score tests.
 
+		self.score_records:List[Dict[str,float]] = list() # Keeps track of the individual score values for each pair
+
 	def add_known_lineages(self, known_ancestry: Dict[str, str]):
 		for identity, parent in known_ancestry.items():
 			# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
@@ -49,29 +51,42 @@ class LineageWorkflow:
 			# Use a dummy priority so that it is selected before other backgrounds.
 			self.genotype_nests.add_genotype_to_background(identity, parent, priority = 100)
 
-	def score_pair(self, nested_genotype: pandas.Series, unnested_trajectory) -> float:
-		score_additive = scoring.calculate_subtractive_score(nested_genotype, unnested_trajectory, self.additive_cutoff)
-		score_subtractive = scoring.calculate_summation_score(nested_genotype, unnested_trajectory, self.flimit, self.subtractive_cutoff)
+	def score_pair(self, nested_genotype: pandas.Series, unnested_trajectory) -> Dict[str,float]:
+		detected_left, detected_right = widgets.get_valid_points(nested_genotype, unnested_trajectory, dlimit = self.dlimit, inner = True)
+		score_greater = scoring.calculate_greater_score(nested_genotype, unnested_trajectory, self.additive_cutoff)
+		#score_subtractive = scoring.calculate_summation_score(nested_genotype, unnested_trajectory, self.flimit, self.subtractive_cutoff)
+		score_subtractive = scoring.calculate_summation_score(detected_left, detected_right, self.flimit, self.subtractive_cutoff)
 		score_area = scoring.calculate_area_score(nested_genotype, unnested_trajectory)
 
-		total_score = score_additive + score_subtractive + score_area
-
+		total_score = score_greater + score_subtractive + score_area
+		logger.debug(f"{nested_genotype.name}\t{unnested_trajectory.name}\t{score_greater}\t{score_subtractive}\t{score_area}")
 		if total_score > 0:
 			# The derivative check is only useful when deciding between possible candidates, since it does not provide evidence itself that a
 			# genotype is a potential background. So, at least one of the other checks should have been passed with no
 			# evidence against the candidate background.
-			detected_left, detected_right = widgets.get_valid_points(nested_genotype, unnested_trajectory, dlimit = self.dlimit, inner = True)
+
 			# The derivative score should only be computed using the timepoints where the series overlap.
 
 			score_derivative = scoring.calculate_derivative_score(detected_left, detected_right, detection_cutoff = self.dlimit,
 				cutoff = self.derivative_cutoff)
 			# Note that a previous version accidentlly added the derivative cutoff to the total score.
 			total_score += score_derivative
+		else:
+			score_derivative = None
+		score_data = {
+			'nestedGenotype': nested_genotype.name,
+			'unnestedGenotype': unnested_trajectory.name,
+			'scoreAdditive': score_greater,
+			'scoreSubtractive': score_subtractive,
+			'scoreArea': score_area,
+			'scoreDerivative': score_derivative,
+			'totalScore': total_score
 
-		return total_score
+		}
+		return score_data
 
 	def show_ancestry(self, sorted_genotypes: pandas.DataFrame):
-		logger.debug("Final Ancestry:")
+		logger.log("COMPLETE", "Final Ancestry:")
 		for genotype_label in sorted_genotypes.index:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
 			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
@@ -97,9 +112,9 @@ class LineageWorkflow:
 			test_table = sorted_genotypes[:unnested_label].iloc[::-1]
 			for nested_label, nested_genotype in test_table.iterrows():
 				if nested_label == unnested_label: continue
-				total_score = self.score_pair(nested_genotype, unnested_trajectory)
-
-				self.genotype_nests.add_genotype_to_background(unnested_label, nested_label, total_score)
+				score_data = self.score_pair(nested_genotype, unnested_trajectory)
+				self.score_records.append(score_data)
+				self.genotype_nests.add_genotype_to_background(unnested_label, nested_label, score_data['totalScore'])
 
 		self.show_ancestry(sorted_genotypes)
 		return self.genotype_nests

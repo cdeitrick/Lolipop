@@ -513,21 +513,18 @@ def create_muller_parser(subparsers) -> argparse.ArgumentParser:
 	parser_muller.add_argument(
 		"population",
 		help = "Path to the population table.",
-		type = Path,
-		required = True
+		type = Path
 	)
 
 	parser_muller.add_argument(
 		"edges",
 		help = "Path to the edges table delineating the lineage of the population genotypes.",
-		type = Path,
-		required = True
+		type = Path
 	)
 	parser_muller.add_argument(
 		"output",
 		help = "Path to save the generated muller plot as.",
-		type = Path,
-		required = True
+		type = Path
 	)
 
 	return parser_muller

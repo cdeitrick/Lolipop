@@ -1,16 +1,16 @@
 import math
 
 import pandas
-
+from scipy.stats import wilcoxon
 from muller.widgets import get_valid_points
-
+from loguru import logger
 try:
 	from muller.inheritance import areascore
 except ModuleNotFoundError:
 	from . import areascore
 
 
-def calculate_subtractive_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
+def calculate_greater_score(nested_genotype: pandas.Series, unnested_genotype: pandas.Series, cutoff: float) -> float:
 	"""
 		Tests whether the nested genotype is consistenty larger than  the nested genotype. The scoring is as follows:
 		`nested_genotype` always larger than `unnested_genotype`: 1
@@ -23,14 +23,14 @@ def calculate_subtractive_score(nested_genotype: pandas.Series, unnested_genotyp
 	cutoff: The minimum distance between each timepoint between `nested_genotype` and `unnested_genotype`
 
 	"""
-	difference = nested_genotype - unnested_genotype
-
-	score = int(difference.sum() > (cutoff * len(difference) / 2))
-
+	statistic, pvalue = wilcoxon(nested_genotype.values, unnested_genotype.values, alternative = 'greater')
+	score = int(pvalue < cutoff)
+	# Old Code:
+	#difference = nested_genotype - unnested_genotype
+	#score = int(difference.sum() > (cutoff * len(difference) / 2))
 	# There may be a point where the unnested genotype is greater than the nested genotype.
-
-	if any(difference < 0):
-		score -= 1
+	#if any(difference <= 0):
+	#	score -= 1
 	# logger.debug(f"{unnested_genotype.name}\t{nested_genotype.name}\t{score}")
 	return score
 
@@ -108,12 +108,18 @@ def calculate_summation_score(left: pandas.Series, right: pandas.Series, fixed_c
 	fixed_cutoff: The fixed breakpoint.
 	cutoff: Governs whether two series consistently sum to a value greater than `fixed_cutoff`. Should be in the range [0,1]
 	"""
-	#TODO: Maybe the cutoff should be the variance as calculated from the clustering step.
-	combined = left + right
-	above_fixed = combined - fixed_cutoff
+	combined_series = (left + right) - fixed_cutoff # Essentially testing if the remaining series is greater than zero.
+	statistic, pvalue = wilcoxon(combined_series.values, alternative = 'greater')
+	score = int(pvalue < cutoff)
+	logger.debug(f"Summation Score: {left.name}\t{right.name}\t{statistic}\t{pvalue}\t{score}\t{cutoff}")
+	logger.debug(f"{combined_series.values}")
+	# Old Code:
+	#Maybe the cutoff should be the variance as calculated from the clustering step.
+	#combined = left + right
+	#above_fixed = combined - fixed_cutoff
 
 	# Finally, check whether the frequency of this series is consistently above the `cutoff` value.
 	# Timepoints that do not sum to greater than the fixed breakpoint will be negative.
-	result = above_fixed.mean() > cutoff
+	#result = above_fixed.mean() > cutoff
 
-	return int(result)
+	return int(score)

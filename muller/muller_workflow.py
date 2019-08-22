@@ -86,7 +86,7 @@ class MullerWorkflow:
 
 		sorted_genotypes = self.organize_genotypes_workflow.run(mean_genotypes)
 
-		genotype_clusters = self.lineage_workflow.run(sorted_genotypes, known_ancestry)
+		genotype_lineage_results = self.lineage_workflow.run(sorted_genotypes, known_ancestry)
 
 		workflow_data = WorkflowData(
 			version = commandline_parser.__VERSION__,
@@ -98,7 +98,8 @@ class MullerWorkflow:
 			trajectories = timepoints,
 			genotypes = sorted_genotypes,
 			genotype_members = genotype_members,
-			clusters = genotype_clusters,
+			clusters = genotype_lineage_results,
+			score_history = self.lineage_workflow.score_records,
 			program_options = vars(self.program_options),
 			p_values = self.genotype_generator.pairwise_distances,
 			filter_cache = [],
