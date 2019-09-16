@@ -106,3 +106,13 @@ class DistanceCache:
 			data[left, right] = value
 			data[right, left] = value
 		return DistanceCache(data)
+
+	@classmethod
+	def from_squareform(cls, square:pandas.DataFrame)->'DistanceCache':
+		data = dict()
+
+		for left, row in square.iterrows():
+			for right, value in row.items():
+				data[left,right] = value
+				data[right,left] = value
+		return DistanceCache(data)

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-
-plt.switch_backend('agg')
+plt.clf()
+#plt.switch_backend('agg')
 import pandas
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -32,7 +32,7 @@ class TimeseriesPlot:
 		self.yaxis_label = 'Frequency'
 		self.markersize = 2  # The size of individual markers in the plot
 		self.markertype = '-'  # The type of marker to use.
-		self.linewidth = 1
+		self.linewidth = 12
 
 		# Parameters concerning the plot legend.
 		self.legend = legend
@@ -40,7 +40,7 @@ class TimeseriesPlot:
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
-		self.dpi = 500
+		self.dpi = 250
 		self.scale_max = 5
 
 	# noinspection PyTypeChecker
@@ -91,7 +91,7 @@ class TimeseriesPlot:
 		# Plot all trajectories
 		if trajectory_timeseries is not None:
 			taxes: plt.Axes = plt.subplot(grid[0, 0:2])
-			self.plot_timeseries(trajectory_timeseries, trajectory_palette, taxes)
+			self.plot_timeseries(trajectory_timeseries, trajectory_palette, taxes)#, scale = (scale_x, scale_y))
 
 			gaxes: plt.Axes = plt.subplot(grid[1, :])
 		else:
@@ -101,7 +101,7 @@ class TimeseriesPlot:
 		# Plot clustered genotypes. Should be same as above, but colored based on genotype cluster.
 		# Plot the mean of each cluster
 
-		self.plot_timeseries(genotype_timeseries, genotypes.get(palette_type), gaxes, scale = (scale_x, scale_y))
+		self.plot_timeseries(genotype_timeseries, genotypes.get(palette_type), gaxes)#, scale = (scale_x, scale_y))
 		# noinspection PyUnboundLocalVariable
 
 		if self.legend:
@@ -143,7 +143,7 @@ class TimeseriesPlot:
 		"""
 		# Set up the plotting area.
 		if ax is None:
-			fig, ax = plt.subplots(figsize = (scale[0] * 10, scale[1] * 5))
+			fig, ax = plt.subplots(figsize = (12 * scale[0], 8 * scale[1]))
 
 		ax = self._annotate_timeseries(ax, 'Genotypes' if 'genotype' in timeseries.index[0] else 'Trajectories')
 

@@ -45,7 +45,7 @@ class MullerWorkflow:
 			metric = self.program_options.metric,
 			dlimit = self.program_options.detection_breakpoint,
 			flimit = self.program_options.fixed_breakpoint,
-			sbreakpoint = self.program_options.similarity_breakpoint,
+			pvalue = self.program_options.pvalue,
 			dbreakpoint = self.program_options.detection_breakpoint,
 			breakpoints = breakpoints,
 			starting_genotypes = self.program_options.starting_genotypes,
@@ -58,15 +58,13 @@ class MullerWorkflow:
 			dlimit = self.program_options.detection_breakpoint,
 			slimit = self.program_options.significant_breakpoint,
 			flimit = self.program_options.fixed_breakpoint,
-			breakpoints = breakpoints
+			breakpoints = self.program_options.frequencies
 		)
 
 		self.lineage_workflow = inheritance.genotype_lineage.LineageWorkflow(
 			dlimit = self.program_options.detection_breakpoint,
 			flimit = self.program_options.fixed_breakpoint,
-			additive_cutoff = self.program_options.additive_cutoff,
-			subtractive_cutoff = self.program_options.subtractive_cutoff,
-			derivative_cutoff = self.program_options.derivative_cutoff
+			pvalue = self.program_options.pvalue
 		)
 
 	def run(self, filename: Path, output_folder: Path):

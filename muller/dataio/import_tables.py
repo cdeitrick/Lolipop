@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pandas
+from loguru import logger
 
 
 # noinspection PyProtectedMember
@@ -47,4 +48,14 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_path(input_table, sheet_name, index)
 	else:
 		data = _import_table_from_string(input_table, index = index)
+
+	# Make sure the x-values are numeric
+	try:
+		data.columns = [int(i) for i in data.columns] # Using float causes problems
+	except ValueError:
+		# The columns could not be converted to str
+		logger.warning(f"The columns could not be converted to int: {data.columns}")
+
+	data = data[sorted(data.columns)]
+	logger.debug(data.columns)
 	return data

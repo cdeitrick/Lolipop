@@ -17,7 +17,7 @@ class ClusterMutations:
 	----------
 	dlimit, flimit:float
 		The detection, significant, and fixed cutoff values, respectively
-	sbreakpoint: float
+	pvalue: float
 		The cutoff value to use when clustering trajectories into genotypes. Two trajectories must have a distance less than this value to be
 		considered members of the same genotype.
 	dbreakpoint: float
@@ -40,16 +40,16 @@ class ClusterMutations:
 		- A linkage matrix, if hierarchical clustering was used.
 	"""
 
-	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, sbreakpoint: float, dbreakpoint: float, breakpoints: List[float],
-			starting_genotypes: List[List[str]], trajectory_filter: filters.TrajectoryFilter, filename_pairwise:Optional[Path] = None, threads:Optional[int] = None):
+	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, pvalue: float, dbreakpoint: float, breakpoints: List[float],
+			starting_genotypes: Optional[List[List[str]]] = None, trajectory_filter: Optional[filters.TrajectoryFilter] = None, filename_pairwise:Optional[Path] = None, threads:Optional[int] = None):
 		self.method: str = method
 		self.metric: str = metric
 		self.dlimit: float = dlimit
 		self.flimit: float = flimit
-		self.sbreakpoint: float = sbreakpoint
+		self.pvalue: float = pvalue
 		self.dbreakpoint: float = dbreakpoint
 		self.breakpoints: List[float] = breakpoints
-		self.starting_genotypes: List[List[str]] = starting_genotypes
+		self.starting_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.trajectory_filter = trajectory_filter
 		self.filename_pairwise = filename_pairwise
 		# These will be updated when run() is called.
@@ -148,10 +148,10 @@ class ClusterMutations:
 
 	def generate_genotypes(self, timepoints: pandas.DataFrame) -> Tuple[pandas.DataFrame, pandas.Series, Optional[numpy.array]]:
 		if self.method == "matlab" or self.method == 'twostep':
-			genotypes = methods.twostep_method(timepoints, self.pairwise_distances, self.sbreakpoint, self.dbreakpoint, self.starting_genotypes)
+			genotypes = methods.twostep_method(timepoints, self.pairwise_distances, self.pvalue, self.dbreakpoint, self.starting_genotypes)
 			linkage_matrix = None
 		elif self.method == "hierarchy":
-			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.sbreakpoint,
+			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.pvalue,
 				starting_genotypes = self.starting_genotypes)
 		else:
 			raise ValueError(f"Invalid clustering method: {self.method}")

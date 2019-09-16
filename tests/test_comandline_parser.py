@@ -6,7 +6,7 @@ import pytest
 from muller import muller_workflow
 from muller.commandline_parser import create_parser
 
-DATA_FOLDER = Path(__file__).parent / "data"
+DATA_FOLDER = Path(__file__).parent.parent / "data"
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def test_minimum_commandline_parser(output_folder):
 @pytest.mark.parametrize("cutoff", [.11, .25, .77])
 def test_similiarity_cutoff(output_folder, cutoff):
 	filename = DATA_FOLDER / "tables_input_trajectories" / "5_genotypes.timeseries.tsv"
-	args = ["lineage", "--input", str(filename), "--output", str(output_folder), '--similarity-cutoff', cutoff]
+	args = ["lineage", "--input", str(filename), "--output", str(output_folder), '--pvalue', str(cutoff)]
 	args = create_parser().parse_args([str(i) for i in args])
 	muller_workflow.MullerWorkflow(args).run(args.filename, args.output_folder)
 
@@ -34,7 +34,7 @@ def test_similiarity_cutoff(output_folder, cutoff):
 @pytest.mark.skip
 def test_twostep_method(output_folder):
 	filename = DATA_FOLDER / "tables_input_trajectories" / "5_genotypes.timeseries.tsv"
-	args = ["--input", str(filename), "--output", str(output_folder), "--method", 'twostep']
+	args = ["lineage", "--input", str(filename), "--output", str(output_folder), "--method", 'twostep']
 	args = create_parser().parse_args([str(i) for i in args])
 	mw = muller_workflow.MullerWorkflow(args)
 	mw.run(args.filename, args.output_folder)

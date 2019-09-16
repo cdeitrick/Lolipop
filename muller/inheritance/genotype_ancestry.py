@@ -43,7 +43,7 @@ class Ancestry:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
 
-	def get_highest_priority(self, label: str) -> Tuple[Optional[str], float]:
+	def get_highest_priority_legacy(self, label: str) -> Tuple[Optional[str], float]:
 		candidates = self.confidence.get(label, [])
 		if candidates:
 			# Explicity tell the sorting method to use the priority score.
@@ -60,6 +60,17 @@ class Ancestry:
 			candidate = None
 
 		return candidate, score
+
+	def get_highest_priority(self, label: str) -> Tuple[Optional[str], float]:
+		candidates = self.confidence.get(label, [])
+		_, maximum_score = max(candidates, key = lambda s: s[1])
+		for candidate, score in candidates:
+			# Make sure the score is within 2 or so of the maximum.
+			if score > 1 and abs(maximum_score - score) <= 2:
+				return candidate, score
+		else:
+			return None, math.nan
+
 
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()
@@ -80,6 +91,7 @@ class Ancestry:
 
 	def as_dict(self) -> Mapping[str, str]:
 		return self.as_ancestry_table().to_dict()
+
 
 	def priority_table(self) -> pandas.DataFrame:
 		data = list()

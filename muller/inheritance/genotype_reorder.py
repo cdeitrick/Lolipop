@@ -23,6 +23,7 @@ class SortGenotypeTableWorkflow:
 		self.slimit = slimit
 		self.flimit = flimit
 		self.breakpoints = breakpoints
+		logger.debug(breakpoints)
 
 	def run(self, unsorted_genotypes: pandas.DataFrame):
 		"""
@@ -38,7 +39,7 @@ class SortGenotypeTableWorkflow:
 		"""
 		sorted_genotypes = list()
 		current_genotypes: pandas.DataFrame = unsorted_genotypes.copy()
-		for frequency in [self.flimit] + self.breakpoints:
+		for frequency in self.breakpoints:
 			logger.debug(f"filtering based on frequency {frequency}")
 			# Ignore genotypes that do not have at least on timepoint exceeding the current frequency.
 			# This should be taken care of suring the filtering step.
@@ -86,7 +87,8 @@ class SortGenotypeTableWorkflow:
 
 		if frequency_breakpoint == self.flimit:
 			df = df.dropna()
-		sorted_frequencies = df.sort_values(by = ['firstDetected', 'firstThreshold'], ascending = False)
+		df = df[['firstDetected', 'firstFixed', 'firstThreshold']]
+		sorted_frequencies = df.sort_values(by = ['firstDetected', 'firstThreshold'], ascending = True)
 
 		# Sort genotypes based on frequency if two or more share the same fixed timepoint, detection timpoint, threshold timepoint.
 		# Iterate over the conbinations of 'firstFixed', 'firstDetected', and 'firstThreshold' and sort trajectories that belong to the sample combination.
@@ -109,8 +111,8 @@ class SortGenotypeTableWorkflow:
 			#   	firstFixed firstDetected firstThreshold
 			# 15          0            25              0
 			# 10          0            25              0
-			if ft == 130:  # dummy value assigned above. Revert back to 0 since '130' isn't a valid timepoint.
-				ft = 0
+			#if ft == 130:  # dummy value assigned above. Revert back to 0 since '130' isn't a valid timepoint.
+			#	ft = 0
 			# Get a table of the original frequencies at each timepoint for the genotypes present in `group`
 			trajectories: pandas.DataFrame = original_frequencies.loc[group.index]
 			if len(group) < 2:

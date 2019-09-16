@@ -103,6 +103,7 @@ class BaseGenerateMullerDiagram:
 	def __init__(self, outlines: bool, render: bool):
 		self.outlines = outlines
 		self.render = render
+		self.dpi = 250
 
 		self.root_genotype_name = 'genotype-0'
 
@@ -135,6 +136,8 @@ class BaseGenerateMullerDiagram:
 			The base filenme of the output files. The filetypes will be taken from the available suffixes.
 		annotations: Dict[str, List[str]]
 			A map of genotype labels to add to the plot.
+		title: Optional[str]
+			Applies the given title to the plot
 		Returns
 		-------
 		ax: Axes
@@ -201,10 +204,11 @@ class BaseGenerateMullerDiagram:
 			A typical plot will have about 10 to 20 genotypes and 10-20 timepoints. The current defaults work well for
 			datasets of that size, but need to scale the plot size for anything larger.
 		"""
+		size_x = size_x if size_x > size_y else size_y
 		figsize_x = size_x * 12
 		figsize_y = size_y * 10
 
-		fig, ax = plt.subplots(figsize = (figsize_x, figsize_y))
+		fig, ax = plt.subplots(figsize = (12, 10))
 		return fig, ax
 
 	def _format_plot(self, ax: plt.Axes, title: Optional[str], maximum_x: float, scale_x: int, scale_y: int):
@@ -254,7 +258,7 @@ class BaseGenerateMullerDiagram:
 		""" Saves the diagram in every format available in self.filetypes"""
 		for suffix in self.filetypes:
 			filename = str(basename) + suffix
-			plt.savefig(filename, dpi = 500 if suffix != '.svg' else None)  # Not sure if setting DPI for svgs raises an error.
+			plt.savefig(filename, dpi = self.dpi if suffix != '.svg' else None)  # Not sure if setting DPI for svgs raises an error.
 
 	# TODO: Add metadata to png images? https://matplotlib.org/3.1.1/api/backend_agg_api.html#matplotlib.backends.backend_agg.FigureCanvasAgg.print_png
 	@staticmethod
@@ -278,8 +282,11 @@ class BaseGenerateMullerDiagram:
 		x_values = list(unique_everseen(muller_df['Generation'].tolist()))
 		# Extract the labels for each genotype, preserving the order they will be plotted in. If the
 		# genotype was split up, only keep one of the series labels.
-		labels = [(label if not label.endswith('a') else None) for label in genotype_order]
-		colors = [color_palette[label[:-1] if label.endswith('a') else label] for label in genotype_order]
+
+		# labels = [(label if not label.endswith('a') else None) for label in genotype_order]
+		labels = muller_df['Identity'].unique()
+		colors = [color_palette[label[:-1] if (label.endswith('a') and label not in labels) else label] for label in genotype_order]
+
 		groups = muller_df.groupby(by = 'Group_id')
 
 		# Keep track of which genotype series have already been processed.
@@ -449,7 +456,7 @@ class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
 		for index, name, in enumerate(genotype_order):
 			# muller_df splits each genotype so that it can draw them in the correct order as a stacked area chart.
 			# The second series label has an additional 'a' character at the end to distinguish it from the first series for each genotype.
-			genotype_label = name[:-1] if name.endswith('a') else name
+			genotype_label = name[:-1] if (name.endswith('a') and name not in muller_df['Identity'].unique()) else name
 
 			# Check if this genotype has already been assigned a location.
 			if genotype_label in points: continue

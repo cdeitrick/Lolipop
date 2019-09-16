@@ -61,6 +61,14 @@ def test_get_detected_points_advanced():
 	assert [3, 4, 5, 6, 7] == list(widgets.get_detected_points(left, right, .03, inner = True)[0].index)
 	assert [3, 4, 5] == list(widgets.get_detected_points(left, right, .03, .97, inner = True)[0].index)
 
+def test_get_detected_points_inner():
+	left = pandas.Series([0, 0, 0, 0,   0,    0, 0.085, 0.001, 0.005])
+	right = pandas.Series([0,0, 0,   0,   0,  0,0.05, 0.55, 0.5 ])
+	l,r = widgets.get_valid_points(left, right, dlimit = 0.03, inner = False)
+
+	assert l.tolist() == [0.085]
+	assert r.tolist() == [0.05]
+
 
 def test_get_valid_points_simple():
 	left = pandas.Series([0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 0])
@@ -199,3 +207,18 @@ def test_fixes_imediately(series, expected):
 def test_fixed(series, expected):
 	s = pandas.Series(series)
 	assert widgets.fixed(s, 0.97) == expected
+
+@pytest.mark.parametrize(
+	"series, expected",
+	[
+		([0.1, 0.4, 0.3, 1, 0.97 , 1], (3,5)),
+		([0.2, 1, 0.2, 0.98, 0.1], (1,3)),
+		([0.1, 0.2, 0.3, 0.4, 0.5], None),
+		([0.1, 0.4, 0.3, 1, 0.5, 0.2], (3,3))
+	]
+)
+def test_find_boundaries_fixed(series, expected):
+	s = pandas.Series(series)
+	result = widgets.find_boundaries_fixed(s, 0.97)
+
+	assert result == expected

@@ -141,6 +141,11 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	time_table = time_table.fillna(0)
 	# Extract metadata for each series.
 	info_table = raw_table[[i for i in raw_table.columns if i not in frequency_columns or i == key_column]]
+
+	# Make sure that the columns in the time table are numeric and sorted properly.
+	# Note that adding the '0' column above places it on the end on the table.
+	time_table = time_table[sorted(time_table.columns)]
+
 	return time_table, info_table
 
 
@@ -161,7 +166,7 @@ def parse_genotype_table(filename: Path, sheet_name: str = 'Sheet1') -> Tuple[pa
 
 	genotype_timeseries, genotype_info = _parse_table(data, key_column)
 	# Make sure the genotype labels are prefixed with 'genotype-'
-	if not re.search("genotype-[\d]+", genotype_timeseries.index[0]):
+	if not genotype_timeseries.index[0].startswith('genotype'):
 		genotype_timeseries.index.name = 'originalLabel'
 		genotype_timeseries['Genotype'] = [f'genotype-{i}' for i in range(1, len(genotype_timeseries) + 1)]
 		genotype_timeseries = genotype_timeseries.reset_index()

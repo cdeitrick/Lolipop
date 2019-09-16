@@ -147,9 +147,9 @@ def plot_benchmark_results(benchmarks, output_filename):
 	fig, ax = plt.subplots(figsize = (12, 10))
 	seaborn.barplot(x = values, y = labels)
 
-	plt.xlabel('time in seconds', fontsize = 14)
-	plt.ylabel('number of processes', fontsize = 14)
-	plt.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
+	ax.xlabel('time in seconds', fontsize = 14)
+	ax.ylabel('number of processes', fontsize = 14)
+	ax.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
 	plt.grid()
 
 	plt.savefig(output_filename)
@@ -178,7 +178,3 @@ def benchmark(filename):
 		benchmarks[label] = duration
 	return benchmarks
 
-
-if __name__ == "__main__":
-	b = benchmark()
-	plot_benchmark_results(b)

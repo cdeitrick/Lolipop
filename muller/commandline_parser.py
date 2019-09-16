@@ -91,10 +91,6 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 
 	if program_options.fixed_breakpoint is None:
 		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
-	if program_options.additive_cutoff is None:
-		program_options.additive_cutoff = program_options.detection_breakpoint
-	if program_options.subtractive_cutoff is None:
-		program_options.subtractive_cutoff = program_options.detection_breakpoint
 
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
@@ -148,6 +144,7 @@ class FixedBreakpointParser(argparse.Action):
 		setattr(namespace, self.dest, values)
 
 
+# noinspection PyTypeChecker
 def _create_parser_group_graphics(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
@@ -198,6 +195,7 @@ def _create_parser_group_graphics(parser: argparse.ArgumentParser):
 	return group_graphics
 
 
+# noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker
 def _create_parser_group_data(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
@@ -253,6 +251,16 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		type = int,
 		default = 2
 	)
+
+	analysis_group.add_argument(
+		"-p", "--pvalue",
+		help = "The p-value to use for the statistics tests",
+		action = "store",
+		dest = "pvalue",
+		type = float,
+		default = 0.05
+	)
+
 	analysis_group.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
@@ -278,21 +286,6 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		type = float
 	)
 	analysis_group.add_argument(
-		"--additive",
-		help = "Controls how the additive score between a nested and unnested genotype is calculated. Defaults to the detection cutoff value.",
-		action = 'store',
-		default = None,
-		dest = 'additive_cutoff',
-		type = float
-	)
-	analysis_group.add_argument(
-		"--subtractive",
-		help = "Controls when the combined frequencies of a nested and unnested genotype are considered consistently larger than the fixed cutoff."
-			   "Defaults to the detection cutoff value.",
-		default = None,
-		dest = "subtractive_cutoff"
-	)
-	analysis_group.add_argument(
 		"--covariance",
 		help = "Controls how much a nested and unnested genotype should be correlated/anticorrelated to be considered significant",
 		default = 0.01,
@@ -310,14 +303,6 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = FrequencyParser,
 		dest = 'frequencies',
 		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-	)
-	analysis_group.add_argument(
-		"--similarity-cutoff",
-		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
-		action = "store",
-		default = 0.05,
-		dest = "similarity_breakpoint",
-		type = float
 	)
 	analysis_group.add_argument(
 		"--difference-cutoff",
@@ -374,6 +359,7 @@ def _create_parser_group_filter(parser: argparse.ArgumentParser):
 	return group_filter
 
 
+# noinspection PyTypeChecker,PyTypeChecker
 def _create_parser_group_main(parser: argparse.ArgumentParser):
 	group_main = parser.add_argument_group(title = "Main Options")
 
@@ -465,6 +451,9 @@ def create_parser() -> argparse.ArgumentParser:
 	create_main_parser(subparsers)
 	create_benchmark_parser(subparsers)
 	create_muller_parser(subparsers)
+
+	#parser_parent.set_default_parser = set_default_subparser
+	#parser_parent.set_default_parser('lineage')
 	return parser_parent
 
 
@@ -482,6 +471,7 @@ def create_main_parser(subparsers) -> argparse.ArgumentParser:
 	return parser
 
 
+# noinspection PyTypeChecker,PyTypeChecker
 def create_benchmark_parser(subparsers) -> argparse.ArgumentParser:
 	""" Defines options for utilities that complement the scripts.
 		TODO: Add a script to directly convert breseq output to muller input.
@@ -504,6 +494,7 @@ def create_benchmark_parser(subparsers) -> argparse.ArgumentParser:
 	return parser_benchmark
 
 
+# noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker
 def create_muller_parser(subparsers) -> argparse.ArgumentParser:
 	parser_muller: argparse.ArgumentParser = subparsers.add_parser(
 		"muller",

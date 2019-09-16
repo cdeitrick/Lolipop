@@ -3,7 +3,6 @@ from functools import partial
 from typing import Any, Iterable, List, Optional, Union
 
 import pandas
-from loguru import logger
 
 Numeric = Union[int, float]
 
@@ -432,14 +431,3 @@ class GenerateMullerDataFrame:
 		muller_ordered = muller_ordered[['Generation', 'Identity', 'Population', 'Frequency', 'Group_id', 'Unique_id']]
 		return muller_ordered
 
-
-if __name__ == "__main__":
-	filename_edges = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.edges.tsv"
-	filename_population = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.populations.tsv"
-
-	table_edges = pandas.read_csv(filename_edges, sep = "\t")
-	table_population = pandas.read_csv(filename_population, sep = "\t")
-
-	mw = GenerateMullerDataFrame()
-	df = mw.run(table_edges, table_population)
-	print("F")
