@@ -1,5 +1,4 @@
 import itertools
-from pathlib import Path
 from typing import Dict, Tuple
 
 import pandas
@@ -7,7 +6,7 @@ import pytest
 
 from muller import dataio
 from muller.inheritance import areascore, scoring
-from .filenames import FILENAME_TRUTHSET
+from tests.filenames import FILENAME_TRUTHSET
 
 
 #################################################################################
@@ -119,15 +118,15 @@ def test_calculate_overlapping_area(full_overlap, no_overlap, partial_overlap):
 	left, right = full_overlap
 	right_area = areascore.area_of_series(right)
 	overlap_area = areascore.calculate_common_area(left, right)
-	assert overlap_area == right_area
+	assert pytest.approx(overlap_area, abs = 0.001) == right_area
 
 	left, right = no_overlap
 	overlap_area = areascore.calculate_common_area(left, right)
-	assert overlap_area == 0
+	assert pytest.approx(overlap_area, abs = 0.001) == 0
 
 	left, right = partial_overlap
 	overlap_area = areascore.calculate_common_area(left, right)
-	assert overlap_area == right_area
+	assert pytest.approx(overlap_area, abs = 0.001) == right_area
 
 	left = pandas.Series([0.01, 0.279, 0.341, 0.568, 0.708, 0.913, 0.756, 0.455, 0.399, 0.13, 0.041])
 	right = pandas.Series([0, 0, 0, 0, 0, 0.247, 0.388, 0.215, 0.399, 0.13, 0.028])

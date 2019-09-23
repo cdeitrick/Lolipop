@@ -58,6 +58,9 @@ class ClusterMutations:
 		self.genotype_table = self.genotype_members = self.linkage_table = self.rejected_trajectories = None
 
 		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric, threads = threads)
+
+		self.clusterer = methods.HierarchalCluster()
+
 		self.genotype_filter = filters.GenotypeFilter(
 			detection_cutoff = self.dlimit,
 			fixed_cutoff = self.flimit,
@@ -151,8 +154,7 @@ class ClusterMutations:
 			genotypes = methods.twostep_method(timepoints, self.pairwise_distances, self.pvalue, self.dbreakpoint, self.starting_genotypes)
 			linkage_matrix = None
 		elif self.method == "hierarchy":
-			genotypes, linkage_matrix = methods.hierarchical_method(self.pairwise_distances, self.pvalue,
-				starting_genotypes = self.starting_genotypes)
+			genotypes, linkage_matrix = self.clusterer.run(self.pairwise_distances, starting_genotypes = self.starting_genotypes)
 		else:
 			raise ValueError(f"Invalid clustering method: {self.method}")
 
@@ -179,6 +181,7 @@ class ClusterMutations:
 			The calculated mean of all member trajectories at each timepoint.
 		"""
 		mean_genotype_timeseries = genotype_timeseries.mean()
+		mean_genotype_timeseries.index = [int(i) for i in mean_genotype_timeseries.index]
 		mean_genotype_timeseries['members'] = "|".join(map(str, genotype))
 		mean_genotype_timeseries.name = name
 
@@ -214,5 +217,8 @@ class ClusterMutations:
 		mean_genotypes = pandas.DataFrame(mean_genotypes)
 		# For consistency
 		mean_genotypes.index.name = 'Genotype'
+
+		# Place the `members` column in the leftmost column
+		mean_genotypes = mean_genotypes[['members'] + [i for i in mean_genotypes if i != 'members']]
 
 		return mean_genotypes

@@ -71,7 +71,7 @@ def test_get_first_detected_timepoint(transposed_genotypes, transposed_mouse_gen
 		'genotype-14': 75,
 		'genotype-15': 44
 	}, name = 'firstDetected')
-	expected: pandas.Series = expected.astype(str)
+	expected: pandas.Series = expected.astype(int)
 	result = timepoint_detection.get_first_detected_timepoint(transposed_genotypes, 0.03)
 	assert expected.to_dict() == result.to_dict()
 
@@ -92,7 +92,7 @@ def test_get_first_detected_timepoint(transposed_genotypes, transposed_mouse_gen
 		'genotype-14': 8,
 		'genotype-15': 8
 	}, name = 'firstDetected')
-	expected = expected.astype(str)
+	expected = expected.astype(int)
 	result = timepoint_detection.get_first_detected_timepoint(transposed_mouse_genotypes, 0.03)
 	assert expected.to_dict() == result.to_dict()
 
@@ -115,7 +115,7 @@ def test_get_first_significant_timepoint(transposed_genotypes, transposed_mouse_
 		'genotype-14': 10,
 		'genotype-15': 10
 	}
-	expected_mouse = {k: str(v) for k, v in expected_mouse.items()}
+	#expected_mouse = {k: str(v) for k, v in expected_mouse.items()}
 	mouse_result = timepoint_detection.get_first_significant_timepoint(transposed_mouse_genotypes, 0.15)
 
 	assert expected_mouse == mouse_result.to_dict()

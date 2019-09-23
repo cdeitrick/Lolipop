@@ -4,8 +4,8 @@ from muller import dataio
 from muller.graphics import muller_plot
 from loguru import logger
 @pytest.fixture
-def annotation_plot()->muller_plot.AnnotatedMullerDiagram:
-	return muller_plot.AnnotatedMullerDiagram(
+def annotation_plot()->muller_plot.MullerPlot:
+	return muller_plot.MullerPlot(
 		outlines = True, render = True
 	)
 

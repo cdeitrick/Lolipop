@@ -14,6 +14,7 @@ def plot_dendrogram(linkage_table: Any, pair_array: DistanceCache, filename: Pat
 	# noinspection PyUnusedLocal
 	fig, ax = plt.subplots(figsize = (15, 15))
 	ax: plt.Axes
+	linkage_table = linkage_table[['left', 'right', 'distance', 'observations']].values # Removes extra column
 	# plt.figure(figsize = (15, 15))
 	ax.set_title('Hierarchical Clustering Dendrogram', size = 40)
 	ax.set_xlabel('Trajectory Label', size = 32)

@@ -1,7 +1,6 @@
 import argparse
 import itertools
 import math
-import sys
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -44,37 +43,6 @@ class ProgramOptions(argparse.Namespace):
 
 
 ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
-
-
-# Custom method added to argparse.ArgumentParser
-def set_default_subparser(self, name, args = None, positional_args = 0):
-	"""default subparser selection. Call after setup, just before parse_args()
-	name: is the name of the subparser to call by default
-	args: if set is the argument list handed to parse_args()
-
-	, tested with 2.7, 3.2, 3.3, 3.4
-	it works with 2.6 assuming argparse is installed
-	"""
-
-	subparser_found = False
-	for arg in sys.argv[1:]:
-		if arg in ['-h', '--help']:  # global help if no subparser
-			break
-	else:
-		for x in self._subparsers._actions:
-			if not isinstance(x, argparse._SubParsersAction):
-				continue
-			for sp_name in x._name_parser_map.keys():
-				if sp_name in sys.argv[1:]:
-					subparser_found = True
-		if not subparser_found:
-			# insert default in last position before global positional
-			# arguments, this implies no global options are specified after
-			# first positional argument
-			if args is None:
-				sys.argv.insert(len(sys.argv) - positional_args, name)
-			else:
-				args.insert(len(args) - positional_args, name)
 
 
 def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
@@ -434,9 +402,6 @@ def _create_parser_group_clustering(parser: argparse.ArgumentParser):
 
 
 def create_parser() -> argparse.ArgumentParser:
-	# Add the custom method to select the default parser
-	argparse.ArgumentParser.set_default_subparser = set_default_subparser
-
 	parser_parent = argparse.ArgumentParser(
 		description = "Infers genotypes and lineage based on mutation frequency timeseries data observed over the course of an evolutionary biology experiment.",
 		formatter_class = argparse.ArgumentDefaultsHelpFormatter

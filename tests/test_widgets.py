@@ -64,7 +64,7 @@ def test_get_detected_points_advanced():
 def test_get_detected_points_inner():
 	left = pandas.Series([0, 0, 0, 0,   0,    0, 0.085, 0.001, 0.005])
 	right = pandas.Series([0,0, 0,   0,   0,  0,0.05, 0.55, 0.5 ])
-	l,r = widgets.get_valid_points(left, right, dlimit = 0.03, inner = False)
+	l,r = widgets.get_valid_points(left, right, dlimit = 0.03, inner = True)
 
 	assert l.tolist() == [0.085]
 	assert r.tolist() == [0.05]
@@ -131,55 +131,7 @@ def test_get_commit_hash(filename_mock):
 	assert expected_hash == result_hash
 
 
-def test_format_linkage_matrix():
-	string = """
-			left	right	distance	observations
-		7	18	0.033999578315858	2
-		13	17	0.17508789172405	2
-		8	11	0.199140037464566	2
-		2	5	0.238709275657774	2
-		10	3	0.278982267870099	2
-		9	12	0.370131434040108	2
-		23	6	0.528725037646305	3
-		22	21	0.624301321943297	4
-		26	1	0.708258027601832	5
-		24	16	0.760211707999897	3
-		14	25	0.785856622308224	4
-		15	20	0.987877097254146	3
-		29	27	1.09399939089444	9
-		31	19	1.35849899883873	11
-		30	28	1.36249792376227	6
-		4	32	1.49918800504887	12
-		33	0	2.12548563025534	7
-		34	35	4.94288036257192	19
-	"""
 
-	expected_table = """
-		left	right	distance	observations	clusterId
-		7	18	0.033999578315858	2	19
-		13	17	0.17508789172405	2	20
-		8	11	0.199140037464566	2	21
-		2	5	0.238709275657774	2	22
-		10	3	0.278982267870099	2	23
-		9	12	0.370131434040108	2	24
-		23	6	0.528725037646305	3	25
-		22	21	0.624301321943297	4	26
-		26	1	0.708258027601832	5	27
-		24	16	0.760211707999897	3	28
-		14	25	0.785856622308224	4	29
-		15	20	0.987877097254146	3	30
-		29	27	1.09399939089444	9	31
-		31	19	1.35849899883873	11	32
-		30	28	1.36249792376227	6	33
-		4	32	1.49918800504887	12	34
-		33	0	2.12548563025534	7	35
-		34	35	4.94288036257192	19	36
-		"""
-	test_table = dataio.import_table(string)
-	test_table = widgets.format_linkage_matrix(test_table, 19)
-	expected_table = dataio.import_table(expected_table)
-
-	pandas.testing.assert_frame_equal(test_table, expected_table)
 
 
 @pytest.mark.parametrize(

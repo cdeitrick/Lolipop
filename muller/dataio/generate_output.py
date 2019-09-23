@@ -8,7 +8,7 @@ from loguru import logger
 
 from muller import dataio, widgets
 from muller.clustering.metrics.distance_cache import DistanceCache
-from muller.graphics import AnnotatedMullerDiagram, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes
+from muller.graphics import MullerPlot, TimeseriesPanel, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "genotype-filtered"
@@ -44,8 +44,9 @@ class MullerOutputGenerator:
 		self.adjust_populations = adjust_populations
 		self.render = render  # Whether to include svg versions of each graph.
 
-		self.timeseries_generator = TimeseriesPlot(render = self.data.program_options['render'])
-		self.muller_generator = AnnotatedMullerDiagram(
+		self.timeseries_panel_generator = TimeseriesPanel(render = self.data.program_options['render'])
+		self.timeseries_plot_generator = TimeseriesPlot(render = self.data.program_options['render'])
+		self.muller_generator = MullerPlot(
 			outlines = self.data.program_options['draw_outline'],
 			render = self.data.program_options['render']
 		)
@@ -197,7 +198,8 @@ class MullerOutputGenerator:
 			combined_trajectories = pandas.concat([self.data.trajectories, filtered_trajectories])
 		else:
 			combined_trajectories = None
-		self.timeseries_generator.run(
+		del combined_trajectories['genotype']
+		self.timeseries_panel_generator.run(
 			self.data.genotypes,
 			genotypes = genotypes,
 			basename = self.filenames.timeseries_plot_genotype_clade,
@@ -205,7 +207,7 @@ class MullerOutputGenerator:
 			trajectory_timeseries = combined_trajectories
 		)
 		# The plot by the unique palette
-		self.timeseries_generator.run(
+		self.timeseries_panel_generator.run(
 			self.data.genotypes,
 			genotypes = genotypes,
 			basename = self.filenames.timeseries_plot_genotype_unique,
@@ -217,7 +219,7 @@ class MullerOutputGenerator:
 		# Generate a plot wil only the trajectories. Not sure if its worth including both palette versions.
 		if self.data.trajectories is not None:
 			trajectory_palette = genotypes.trajectory_palette('color_unique')
-			self.timeseries_generator.plot_timeseries(
+			self.timeseries_plot_generator.plot(
 				timeseries = combined_trajectories,
 				palette = trajectory_palette,
 				basename = self.filenames.timeseries_plot_trajectory
@@ -240,7 +242,7 @@ class MullerOutputGenerator:
 
 	def save_linkage_files(self) -> None:
 		num_trajectories = len(self.data.trajectories)
-		linkage_table = widgets.format_linkage_matrix(self.data.linkage_matrix, num_trajectories)
+		linkage_table = self.data.linkage_matrix
 		linkage_table.to_csv(str(self.filenames.linkage_matrix_table), sep = self.filenames.delimiter, index = False)
 		plot_dendrogram(self.data.linkage_matrix, self.data.p_values, self.filenames.linkage_plot)
 
@@ -272,12 +274,12 @@ class MullerOutputGenerator:
 
 		# Draw the muller diagrams
 		# Start with the annotated and unannotated clade palettes.
-		self.muller_generator.run(muller_df, self.filenames.muller_diagram_clade_annotated, clade_palette, genotype_annotations)
-		self.muller_generator.run(muller_df, self.filenames.muller_diagram_clade_unannotated, clade_palette)
+		self.muller_generator.plot(muller_df, self.filenames.muller_diagram_clade_annotated, clade_palette, genotype_annotations)
+		self.muller_generator.plot(muller_df, self.filenames.muller_diagram_clade_unannotated, clade_palette)
 
 		# Draw the distinctive muller diagrams
-		self.muller_generator.run(muller_df, self.filenames.muller_diagram_distinct_annotated, distinct_palette, genotype_annotations)
-		self.muller_generator.run(muller_df, self.filenames.muller_diagram_distinct_unannotated, distinct_palette)
+		self.muller_generator.plot(muller_df, self.filenames.muller_diagram_distinct_annotated, distinct_palette, genotype_annotations)
+		self.muller_generator.plot(muller_df, self.filenames.muller_diagram_distinct_unannotated, distinct_palette)
 
 	def save_r_script(self, palette: Dict[str, str], population_table: pandas.DataFrame) -> None:
 		# Generate the rscript and ggmuller DataFrame

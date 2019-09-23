@@ -89,7 +89,7 @@ def relocate_point(point: Tuple[float, float], locations: List[Tuple[float, floa
 ###################################################################################################################################################
 ################################################################# Graphics #####################################################################
 ###################################################################################################################################################
-class BaseGenerateMullerDiagram:
+class MullerPlot:
 	"""
 		Workflow for generating a muller diagram.
 		Parameters
@@ -100,17 +100,21 @@ class BaseGenerateMullerDiagram:
 			Whther to generate an svg or pdf render of the diagram.
 	"""
 
-	def __init__(self, outlines: bool, render: bool):
+	def __init__(self, outlines: bool, render: bool, style: Optional[str] = 'default', scale:int = 1):
 		self.outlines = outlines
 		self.render = render
 		self.dpi = 250
 
-		self.root_genotype_name = 'genotype-0'
-
-		self.outline_color = '#FFFFFF' if self.outlines else None  # The color of the genotype outline
-		self.root_genotype_color = '#FFFFFF'  # The color of the root genotype.
 		self.filetypes = ['.png']
 		if self.render: self.filetypes += ['.svg']
+
+		self.root_genotype_name = 'genotype-0'
+		self.outline_color = '#FFFFFF' if self.outlines else None  # The color of the genotype outline
+		self.root_genotype_color = '#FFFFFF'  # The color of the root genotype.
+		self.style = style
+
+		# Properties for the size of the plot labels.
+
 
 		# Properties for the genotype annotations that will be added to the plot
 		self.genotype_annotation_outline_color = "#FFFFFF"
@@ -121,133 +125,145 @@ class BaseGenerateMullerDiagram:
 		self.genotype_annotation_font_color_light = "#FFFFFF"  # Font color to use when background is dark
 		self.genotype_annotation_font_color_dark = "#333333"  # Font color to use when the background is light.
 
+		self.scale = scale
+		self.reference_x = 20
+		self.reference_y = 20
 		self.scale_max = 3  # The maximum scale that the plots can be scalled to in order to avoid image limitations.
 
-	def run(self, muller_df: pandas.DataFrame, basename: Path, color_palette: Dict[str, str] = None,
-			annotations: Optional[Dict[str, List[str]]] = None,
-			title: Optional[str] = None):
-		"""
-			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
-		Parameters
-		----------
-		muller_df: pandas.DataFrame
-		color_palette: Dict[str,str]
-		basename: Path
-			The base filenme of the output files. The filetypes will be taken from the available suffixes.
-		annotations: Dict[str, List[str]]
-			A map of genotype labels to add to the plot.
-		title: Optional[str]
-			Applies the given title to the plot
-		Returns
-		-------
-		ax: Axes
-			The axes object containing the plot.
-		"""
-		if color_palette is None:
-			color_palette = self.get_default_palette(muller_df['Group_id'].unique())
-		if len(basename.suffix) == 4:
-			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
-			basename = basename.parent / basename.stem
-		points = self.get_coordinates(muller_df)
-
-		merged_table = self.merge_muller_table(muller_df)
-
-		# Need to scale the graph so very large datasets are still easily distinguishable.
-		number_of_timepoints = len(muller_df['Generation'].unique())
-		number_of_series = len(muller_df['Group_id'].unique())
-
-		# The current values seem to work well with datasets of 10 to 20 genotypes and 15 to 20 timepoints.
-		reference_x = 20
-		reference_y = 20
-
-		# Calculate what the scale should be given the dataset shape. Any dataset smaller than the reference is automatically converted to 1.
-		scale_x = math.ceil(number_of_timepoints / reference_x)
-		scale_y = math.ceil(number_of_series / reference_y)
-
-		# Make sure the graph is not too big to be plotted.
-		if scale_x > self.scale_max:
-			logger.debug(f"Mullerplot: Reducing x scale from {scale_x} to {self.scale_max}.")
-			scale_x = self.scale_max
-		if scale_y > self.scale_max:
-			logger.debug(f"Mullerplot: Reducing y scale from {scale_y} to {self.scale_max}.")
-			scale_y = self.scale_max
-
-		# Disable the white outlines if the dataset is very large.
-		if scale_y or scale_x > 2:
-			self.outline_color = None  # Disable the white outlines.
-
-		fig, ax = self._init_plot(scale_x, scale_y)
-		x, y, colors, labels = self.generate_muller_series(merged_table, color_palette)
-
-		ax.stackplot(
-			x, y,
-			colors = colors,
-			labels = labels,
-			edgecolor = self.outline_color,
-			linewidth = 2,
-			interpolate = True,
-			joinstyle = 'round'
-		)
-
-		if annotations:
-			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
-
-		ax = self._format_plot(ax, title, max(x), scale_x, scale_y)
-
-		self.save_figure(basename)
-
-		return ax
-
-	@staticmethod
-	def _init_plot(size_x: int, size_y: int) -> Tuple[plt.Figure, plt.Axes]:
-		"""
-			A typical plot will have about 10 to 20 genotypes and 10-20 timepoints. The current defaults work well for
-			datasets of that size, but need to scale the plot size for anything larger.
-		"""
-		size_x = size_x if size_x > size_y else size_y
-		figsize_x = size_x * 12
-		figsize_y = size_y * 10
-
-		fig, ax = plt.subplots(figsize = (12, 10))
-		return fig, ax
-
-	def _format_plot(self, ax: plt.Axes, title: Optional[str], maximum_x: float, scale_x: int, scale_y: int):
+	def _apply_style(self, ax: plt.Axes, title: Optional[str], maximum_x: float):
 		"""
 			Addes labels and such to the graph.
 		Parameters
 		----------
 		ax: THe plt.Axes object the graph was plotted on.
 		maximum_x: The maximum x-value observed in the dataset.
-		scale_x, scale_y: What the plot labels should be scalled by to be easily visible on a large plot.
 		"""
-		scale = min(scale_x, scale_y)
-		axes_label_fontsize = 32 * scale
-		axes_title_fontsize = 40 * scale
-		axes_label_tick_fontsize = 20 * scale
+		if self.style == 'nature':
+			self._set_style_nature()
+		else:
+			self._set_style_default()
 
 		ax.set_facecolor(self.root_genotype_color)
 
 		# Add labels to the x and y axes.
-		if not title:
-			title = "Genotype Frequency"
-		ax.set_title(title, fontsize = axes_title_fontsize)
-		ax.set_xlabel("Generation", fontsize = axes_label_fontsize)
-		ax.set_ylabel("Frequency", fontsize = axes_label_fontsize)
-
+		if title:
+			ax.set_title(title, fontsize = self.label_size_title)
+		logger.debug((self.label_size_axis))
+		ax.set_xlabel(self.xaxis_label, fontsize = self.label_size_axis)
+		ax.set_ylabel(self.yaxis_label, fontsize = self.label_size_axis)
 		# Increase the font size of the frequency and timepoint labels
-		for label in list(ax.get_xticklabels()) + list(ax.get_yticklabels()):
-			label.set_fontsize(axes_label_tick_fontsize)
-
+		ax.tick_params(axis = 'both', labelsize = self.label_size_ticks)
 		# Basic stacked area chart.
+
 		# Remove extra ticks
-		ax.spines['right'].set_visible(False)
-		ax.spines['top'].set_visible(False)
+		if self.style == 'nature':
+			ax.set_yticks([0, 0.5, 1])
+		else:
+			ax.spines['right'].set_visible(False)
+			ax.spines['top'].set_visible(False)
 
 		# Make sure that the width of the diagram only shows timepoints we have data for.
 		ax.set_xlim(0, maximum_x)
 
 		return ax
 
+	def _initialize_plot(self, ax: plt.Axes) -> plt.Axes:
+		"""
+			A typical plot will have about 10 to 20 genotypes and 10-20 timepoints. The current defaults work well for
+			datasets of that size, but need to scale the plot size for anything larger.
+		"""
+		if ax is None:
+			figsize_x = self.scale * 12
+			figsize_y = self.scale * 10
+
+			fig, ax = plt.subplots(figsize = (figsize_x, figsize_y))
+		return ax
+
+	def _get_annotation_label_background_properties(self, genotype_color: str) -> Dict[str, str]:
+		""" Returns a dictionary with the properties describing the genotype annotation background."""
+		background_properties = {
+			'facecolor': genotype_color,
+			'alpha':     self.genotype_annotation_alpha,
+			'edgecolor': self.genotype_annotation_outline_color,
+			'linewidth': self.genotype_annotation_outline_linewidth
+		}
+		return background_properties
+
+	def _get_annotation_label_font_properties(self, genotype_color: str) -> Dict[str, Any]:
+		"""
+			Generates font properties for each annotations. The main difference is font color,
+			which is determined by the background color.
+		Parameters
+		----------
+		genotype_color: str
+			The color of the genotype this text is associated with.
+
+		Returns
+		-------
+		fontproperties: Dict[str, Any]
+		"""
+
+		luminance = calculate_luminance(genotype_color)
+		label_properties = {
+			'size':  self.genotype_annotation_font_size,
+			'color': self.genotype_annotation_font_color_dark if luminance > 0.5 else self.genotype_annotation_font_color_light
+		}
+		return label_properties
+
+	@staticmethod
+	def _merge_groups(left: pandas.DataFrame, right: pandas.DataFrame) -> pandas.DataFrame:
+		"""
+			Merges two genotype series which are ajacent to each other.
+		"""
+		left = left.set_index('Generation')
+		right = right.set_index('Generation')
+		frequencies = left['Frequency'].add(right['Frequency'], fill_value = 0)
+		populations = left['Population'].add(right['Population'], fill_value = 0)
+
+		df = pandas.DataFrame([frequencies, populations]).transpose()
+		# Add the other columns to the dataframe
+		reference = left.iloc[0]
+		df['Group_id'] = reference['Group_id']
+		df['Identity'] = reference['Identity']
+		df['Unique_id'] = [f"{i}_{j}" for i, j in zip(df['Identity'].values, df.index)]
+
+		df = df.reset_index()
+		return df
+
+	def _set_style_default(self):
+		self.xaxis_label = 'Generation'
+		self.yaxis_label = 'Frequency'
+		self.root_genotype_color = "white"  # More readable that '#FFFFFF'
+
+	def _set_style_nature(self):
+		self.xaxis_label = 'Generation'
+		self.yaxis_label = 'Individuals'
+		self.root_genotype_color = 'white'
+
+	def _set_scaling_factor(self, width_x: int, width_y: int) -> int:
+		""" Since very large datasets require the plots to scale up, try to infer a decent scaling factor
+			So that the resulting plots are actually legible.
+		"""
+		scale_x = round(width_x / self.reference_x)
+		scale_y = round(width_y / self.reference_y)
+		# Make sure they aren't 0
+		if scale_x == 0: scale_x = 1
+		if scale_y == 0: scale_y = 1
+
+		if scale_x > self.scale_max:
+			logger.debug(f"Timeseries Plot: Reducing x scale from {scale_x} to {self.scale_max}.")
+			scale_x = self.scale_max
+		if scale_y > self.scale_max:
+			logger.debug(f"Timeseries Plot: Reducing y scale from {scale_y} to {self.scale_max}.")
+			scale_y = self.scale_max
+		self.scale = max(scale_x, scale_y)
+
+	def set_scale(self, scale:int = 1)->'MullerPlot':
+		self.scale = scale
+		self.label_size_axis = 24 * self.scale
+		self.label_size_title = 42 * self.scale
+		self.label_size_ticks = 18  *self.scale
+		return self
 	@staticmethod
 	def get_default_palette(labels: Iterable[str]) -> Dict[str, str]:
 		from . import palettes
@@ -329,39 +345,6 @@ class BaseGenerateMullerDiagram:
 			merged_table.append(genotype_series)
 		return pandas.concat(merged_table)
 
-	@staticmethod
-	def _merge_groups(left: pandas.DataFrame, right: pandas.DataFrame) -> pandas.DataFrame:
-		"""
-			Merges two genotype series which are ajacent to each other.
-		"""
-		left = left.set_index('Generation')
-		right = right.set_index('Generation')
-		frequencies = left['Frequency'].add(right['Frequency'], fill_value = 0)
-		populations = left['Population'].add(right['Population'], fill_value = 0)
-
-		df = pandas.DataFrame([frequencies, populations]).transpose()
-		# Add the other columns to the dataframe
-		reference = left.iloc[0]
-		df['Group_id'] = reference['Group_id']
-		df['Identity'] = reference['Identity']
-		df['Unique_id'] = [f"{i}_{j}" for i, j in zip(df['Identity'].values, df.index)]
-
-		df = df.reset_index()
-		return df
-
-	def add_genotype_annotations_to_plot(self, *args, **kwargs):
-		""" Not neaded for a basic muller plot """
-		return None
-
-	def get_coordinates(self, *args, **kwargs):
-		raise NotImplementedError
-
-
-class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
-	# Separates the logic used to annotate the muller diagram from the simpler logic used to actually plot it.
-	def __init__(self, *args, **kwargs) -> None:
-		super().__init__(*args, **kwargs)
-
 	def add_genotype_annotations_to_plot(self, ax: Axes, points: Dict[str, Tuple[float, float]], annotations: Dict[str, List[str]],
 			color_palette: Dict[str, str]) -> Axes:
 		locations = list()
@@ -392,37 +375,6 @@ class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
 				fontdict = label_properties
 			)
 		return ax
-
-	def _get_annotation_label_background_properties(self, genotype_color: str) -> Dict[str, str]:
-		""" Returns a dictionary with the properties describing the genotype annotation background."""
-		background_properties = {
-			'facecolor': genotype_color,
-			'alpha':     self.genotype_annotation_alpha,
-			'edgecolor': self.genotype_annotation_outline_color,
-			'linewidth': self.genotype_annotation_outline_linewidth
-		}
-		return background_properties
-
-	def _get_annotation_label_font_properties(self, genotype_color: str) -> Dict[str, Any]:
-		"""
-			Generates font properties for each annotations. The main difference is font color,
-			which is determined by the background color.
-		Parameters
-		----------
-		genotype_color: str
-			The color of the genotype this text is associated with.
-
-		Returns
-		-------
-		fontproperties: Dict[str, Any]
-		"""
-
-		luminance = calculate_luminance(genotype_color)
-		label_properties = {
-			'size':  self.genotype_annotation_font_size,
-			'color': self.genotype_annotation_font_color_dark if luminance > 0.5 else self.genotype_annotation_font_color_light
-		}
-		return label_properties
 
 	def get_coordinates(self, muller_df: pandas.DataFrame) -> Dict[str, Tuple[int, float]]:
 		"""
@@ -490,3 +442,64 @@ class AnnotatedMullerDiagram(BaseGenerateMullerDiagram):
 		mean_y = timeseries.loc[mean_x]
 
 		return mean_x, mean_y
+
+	def plot(self, muller_df: pandas.DataFrame, basename: Path, color_palette: Dict[str, str] = None,
+			annotations: Optional[Dict[str, List[str]]] = None,
+			title: Optional[str] = None, ax: Optional[plt.Axes] = None)->plt.Axes:
+		"""
+			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
+		Parameters
+		----------
+		muller_df: pandas.DataFrame
+		color_palette: Dict[str,str]
+		basename: Path
+			The base filenme of the output files. The filetypes will be taken from the available suffixes.
+		annotations: Dict[str, List[str]]
+			A map of genotype labels to add to the plot.
+		title: Optional[str]
+			Applies the given title to the plot
+		ax: plt.Axes
+			A preexisting Axes object to draw the plot on.
+		Returns
+		-------
+		ax: Axes
+			The axes object containing the plot.
+		"""
+		if color_palette is None:
+			color_palette = self.get_default_palette(muller_df['Identity'].unique())
+
+		if basename and len(basename.suffix) == 4:
+			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
+			basename = basename.parent / basename.stem
+		points = self.get_coordinates(muller_df)
+
+		merged_table = self.merge_muller_table(muller_df)
+
+		# Need to scale the graph so very large datasets are still easily distinguishable.
+		# Calculate what the scale should be given the dataset shape. Any dataset smaller than the reference is automatically converted to 1.
+		self.set_scale()
+		# Disable the white outlines if the dataset is very large.
+		if self.scale > 2:
+			self.outline_color = None  # Disable the white outlines.
+
+		ax = self._initialize_plot(ax)
+		x, y, colors, labels = self.generate_muller_series(merged_table, color_palette)
+
+		ax.stackplot(
+			x, y,
+			colors = colors,
+			labels = labels,
+			edgecolor = self.outline_color,
+			linewidth = 2,
+			interpolate = True,
+			joinstyle = 'round'
+		)
+
+		if annotations:
+			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
+
+		ax = self._apply_style(ax, title, max(x))
+		if basename:
+			self.save_figure(basename)
+
+		return ax

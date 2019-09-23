@@ -18,50 +18,26 @@ def cluster()->ClusterMutations:
 	)
 
 	return c
-
+from ..filenames import generic_tables_with_trajectories
 DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables"
-
-generic_tables = [
-	DATA_FOLDER / "generic.coexistinglineages.xlsx",
-	DATA_FOLDER / "generic.genotypes.3.xlsx",
-	DATA_FOLDER / "generic.genotypes.5.xlsx",
-	DATA_FOLDER / "generic.genotypes.10.xlsx",
-	DATA_FOLDER / "generic.small.xlsx"
-]
-
-model_tables = [
-	DATA_FOLDER / "model.clonalinterferance.xlsx",
-	DATA_FOLDER / "model.periodicselection.xlsx",
-	DATA_FOLDER / "model.strongselection.xlsx"
-]
-
-real_tables = [
-	DATA_FOLDER / "real.nature12344-s2.BYB1-G07.xlsx"
-]
 
 def helper_get_expected_members(table:pandas.DataFrame):
 	# Groups each trajectory into the expected genotype.
-	table = table.reset_index() # Because we ned to acces the 'Trajectory' column
-	if 'Genotype' not in table.columns:
-		table['Genotype'] = ['genotype-'+i.split('-')[1] for i in table['Trajectory'].values]
-	groups = table.groupby(by = 'Genotype')
 	members = dict()
-	for genotype_label, group in groups:
-		members[genotype_label] = list(group['Trajectory'])
-	members['genotype-filtered'] = []
+	for element in table.index:
+		genotype_name = element.split('-')[1]
+		members[genotype_name] = members.get(genotype_name, []) + [element]
+	members['filtered'] = []
 	return members
 
-@pytest.mark.parametrize("filename", generic_tables)
+@pytest.mark.parametrize("filename", generic_tables_with_trajectories.values())
 def test_clustering_algorithm_on_generic_tables(cluster, filename):
 	cluster.pvalue = 0.05
 	trajectories = dataio.import_table(filename, sheet_name = 'trajectory', index = 'Trajectory')
-	genotypes = dataio.import_table(filename, sheet_name = 'genotype', index = 'Genotype')
 	expected_members = helper_get_expected_members(trajectories)
 
-	if 'Genotype' in trajectories.columns:
-		del trajectories['Genotype'] # Make sure the table only as numeric values.
-
 	mean, members = cluster.run(trajectories)
+	logger.debug(cluster.pairwise_distances.pairwise_values)
 
 	assert sorted(members.values()) == sorted(expected_members.values())
 

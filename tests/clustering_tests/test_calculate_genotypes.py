@@ -2,7 +2,7 @@ from io import StringIO
 
 import pandas
 import pytest
-
+from loguru import logger
 from muller.clustering import ClusterMutations
 from muller.dataio import import_table
 
@@ -55,5 +55,7 @@ def test_calculate_mean_genotype(genotype_generator):
 		"""
 	expected_mean = import_table(expected_csv, index = 'Genotype')
 	output = genotype_generator.calculate_mean_genotype(test_genotypes, trajectories)
-
+	logger.debug(expected_mean.to_string())
+	logger.debug(output.to_string())
+	# Rearrange columns to match output
 	pandas.testing.assert_frame_equal(expected_mean, output)

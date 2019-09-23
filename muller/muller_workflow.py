@@ -4,7 +4,7 @@
 """
 from pathlib import Path
 from typing import Dict
-
+import pandas
 from loguru import logger
 
 logger.remove()
@@ -125,3 +125,13 @@ class MullerWorkflow:
 	def read_additional_files(self) -> Dict[str, str]:
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry
+
+
+class GGMuller:
+	""" Uses the `population` and `edges` table to generate muller plots and timeseries.
+	"""
+	def __init__(self):
+		pass
+
+	def run(self, populations:pandas.DataFrame, edges = pandas.DataFrame):
+		pass

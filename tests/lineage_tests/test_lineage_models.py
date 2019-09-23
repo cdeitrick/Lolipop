@@ -5,7 +5,7 @@ import pytest
 
 from muller import dataio, inheritance, widgets
 from muller.inheritance import scoring
-from .filenames import ModelTables
+from tests.filenames import model_tables
 
 DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables"
 
@@ -30,21 +30,21 @@ def lineage_workflow() -> inheritance.LineageWorkflow:
 
 @pytest.fixture
 def model_periodic_selection() -> pandas.DataFrame:
-	filename = ModelTables.model_periodic_selection
+	filename = model_tables['model.periodicselection']
 	table = dataio.import_table(filename, sheet_name = "genotype", index = 'Genotype')
 	return table
 
 
 @pytest.fixture
 def model_clonal_interferance() -> pandas.DataFrame:
-	filename = ModelTables.model_clonal_interferance
+	filename = model_tables['model.clonalinterferance']
 	table = dataio.import_table(filename, sheet_name = 'genotype', index = 'Genotype')
 	return table
 
 
 @pytest.fixture
 def model_strong_selection() -> pandas.DataFrame:
-	filename = ModelTables.model_strong_selection
+	filename = model_tables['model.strongselection']
 	table = dataio.import_table(filename, sheet_name = 'genotype', index = "Genotype")
 	return table
 

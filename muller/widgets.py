@@ -102,17 +102,6 @@ def get_valid_points(left_trajectory: pandas.Series, right_trajectory: pandas.Se
 get_detected_points = get_valid_points
 
 
-def format_linkage_matrix(linkage_table, total_members: Optional[int]) -> pandas.DataFrame:
-	linkage_dataframe = pandas.DataFrame(linkage_table, columns = ["left", "right", "distance", "observations"])
-
-	linkage_dataframe['left'] = linkage_dataframe['left'].astype(int)
-	linkage_dataframe['right'] = linkage_dataframe['right'].astype(int)
-	linkage_dataframe['observations'] = linkage_dataframe['observations'].astype(int)
-	if total_members:
-		linkage_dataframe['clusterId'] = list(total_members + i for i in range(len(linkage_dataframe)))
-	return linkage_dataframe
-
-
 def calculate_luminance(color: str) -> float:
 	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
 	red = int(color[1:3], 16)
@@ -140,27 +129,32 @@ def fixed(trajectory: pandas.Series, flimit: float) -> bool:
 	""" Tests whether the input series fixed at any point."""
 	return any(i > flimit for i in trajectory.values)
 
-def only_fixed(trajectory: pandas.Series, dlimit:float, flimit:float)->bool:
+
+def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	""" Tests whether the series immediately fixed and stayed fixed."""
-	series = ((i>flimit or i < dlimit) for i in trajectory.values)
+	series = ((i > flimit or i < dlimit) for i in trajectory.values)
 	return all(series)
 
-def overlap(left:pandas.Series, right:pandas.Series, dlimit:float)->int:
-	result = [(i > dlimit and j>dlimit) for i,j in zip(left.values, right.values)]
+
+def overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> int:
+	result = [(i > dlimit and j > dlimit) for i, j in zip(left.values, right.values)]
 
 	return sum(result)
 
-def find_boundaries_detected(trajectory:pandas.Series, dlimit:float)->Tuple[int,int]:
+
+def find_boundaries_detected(trajectory: pandas.Series, dlimit: float) -> Tuple[int, int]:
 	""" Returns the start and stop points of a series"""
 	detected = trajectory[trajectory > dlimit]
 	return min(detected.index), max(detected.index)
 
-def find_boundaries_fixed(trajectory:pandas.Series, flimit:float)->Optional[Tuple[int,int]]:
+
+def find_boundaries_fixed(trajectory: pandas.Series, flimit: float) -> Optional[Tuple[int, int]]:
 	fixed_series = trajectory[trajectory > flimit]
 	# Assume index is sorted to avoid the situation where the index is str.
 	if fixed_series.empty: return None
 	else:
 		return fixed_series.index[0], fixed_series.index[-1]
+
 
 def _get_git_log() -> str:
 	filename = Path(__file__).parent.parent / ".git" / "logs" / "HEAD"

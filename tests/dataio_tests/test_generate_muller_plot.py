@@ -1,11 +1,11 @@
 import pytest
 
-from muller.graphics.muller_plot import AnnotatedMullerDiagram, find_closest_point, relocate_point, unique_everseen
+from muller.graphics.muller_plot import MullerPlot, find_closest_point, relocate_point, unique_everseen
 
 
 @pytest.fixture
-def muller_generator() -> AnnotatedMullerDiagram:
-	return AnnotatedMullerDiagram(outlines = True, render = True)
+def muller_generator() -> MullerPlot:
+	return MullerPlot(outlines = True, render = True)
 
 
 def test_relocate_point_simple():

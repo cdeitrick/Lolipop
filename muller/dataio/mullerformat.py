@@ -430,4 +430,3 @@ class GenerateMullerDataFrame:
 		# Rearrange the columns so pandas.testing.assert_frame_equal doesn't complain.
 		muller_ordered = muller_ordered[['Generation', 'Identity', 'Population', 'Frequency', 'Group_id', 'Unique_id']]
 		return muller_ordered
-

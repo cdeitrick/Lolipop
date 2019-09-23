@@ -57,4 +57,4 @@ def test_calculate_mean_genotype(genotype_generator, filename):
 		del mean_genotype['members']
 		mean_genotype = mean_genotype.astype(float)
 
-		pandas.testing.assert_series_equal(mean_genotype, expected)
+		pandas.testing.assert_series_equal(mean_genotype, expected, check_index_type = False)

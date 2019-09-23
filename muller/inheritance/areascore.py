@@ -5,7 +5,7 @@ import pandas
 from loguru import logger
 from shapely import geometry
 from shapely.errors import TopologicalError
-from muller.dataio import validation
+
 Number = Union[float, int]
 try:
 	from . import polygon
@@ -54,12 +54,14 @@ def calculate_common_area(left: pandas.Series, right: pandas.Series) -> float:
 
 	return total_intersection_area
 
-def X_and_Y_polygon(left:geometry.MultiPolygon, right:geometry.MultiPolygon)->float:
+
+def X_and_Y_polygon(left: geometry.MultiPolygon, right: geometry.MultiPolygon) -> float:
 	try:
 		return left.intersection(right).area
 	except TopologicalError:
 		logger.error(f"Polygonal error")
 		return 0
+
 
 def X_or_Y_numeric(left: float, right: float, x_and_y: float) -> float:
 	""" Calculates the OR area between `left` and `right`
@@ -74,14 +76,12 @@ def X_or_Y_numeric(left: float, right: float, x_and_y: float) -> float:
 	return left + right - x_and_y
 
 
-def X_or_Y(left: Union[float, pandas.Series], right: Union[float, pandas.Series]) -> float:
+def X_or_Y(left: pandas.Series, right: pandas.Series) -> float:
 	""" Calculates the OR area between `left` and `right`
 		Parameters
 		----------
 		left, right: pandas.Series
 			The two series to calculate the exclusive area on.
-		left, right,common: float
-			Precomputed values for the area of `left`, `right`, and x_and_y.
 	"""
 
 	left_polygons = polygon.as_polygon(left)
@@ -100,7 +100,8 @@ def X_xor_Y(left: pandas.Series, right: pandas.Series) -> float:
 	xor_polygons = left_polygons.symmetric_difference(right_polygons)
 	return xor_polygons.area
 
-def difference_polygon(left:geometry.MultiPolygon, right:geometry.MultiPolygon)->float:
+
+def difference_polygon(left: geometry.MultiPolygon, right: geometry.MultiPolygon) -> float:
 	""" Returns the area of `left` not in `right`"""
 	try:
 		area = left.difference(right).area
@@ -108,6 +109,8 @@ def difference_polygon(left:geometry.MultiPolygon, right:geometry.MultiPolygon)-
 		logger.error(f"Polygonal error")
 		area = 0
 	return area
+
+
 def jaccard_distance_numeric(x_or_y: float, x_and_y: float) -> float:
 	""" Calculated the jaccard distance between two series using pre-computed area values.
 		Parameters
@@ -154,7 +157,8 @@ def jaccard_subset(left: pandas.Series, right: pandas.Series) -> float:
 	right_area = area_of_series(right)
 	return jaccard_subset_numeric(left_area, right_area)
 
-def is_subset(left:pandas.Series, right:pandas.Series)->bool:
+
+def is_subset(left: pandas.Series, right: pandas.Series) -> bool:
 	""" A rewrite that uses the shapely library instead."""
 	left_poly = polygon.as_polygon(left)
 	right_poly = polygon.as_polygon(right)
@@ -169,15 +173,15 @@ def is_subset(left:pandas.Series, right:pandas.Series)->bool:
 
 	area_right = right_poly.area
 
-
-	result = math.isclose(area_intersection, area_right, abs_tol = 0.03**2) # TOlerance is square of the detection limit.
+	result = math.isclose(area_intersection, area_right, abs_tol = 0.03 ** 2)  # TOlerance is square of the detection limit.
 
 	return result
 
-def is_subset_polygon(left:geometry.MultiPolygon, right:geometry.MultiPolygon)->bool:
+
+def is_subset_polygon(left: geometry.MultiPolygon, right: geometry.MultiPolygon) -> bool:
 	area_intersection = left.intersection(right).area
 	area_right = right.area
-	result = math.isclose(area_intersection, area_right, abs_tol = 0.03**2)
+	result = math.isclose(area_intersection, area_right, abs_tol = 0.03 ** 2)
 	return result
 
 

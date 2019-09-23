@@ -4,11 +4,11 @@ from pathlib import Path
 def mullerplot(edges: Path, population: Path, output: Path):
 	table_edges = dataio.import_table(edges)
 	table_population = dataio.import_table(population)
-	from muller.graphics import AnnotatedMullerDiagram
+	from muller.graphics import MullerPlot
 	muller_formatter = dataio.GenerateMullerDataFrame()
-	diagram_generator = AnnotatedMullerDiagram()
+	diagram_generator = MullerPlot(outlines = True, render = True)
 	muller_df = muller_formatter.run(table_edges, table_population)
-	diagram_generator.run(muller_df, output)
+	diagram_generator.plot(muller_df, output)
 
 
 def timeseriesplot(filename:Path):

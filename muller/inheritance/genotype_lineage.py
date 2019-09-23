@@ -79,10 +79,7 @@ class LineageWorkflow:
 				self.genotype_nests.add_genotype_to_background(unnested_label, nested_label, score_data['totalScore'])
 
 		self.show_ancestry(sorted_genotypes)
-		if self.debug:
-			df = pandas.DataFrame(self.score_records)
-			#df.to_csv("strongselection.tsv", sep = '\t')
-			logger.debug(df.to_string())
+
 
 		return self.genotype_nests
 
@@ -95,14 +92,3 @@ def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tupl
 		correlated_delta = 0
 	return correlated_label, correlated_delta
 
-
-if __name__ == "__main__":
-	filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/tables/generic.genotypes.5.xlsx"
-	table = pandas.read_excel(filename, sheet_name = "sorted").set_index('Genotype')
-
-	lineage = LineageWorkflow(0.03, 0.97, 0.05)
-
-	result = lineage.run(table)
-	from pprint import pprint
-	records = lineage.score_records
-	print(pandas.DataFrame(records).to_string())

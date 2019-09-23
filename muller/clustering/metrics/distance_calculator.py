@@ -80,7 +80,7 @@ class DistanceCalculator:
 
 
 # Keep this as a separate function. Class methods are finicky when used with multiprocessing.
-def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple[Tuple[str, str], float]:
+def calculate_distance(process, element: Tuple[str, str], trajectories:pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
 	"""

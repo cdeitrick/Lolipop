@@ -1,7 +1,6 @@
 from typing import Any, Iterable, List, Tuple, Union
 
 import pandas
-from loguru import logger
 from shapely import geometry
 
 Number = Union[float, int]
@@ -78,7 +77,8 @@ def _decompose_correct_split_series(series: pandas.Series):
 		series[i + 1] = default_value
 	return series
 
-def _correct_one_dimensional_sections(points:List[Tuple[float,float]])->List[Tuple[float,float]]:
+
+def _correct_one_dimensional_sections(points: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
 	""" Removes adjacent 0's representing a one-dimensional offshoot form the polygon."""
 
 	for index, (x, y) in enumerate(points):
@@ -90,7 +90,6 @@ def _correct_one_dimensional_sections(points:List[Tuple[float,float]])->List[Tup
 			except IndexError:
 				pass
 	return points
-
 
 
 def decompose_legacy(series: pandas.Series) -> List[Tuple[Number, Number]]:
@@ -105,7 +104,7 @@ def decompose_legacy(series: pandas.Series) -> List[Tuple[Number, Number]]:
 
 	"""
 	# Make sure the x-values are numeric
-	series = series.copy(deep = True) # decomposing the series is changing the original series.
+	series = series.copy(deep = True)  # decomposing the series is changing the original series.
 	series = _decompose_correct_split_series(series)
 	points = list(i for i in series.items())  # All detected points. keeps undetected points
 	# Need to remove points that form a one-dimensional segment. Usually only happens in undetected regions.
@@ -126,7 +125,7 @@ def decompose_legacy(series: pandas.Series) -> List[Tuple[Number, Number]]:
 	b = (end_x, 0)
 	if a not in points: points.insert(0, a)
 	if b not in points: points.append(b)
-	#points = _correct_one_dimensional_sections(points)
+	# points = _correct_one_dimensional_sections(points)
 
 	# need to make sure the points are sorted correctly.
 	xs = [i[0] for i in points]
@@ -134,25 +133,25 @@ def decompose_legacy(series: pandas.Series) -> List[Tuple[Number, Number]]:
 
 	return points
 
-def decompose(series:pandas.Series)->List[PointType]:
+
+def decompose(series: pandas.Series) -> List[PointType]:
 	# Make sure one-dimensional points are omitted.
-	minimum = 0.001
-	masked_series = series.mask(lambda s: s<minimum, minimum).tolist()
+	minimum = 0.0001
+	masked_series = series.mask(lambda s: s < minimum, minimum).tolist()
 	masked_series[0] = series.values[0]
 	masked_series[-1] = series.values[-1]
 
 	points = list(zip(series.index, masked_series))
+	if points: # Check if the list is empty
+		first_point = points[0]
+		if first_point[1] != 0:
+			points = [(first_point[0], 0)] + points
 
-	first_point = points[0]
-	if first_point[1] != 0:
-		points = [(first_point[0], 0)] + points
-
-	last_point = points[-1]
-	if last_point[1] != 0:
-		points.append((last_point[0], 0))
+		last_point = points[-1]
+		if last_point[1] != 0:
+			points.append((last_point[0], 0))
 
 	return points
-
 
 
 def separate_main(series: List[PointType]) -> List[List[PointType]]:
@@ -187,11 +186,11 @@ def as_polygon(series: pandas.Series) -> geometry.MultiPolygon:
 	"""
 	points = decompose(series)
 
-	#logger.debug(points)
-	#separated_points = separate(points)
-	#polys = list()
-	#for element in separated_points:
+	# logger.debug(points)
+	# separated_points = separate(points)
+	# polys = list()
+	# for element in separated_points:
 	#	polys.append(geometry.Polygon(element))
-	#result = geometry.MultiPolygon(polys)
+	# result = geometry.MultiPolygon(polys)
 	result = geometry.Polygon(points)
 	return result

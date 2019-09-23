@@ -7,7 +7,7 @@ from scipy.spatial import distance
 
 PairwiseArrayType = Dict[Tuple[str, str], float]
 
-
+# TODO: Refactor using UserDict
 class DistanceCache:
 	"""
 		Calculates and holds the calculations for all pairwise elements.
@@ -32,7 +32,8 @@ class DistanceCache:
 
 	def __len__(self) -> int:
 		return len(self.pairwise_values)
-
+	def __getitem__(self, item):
+		return self.pairwise_values[item]
 	def asdict(self) -> PairwiseArrayType:
 		return self.pairwise_values
 
