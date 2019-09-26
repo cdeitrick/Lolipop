@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__VERSION__ = "0.6.1"
+__VERSION__ = "0.7.0"
 DEBUG = True
 
 
@@ -71,6 +71,8 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 	if cluster_method not in ACCEPTED_METHODS:
 		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
 		raise ValueError(message)
+	if program_options.output_folder is None:
+		program_options.output_folder = program_options.filename.stem
 	return program_options
 
 
@@ -337,7 +339,7 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 		action = 'store',
 		dest = 'filename',
 		type = Path,
-		# required = True
+		required = True
 	)
 	group_main.add_argument(
 		'-o', '--output',
@@ -484,3 +486,14 @@ def create_muller_parser(subparsers) -> argparse.ArgumentParser:
 	)
 
 	return parser_muller
+
+def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
+	parser_timeseries: argparse.ArgumentParser = subparsers.add_parser(
+		"timeseries",
+		help = "A small utility to plot timeseries tables."
+	)
+	parser_timeseries.add_argument(
+		"timeseries",
+		help = "A table with either a `Trajectory` column or a `Genotype` column.",
+		type = Path
+	)

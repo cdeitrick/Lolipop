@@ -12,6 +12,24 @@ try:
 except ImportError:
 	import polygon
 
+DEBUG = False
+
+def calculate_area(series:pandas.Series)->float:
+	values = list()
+
+	for previous, current in zip(series.values[:-1], series.values[1:]):
+		if previous < current:
+			lower = previous
+			higher = current
+		else:
+			lower = current
+			higher = previous
+
+		area = lower + ((higher - lower)/ 2)
+		values.append(area)
+	return sum(values)
+
+
 
 def area_of_series(series: pandas.Series) -> float:
 	points = polygon.decompose(series)
@@ -173,16 +191,48 @@ def is_subset(left: pandas.Series, right: pandas.Series) -> bool:
 
 	area_right = right_poly.area
 
-	result = math.isclose(area_intersection, area_right, abs_tol = 0.03 ** 2)  # TOlerance is square of the detection limit.
-
+	result = math.isclose(area_intersection, area_right, abs_tol = 0.03 ** 2)  # Tolerance is square of the detection limit.
 	return result
 
 
 def is_subset_polygon(left: geometry.MultiPolygon, right: geometry.MultiPolygon) -> bool:
+	area_union = left.union(right).area
 	area_intersection = left.intersection(right).area
+	area_left = left.area
 	area_right = right.area
+
 	result = math.isclose(area_intersection, area_right, abs_tol = 0.03 ** 2)
+
+	jaccard_expected = (area_left - area_right) / area_left
+	jaccard_actual = (area_union - area_intersection) / area_union
+
+	if DEBUG:
+		logger.debug(f"left, right -> {area_left}, {area_right}")
+		logger.debug(f"Je = ({area_left:.2f} - {area_right:.2f}) / {area_left:.2f} = {jaccard_expected:.2f}")
+		logger.debug(f"Ja = ({area_union:.2f} - {area_intersection:.2f}) / {area_union:.2f} = {jaccard_actual:.2f}")
+
+		logger.debug(f"{jaccard_expected} == {jaccard_actual} -> {result}")
+	result = math.isclose(jaccard_expected, jaccard_actual, abs_tol = 0.1)
 	return result
 
 
 X_and_Y = calculate_common_area
+
+if __name__ == "__main__":
+	filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx"
+	table_genotype = pandas.read_excel(filename, sheet_name = "genotype").set_index('Genotype')
+
+	left = table_genotype.loc['genotype-red']
+	right = table_genotype.loc['genotype-aqua']
+
+	intersection = [min(i,j) for i,j in zip(left.values, right.values)]
+
+	expected_area = calculate_area(pandas.Series(intersection))
+	actual_area = X_and_Y(left, right)
+
+	for index, left in table_genotype.iterrows():
+		for other_index, right in table_genotype.iterrows():
+			intersection = [min(i,j) for i,j in zip(left.values, right.values)]
+
+			expected_area = calculate_area(pandas.Series(intersection))
+

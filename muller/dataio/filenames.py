@@ -26,6 +26,7 @@ class OutputFilenames:
 		# General Files
 		self.trajectory_table: Path = output_folder / (name + f'.trajectories.{suffix}')
 		self.genotype_table: Path = output_folder / (name + f'.genotypes.{suffix}')
+		self.muller_panel:Path = output_folder / (name + f".panel")
 
 		# tables
 		self.original_trajectory: Path = tables_folder / (name + f'.trajectories.original.{suffix}')

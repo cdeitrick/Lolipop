@@ -79,7 +79,11 @@ class HierarchalCluster:
 
 	@staticmethod
 	def _get_cutoff(distances: numpy.ndarray):
-		(changepoint_index, changepoint), __ = detect_changepoint(sorted(distances))
+		try:
+			(changepoint_index, changepoint), __ = detect_changepoint(sorted(distances))
+		except ValueError:
+			changepoint = None
+			changepoint_index = len(distances)
 		if changepoint_index > len(distances) / 3:
 			logger.warning(f"Changepoint not detected.")
 			changepoint = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(0.05)

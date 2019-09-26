@@ -32,7 +32,7 @@ class TimeseriesPanel:
 
 		# Parameters concerning the plot legend.
 		self.legend = legend
-		self.legend_font_properties = {'size': 5}  # The size of the font used to label each series in the legend.
+		self.legend_font_properties = {'size': 24}  # The size of the font used to label each series in the legend.
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
@@ -143,9 +143,10 @@ class MullerPanel:
 
 	def __init__(self, vertical:bool = True, render:bool = True):
 		self.vertical = vertical  # The orientation of the plots.
+		self.vertical = False
 		self.render = render
 
-	def run(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, basename: Optional[Path] = None):
+	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, basename: Optional[Path] = None):
 
 		if self.vertical:
 			figure = plt.figure(figsize = (20, 20))
@@ -153,7 +154,7 @@ class MullerPanel:
 			ax_timeseries: plt.Axes = figure.add_subplot(grid[0])
 			ax_muller: plt.Axes = figure.add_subplot(grid[1], sharex = ax_timeseries)
 		else:
-			figure = plt.figure(figsize = (20, 20))
+			figure = plt.figure(figsize = (20, 10))
 			grid = plt.GridSpec(1, 2, figure = figure)
 			ax_timeseries: plt.Axes = figure.add_subplot(grid[0])
 			ax_muller: plt.Axes = figure.add_subplot(grid[1], sharey = ax_timeseries)
@@ -162,7 +163,7 @@ class MullerPanel:
 		plotter_muller = MullerPlot(outlines = True, render = self.render, style = 'nature').set_scale(1)
 
 		plotter_timeseries.plot(timeseries, palette, ax = ax_timeseries)
-		plotter_muller.plot(muller_df, basename = basename, ax = ax_muller)
+		plotter_muller.plot(muller_df, color_palette = palette, basename = basename, ax = ax_muller)
 
 		if self.vertical:
 			ax_timeseries.xaxis.set_visible(False)
@@ -178,7 +179,7 @@ class MullerPanel:
 		muller_df = generator.run(edges, populations)
 
 		timeseries = convert_population_to_timeseries(populations)
-		return self.run(timeseries, muller_df, palette, basename = basename)
+		return self.plot(timeseries, muller_df, palette, basename = basename)
 
 def convert_population_to_timeseries(populations:pandas.DataFrame)->pandas.DataFrame:
 	""" Converts a `population` table into a `timeseries` table. """

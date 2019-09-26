@@ -8,7 +8,7 @@ from loguru import logger
 
 from muller import dataio, widgets
 from muller.clustering.metrics.distance_cache import DistanceCache
-from muller.graphics import MullerPlot, TimeseriesPanel, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes
+from muller.graphics import MullerPlot, TimeseriesPanel, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes, MullerPanel
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "genotype-filtered"
@@ -51,6 +51,7 @@ class MullerOutputGenerator:
 			render = self.data.program_options['render']
 		)
 		self.muller_formatter = dataio.GenerateMullerDataFrame()
+		self.mullerpanel_generator = MullerPanel()
 
 		self.filenames = dataio.OutputFilenames(output_folder, self.get_base_filename())
 
@@ -79,11 +80,12 @@ class MullerOutputGenerator:
 		logger.info("Generating r script...")
 		self.save_r_script(genotypes.get('color_clade'), population_table)
 
+
+
 		muller_df = self.muller_formatter.run(edges_table, population_table)
 		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
-
 		logger.info("Generating muller plots...")
-
+		self.mullerpanel_generator.plot(self.data.genotypes, muller_df, genotypes.get('color_clade'), basename = self.filenames.muller_panel)
 		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
 			self.save_linkage_files()
@@ -164,10 +166,11 @@ class MullerOutputGenerator:
 			filtered_trajectories = self.data.original_trajectories.loc[self.data.genotype_members[FILTERED_GENOTYPE_LABEL]]
 			filtered_trajectories['genotype'] = FILTERED_GENOTYPE_LABEL
 			merged_table = filtered_trajectories.join(self.data.info, how = 'left')
+
 			merged_table.to_csv(self.filenames.rejected_trajectories, sep = self.filenames.delimiter)
 		else:
-			merged_table = None
-		return merged_table
+			filtered_trajectories = None
+		return filtered_trajectories
 
 	def read_genotype_annotations(self) -> Dict[str, List[str]]:
 		if self.data.info is not None:

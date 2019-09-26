@@ -164,6 +164,7 @@ class MullerPlot:
 
 		# Make sure that the width of the diagram only shows timepoints we have data for.
 		ax.set_xlim(0, maximum_x)
+		ax.set_ylim(0, 1)
 
 		return ax
 

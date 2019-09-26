@@ -11,6 +11,7 @@ ClusterType = List[str]
 
 
 class ClusterSet:
+	""" Provides descriptive statistics for a set of clusters."""
 	def __init__(self, clusters: List[ClusterType], distances: Union[DistanceCache, Dict[Tuple[str, str], float]]):
 		if not isinstance(distances, DistanceCache):
 			self.distances = DistanceCache(distances)

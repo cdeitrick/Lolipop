@@ -26,17 +26,19 @@ class LineageWorkflow:
 		The pvalue to use for statistical tests.
 	"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue:float, debug:bool = False):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = [1, 1, 2, 2], debug: bool = False):
 		self.dlimit = dlimit
 		self.flimit = flimit
 		self.pvalue = pvalue
 		self.debug = debug
 		self.genotype_nests: Optional[Ancestry] = None
 
-		self.scorer = scoring.Score(self.dlimit, self.flimit, self.pvalue)
-		self.score_records:List[Dict[str,float]] = list() # Keeps track of the individual score values for each pair
+		self.scorer = scoring.Score(self.dlimit, self.flimit, self.pvalue, weights)
+		self.score_records: List[Dict[str, float]] = list()  # Keeps track of the individual score values for each pair
+
 	def __repr__(self):
 		return f"LineageWorkflow(dlimit = {self.dlimit}, flimit = {self.flimit}, pvalue = {self.pvalue})"
+
 	def add_known_lineages(self, known_ancestry: Dict[str, str]):
 		for identity, parent in known_ancestry.items():
 			# TODO need to add a way to prevent circular ancestry links when a user manually assigns ancestry. Current workaround forces the manual parent to be in the root background.
@@ -44,8 +46,6 @@ class LineageWorkflow:
 			self.genotype_nests.add_genotype_to_background(parent, 'genotype-0', priority = 100)
 			# Use a dummy priority so that it is selected before other backgrounds.
 			self.genotype_nests.add_genotype_to_background(identity, parent, priority = 100)
-
-
 
 	def show_ancestry(self, sorted_genotypes: pandas.DataFrame):
 		logger.log("COMPLETE", "Final Ancestry:")
@@ -79,7 +79,8 @@ class LineageWorkflow:
 				self.genotype_nests.add_genotype_to_background(unnested_label, nested_label, score_data['totalScore'])
 
 		self.show_ancestry(sorted_genotypes)
-
+		df = pandas.DataFrame(self.score_records)
+		logger.debug("\n" + df.to_string())
 
 		return self.genotype_nests
 
@@ -91,4 +92,3 @@ def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tupl
 		correlated_label = "N/A"  # Shouldn't end up being used.
 		correlated_delta = 0
 	return correlated_label, correlated_delta
-
