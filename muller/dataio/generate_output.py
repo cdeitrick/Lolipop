@@ -75,7 +75,7 @@ class MullerOutputGenerator:
 
 		self.save_base_tables(genotypes.get_trajectory_map())
 		self.save_supplementary_files(genotypes)
-		pandas.DataFrame(self.data.score_history).to_csv(self.filenames.filename_score_records, sep = self.filenames.delimiter)
+		pandas.DataFrame(self.data.score_history).to_csv(self.filenames.filename_score_records, sep = self.filenames.delimiter, index = False)
 
 		logger.info("Generating r script...")
 		self.save_r_script(genotypes.get('color_clade'), population_table)
@@ -84,8 +84,10 @@ class MullerOutputGenerator:
 
 		muller_df = self.muller_formatter.run(edges_table, population_table)
 		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
+
 		logger.info("Generating muller plots...")
-		self.mullerpanel_generator.plot(self.data.genotypes, muller_df, genotypes.get('color_clade'), basename = self.filenames.muller_panel)
+		self.mullerpanel_generator.plot(self.data.genotypes, muller_df, genotypes.get('color_clade'), basename = self.filenames.muller_panel, annotations = genotypes.get('annotations'))
+
 		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
 			self.save_linkage_files()

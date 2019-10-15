@@ -95,7 +95,8 @@ def _clean_gene_label(label: str) -> str:
 		pattern = "[a-zA-Z_0-9\s]+"
 		match = re.match(pattern, label)
 		if match:
-			clean_label = match.group(0)
+			clean_label = label
+			#clean_label = match.group(0)
 		else:
 			clean_label = ""
 	return clean_label

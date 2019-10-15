@@ -25,9 +25,9 @@ def plot_heatmap(data: pandas.DataFrame, filename: Path):
 		xticklabels = True,
 		yticklabels = True
 	)
-	ax.tick_params(axis = 'both', which = 'major', labelsize = 12)
-	ax.set_ylabel("Trajectory Label", size = 20)
-	ax.set_xlabel("Trajectory Label", size = 20)
-	ax.set_title("p-values of all mutational trajectories", size = 30)
+	ax.tick_params(axis = 'both', which = 'major', labelsize = 24)
+	ax.set_ylabel("Trajectory Label", size = 32)
+	ax.set_xlabel("Trajectory Label", size = 32)
+	ax.set_title("p-values of all mutational trajectories", size = 36)
 	plt.tight_layout()
 	fig.savefig(str(filename), format = 'svg')

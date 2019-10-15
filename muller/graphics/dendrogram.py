@@ -26,7 +26,6 @@ def plot_dendrogram(linkage_table: Any, pair_array: DistanceCache, filename: Pat
 		labels = pair_array.squareform().index,
 		ax = ax
 	)
-	for label in list(ax.get_xticklabels()) + list(ax.get_yticklabels()):
-		label.set_fontsize(20)
+	ax.tick_params(axis = 'both', labelsize = 20)
 
 	plt.savefig(filename, dpi = 500)

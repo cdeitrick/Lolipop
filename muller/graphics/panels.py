@@ -8,7 +8,7 @@ plt.clf()
 # plt.switch_backend('agg')
 import pandas
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from muller import dataio
 from loguru import logger
 
@@ -146,7 +146,7 @@ class MullerPanel:
 		self.vertical = False
 		self.render = render
 
-	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, basename: Optional[Path] = None):
+	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, basename: Optional[Path] = None, annotations: Dict[str,List[str]] = None):
 
 		if self.vertical:
 			figure = plt.figure(figsize = (20, 20))
@@ -163,7 +163,7 @@ class MullerPanel:
 		plotter_muller = MullerPlot(outlines = True, render = self.render, style = 'nature').set_scale(1)
 
 		plotter_timeseries.plot(timeseries, palette, ax = ax_timeseries)
-		plotter_muller.plot(muller_df, color_palette = palette, basename = basename, ax = ax_muller)
+		plotter_muller.plot(muller_df, color_palette = palette, basename = basename, ax = ax_muller, annotations = annotations)
 
 		if self.vertical:
 			ax_timeseries.xaxis.set_visible(False)

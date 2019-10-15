@@ -127,7 +127,7 @@ class LegacyScore:
 class Score:
 	""" Refactored as a class so that all the dlimit,flimit,pvalue,etc variables don't have to be passed around"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = [1,1,2,2]):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = [1, 1, 2, 2]):
 		self.pvalue = pvalue
 		self.dlimit = dlimit
 		self.flimit = flimit
@@ -160,7 +160,7 @@ class Score:
 		# THe t-test has to be corrected for the case where the two series do not completely overlap
 		nested_genotype, unnested_genotype = widgets.get_valid_points(nested_genotype, unnested_genotype, self.dlimit)
 		if use_advanced:
-			score = self.calculate_score_greater_advanced(nested_genotype, unnested_genotype)
+			raise NotImplementedError
 		else:
 			score = self.calculate_score_greater_basic(nested_genotype, unnested_genotype)
 
@@ -189,7 +189,7 @@ class Score:
 
 		is_consistently_greater = (nested_timepoints > cutoff) and (nested_mean > self.dlimit)
 		is_significantly_greater = nested_sum > self.slimit
-		left = is_significantly_greater or is_significantly_greater
+		left = is_significantly_greater or is_consistently_greater
 
 		is_consistently_less = (unnested_timepoints > cutoff) and (unnested_mean > self.dlimit)
 		is_significantly_less = unnested_sum > self.slimit
@@ -206,59 +206,6 @@ class Score:
 
 		return score
 
-	def calculate_score_greater_advanced(self, nested_genotype: pandas.Series, unnested_genotype: pandas.Series) -> int:
-		"""
-			Tests whether the nested genotype is consistenty larger than  the nested genotype. The scoring is as follows:
-			`nested_genotype` always larger than `unnested_genotype`: 1
-			`nested_genotype` consistently larger than `unnested_genotype`: 0.5
-			`nested_genotype` not consistently larger than `unnested_genotype`: 0
-			`nested_genotype` sometimes smaller than `unnested_genotype`: -0.5
-		Parameters
-		----------
-		nested_genotype, unnested_genotype: pandas.Series
-		"""
-
-		difference_series = nested_genotype - unnested_genotype
-
-		difference_series_positive = sum(1 for i in difference_series.values if i > self.dlimit ** 2)
-		difference_series_negative = sum(1 for i in difference_series.values if i < -self.dlimit ** 2)
-		if self.debug:
-			logger.debug(f"{difference_series_positive}, {difference_series_negative}")
-
-		if (difference_series_positive - difference_series_negative) < len(difference_series) / 3:
-			score = math.nan
-		else:
-			statistic, pvalue = stats.ttest_rel(nested_genotype.values, unnested_genotype.values)
-			forward_pvalue_test = pvalue / 2 < self.pvalue
-			forward_statistic_test = statistic > 0
-			forward_timepoint_test = difference_series_positive - difference_series_negative > (len(difference_series) / 3)
-			reverse_pvalue_test = forward_pvalue_test  # They're identical
-			reverse_statistic_test = statistic < 0  # In case statistic == 0
-			reverse_timepoint_test = difference_series_negative - difference_series_positive > (len(difference_series) / 3)
-
-			forward_result = forward_pvalue_test and forward_statistic_test and forward_timepoint_test
-			# Test whether the unnested genotype is greater than the nested genotype.
-			reverse_result = reverse_pvalue_test and reverse_statistic_test and reverse_timepoint_test
-
-			if self.debug:
-				logger.debug(f"calculate_score_greater({nested_genotype.name}, {unnested_genotype.name})")
-				logger.debug(
-					f"forward result = {pvalue} < {self.pvalue} and {statistic} > 0 and {difference_series_positive} > {len(difference_series) / 3}"
-				)
-				logger.debug(f"forward result = {forward_pvalue_test} and {forward_statistic_test} and {forward_timepoint_test}")
-				logger.debug(
-					f"reverse result = {pvalue} < {self.pvalue} and {statistic} < 0 and {difference_series_negative} > {len(difference_series) / 3}")
-				logger.debug(f"reverse result = {reverse_pvalue_test} and {reverse_statistic_test} and {reverse_timepoint_test}")
-
-			if forward_result and not reverse_result:
-				score = 1
-			elif not forward_result and reverse_result:
-				score = -1
-			else:
-				score = 0
-		score -= self.legacy_scorer.calculate_score_greater(nested_genotype, unnested_genotype)
-		return self.weight_greater * score
-
 	def calculate_score_above_fixed(self, left: pandas.Series, right: pandas.Series) -> int:
 		"""
 			Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
@@ -271,12 +218,10 @@ class Score:
 		# Including points where one genotype was not detected will skew the results.
 		left, right = widgets.get_valid_points(left, right, dlimit = self.dlimit, inner = True)
 		combined_series = (left + right).tolist()[1:]
-		logger.info(combined_series)
 		if len(combined_series) == 0:
-			result =  0
+			result = 0
 		elif len(combined_series) == 1:
 			result = combined_series[0] > self.flimit
-			logger.debug(f"{combined_series[0]} > {self.flimit} == {result}")
 		else:
 			mean_c = statistics.mean(combined_series)
 			var_c = self.dlimit
@@ -427,18 +372,16 @@ class Score:
 		score_data = {
 			'nestedGenotype':   nested_genotype.name,
 			'unnestedGenotype': unnested_trajectory.name,
-			'scoreGreater':    score_greater,
-			'scoreFixed': score_fixed,
+			'scoreGreater':     score_greater,
+			'scoreFixed':       score_fixed,
 			'scoreArea':        score_area,
 			'scoreDerivative':  score_derivative,
 			'totalScore':       total_score
 		}
 		return score_data
 
-
-	def derivative(self, left: pandas.Series, right: pandas.Series)->Tuple[float, int]:
-
-		#l, r = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
+	def derivative(self, left: pandas.Series, right: pandas.Series) -> Tuple[float, int]:
+		# l, r = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
 		l, r = left, right
 		normalize = lambda s: 1 if s > self.dlimit else (-1 if s < -self.dlimit else 0)
 

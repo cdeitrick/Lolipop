@@ -32,7 +32,7 @@ class TimeseriesPlot:
 
 		# Parameters concerning the plot legend.
 		self.legend = legend
-		self.legend_font_properties = {'size': 5}  # The size of the font used to label each series in the legend.
+		self.legend_font_properties = {'size': 24}  # The size of the font used to label each series in the legend.
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
@@ -115,8 +115,6 @@ class TimeseriesPlot:
 
 		ax = self._initialize_plot(ax)
 		plot_title = 'Genotypes' if 'genotype' in timeseries.index[0] else 'Trajectories'
-		logger.debug(timeseries.to_string())
-		ax = self._apply_style(ax, plot_title, max(timeseries.columns))
 
 		numeric_columns = list(widgets.get_numeric_columns(timeseries.columns))
 
@@ -137,6 +135,16 @@ class TimeseriesPlot:
 				linewidth = self.linewidth,
 				linestyle = self.linestyle
 			)
+		ax = self._apply_style(ax, plot_title, max(timeseries.columns))
+		ax.set_xlim(0, max(timeseries.columns))
+		if self.legend and False:
+			legend = ax.legend(
+				loc = self.legend_location,
+				prop = self.legend_font_properties,
+				title = self.legend_title
+			)
+			legend.get_title().set_fontsize(str(self.legend_font_properties['size']))
+
 		if basename:
 			self.save_figure(basename)
 		return ax
@@ -152,11 +160,21 @@ class TimeseriesPlot:
 
 
 if __name__ == "__main__":
-	plotter = TimeseriesPlot(style = 'nature2')
+
 
 	filename = Path("/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx")
 	datatable = pandas.read_excel(filename, sheet_name = 'genotype').set_index('Genotype')
 	datatable.columns = [int(i) for i in datatable.columns]
+
+	data = [
+		pandas.Series([0.0, 0.1, 0.15, 0.2, 0.3, 0.5, 0.8, 0.9, 1.0, 1.0], name = 'selected'), # fixed
+		pandas.Series([0.0, 0.05, 0.15, 0.1, 0.15, 0.2, 0.1, 0.1, 0.15,0.1], name = 'noise'), # low-freq
+		pandas.Series([0.0, 0.2, 0.3, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], name = 'competing'), # competing
+		pandas.Series([0.0, 0.0, 0.1, 0.15, 0.25, 0.45, 0.75, 0.95, 0.95, 1.0], name = 'linked')
+	]
+	datatable = pandas.DataFrame(data)
+	print(datatable.to_string())
+
 	naturepalette = {
 		'genotype-aqua':   'black',
 		'genotype-red':    '#2ebebf',
@@ -166,5 +184,13 @@ if __name__ == "__main__":
 		'genotype-gold':   '#c0c23e'
 	}
 
-	plotter.plot(datatable, palette = naturepalette)
-	plt.show()
+	palette = {
+		'selected': 'black',
+		'noise': 'red',
+		'competing': 'green',
+		'linked': 'sienna'
+	}
+	plotter = TimeseriesPlot(legend = True)
+	plotter.plot(datatable, palette = palette)
+	plt.tight_layout()
+	plt.savefig('example.filtering.png')
