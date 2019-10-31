@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas
 from loguru import logger
 
-from muller import dataio, widgets
+from muller import dataio
 from muller.clustering.metrics.distance_cache import DistanceCache
-from muller.graphics import MullerPlot, TimeseriesPanel, TimeseriesPlot, flowchart, plot_dendrogram, plot_heatmap, palettes, MullerPanel
+from muller.graphics import MullerPanel, MullerPlot, TimeseriesPanel, TimeseriesPlot, flowchart, palettes, plot_dendrogram, plot_heatmap
 
 ROOT_GENOTYPE_LABEL = "genotype-0"
 FILTERED_GENOTYPE_LABEL = "genotype-filtered"
@@ -28,7 +28,7 @@ class WorkflowData:
 	genotypes: pandas.DataFrame
 	genotype_members: pandas.Series
 	clusters: Any
-	score_history: List[Dict[str,float]]
+	score_history: List[Dict[str, float]]
 	p_values: DistanceCache
 	filter_cache: List[Tuple[pandas.DataFrame, pandas.DataFrame]]
 	linkage_matrix: Any
@@ -80,13 +80,12 @@ class MullerOutputGenerator:
 		logger.info("Generating r script...")
 		self.save_r_script(genotypes.get('color_clade'), population_table)
 
-
-
 		muller_df = self.muller_formatter.run(edges_table, population_table)
 		muller_df.to_csv(self.filenames.table_muller, sep = "\t", index = False)
 
 		logger.info("Generating muller plots...")
-		self.mullerpanel_generator.plot(self.data.genotypes, muller_df, genotypes.get('color_clade'), basename = self.filenames.muller_panel, annotations = genotypes.get('annotations'))
+		self.mullerpanel_generator.plot(self.data.genotypes, muller_df, genotypes.get('color_clade'), basename = self.filenames.muller_panel,
+			annotations = genotypes.get('annotations'))
 
 		logger.info("Saving linkage files...")
 		if self.data.linkage_matrix is not None:
@@ -211,7 +210,7 @@ class MullerOutputGenerator:
 			palette_type = "color_clade",
 			trajectory_timeseries = combined_trajectories
 		)
-		# The plot by the unique palette
+		# Then plot by the unique palette
 		self.timeseries_panel_generator.run(
 			self.data.genotypes,
 			genotypes = genotypes,

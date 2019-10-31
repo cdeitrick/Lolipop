@@ -214,7 +214,7 @@ class GenerateMullerDataFrame:
 	@staticmethod
 	def _clean_population_table(population: pandas.DataFrame) -> pandas.DataFrame:
 		""" Implements the cleaning steps from the ggmuller package. Since these are already done with the other scripts, this returns
-			The imput table.
+			The input table.
 		"""
 		return population
 

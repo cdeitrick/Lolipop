@@ -127,7 +127,7 @@ class LegacyScore:
 class Score:
 	""" Refactored as a class so that all the dlimit,flimit,pvalue,etc variables don't have to be passed around"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = [1, 1, 2, 2]):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights:Tuple[int,int,int,int] = (1, 1, 2, 2)):
 		self.pvalue = pvalue
 		self.dlimit = dlimit
 		self.flimit = flimit

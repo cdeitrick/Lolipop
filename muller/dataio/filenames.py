@@ -36,7 +36,6 @@ class OutputFilenames:
 
 		self.ggmuller_population: Path = tables_folder / (name + f'.ggmuller.populations.{suffix}')
 		self.ggmuller_edges: Path = tables_folder / (name + f'.ggmuller.edges.{suffix}')
-		#self.muller_table: Path = tables_folder / (name + f'.mullerdataframe.csv')  # This is generated in r.
 		self.table_muller: Path = tables_folder / (name + f".mullerdataframe.{suffix}")
 
 		self.linkage_matrix_table = tables_folder / (name + f".linkagematrix.tsv")
@@ -66,7 +65,6 @@ class OutputFilenames:
 		# scripts
 		self.r_script: Path = scripts_folder / (name + '.r')
 		self.muller_diagram_r_script: Path = graphics_folder / (name + '.rscript.png')
-		# self.mermaid_script: Path = scripts_folder / (name + '.mermaid.md')
 
 		# supplementary files
 		self.parameters: Path = supplementary_folder / (name + '.options.json')
