@@ -3,7 +3,8 @@
 	Main script to run the muller workflow.
 """
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Tuple
+
 import pandas
 from loguru import logger
 
@@ -11,7 +12,7 @@ logger.remove()
 import sys
 
 from muller import dataio, clustering, inheritance, commandline_parser
-from muller.dataio.generate_output import WorkflowData, MullerOutputGenerator
+from muller.dataio import generate_output, projectdata
 
 logger.level("COMPLETE", no = 1)
 if commandline_parser.DEBUG:
@@ -37,8 +38,15 @@ class MullerWorkflow:
 				filter_single = self.program_options.use_filter_single,
 				filter_startfixed = self.program_options.use_filter_startsfixed
 			)
+
 		else:
-			self.trajectory_filter = False
+			self.trajectory_filter = None
+
+		self.filter_genotype = clustering.GenotypeFilter(
+			detection_cutoff = self.program_options.detection_breakpoint,
+			fixed_cutoff = self.program_options.fixed_breakpoint,
+			frequencies = self.program_options.frequencies
+		)
 
 		self.genotype_generator = clustering.ClusterMutations(
 			method = self.program_options.method,
@@ -50,6 +58,7 @@ class MullerWorkflow:
 			breakpoints = breakpoints,
 			starting_genotypes = self.program_options.starting_genotypes,
 			trajectory_filter = self.trajectory_filter,
+			genotype_filter = self.filter_genotype,
 			filename_pairwise = self.program_options.filename_pairwise,
 			threads = self.program_options.threads
 		)
@@ -77,61 +86,46 @@ class MullerWorkflow:
 			6. Generate Output.
 
 		"""
+		results_basic = projectdata.DataWorkflowBasic(
+			version = commandline_parser.__VERSION__,
+			filename = filename,
+			program_options = vars(self.program_options)
+		)
 
 		known_ancestry = self.read_additional_files()
 
-		timepoints, mean_genotypes, genotype_members, info = self.generate_genotypes(filename)
+		result_genotype_inference = self.generate_genotypes(filename)
 
-		sorted_genotypes = self.organize_genotypes_workflow.run(mean_genotypes)
+		sorted_genotypes = self.organize_genotypes_workflow.run(result_genotype_inference.table_genotypes)
 
-		genotype_lineage_results = self.lineage_workflow.run(sorted_genotypes, known_ancestry)
+		results_genotype_lineage, info = self.lineage_workflow.run(sorted_genotypes, known_ancestry)
 
-		workflow_data = WorkflowData(
-			version = commandline_parser.__VERSION__,
-			filename = filename,
+		# Split up the output data based on its primary function (ex. graphics, data)
 
-			info = info,
-			original_trajectories = timepoints,
-			original_genotypes = mean_genotypes,
-			trajectories = timepoints,
-			genotypes = sorted_genotypes,
-			genotype_members = genotype_members,
-			clusters = genotype_lineage_results,
-			score_history = self.lineage_workflow.score_records,
-			program_options = vars(self.program_options),
-			p_values = self.genotype_generator.pairwise_distances,
-			filter_cache = [],
-			linkage_matrix = self.genotype_generator.linkage_table,
-			genotype_palette_filename = self.program_options.genotype_palette_filename
-		)
+		#generate_output.OutputGeneratorFull(results_basic, result_genotype_inference, results_genotype_lineage, workflow_data_graphics).run()
 
-		MullerOutputGenerator(workflow_data, output_folder, adjust_populations = True).run()
-
-	def generate_genotypes(self, filename: Path):
+	def generate_genotypes(self, filename: Path) -> Tuple[projectdata.DataGenotypeInference, pandas.DataFrame]:
 		if self.program_options.is_genotype:
 			mean_genotypes, genotype_info = dataio.parse_genotype_table(filename, self.program_options.sheetname)
-			try:
-				genotype_members = genotype_info['members']
-			except KeyError:
-				genotype_members = dict()
-			timepoints = info = None
+			genotype_members = genotype_info.get('members', dict())
+			info = None
+
+			output_genotype_inference = projectdata.DataGenotypeInference(
+				original_trajectories = None,
+				table_genotypes = mean_genotypes,
+				genotype_members = genotype_members,
+				distance_matrix = None,
+				linkage_matrix = None,
+				filter_cache = []
+			)
 
 		else:
 			timepoints, info = dataio.parse_trajectory_table(filename, self.program_options.sheetname)
-			mean_genotypes, genotype_members = self.genotype_generator.run(timepoints)
-
-		return timepoints, mean_genotypes, genotype_members, info
+			output_genotype_inference = self.genotype_generator.run(timepoints)
+		return output_genotype_inference, info
 
 	def read_additional_files(self) -> Dict[str, str]:
 		known_ancestry = dataio.read_map(self.program_options.known_ancestry)
 		return known_ancestry
 
 
-class GGMuller:
-	""" Uses the `population` and `edges` table to generate muller plots and timeseries.
-	"""
-	def __init__(self):
-		pass
-
-	def run(self, populations:pandas.DataFrame, edges = pandas.DataFrame):
-		pass

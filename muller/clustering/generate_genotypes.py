@@ -8,6 +8,7 @@ from loguru import logger
 
 try:
 	from muller.clustering import filters, metrics, methods
+	from muller.dataio import projectdata
 except ModuleNotFoundError:
 	from . import filters, metrics, methods
 
@@ -43,7 +44,7 @@ class ClusterMutations:
 
 	def __init__(self, method: str, metric: str, dlimit: float, flimit: float, pvalue: float, dbreakpoint: float, breakpoints: List[float],
 			starting_genotypes: Optional[List[List[str]]] = None, trajectory_filter: Optional[filters.TrajectoryFilter] = None,
-			filename_pairwise: Optional[Path] = None, threads: Optional[int] = None):
+			genotype_filter: Optional[filters.GenotypeFilter] = None, filename_pairwise: Optional[Path] = None, threads: Optional[int] = None):
 		self.method: str = method
 		self.metric: str = metric
 		self.dlimit: float = dlimit
@@ -53,6 +54,7 @@ class ClusterMutations:
 		self.breakpoints: List[float] = breakpoints
 		self.starting_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.trajectory_filter = trajectory_filter
+		self.genotype_filter = genotype_filter
 		self.filename_pairwise = filename_pairwise
 		# These will be updated when run() is called.
 		self.pairwise_distances: metrics.DistanceCache = metrics.DistanceCache()  # Empty cache that will be replaced in generate_genotypes().
@@ -62,12 +64,6 @@ class ClusterMutations:
 		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric, threads = threads)
 
 		self.clusterer = methods.HierarchalCluster()
-
-		self.genotype_filter = filters.GenotypeFilter(
-			detection_cutoff = self.dlimit,
-			fixed_cutoff = self.flimit,
-			frequencies = self.breakpoints
-		)
 
 	@staticmethod
 	def _calculate_mean_frequencies_of_trajectories(name: str, genotype_timeseries: pandas.DataFrame, genotype: List[str]) -> pandas.Series:
@@ -168,7 +164,7 @@ class ClusterMutations:
 		self.pairwise_distances_full = metrics.DistanceCache(pair_array)  # Keep a record of the pairwise distances before filtering.
 		return self.pairwise_distances_full
 
-	def run(self, trajectories: pandas.DataFrame) -> Tuple[pandas.DataFrame, Dict[str, List[str]]]:
+	def run(self, trajectories: pandas.DataFrame) -> projectdata.DataGenotypeInference:
 		"""
 			Run the genotype clustering workflow.
 		Parameters
@@ -183,7 +179,7 @@ class ClusterMutations:
 		"""
 
 		modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes
-		if self.trajectory_filter:
+		if self.trajectory_filter is not None:
 			modified_trajectories = self.trajectory_filter.run(modified_trajectories)
 		if self.breakpoints:
 			# The filters should run
@@ -198,8 +194,10 @@ class ClusterMutations:
 
 		# Calculate the initial genotypes
 		genotype_table, genotype_members, linkage_matrix = self.generate_genotypes(modified_trajectories)
-
+		logger.warning("The genotype filters are currently disabled.")
+		# Disable this for now. It is currently too aggressive.
 		for index in range(_iterations):
+			break
 			invalid_members = self.genotype_filter.run(genotype_table, genotype_members)
 			if invalid_members:
 				# Remove these trajectories from the trajectories table.
@@ -223,4 +221,12 @@ class ClusterMutations:
 
 		self.genotype_members['genotype-filtered'] = filtered_trajectories
 
-		return self.genotype_table, self.genotype_members
+		output_data = projectdata.DataGenotypeInference(
+			original_trajectories = modified_trajectories,
+			table_genotypes = self.genotype_table,
+			genotype_members = self.genotype_members,
+			distance_matrix = self.pairwise_distances,
+			linkage_matrix = self.linkage_table
+		)
+
+		return output_data

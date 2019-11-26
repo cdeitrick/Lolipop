@@ -53,7 +53,7 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 	numeric_columns = widgets.get_numeric_columns(data.columns)
 	nonnumeric_columns = [i for i in data.columns if i not in numeric_columns]
 
-	def _cast_to_int(value):
+	def _cast_to_int(value)->int:
 		try:
 			return int(value)
 		except (ValueError, TypeError):

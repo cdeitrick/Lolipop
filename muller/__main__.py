@@ -28,7 +28,7 @@ def benchmark(dataset: Path, output: Path):
 	plot_benchmark_results(benchmark_results, output)
 
 
-def main(arguments):
+def main(arguments)->None:
 	from muller.muller_workflow import MullerWorkflow
 	muller_workflow = MullerWorkflow(arguments)
 	muller_workflow.run(arguments.filename, arguments.output_folder)
@@ -43,16 +43,8 @@ if __name__ == "__main__":
 
 	program_parser = commandline_parser.create_parser()
 	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
-	if commandline_parser.DEBUG and False:
-		args = [
-			"lineage",
-			"--sheetname", "BYB1-G07",
-			"--input", "/media/cld100/FA86364B863608A1/Users/cld100/Storage/projects/muller/manuscript/data/nature12344-s2.xlsx",
-			"--output", "/media/cld100/FA86364B863608A1/Users/cld100/Storage/projects/muller/manuscript/data/exampleplots/nature12344",
-			"--similarity-cutoff", "0.2"
-		]
-	else:
-		args = sys.argv[1:]
+
+	args = sys.argv[1:]
 
 	if args[0] not in {'lineage', 'benchmark', 'muller'}:
 		args = ['lineage'] + args

@@ -5,7 +5,7 @@ from typing import Any, Iterable, List, Optional, Union
 import pandas
 
 Numeric = Union[int, float]
-
+from loguru import logger
 
 def lag_gens(x: int, values: Iterable[int]) -> int:
 	# function to get the generation previous to a specified generation:
@@ -30,7 +30,7 @@ class Vector:
 		if value:
 			self.data.append(value)
 
-	def __len__(self):
+	def __len__(self)->int:
 		return len(self.data)
 
 	def __setitem__(self, key: int, value: Any):
@@ -43,7 +43,7 @@ class Vector:
 			message = f"Trying to access a value that is not the next position in the array: {key} -> {len(self)}"
 			raise ValueError(message)
 
-	def __getitem__(self, item):
+	def __getitem__(self, item)->Any:
 		return self.data[item]
 
 
@@ -67,6 +67,7 @@ class AdjacencyMatrix:
 		""" This is a more concise implementation of the method used in ggmuller.
 			'Replace each genotype name in adjacency matrix with corresponding Age'
 		"""
+		logger.debug(self.table_edges.columns)
 		intermediate_edges = self.table_edges.copy(deep = True)  # To avoid unintented changes.
 		intermediate_edges['Identity'] = [lookup.loc[i] for i in self.table_edges['Identity'].values]
 		intermediate_edges['Parent'] = [lookup.loc[i] for i in self.table_edges['Parent'].values]
@@ -411,8 +412,9 @@ class GenerateMullerDataFrame:
 
 		return muller_df
 
-	def run(self, edges: pandas.DataFrame, population: pandas.DataFrame) -> pandas.DataFrame:
+	def run(self, edges: pandas.Series, population: pandas.DataFrame) -> pandas.DataFrame:
 		# Test if the length of the population table makes sense given the population and number of timepoints.
+		edges = edges.reset_index()
 		population = self._clean_population_table(population)
 		# Construct a dataframe with the "Age" of each genotype.
 		population_sorted = population.sort_values(by = ["Generation", "Population"], ascending = [True, False])

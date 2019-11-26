@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass
 
 import pandas
 from loguru import logger
@@ -7,10 +8,12 @@ try:
 	from muller.inheritance import scoring
 	from muller.inheritance.genotype_ancestry import Ancestry
 	from muller import widgets
+	from muller.dataio import projectdata
 except ModuleNotFoundError:
 	from . import scoring
 	from .genotype_ancestry import Ancestry
 	from .. import widgets
+	from ..dataio import projectdata
 
 
 class LineageWorkflow:
@@ -26,7 +29,7 @@ class LineageWorkflow:
 		The pvalue to use for statistical tests.
 	"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = [1, 1, 2, 2], debug: bool = False):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = (1, 1, 2, 2), debug: bool = False):
 		self.dlimit = dlimit
 		self.flimit = flimit
 		self.pvalue = pvalue
@@ -34,9 +37,8 @@ class LineageWorkflow:
 		self.genotype_nests: Optional[Ancestry] = None
 
 		self.scorer = scoring.Score(self.dlimit, self.flimit, self.pvalue, weights)
-		self.score_records: List[Dict[str, float]] = list()  # Keeps track of the individual score values for each pair
 
-	def __repr__(self):
+	def __repr__(self)->str:
 		return f"LineageWorkflow(dlimit = {self.dlimit}, flimit = {self.flimit}, pvalue = {self.pvalue})"
 
 	def add_known_lineages(self, known_ancestry: Dict[str, str]):
@@ -53,7 +55,7 @@ class LineageWorkflow:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
 			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
 
-	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> Ancestry:
+	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> projectdata.DataGenotypeLineage:
 		"""
 			Infers the lineage from the given genotype table.
 		Parameters
@@ -69,20 +71,27 @@ class LineageWorkflow:
 		self.genotype_nests = Ancestry(initial_background, timepoints = sorted_genotypes)
 		self.add_known_lineages(known_ancestry if known_ancestry else dict())
 
+		score_records: List[Dict[str, float]] = list()  # Keeps track of the individual score values for each pair
+
 		for unnested_label, unnested_trajectory in sorted_genotypes[1:].iterrows():
 			# Iterate over the rest of the table in reverse order. Basically, we start with the newest nest and iterate until we find a nest that satisfies the filters.
 			test_table = sorted_genotypes[:unnested_label].iloc[::-1]
 			for nested_label, nested_genotype in test_table.iterrows():
 				if nested_label == unnested_label: continue
 				score_data = self.scorer.score_pair(nested_genotype, unnested_trajectory)
-				self.score_records.append(score_data)
+				score_records.append(score_data)
 				self.genotype_nests.add_genotype_to_background(unnested_label, nested_label, score_data['totalScore'])
 
 		self.show_ancestry(sorted_genotypes)
-		df = pandas.DataFrame(self.score_records)
-		logger.debug("\n" + df.to_string())
 
-		return self.genotype_nests
+		output_data = projectdata.DataGenotypeLineage(
+			score_history = score_records,
+			clusters = self.genotype_nests
+		)
+		# TODO: Finish this
+
+		return output_data
+
 
 
 def get_maximum_genotype_delta(genotype_deltas: List[Tuple[str, float]]) -> Tuple[str, float]:

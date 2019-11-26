@@ -62,7 +62,7 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
-		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)
+		starting_genotypes = dataio.datainput.parse_known_genotypes(program_options.known_genotypes)
 	else:
 		starting_genotypes = None
 
@@ -324,6 +324,12 @@ def _create_parser_group_filter(parser: argparse.ArgumentParser):
 		dest = "filter_constant",
 		default = 0.1,
 		type = float
+	)
+	group_filter.add_argument(
+		"--disable-genotype-filter",
+		help = "Disables filtering based on genotypes.",
+		action = "store_false",
+		dest = "use_filter_genotype"
 	)
 
 	return group_filter

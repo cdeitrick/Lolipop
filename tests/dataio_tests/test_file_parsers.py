@@ -36,13 +36,13 @@ def test_extract_annotations(annotations):
 		("PROKKA_00139/>glyA", "PROKKA_00139|glyA"),
 		("gapN/>glgB", "gapN|glgB"),
 		("PROKKA_00438<", "PROKKA_00438"),
-		("intergenic(62/+110)", "intergenic"),
+		("intergenic(62/+110)", "intergenic(62/+110)"),
 		("bglK_1<", "bglK_1")
 	]
 )
 def test_clean_gene_label(test_label: str, expected_label: str):
 	clean_result = import_file._clean_gene_label(test_label)
-	assert expected_label == clean_result
+	assert clean_result == expected_label
 
 
 def test_parse_annotations():
@@ -67,7 +67,7 @@ def test_parse_annotations():
 	expected_result = {
 		'genotype-1': ["PROKKA_00139|glyA", "PROKKA_00438", "PROKKA_00512"],
 		'genotype-2': ["gapN|glgB"],
-		'genotype-3': ["intergenic", "bglK_1", "dnaI"]
+		'genotype-3': ["intergenic(62/+110)", "bglK_1", "dnaI"]
 	}
 
 	test_result = import_file.parse_genotype_annotations(genotype_members, info_table)

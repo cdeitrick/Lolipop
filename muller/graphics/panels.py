@@ -1,15 +1,20 @@
 from typing import Dict
 
 import matplotlib.pyplot as plt
-
-from muller.graphics import MullerPlot, TimeseriesPlot
+try:
+	from muller.graphics import MullerPlot, TimeseriesPlot, palettes, Palette
+except (ModuleNotFoundError, ImportError):
+	from .muller_plot import MullerPlot
+	from .plottimeseries import TimeseriesPlot
+	from . import palettes
+	from .palettes import Palette
 
 plt.clf()
 # plt.switch_backend('agg')
 import pandas
 from pathlib import Path
 from typing import Optional, Tuple, List
-from muller import dataio
+
 from loguru import logger
 
 
@@ -63,29 +68,34 @@ class TimeseriesPanel:
 			scale_y = self.scale_max
 		return scale_x, scale_y
 
-	def run(self, timeseries: pandas.DataFrame, genotypes: dataio.GenotypeCollection, basename: Path, palette_type: str,
-			trajectory_timeseries: Optional[pandas.DataFrame]):
+	def run_multiple(self, timeseries_genotype, palettes: List[Palette], filenames: Dict[str,List[Path]], timeseries_trajectory:Optional[pandas.DataFrame] = None):
+
+		for palette in palettes:
+			fnames = filenames[palette.name]
+			self.run(timeseries_genotype, palette, fnames, timeseries_trajectory)
+
+	def run(self, timeseries_genotype: pandas.DataFrame, palette: Palette, filenames: List[Path],
+			timeseries_trajectory: Optional[pandas.DataFrame]=None):
 		"""
 			Plots the clustered muller_genotypes.
 		Parameters
 		----------
-		timeseries: pandas.DataFrame
+		timeseries_genotype: pandas.DataFrame
 			A dataframe where columns correspond to timepoints and rows correspond to individual series to plot.
-		genotypes: dataio.Genotypes
+			This is for a generic timeseries as described and isn't meant for a specific table.
+		palette: Palette
 			Has information related to how the trajectories relate to each genotype.
-		basename: Optional[Path]
+		filenames: Optional[Path]
 			Path to save the genotype plot. File extensions are determined automatically.
-		palette_type: {'color_clade', 'color_unique'}
-			Sets which palette to use.
-		trajectory_timeseries: pandas.DataFrame
+		timeseries_trajectory: pandas.DataFrame
 			The table with each trajectory used to generate the genotypes.
 		"""
-
-		trajectory_palette = genotypes.trajectory_palette(palette_type)
+		palette_genotypes = palette
+		palette_trajectories = palette_genotypes.get_trajectory_palette()
 
 		# Need to scale the graph so very large datasets are still easily distinguishable.
-		number_of_timepoints = len(timeseries.columns)
-		number_of_series = len(timeseries)
+		number_of_timepoints = len(timeseries_genotype.columns)
+		number_of_series = len(timeseries_genotype)
 
 		# Calculate what the scale should be given the dataset shape. Any dataset smaller than the reference is automatically converted to 1.
 		scale_x, scale_y = self._get_scaling_factor(number_of_timepoints, number_of_series)
@@ -98,11 +108,11 @@ class TimeseriesPanel:
 
 		# Plot all trajectories
 		taxes: plt.Axes = plt.subplot(grid[0, 0:2])
-		plotter.plot(trajectory_timeseries, trajectory_palette, taxes)
+		plotter.plot(timeseries_trajectory, palette_trajectories, taxes)
 		gaxes: plt.Axes = plt.subplot(grid[1, :])
 		# Plot clustered genotypes. Should be same as above, but colored based on genotype cluster.
 		# Plot the mean of each cluster
-		plotter.plot(timeseries, genotypes.get(palette_type), gaxes)
+		plotter.plot(timeseries_genotype, palette_genotypes, gaxes)
 
 		if self.legend:
 			bbox = self.get_legend_size(number_of_series)
@@ -114,8 +124,9 @@ class TimeseriesPanel:
 					prop = self.legend_font_properties,
 					title = self.legend_title,
 				)
-		if basename:
-			self.save_figure(basename)
+		if filenames:
+			for f in filenames:
+				self.save_figure(f)
 
 	@staticmethod
 	def get_legend_size(number_of_genotypes: int) -> Optional[Tuple[float, float]]:
@@ -128,26 +139,30 @@ class TimeseriesPanel:
 
 		return bbox
 
-	def save_figure(self, basename: Path):
-		""" Saves the diagram in every format available in self.filetypes"""
-		if len(basename.suffix) == 4:
-			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
-			basename = basename.parent / basename.stem
-		for suffix in self.filetypes:
-			filename = str(basename) + suffix
-			plt.savefig(filename, dpi = self.dpi)
+	def save_figure(self, filename: Path):
+		""" Saves the diagram in the format specified by the filename's suffix"""
+		plt.savefig(filename, dpi = self.dpi)
 
 
 class MullerPanel:
 	""" A panel of graphics describing the lineage of a dataset."""
 
-	def __init__(self, vertical:bool = True, render:bool = True):
+	def __init__(self, vertical: bool = True, render: bool = True):
 		self.vertical = vertical  # The orientation of the plots.
 		self.vertical = False
 		self.render = render
 
-	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, basename: Optional[Path] = None, annotations: Dict[str,List[str]] = None):
+	def plot_multiple(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palettes: List[Palette],
+			annotations: Dict[str, List[str]] = None, filenames: Dict[str, List[Path]] = None):
+		for palette in palettes:
+			if filenames:
+				fnames = filenames[palette.name]
+			else:
+				fnames = None
+			self.plot(timeseries, muller_df, palette, annotations, fnames)
 
+	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Palette = None, annotations: Dict[str, List[str]] = None,
+			filenames: List[Path] = None):
 		if self.vertical:
 			figure = plt.figure(figsize = (20, 20))
 			grid = plt.GridSpec(2, 1)
@@ -159,11 +174,13 @@ class MullerPanel:
 			ax_timeseries: plt.Axes = figure.add_subplot(grid[0])
 			ax_muller: plt.Axes = figure.add_subplot(grid[1], sharey = ax_timeseries)
 
-		plotter_timeseries = TimeseriesPlot(render = self.render, style = 'nature').set_scale(1)
-		plotter_muller = MullerPlot(outlines = True, render = self.render, style = 'nature').set_scale(1)
+		plotter_timeseries = TimeseriesPlot(render = self.render, style = 'nature')
+		plotter_timeseries.set_scale(1)
+		plotter_muller = MullerPlot(outlines = True, render = self.render, style = 'nature')
+		plotter_muller.set_scale(1)
 
 		plotter_timeseries.plot(timeseries, palette, ax = ax_timeseries)
-		plotter_muller.plot(muller_df, color_palette = palette, basename = basename, ax = ax_muller, annotations = annotations)
+		plotter_muller.plot(muller_df, color_palette = palette, ax = ax_muller, annotations = annotations)
 
 		if self.vertical:
 			ax_timeseries.xaxis.set_visible(False)
@@ -172,30 +189,30 @@ class MullerPanel:
 
 		plt.tight_layout()
 
-	def run_from_ggmuller(self, populations:pandas.DataFrame, edges:pandas.DataFrame, palette:Optional[Dict[str,str]] = None, basename: Optional[Path] = None):
+		if filenames:
+			for f in filenames:
+				plt.savefig(f)
+
+	def run_from_ggmuller(self, populations: pandas.DataFrame, edges: pandas.DataFrame, palette: Optional[Dict[str, str]] = None,
+			basename: Optional[Path] = None):
 		""" Generates The panel object using `population` and `edges` tables."""
 		from muller.dataio import GenerateMullerDataFrame
 		generator = GenerateMullerDataFrame()
 		muller_df = generator.run(edges, populations)
 
 		timeseries = convert_population_to_timeseries(populations)
-		return self.plot(timeseries, muller_df, palette, basename = basename)
+		return self.plot(timeseries, muller_df, palette)
 
-def convert_population_to_timeseries(populations:pandas.DataFrame)->pandas.DataFrame:
+
+def convert_population_to_timeseries(populations: pandas.DataFrame) -> pandas.DataFrame:
 	""" Converts a `population` table into a `timeseries` table. """
-	table =  populations.pivot(index = 'Identity', columns = 'Generation', values = 'Population')
+	table = populations.pivot(index = 'Identity', columns = 'Generation', values = 'Population')
 	table = table[sorted(table.columns)]
 
 	# Need to make sure the values are within [0,1]
 	table = table / 100
 	return table
 
-if __name__ == "__main__":
-	filename_populations = "/media/cld100/FA86364B863608A1/Users/cld100/Storage/projects/rosch/0.6.0-muller/M1/tables/pneumo.breseq.all.M1-matlab.ggmuller.populations.tsv"
-	filename_edges = "/media/cld100/FA86364B863608A1/Users/cld100/Storage/projects/rosch/0.6.0-muller/M1/tables/pneumo.breseq.all.M1-matlab.ggmuller.edges.tsv"
-	populations = pandas.read_csv(filename_populations, sep = '\t')
-	edges = pandas.read_csv(filename_edges, sep = '\t')
 
-	panel_generator = MullerPanel(vertical = True)
-	panel_generator.run_from_ggmuller(populations, edges)
-	plt.show()
+if __name__ == "__main__":
+	pass

@@ -24,7 +24,7 @@ def get_node_label_properties(identity: str, genotype_color: str, annotation: Li
 	return label_properties
 
 
-def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None):
+def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filenames: Optional[Dict[str,List[Path]]] = None):
 	"""
 		Creates a lineage plot showing the ancestry of each genotype.
 	Parameters
@@ -33,7 +33,8 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		Should have three columns: 'parent', 'identity', 'score'
 	palette
 	annotations
-	filename
+	filenames: Optional[List[Path]]
+		A list of filenames to save the flowchart as. Mainly useful if we want the output in multiple formats (ex. .png and .svg)
 
 	Returns
 	-------
@@ -41,6 +42,9 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	"""
 	if annotations is None:
 		annotations = {}
+	if isinstance(filenames, Path):
+		filenames = [filenames]
+
 	graph = pygraphviz.AGraph(splines = 'ortho')
 	graph.node_attr['shape'] = 'box'
 	graph.node_attr['style'] = 'filled,rounded'
@@ -59,9 +63,10 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		identity = row['identity']
 		score = row['score']
 		graph.add_edge(parent, identity, tooltip = f"parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
-	if filename:
-		try:
-			graph.draw(str(filename), prog = 'dot')
-		except Exception as exception:
-			logger.error(f"Could not generate lineage plot: {exception}")
+	if filenames:
+		for filename in filenames:
+			try:
+				graph.draw(str(filename), prog = 'dot')
+			except Exception as exception:
+				logger.error(f"Could not generate lineage plot: {exception}")
 	return graph

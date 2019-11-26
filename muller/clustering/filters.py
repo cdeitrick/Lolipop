@@ -36,26 +36,33 @@ class TrajectoryFilter:
 		# Remove trajectories that only exist at one timepoint and exceed the fixed cutoff limit.
 
 		filtered_trajectories = trajectory_table.apply(self.apply, axis = 1)
-		filtered_trajectories = filtered_trajectories[filtered_trajectories]
+		logger.debug(filtered_trajectories.to_string())
+		filtered_trajectories = filtered_trajectories[filtered_trajectories != "passed"]
 		if len(filtered_trajectories) > 0:
-			logger.info(f"These trajectories did not pass the trajectory filters: {list(filtered_trajectories.index)}")
+			logger.warning(f"These trajectories did not pass the trajectory filters:")
+			for label, reason in filtered_trajectories.items():
+				logger.warning(f"\t{label}: {reason}")
 		return trajectory_table[~trajectory_table.index.isin(filtered_trajectories.index)]
 
-	def apply(self, trajectory: pandas.Series) -> bool:
-		"""Applies each filter to the trajectory."""
-		filter_out = False
+	def apply(self, trajectory: pandas.Series) -> str:
+		"""Applies each filter to the trajectory. Returns the first filter that was not passed."""
+		test_result = None
 		if self.use_filter_single:
-			filter_out = filter_out or self.trajectory_only_detected_once(trajectory)
+			test_result = self.trajectory_only_detected_once(trajectory)
+		if test_result:
+			return "onlyDetectedOnce"
 
 		if self.use_filter_startfixed:
-			filter_out = filter_out or self.trajectory_started_fixed(trajectory)
+			test_result = self.trajectory_started_fixed(trajectory)
+		if test_result:
+			return "startedFixed"
 
 		if self.filter_consistency > 0:
-			filter_out = filter_out or self.trajectory_is_constant(trajectory)
-
-		return filter_out
-
-	def trajectory_started_fixed(self, trajectory: pandas.Series):
+			test_result = self.trajectory_is_constant(trajectory)
+		if test_result:
+			return "isConstant"
+		return 'passed'
+	def trajectory_started_fixed(self, trajectory: pandas.Series)->bool:
 		return trajectory.iloc[0] > self.flimit
 
 	def trajectory_only_detected_once(self, trajectory: pandas.Series) -> bool:
@@ -85,7 +92,7 @@ class GenotypeFilter:
 		self.frequencies = frequencies
 		self.strict = strict
 		self.filtered_trajectories: List[str] = []
-		self.fuzzy_fixed_cutoff = fixed_cutoff  # Should be updated in the `get_fizzy_backgrounds` method.
+		self.fuzzy_fixed_cutoff = fixed_cutoff  # Should be updated in the `get_fuzzy_backgrounds` method.
 
 	def run(self, genotypes: pandas.DataFrame, genotype_members: pandas.Series) -> List[str]:
 		"""
@@ -109,7 +116,7 @@ class GenotypeFilter:
 		if invalid_genotype:
 			# Get a list of the trajectories that form this genotype.
 			invalid_members = genotype_members.loc[invalid_genotype].split('|')
-			logger.info("These trajectories failed the genotype filters: " + str(invalid_members)[1:-1])
+			logger.info(f"A genotype consisting of trajectories ({invalid_members}) failed the genotype filters: " + str(invalid_members)[1:-1])
 			return invalid_members
 		else:
 			return []
@@ -117,7 +124,10 @@ class GenotypeFilter:
 	def filter_genotype(self, genotypes: pandas.DataFrame) -> Optional[str]:
 		""" Returns the label of the first genotype which fails the filtering criteria."""
 		current_backgrounds = self.get_fuzzy_backgrounds(genotypes)
-		logger.debug(f"Backgrounds for filtering:" + str(list(current_backgrounds.index)))
+		logger.debug("Backgrounds for filtering:")
+		for background, row in current_backgrounds.iterrows():
+			logger.debug(f"\t{background}\t{max(row)}")
+
 		# Search for genotypes that do not make sense in the context of an evolved population.
 		current_invalid_genotype = self.find_first_invalid_genotype(genotypes, current_backgrounds)
 
@@ -163,9 +173,8 @@ class GenotypeFilter:
 				# Double check that it is not a background
 				if genotype_label in backgrounds.index: continue
 				# Check if it is invalid.
-				is_invalid = self.check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point,
-					background_value_at_first_fixed_point)
-				if is_invalid:
+				is_invalid = self.check_if_genotype_is_invalid(genotype, first_detected_point, first_fixed_point,background_value_at_first_fixed_point)
+				if is_invalid is not None:
 					return genotype_label
 
 	# noinspection PyTypeChecker
@@ -175,7 +184,7 @@ class GenotypeFilter:
 		return series[series > cutoff].idxmin()
 
 	# noinspection PyTypeChecker
-	def check_if_genotype_is_invalid(self, genotype: pandas.Series, background_detected: int, background_fixed: int, background_value: float) -> bool:
+	def check_if_genotype_is_invalid(self, genotype: pandas.Series, background_detected: int, background_fixed: int, background_value: float) -> Optional[str]:
 		"""
 			Checks if a genotype does not adhere to certain assumptions related to the background.
 			1. The genotype should not be present both before and after a background fixes, and should be nonzero when the background fixes.
@@ -199,7 +208,7 @@ class GenotypeFilter:
 
 		if len(detected_points) < 2:
 			# The genotype is either undetected at all timepoints or is detected once.
-			return False
+			return "notEnoughTimpoints"
 
 		first_detected = detected_points.first_valid_index()
 		last_detected = detected_points.last_valid_index()
@@ -216,5 +225,5 @@ class GenotypeFilter:
 			fixed_point_value = value_at_fixed_point + background_value
 			if self.strict or (value_at_fixed_point > self.detection_cutoff and fixed_point_value > (1 + self.detection_cutoff)):
 				# The genotype was detected at the first fixed timepoint.
-				return True
-		return False
+				return "presentBeforeAndAfterFixedGenotype"
+		return None

@@ -5,7 +5,7 @@ from . import colorset
 import re
 
 available_colors = matplotlib.colors.get_named_colors_mapping()
-from loguru import logger
+
 def generate_distinctive_palette(genotypes: List[str]) -> Dict[str, str]:
 	""" Assigns a unique color to each genotype."""
 	# TODO: If the genotype label specifies a color, use that instead.
@@ -23,6 +23,5 @@ def generate_distinctive_palette(genotypes: List[str]) -> Dict[str, str]:
 			color_map[label] = available_colors[genotype_name]
 		else:
 			color_map[label] = color
-	logger.debug(color_map)
 
 	return color_map

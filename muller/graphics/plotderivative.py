@@ -10,6 +10,7 @@ class DerivativePlot:
 	def __init__(self):
 		pass
 
+	# noinspection PyMethodMayBeStatic
 	def run(self, left: pandas.Series, right: pandas.Series):
 		detected_left, detected_right = widgets.get_valid_points(left, right, 0.03, 0.97, inner = True)
 

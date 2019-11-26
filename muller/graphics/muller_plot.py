@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Tuple, Union
 
 import pandas
 from loguru import logger
@@ -18,8 +18,10 @@ from matplotlib.figure import Axes  # For autocomplete
 plt.rcParams['svg.fonttype'] = 'none'
 try:
 	from muller.widgets import calculate_luminance
-except ModuleNotFoundError:
+	from muller.graphics import Palette
+except (ModuleNotFoundError, ImportError):
 	from ..widgets import calculate_luminance
+	from .palettes import Palette
 
 plt.style.use('seaborn-white')
 
@@ -100,13 +102,10 @@ class MullerPlot:
 			Whther to generate an svg or pdf render of the diagram.
 	"""
 
-	def __init__(self, outlines: bool, render: bool, style: Optional[str] = 'default', scale:int = 1):
+	def __init__(self, outlines: bool, render: bool, style: Optional[str] = 'default', scale: int = 1):
 		self.outlines = outlines
 		self.render = render
 		self.dpi = 250
-
-		self.filetypes = ['.png']
-		if self.render: self.filetypes += ['.svg']
 
 		self.root_genotype_name = 'genotype-0'
 		self.outline_color = '#FFFFFF' if self.outlines else None  # The color of the genotype outline
@@ -114,7 +113,6 @@ class MullerPlot:
 		self.style = style
 
 		# Properties for the size of the plot labels.
-
 
 		# Properties for the genotype annotations that will be added to the plot
 		self.genotype_annotation_outline_color = "#FFFFFF"
@@ -129,6 +127,9 @@ class MullerPlot:
 		self.reference_x = 20
 		self.reference_y = 20
 		self.scale_max = 3  # The maximum scale that the plots can be scalled to in order to avoid image limitations.
+
+		# Set up the fontsizes for each labeltype
+		self.label_size_axis, self.label_size_title, self.label_size_ticks = self.set_scale(scale)
 
 	def _apply_style(self, ax: plt.Axes, title: Optional[str], maximum_x: float):
 		"""
@@ -148,7 +149,6 @@ class MullerPlot:
 		# Add labels to the x and y axes.
 		if title:
 			ax.set_title(title, fontsize = self.label_size_title)
-		logger.debug((self.label_size_axis))
 		ax.set_xlabel(self.xaxis_label, fontsize = self.label_size_axis)
 		ax.set_ylabel(self.yaxis_label, fontsize = self.label_size_axis)
 		# Increase the font size of the frequency and timepoint labels
@@ -258,26 +258,26 @@ class MullerPlot:
 			logger.debug(f"Timeseries Plot: Reducing y scale from {scale_y} to {self.scale_max}.")
 			scale_y = self.scale_max
 		self.scale = max(scale_x, scale_y)
+		return self.scale
 
-	def set_scale(self, scale:int = 1)->'MullerPlot':
-		self.scale = scale
-		self.label_size_axis = 24 * self.scale
-		self.label_size_title = 42 * self.scale
-		self.label_size_ticks = 18  *self.scale
-		return self
+	@staticmethod
+	def set_scale(scale: int = 1) -> Tuple[int, int, int]:
+		# Made staticmethod so that pycharm doesn't complain about object properties being defined outside of __init__()
+		label_size_axis = 24 * scale
+		label_size_title = 42 * scale
+		label_size_ticks = 18 * scale
+		return label_size_axis, label_size_title, label_size_ticks
+
 	@staticmethod
 	def get_default_palette(labels: Iterable[str]) -> Dict[str, str]:
 		from . import palettes
 
 		return palettes.generate_palette(labels)
 
-	def save_figure(self, basename: Path):
+	def save_figure(self, filename: Path):
 		""" Saves the diagram in every format available in self.filetypes"""
-		for suffix in self.filetypes:
-			filename = str(basename) + suffix
-			plt.savefig(filename, dpi = self.dpi if suffix != '.svg' else None)  # Not sure if setting DPI for svgs raises an error.
+		plt.savefig(filename, dpi = self.dpi if filename.suffix != '.svg' else None)  # Not sure if setting DPI for svgs raises an error.
 
-	# TODO: Add metadata to png images? https://matplotlib.org/3.1.1/api/backend_agg_api.html#matplotlib.backends.backend_agg.FigureCanvasAgg.print_png
 	@staticmethod
 	def generate_muller_series(muller_df: pandas.DataFrame, color_palette: Dict[str, str]) -> Tuple[
 		List[float], List[List[float]], List[str], List[str]]:
@@ -444,17 +444,24 @@ class MullerPlot:
 
 		return mean_x, mean_y
 
-	def plot(self, muller_df: pandas.DataFrame, basename: Path, color_palette: Dict[str, str] = None,
+	def plot_multiple(self, muller_df: pandas.DataFrame, filenames: Dict[str, List[Path]], palettes: List[Palette] = None,
 			annotations: Optional[Dict[str, List[str]]] = None,
-			title: Optional[str] = None, ax: Optional[plt.Axes] = None)->plt.Axes:
+			title: Optional[str] = None, ax: Optional[plt.Axes] = None):
+		for palette in palettes:
+			fnames = filenames[palette.name]
+			self.plot(muller_df, fnames, palette, annotations, title, ax)
+
+	def plot(self, muller_df: pandas.DataFrame, filenames: Union[Path, List[Path]] = None, color_palette: Dict[str, str] = None,
+			annotations: Optional[Dict[str, List[str]]] = None,
+			title: Optional[str] = None, ax: Optional[plt.Axes] = None) -> plt.Axes:
 		"""
 			Generates a muller diagram equivilent to r's ggmuller. The primary advantage is easier annotations.
 		Parameters
 		----------
 		muller_df: pandas.DataFrame
 		color_palette: Dict[str,str]
-		basename: Path
-			The base filenme of the output files. The filetypes will be taken from the available suffixes.
+		filenames: Dict[str,List[Path]]
+			The filenmes of the output files. The filetypes will be taken from the available suffixes.
 		annotations: Dict[str, List[str]]
 			A map of genotype labels to add to the plot.
 		title: Optional[str]
@@ -466,12 +473,12 @@ class MullerPlot:
 		ax: Axes
 			The axes object containing the plot.
 		"""
+		if isinstance(filenames, Path):
+			filenames = [filenames]
+
 		if color_palette is None:
 			color_palette = self.get_default_palette(muller_df['Identity'].unique())
 
-		if basename and len(basename.suffix) == 4:
-			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
-			basename = basename.parent / basename.stem
 		points = self.get_coordinates(muller_df)
 
 		merged_table = self.merge_muller_table(muller_df)
@@ -500,7 +507,8 @@ class MullerPlot:
 			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
 
 		ax = self._apply_style(ax, title, max(x))
-		if basename:
-			self.save_figure(basename)
+		if filenames:
+			for fname in filenames:
+				self.save_figure(fname)
 
 		return ax

@@ -85,8 +85,12 @@ class HierarchalCluster:
 			changepoint = None
 			changepoint_index = len(distances)
 		if changepoint_index > len(distances) / 3:
-			logger.warning(f"Changepoint not detected.")
+			logger.warning(f"Changepoint too great: (changepoint = {changepoint}, index = {changepoint_index}) vs. {len(distances)}")
 			changepoint = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(0.05)
+			logger.warning(f"Using a value of {changepoint} instead.")
+		logger.warning("The changepoint detection is currently disabled.")
+		changepoint = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(0.05)
+		logger.warning(f"Using a value of {changepoint}")
 		return changepoint
 
 
@@ -134,11 +138,12 @@ class HierarchalCluster:
 		distance_array = distance.squareform(squaremap.values)
 		linkage_table = self.link_clusters(distance_array, len(squaremap.index))
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
-		if similarity_cutoff is None:
-			if self.cluster_method == 'distance':
-				similarity_cutoff = self._get_cutoff(distance_array)
-			else:
-				similarity_cutoff = 0.05
+		if similarity_cutoff is not None:
+			pass
+		elif self.cluster_method == 'distance':
+			similarity_cutoff = self._get_cutoff(distance_array)
+		else:
+			similarity_cutoff = 0.05
 		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
 		clusters = self.cluster(reduced_linkage_table, similarity_cutoff, squaremap.index)

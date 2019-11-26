@@ -4,7 +4,7 @@ import pandas
 import pytest
 
 from muller.dataio import import_table, parse_genotype_table, parse_trajectory_table
-from muller.dataio.import_trajectories import _convert_to_integer, _correct_math_scale
+from muller.dataio.import_timeseries import _convert_to_integer, _correct_math_scale
 from muller.widgets import get_numeric_columns
 
 DATA_FOLDER = Path(__file__).parent.parent / "data"

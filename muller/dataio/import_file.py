@@ -99,6 +99,8 @@ def _clean_gene_label(label: str) -> str:
 			#clean_label = match.group(0)
 		else:
 			clean_label = ""
+	if clean_label.endswith('<'):
+		clean_label = clean_label[:-1]
 	return clean_label
 
 

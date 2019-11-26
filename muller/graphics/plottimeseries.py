@@ -4,10 +4,9 @@ plt.clf()
 # plt.switch_backend('agg')
 import pandas
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Tuple, Union
 from muller import widgets
-from loguru import logger
-from muller.graphics.palettes import palette_distinctive
+from muller.graphics.palettes import palette_distinctive, Palette
 
 
 class TimeseriesPlot:
@@ -36,13 +35,18 @@ class TimeseriesPlot:
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
-	def set_scale(self, scale:int = 1)->'TimeseriesPlot':
-		self.scale = scale
-		self.label_size_axis = 24 * self.scale
-		self.label_size_title = 42 * self.scale
-		self.label_size_ticks = 18 * self.scale
-		return self
-	def _set_style_default(self):
+		# Set up the fontsizes for each labeltype
+		self.label_size_axis, self.label_size_title, self.label_size_ticks = self.set_scale(scale)
+
+	@staticmethod
+	def set_scale(scale:int = 1)->Tuple[int,int,int]:
+		# Made staticmethod so that pycharm doesn't complain about object properties being defined outside of __init__()
+		label_size_axis = 24 * scale
+		label_size_title = 42 * scale
+		label_size_ticks = 18  *scale
+		return label_size_axis, label_size_title, label_size_ticks
+
+	def _set_style_default(self)->None:
 		# Parameters concerning the overall plot
 		self.xaxis_label = "Generation"
 		self.yaxis_label = 'Frequency'
@@ -93,8 +97,14 @@ class TimeseriesPlot:
 	def get_palette(table: pandas.DataFrame) -> Dict[str, str]:
 		return palette_distinctive.generate_distinctive_palette(table.index)
 
-	def plot(self, timeseries: pandas.DataFrame, palette: Optional[Dict[str, str]] = None, ax: Optional[plt.Axes] = None,
-			basename: Optional[Path] = None) -> plt.Axes:
+	def plot_multiple(self, timeseries: pandas.DataFrame, palettes: List[Palette], ax: Optional[plt.Axes] = None,
+			filenames: Optional[List[Path]] = None):
+		for palette in palettes:
+			fnames = filenames[palette.name]
+			self.plot(timeseries, palette, ax, fnames)
+
+	def plot(self, timeseries: pandas.DataFrame, palette: Union[Dict[str,str], Palette] = None, ax: Optional[plt.Axes] = None,
+			filenames: Optional[List[Path]] = None) -> plt.Axes:
 		""" Plots a generic timeseries dataframe. The plot labels are inferred from how the index labels are formatted.
 			Parameters
 			----------
@@ -104,14 +114,13 @@ class TimeseriesPlot:
 				Maps each series id to the proper color to use.
 			ax: Optional[plt.Axes]
 				Specifies the plt.Axes object to use.
-			basename: Optional[Path]
+			filenames: Optional[List[Path]]
 				The resulting figure will be saved to this filename if it is provided. The filetypes will be determined from the
 				`self.filetypes` parameter.
 		"""
 		# Set up the plotting area.
+
 		self.set_scale()
-		if palette is None:
-			palette = self.get_palette(timeseries)
 
 		ax = self._initialize_plot(ax)
 		plot_title = 'Genotypes' if 'genotype' in timeseries.index[0] else 'Trajectories'
@@ -145,52 +154,15 @@ class TimeseriesPlot:
 			)
 			legend.get_title().set_fontsize(str(self.legend_font_properties['size']))
 
-		if basename:
-			self.save_figure(basename)
+		if filenames:
+			for f in filenames:
+				self.save_figure(f)
 		return ax
 
-	def save_figure(self, basename: Path):
+	def save_figure(self, filename: Path):
 		""" Saves the diagram in every format available in self.filetypes"""
-		if len(basename.suffix) == 4:
-			# Probably ends with a specific extension. Remove it since the extensions are determined from self.filetypes
-			basename = basename.parent / basename.stem
-		for suffix in self.filetypes:
-			filename = str(basename) + suffix
-			plt.savefig(filename, dpi = self.dpi)
+		plt.savefig(filename, dpi = self.dpi)
 
 
 if __name__ == "__main__":
-
-
-	filename = Path("/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx")
-	datatable = pandas.read_excel(filename, sheet_name = 'genotype').set_index('Genotype')
-	datatable.columns = [int(i) for i in datatable.columns]
-
-	data = [
-		pandas.Series([0.0, 0.1, 0.15, 0.2, 0.3, 0.5, 0.8, 0.9, 1.0, 1.0], name = 'selected'), # fixed
-		pandas.Series([0.0, 0.05, 0.15, 0.1, 0.15, 0.2, 0.1, 0.1, 0.15,0.1], name = 'noise'), # low-freq
-		pandas.Series([0.0, 0.2, 0.3, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], name = 'competing'), # competing
-		pandas.Series([0.0, 0.0, 0.1, 0.15, 0.25, 0.45, 0.75, 0.95, 0.95, 1.0], name = 'linked')
-	]
-	datatable = pandas.DataFrame(data)
-	print(datatable.to_string())
-
-	naturepalette = {
-		'genotype-aqua':   'black',
-		'genotype-red':    '#2ebebf',
-		'genotype-orange': '#a74b9c',
-		'genotype-green':  '#497fc1',
-		'genotype-sienna': '#28864d',
-		'genotype-gold':   '#c0c23e'
-	}
-
-	palette = {
-		'selected': 'black',
-		'noise': 'red',
-		'competing': 'green',
-		'linked': 'sienna'
-	}
-	plotter = TimeseriesPlot(legend = True)
-	plotter.plot(datatable, palette = palette)
-	plt.tight_layout()
-	plt.savefig('example.filtering.png')
+	pass

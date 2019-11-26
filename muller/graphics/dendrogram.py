@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 	from ..clustering.metrics import DistanceCache
 
 
-def plot_dendrogram(linkage_table: Any, pair_array: DistanceCache, filename: Path):
+def plot_dendrogram(linkage_table: Any, labels, filename: Path):
 	# noinspection PyUnusedLocal
 	fig, ax = plt.subplots(figsize = (15, 15))
 	ax: plt.Axes
@@ -23,7 +23,7 @@ def plot_dendrogram(linkage_table: Any, pair_array: DistanceCache, filename: Pat
 		linkage_table,
 		leaf_rotation = 90,  # rotates the x axis labels
 		leaf_font_size = 8,  # font size for the x axis labels,
-		labels = pair_array.squareform().index,
+		labels = labels,
 		ax = ax
 	)
 	ax.tick_params(axis = 'both', labelsize = 20)

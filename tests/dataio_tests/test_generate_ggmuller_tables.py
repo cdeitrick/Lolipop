@@ -3,7 +3,7 @@ import unittest
 import pandas
 
 from muller.dataio import import_table
-from muller.dataio.generate_tables import _append_genotype_0, _compile_parent_linkage, _convert_genotype_table_to_population_table
+from muller.dataio.generate_tables import add_ancestral_genotype, _compile_parent_linkage, _convert_genotype_table_to_population_table
 
 edges_table = """
 	Parent	Identity
@@ -72,7 +72,7 @@ class TestPopulationTable(unittest.TestCase):
 			5	genotype-b	90
 		"""
 		basic_population_table = import_table(basic_population_table)
-		test_population_table = _append_genotype_0(basic_population_table)
+		test_population_table = add_ancestral_genotype(basic_population_table)
 
 		expected_table = """
 			Generation	Identity	Population

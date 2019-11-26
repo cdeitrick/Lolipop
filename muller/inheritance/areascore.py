@@ -218,21 +218,5 @@ def is_subset_polygon(left: geometry.MultiPolygon, right: geometry.MultiPolygon)
 
 X_and_Y = calculate_common_area
 
-if __name__ == "__main__":
-	filename = "/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx"
-	table_genotype = pandas.read_excel(filename, sheet_name = "genotype").set_index('Genotype')
 
-	left = table_genotype.loc['genotype-red']
-	right = table_genotype.loc['genotype-aqua']
-
-	intersection = [min(i,j) for i,j in zip(left.values, right.values)]
-
-	expected_area = calculate_area(pandas.Series(intersection))
-	actual_area = X_and_Y(left, right)
-
-	for index, left in table_genotype.iterrows():
-		for other_index, right in table_genotype.iterrows():
-			intersection = [min(i,j) for i,j in zip(left.values, right.values)]
-
-			expected_area = calculate_area(pandas.Series(intersection))
 
