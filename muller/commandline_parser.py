@@ -62,7 +62,7 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
-		starting_genotypes = dataio.datainput.parse_known_genotypes(program_options.known_genotypes)
+		starting_genotypes = dataio.import_file.parse_known_genotypes(program_options.known_genotypes)
 	else:
 		starting_genotypes = None
 

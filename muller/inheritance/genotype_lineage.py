@@ -1,5 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 import pandas
 from loguru import logger
@@ -50,10 +49,10 @@ class LineageWorkflow:
 			self.genotype_nests.add_genotype_to_background(identity, parent, priority = 100)
 
 	def show_ancestry(self, sorted_genotypes: pandas.DataFrame):
-		logger.log("COMPLETE", "Final Ancestry:")
 		for genotype_label in sorted_genotypes.index:
 			candidate = self.genotype_nests.get_highest_priority(genotype_label)
-			logger.log('COMPLETE', f"{genotype_label}\t{candidate}")
+			if self.debug:
+				logger.debug(f"{genotype_label}\t{candidate}")
 
 	def run(self, sorted_genotypes: pandas.DataFrame, known_ancestry: Dict[str, str] = None) -> projectdata.DataGenotypeLineage:
 		"""
@@ -85,8 +84,8 @@ class LineageWorkflow:
 		self.show_ancestry(sorted_genotypes)
 
 		output_data = projectdata.DataGenotypeLineage(
-			score_history = score_records,
-			clusters = self.genotype_nests
+			table_scores = pandas.DataFrame(score_records),
+			clusters = self.genotype_nests # Used to extract the `edges` table.
 		)
 		# TODO: Finish this
 

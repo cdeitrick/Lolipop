@@ -33,22 +33,6 @@ class DistanceCalculator:
 
 		self.progress_bar_minimum_points = 10000  # The value to activate the scale bar at.
 
-	def run(self, trajectories: pandas.DataFrame) -> Dict[Tuple[str, str], float]:
-		logger.debug("Calculating the pairwise values...")
-		logger.debug(f"\t detection limit: {self.detection_limit}")
-		logger.debug(f"\t fixed limit: {self.fixed_limit}")
-		logger.debug(f"\t metric: {self.metric}")
-		logger.debug(f"\t threads: {self.threads}")
-
-		self.trajectories = trajectories
-		# Use a list so that we can get the size for tqdm. Also prevent weird errors if we use the variable after consuming it.
-		# noinspection PyTypeChecker
-		pair_combinations: List[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
-
-		pairwise_distances = self.calculate_pairwise_distances(pair_combinations)
-
-		return pairwise_distances
-
 	def calculate_pairwise_distances(self, pair_combinations: List[Tuple[str, str]]) -> Dict[Tuple[str, str], float]:
 		""" Implements the actual loop over all pairs of trajectoies. """
 
@@ -60,7 +44,7 @@ class DistanceCalculator:
 
 		pair_array: Dict[Tuple[str, str], float] = dict()
 
-		if self.threads and self.threads > 1: #One process is slower than using the serial method.
+		if self.threads and self.threads > 1:  # One process is slower than using the serial method.
 			pool = multiprocessing.Pool(processes = self.threads)
 			for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
 				key, value = i.get()
@@ -78,9 +62,25 @@ class DistanceCalculator:
 
 		return pair_array
 
+	def run(self, trajectories: pandas.DataFrame) -> Dict[Tuple[str, str], float]:
+		logger.debug("Calculating the pairwise values...")
+		logger.debug(f"\t detection limit: {self.detection_limit}")
+		logger.debug(f"\t fixed limit: {self.fixed_limit}")
+		logger.debug(f"\t metric: {self.metric}")
+		logger.debug(f"\t threads: {self.threads}")
+
+		self.trajectories = trajectories
+		# Use a list so that we can get the size for tqdm. Also prevent weird errors if we use the variable after consuming it.
+		# noinspection PyTypeChecker
+		pair_combinations: List[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
+
+		pairwise_distances = self.calculate_pairwise_distances(pair_combinations)
+
+		return pairwise_distances
+
 
 # Keep this as a separate function. Class methods are finicky when used with multiprocessing.
-def calculate_distance(process, element: Tuple[str, str], trajectories:pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
+def calculate_distance(process, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
 	"""
@@ -177,4 +177,3 @@ def benchmark(filename):
 		label = str(index)
 		benchmarks[label] = duration
 	return benchmarks
-

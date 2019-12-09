@@ -24,18 +24,15 @@ trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
 
 @pytest.fixture
 def genotype_generator() -> ClusterMutations:
-	generator = ClusterMutations(
-		method = 'hierarchy',
+	g = ClusterMutations(
 		metric = 'binomial',
 		dlimit = 0.03,
 		flimit = 0.97,
 		pvalue = 0.05,
-		dbreakpoint = 0.10,
-		breakpoints = [],
+		slimit = 0.10,
 		starting_genotypes = [],
-		trajectory_filter = None
 	)
-	return generator
+	return g
 
 
 def test_calculate_mean_genotype(genotype_generator):

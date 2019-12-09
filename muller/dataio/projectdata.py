@@ -1,13 +1,12 @@
 from pathlib import Path
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
-from muller.clustering.metrics.distance_cache import DistanceCache
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 import pandas
 
 @dataclass
 class DataWorkflowBasic:
-	# Used to organize the output from the workflow.
+	# Used to organize the output from the workflow.DistanceCache
 	# Should only cover relevant data about the scripts as a whole.
 	version: str  # The version of the scripts
 	filename: Path  # The filename of the input dataset.
@@ -18,30 +17,86 @@ class DataGenotypeInference:
 	"""
 		Contains data related to trajectories and genotypes.
 	"""
-	#info: Optional[pandas.DataFrame]
+	# Include the original trajectory table.
+	table_trajectories: pandas.DataFrame
 	# A table with inferred genotypes sorted by maximum frequency and earliest timepoint.
 	# Each genotype is the mean of consituent trajectories.
 	table_genotypes: pandas.DataFrame
 	# Map of genotypes to member trajectories.
 	genotype_members: Dict[str,List[str]]
-	# This is saved since it contains both filtered and unfiltered trajectories.
-	original_trajectories: Optional[pandas.DataFrame]
 
 	# A pairwise distance matrix showing the calculated distance between an given pair of trajectories.
-	distance_matrix: Optional[DistanceCache]
+	matrix_distance: Optional[Any]
 	# Generated from the hierarchal clustering step. Links trajectories based on the pairwise distance.
-	linkage_matrix: Optional[pandas.DataFrame]
+	table_linkage: Optional[pandas.DataFrame]
 
-	# A list of trajectories that were filtered out.
-	filter_cache: List = field(default_factory =list)
+	def save(self, folder:Path, prefix:str):
+		"""
+			Saves the data generated while infering genotypes.
+			.folder
+			|---- {prefix}.genotypes.tsv
+			|---- {prefix}.trajectories.tsv
+			|---- {prefix}.distancematrix.tsv
+			|---- {prefix}.linkagetable.tsv
+		"""
+		delimiter = '\t'
+		suffix = 'tsv'
+		filename_table_trajectory = folder / (prefix + f'.trajectories.{suffix}')
+		filename_table_genotypes = folder / (prefix + f'.genotypes.{suffix}')
+		filename_table_distance_matrix = folder / (prefix + f'.distancematrix.{suffix}')
+		filename_table_linkage_matrix = folder / (prefix + f'.linkagetable.{suffix}')
+
+		# Include the `genotype_members` table in the `genotypes` table.
+		# Convert the `genotype_members` from Dict[str,List[str]] to Dict[str,str]
+		members = {key:'|'.join(values) for key, values in self.genotype_members.items()}
+		# Add the genotype members to the `genotypes` table.
+		self.table_genotypes['members'] = members
+
+		# Save the data
+		self.table_trajectories.to_csv(filename_table_trajectory, sep = delimiter)
+		self.table_genotypes.to_csv(filename_table_genotypes, sep = delimiter)
+		self.table_linkage.to_csv(filename_table_distance_matrix, sep = delimiter)
+		self.matrix_distance.to_csv(filename_table_linkage_matrix, sep = delimiter)
+
+@dataclass
+class DataGGmuller:
+	""" Holds data related to the current implementation of ggmuller."""
+	table_population: pandas.DataFrame
+	table_edges: pandas.DataFrame
+	script_r: str
+
+	def save(self, folder:Path, prefix: str):
+		"""
+			.
+			|---- .ggmuller.population.tsv
+			|---- .ggmuller.edges.tsv
+			|---- .script.r
+		"""
+		delimiter = '\t'
+		suffix = 'tsv'
+
+		filename_table_populations = folder / (prefix + f'.ggmuller.population.{suffix}')
+		filename_table_edges = folder / (prefix + f'.ggmuller.edges.{suffix}')
+		filename_script_r = folder / (prefix + f'.script.r')
+
+		self.table_population.to_csv(filename_table_populations, sep = delimiter)
+		self.table_edges.to_csv(filename_table_edges, sep = delimiter)
+		filename_script_r.write_text(self.script_r)
 
 @dataclass
 class DataGenotypeLineage:
 	""" Holds variables generated during the lineage inference step."""
 	# The resulting scores of each unnested genotype to cancidate nested genotypes.
-	score_history: List[Dict[str, float]]
-
+	table_scores: pandas.DataFrame
 	clusters: Any # muller.inheritance.genotype_ancestry.Ancestry
+
+	def save(self, folder:Path, prefix:str):
+		delimiter = "\t"
+		suffix = "tsv"
+
+		filename_table_scores = folder / (prefix + f'.lineage.scores.{suffix}')
+
+		self.table_scores.to_csv(filename_table_scores, sep = delimiter)
 
 
 if __name__ == "__main__":

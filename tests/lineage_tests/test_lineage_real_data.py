@@ -53,4 +53,4 @@ def test_lineage():
 
 	actual_lineage = nester.run(table_genotype)
 
-	assert actual_lineage.as_dict() == expected_lineage.to_dict()
+	assert actual_lineage.clusters.as_dict() == expected_lineage.to_dict()

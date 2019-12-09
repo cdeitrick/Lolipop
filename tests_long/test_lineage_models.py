@@ -6,7 +6,7 @@ import pytest
 from muller import dataio, inheritance, widgets
 from muller.inheritance import scoring
 from tests.filenames import model_tables
-from .helpers import get_key_pairs, helper_test_score
+from tests.lineage_tests.helpers import get_key_pairs, helper_test_score
 import math
 DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables"
 
@@ -186,7 +186,7 @@ def test_lineage_of_periodic_selection(lineage_workflow, model_periodic_selectio
 		'genotype-aqua':   'genotype-green'
 	}
 
-	ancestry = lineage_workflow.run(model_periodic_selection).as_dict()
+	ancestry = lineage_workflow.run(model_periodic_selection).clusters.as_dict()
 
 	assert ancestry == expected_lineage
 
@@ -202,7 +202,7 @@ def test_lineage_of_clonal_interferance(lineage_workflow, model_clonal_interfera
 	}
 
 	ancestry = lineage_workflow.run(model_clonal_interferance)
-	assert ancestry.as_dict() == expected_lineage
+	assert ancestry.clusters.as_dict() == expected_lineage
 
 
 def test_lineage_of_strong_selection(lineage_workflow, model_strong_selection):
@@ -216,4 +216,4 @@ def test_lineage_of_strong_selection(lineage_workflow, model_strong_selection):
 	}
 
 	ancestry = lineage_workflow.run(model_strong_selection)
-	assert ancestry.as_dict() == expected_lineage
+	assert ancestry.clusters.as_dict() == expected_lineage

@@ -30,15 +30,12 @@ real_tables = [
 @pytest.fixture
 def genotype_generator() -> ClusterMutations:
 	generator = ClusterMutations(
-		method = 'hierarchy',
 		metric = 'binomial',
 		dlimit = 0.03,
+		slimit = 0.15,
 		flimit = 0.97,
 		pvalue = 0.05,
-		dbreakpoint = 0.10,
-		breakpoints = [],
 		starting_genotypes = [],
-		trajectory_filter = None
 	)
 	return generator
 

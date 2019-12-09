@@ -1,5 +1,4 @@
 import itertools
-import statistics
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy
@@ -118,10 +117,20 @@ class HierarchalCluster:
 
 		return clusters
 
+	def adjust_similarity_cutoff(self, similarity_cutoff:Optional[float], distances: List[float])->float:
+		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
+
+		if similarity_cutoff is None:
+			if self.cluster_method == 'distance':
+				similarity_cutoff = pandas.Series(distances).quantile(0.2)
+			else:
+				similarity_cutoff = 0.05
+
+		return similarity_cutoff
+
 	def run(self, pair_array: DistanceCache, starting_genotypes: List[List[str]] = None, similarity_cutoff: Optional[float] = None) -> Tuple[
 		List[List[str]], Any]:
 		"""
-
 		Parameters
 		----------
 		pair_array
@@ -138,12 +147,8 @@ class HierarchalCluster:
 		distance_array = distance.squareform(squaremap.values)
 		linkage_table = self.link_clusters(distance_array, len(squaremap.index))
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
-		if similarity_cutoff is not None:
-			pass
-		elif self.cluster_method == 'distance':
-			similarity_cutoff = self._get_cutoff(distance_array)
-		else:
-			similarity_cutoff = 0.05
+		similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
+
 		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
 		clusters = self.cluster(reduced_linkage_table, similarity_cutoff, squaremap.index)
@@ -176,7 +181,6 @@ def plot_within_cluster_variation():
 
 	plt.scatter(x, y)
 	plt.show()
-
 
 if __name__ == "__main__":
 	plot_within_cluster_variation()

@@ -101,8 +101,8 @@ def test_binomial_distance(pairwise_values, name: str, closest: str):
 	]
 )
 def test_fixed_overlap(left, right, expected):
-	left = pandas.DataFrame(left)
-	right = pandas.DataFrame(right)
+	left = pandas.Series(left)
+	right = pandas.Series(right)
 	result = distance_calculator.fixed_overlap(left, right, 0.97)
 	if math.isnan(result):
 		result = 1

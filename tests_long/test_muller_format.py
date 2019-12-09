@@ -8,14 +8,13 @@ from loguru import logger
 
 from muller.dataio.mullerformat import AdjacencyMatrix, GenerateMullerDataFrame
 
-RUN_TESTS = False
-pytestmark = pytest.mark.skip() # THese tests take a long time
+
 @pytest.fixture
 def muller_dataframe_generator() -> GenerateMullerDataFrame:
 	return GenerateMullerDataFrame()
 
 
-DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables_ggmuller"
+DATA_FOLDER = Path(__file__).parent.parent / "tests"/ "data" / "tables_ggmuller"
 tables_combined = [
 	(DATA_FOLDER / "B1_muller_try1.ggmuller.populations.tsv", DATA_FOLDER / "B1_muller_try1.ggmuller.edges.tsv"),
 	(DATA_FOLDER / "B1_Muller.ggmuller.populations.tsv", DATA_FOLDER / "B1_Muller.ggmuller.edges.tsv"),
@@ -110,7 +109,11 @@ def get_muller_df(filename: Path) -> pandas.DataFrame:
 	df = pandas.read_csv(filename, sep = "\t")
 	return GenerateMullerDataFrame().correct_population_values(df)
 
-
+def checkdir(path:Path)->Path:
+	path = Path(path)
+	if not path.exists():
+		path.mkdir()
+	return path
 @pytest.mark.parametrize("populationfilename", tables_population)
 def test_add_start_points(tmp_path, muller_dataframe_generator, populationfilename):
 	filename_truthset = tmp_path / "truth"

@@ -7,10 +7,9 @@ from shapely import geometry
 from shapely.errors import TopologicalError
 
 Number = Union[float, int]
-try:
-	from . import polygon
-except ImportError:
-	import polygon
+
+from . import polygon
+
 
 DEBUG = False
 

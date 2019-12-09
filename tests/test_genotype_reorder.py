@@ -3,13 +3,17 @@ import pytest
 from loguru import logger
 
 from muller import dataio
-from muller.inheritance import SortGenotypeTableWorkflow
+from muller.clustering.genotype_reorder import SortGenotypeTableWorkflow
 from .filenames import generic_tables_with_trajectories, model_tables, real_tables
 
 
 @pytest.fixture
 def sorter() -> SortGenotypeTableWorkflow:
-	return SortGenotypeTableWorkflow(.03, .15, .97, breakpoints = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0])
+	return SortGenotypeTableWorkflow(
+		dlimit = .03,
+		slimit = .15,
+		flimit = .97,
+	)
 
 
 def helper_for_testing_tables(sorter, filename):

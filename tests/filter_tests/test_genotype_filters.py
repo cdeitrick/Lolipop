@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller.clustering import filters
+from muller.filters import filters
 from muller.dataio import import_table
 
 

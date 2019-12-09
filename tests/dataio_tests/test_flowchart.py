@@ -1,13 +1,13 @@
 from muller import dataio
-from muller.graphics import flowchart
+from muller.graphics import lineageplot
 
 
 def test_get_font_properties():
 	expected = {'label': "genotype-1\ngene1\ngene2", 'fontcolor': '#FFFFFF'}
-	assert flowchart.get_node_label_properties('genotype-1', '#330033', ['gene1', 'gene2']) == expected
+	assert lineageplot.get_node_label_properties('genotype-1', '#330033', ['gene1', 'gene2']) == expected
 
 	expected = {'label': 'genotype-11', 'fontcolor': '#333333'}
-	assert flowchart.get_node_label_properties('genotype-11', '#FFFFFF', []) == expected
+	assert lineageplot.get_node_label_properties('genotype-11', '#FFFFFF', []) == expected
 
 
 def test_flowchart():
@@ -19,7 +19,7 @@ def test_flowchart():
 	edges_table = dataio.import_table(edges_string)
 	palette = {"genotype-13": '#222222', 'genotype-1': '#CCCCCC', 'genotype-0': '#000000'}
 
-	resultgraph = flowchart.flowchart(edges_table, palette, annotations = {'genotype-1': ['gene1']})
+	resultgraph = lineageplot.flowchart(edges_table, palette, annotations = {'genotype-1': ['gene1']})
 
 	dark_node = resultgraph.get_node('genotype-13')
 	assert dark_node.attr['fontcolor'] == '#FFFFFF'
