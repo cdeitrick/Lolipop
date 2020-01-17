@@ -53,17 +53,6 @@ def test_determine_clade(edges_table, label, expected):
 	assert expected == result
 
 
-def test_generate_genotype_palette():
-	genotypes = ['genotype-1', 'genotype-33', 'gen-5']
-	expected_palette = {
-		'genotype-1':  '#e6194b',
-		'genotype-33': '#ffe119',
-		'gen-5':       '#3cb44b',
-		'genotype-0':  '#FFFFFF',
-		'removed':     '#333333'
-	}
-
-	assert expected_palette == palettes.generate_palette(genotypes)
 
 
 def test_generate_random_color():

@@ -12,7 +12,7 @@ def test_get_font_properties():
 
 def test_flowchart():
 	edges_string = """
-	parent	identity	score
+	Parent	Identity	score
 	genotype-0	genotype-1	1
 	genotype-1	genotype-13	2
 	"""

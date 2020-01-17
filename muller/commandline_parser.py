@@ -53,8 +53,9 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 
 	"""
 
-	if program_options.fixed_breakpoint is None:
-		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
+	if program_options.flimit is None:
+		from loguru import logger
+		program_options.flimit = 1 - program_options.dlimit
 
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
@@ -63,10 +64,6 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 		starting_genotypes = None
 
 	program_options.starting_genotypes = starting_genotypes
-	cluster_method = program_options.method
-	if cluster_method not in ACCEPTED_METHODS:
-		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
-		raise ValueError(message)
 	if program_options.output_folder is None:
 		program_options.output_folder = program_options.filename.stem
 	return program_options
@@ -102,7 +99,7 @@ class FrequencyParser(argparse.Action):
 
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
-		detected = namespace.detection_breakpoint
+		detected = namespace.dlimit
 		if values == "1":
 			values = 1 - detected
 		else:
@@ -242,7 +239,7 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = FixedBreakpointParser,
 		dest = 'flimit',
 		type = float,
-		default = 0.97
+		default = None
 	)
 	analysis_group.add_argument(
 		"-d", "--detection",

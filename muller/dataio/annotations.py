@@ -82,7 +82,8 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 			The info table. Each column label should be lowercase.
 			alias_filename: Will map each gene from the infotable to an alias.
 	"""
-
+	# Make the column labels lowercase so we don't have to care about capitalization
+	info.columns = [str(i).lower() for i in info.columns]
 	if alias_filename:
 		alias_map = read_map(alias_filename)
 	else:
@@ -95,7 +96,6 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 	trajectory_annotations = dict()
 	for trajectory_label, row in info.iterrows():
 		# Since the columns from the info table should already be lowercase, we don't need this method anymore.
-		# gene_value = _extract_value(row, gene_column)
 		gene_value = row.get(column_label_gene)
 		# Need to clean up the gene label.
 		gene = _clean_gene_label(gene_value)
@@ -110,10 +110,7 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 			result.append(gene)
 		if annotation:
 			result.append(annotation)
-		#amino_acid_value = _extract_value(row, 'amino acid')
-		#if amino_acid_value:
-		#	result.append(amino_acid_value)
-		trajectory_annotations[trajectory_label] = result
+		trajectory_annotations[trajectory_label] = " ".join(result)
 	return trajectory_annotations
 
 
@@ -132,7 +129,7 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 
 	alias_filename
 	"""
-	trajectory_annotations = extract_annotations(info, alias_filename)
+	trajectory_annotations: Dict[str,str] = extract_annotations(info, alias_filename)
 
 	genotype_annotations = dict()
 	for genotype_label, members in genotype_members.items():
@@ -143,9 +140,12 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 		# Want to combine the annotation for each trajectory into a single str.
 		member_values = list()
 		for i in members:
-			trajectory_annotation = trajectory_annotations.get(i, [])
+			trajectory_annotation = trajectory_annotations.get(i, "")
 			if trajectory_annotation:
-				member_values.append(" ".join(trajectory_annotation))
+				if isinstance(trajectory_annotation, str):
+					member_values.append(trajectory_annotation)
+				else:
+					member_values.append(" ".join(trajectory_annotation))
 		# Remove missing annotations
 		# Also remove excess whitespace
 		member_values: List[str] = [i.strip() for i in member_values if i]

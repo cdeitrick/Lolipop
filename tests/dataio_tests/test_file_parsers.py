@@ -2,11 +2,11 @@ import pandas
 import pytest
 
 from muller import dataio
-from muller.dataio import import_file, import_table
+from muller.dataio import import_file, import_table, annotations
 
 
 @pytest.fixture
-def annotations() -> pandas.DataFrame:
+def genotypeannotations() -> pandas.DataFrame:
 	string = """
 	Trajectory	Chromosome	Position	Class	Mutation	Gene	Annotation	Class	Amino	Description
 	1	1	36,414	SNP	G>A	speA	C127Y(TGT>TAT)	Non	C->Y	Arginine decarboxylase
@@ -17,15 +17,15 @@ def annotations() -> pandas.DataFrame:
 	return dataio.import_table(string, index = 'Trajectory')
 
 
-def test_extract_annotations(annotations):
+def test_extract_annotations(genotypeannotations):
 	expected = {
-		'1': ['speA', 'C127Y'],
-		'2': ['rlmCD_1', 'H441H'],
-		'3': ["PROKKA_00173|PROKKA_00174", "intergenic"],
-		'4': ["gapN", "A95E"]
+		'1': 'speA C127Y',
+		'2': 'rlmCD_1 H441H',
+		'3': "PROKKA_00173|PROKKA_00174 intergenic",
+		'4': "gapN A95E"
 	}
 
-	result = import_file.extract_annotations(annotations)
+	result = annotations.extract_annotations(genotypeannotations)
 
 	assert result == expected
 
@@ -41,7 +41,7 @@ def test_extract_annotations(annotations):
 	]
 )
 def test_clean_gene_label(test_label: str, expected_label: str):
-	clean_result = import_file._clean_gene_label(test_label)
+	clean_result = annotations._clean_gene_label(test_label)
 	assert clean_result == expected_label
 
 
@@ -70,7 +70,7 @@ def test_parse_annotations():
 		'genotype-3': ["intergenic(62/+110)", "bglK_1", "dnaI"]
 	}
 
-	test_result = import_file.parse_genotype_annotations(genotype_members, info_table)
+	test_result = annotations.parse_genotype_annotations(genotype_members, info_table)
 
 	assert expected_result == test_result
 
