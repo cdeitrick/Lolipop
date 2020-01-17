@@ -1,6 +1,7 @@
 from typing import Dict
 
 import matplotlib.pyplot as plt
+
 try:
 	from muller.graphics import MullerPlot, TimeseriesPlot, palettes, Palette
 except (ModuleNotFoundError, ImportError):
@@ -16,7 +17,6 @@ from pathlib import Path
 from typing import Optional, Tuple, List
 
 from loguru import logger
-
 
 class TimeseriesPanel:
 	""" Plots the genotype frequencies over time with an inset of the original mutaitonal trajectories.
@@ -37,7 +37,7 @@ class TimeseriesPanel:
 
 		# Parameters concerning the plot legend.
 		self.legend = legend
-		self.legend_font_properties = {'size': 24}  # The size of the font used to label each series in the legend.
+		self.legend_font_properties = {'size': 12}  # The size of the font used to label each series in the legend.
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
@@ -74,7 +74,7 @@ class TimeseriesPanel:
 			fnames = filenames[palette.name]
 			self.run(timeseries_genotype, palette, fnames, timeseries_trajectory)
 
-	def run(self, timeseries_genotype: pandas.DataFrame, palette: Palette, filenames: List[Path],
+	def run(self, timeseries_genotype: pandas.DataFrame, palette: Palette, filename:Path,
 			timeseries_trajectory: Optional[pandas.DataFrame]=None):
 		"""
 			Plots the clustered muller_genotypes.
@@ -85,8 +85,8 @@ class TimeseriesPanel:
 			This is for a generic timeseries as described and isn't meant for a specific table.
 		palette: Palette
 			Has information related to how the trajectories relate to each genotype.
-		filenames: Optional[Path]
-			Path to save the genotype plot. File extensions are determined automatically.
+		filename: Optional[str, Path]
+			Path to save the genotype plot. May include multiple filenames.
 		timeseries_trajectory: pandas.DataFrame
 			The table with each trajectory used to generate the genotypes.
 		"""
@@ -99,12 +99,14 @@ class TimeseriesPanel:
 
 		# Calculate what the scale should be given the dataset shape. Any dataset smaller than the reference is automatically converted to 1.
 		scale_x, scale_y = self._get_scaling_factor(number_of_timepoints, number_of_series)
-		# Create te plotting object
+		# Create the plotting object
 
 		# Set up the plotting area. The genotype plot will cover all three columns while the trajectory plot will be relegated to the
 		# Upper left. The legend will occupy the remaining space in the upper right.
-		plotter = TimeseriesPlot(scale = 1)
-		grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3)
+		plotter = TimeseriesPlot()
+		# Manually define the figure to control the figure size
+		figure = plt.Figure(figsize = (12*scale_x, 10*scale_y))
+		grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3, figure = figure)
 
 		# Plot all trajectories
 		taxes: plt.Axes = plt.subplot(grid[0, 0:2])
@@ -124,9 +126,8 @@ class TimeseriesPanel:
 					prop = self.legend_font_properties,
 					title = self.legend_title,
 				)
-		if filenames:
-			for f in filenames:
-				self.save_figure(f)
+		if filename:
+			self.save_figure(filename)
 
 	@staticmethod
 	def get_legend_size(number_of_genotypes: int) -> Optional[Tuple[float, float]]:
@@ -162,7 +163,7 @@ class MullerPanel:
 			self.plot(timeseries, muller_df, palette, annotations, fnames)
 
 	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Palette = None, annotations: Dict[str, List[str]] = None,
-			filenames: List[Path] = None):
+			filename: Optional[Path] = None):
 		if self.vertical:
 			figure = plt.figure(figsize = (20, 20))
 			grid = plt.GridSpec(2, 1)
@@ -189,9 +190,8 @@ class MullerPanel:
 
 		plt.tight_layout()
 
-		if filenames:
-			for f in filenames:
-				plt.savefig(f)
+		if filename:
+			plt.savefig(filename)
 
 	def run_from_ggmuller(self, populations: pandas.DataFrame, edges: pandas.DataFrame, palette: Optional[Dict[str, str]] = None,
 			basename: Optional[Path] = None):
@@ -212,6 +212,54 @@ def convert_population_to_timeseries(populations: pandas.DataFrame) -> pandas.Da
 	# Need to make sure the values are within [0,1]
 	table = table / 100
 	return table
+
+
+def _generate_image_size(size_muller:Tuple[int,int], size_lineage:Tuple[int,int], vertical:bool)->Tuple[Tuple[int,int], Tuple[int,int], Tuple[int,int]]:
+
+	muller_width, muller_height = size_muller
+	lineage_width, lineage_height = size_lineage
+
+	if vertical:
+		scale = muller_width / lineage_width
+		new_lineage_width = round(scale * lineage_width)
+		new_lineage_height = round(scale * lineage_height)
+
+		panel_width = new_lineage_width
+		panel_height = muller_height + new_lineage_height
+
+		position = (0, muller_height)
+	else:
+		scale = muller_height / lineage_height
+		new_lineage_width = round(scale * lineage_width)
+		new_lineage_height = round(scale * lineage_height)
+
+		panel_width = muller_width + new_lineage_width
+		panel_height = new_lineage_height
+		position = (muller_width, 0)
+
+	return (new_lineage_width, new_lineage_height), (panel_width, panel_height), position
+
+
+
+
+def generate_lineage_panel(filename_muller: Path, filename_lineage:Path, filename:Path, vertical:bool = True):
+	""" Combines the muller plot and lineage plots into a single figure."""
+
+	# TODO: add PIL as an optional requirement.
+	from PIL import Image
+
+	image_muller: Image = Image.open(filename_muller)
+	image_lineage: Image = Image.open(filename_lineage)
+
+	new_lineage_size, panel_size, position = _generate_image_size(image_muller.size, image_lineage.size, vertical)
+	# Resize the lineageplot
+	image_lineage = image_lineage.resize(new_lineage_size)
+	# Generate the new figure
+	newimage = Image.new(image_muller.mode, panel_size)
+	newimage.paste(image_muller, (0,0))
+	newimage.paste(image_lineage, position)
+
+	newimage.save(filename)
 
 
 if __name__ == "__main__":

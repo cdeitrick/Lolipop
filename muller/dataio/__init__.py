@@ -6,4 +6,5 @@ from .import_file import *
 from .import_tables import import_table
 from .import_timeseries import parse_trajectory_table, parse_genotype_table
 from .mullerformat import GenerateMullerDataFrame
+from . import projectdata
 

@@ -179,7 +179,7 @@ class AdjacencyMatrix:
 
 
 class GenerateMullerDataFrame:
-	""" implements the get_Muller_df function from ggmuller. The original fails when there are a large number of samples timepoints."""
+	""" implements the get_Muller_df function from ggmuller. The original fails when there are a large number of sampled timepoints."""
 
 	def __init__(self):
 		self.time_column = 'Generation'

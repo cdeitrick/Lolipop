@@ -30,6 +30,7 @@ class OutputGeneratorGraphics:
 		"""
 		# All we need from the basic_data is the base filename, so that should be passed directly.
 		self.render = render
+		self.extensions = [".png", ".svg"]
 
 		# Coerce the given palettes into a list of Palette objects. These palettes will be visible by
 		# many of the implemented methods.
@@ -42,15 +43,6 @@ class OutputGeneratorGraphics:
 		# Each of the files will be prefixed with the population name.
 		# Use dataio.PathsGraphics to set up default filenames.
 
-		# These are the default paths to save the graphics as.
-		# TODO: remove this in favor of making an instance separate from this workflow, which can be used to specify the filenames in each method individually.
-		self.paths: dataio.PathsGraphics = dataio.PathsGraphics(
-			project_folder,
-			sample_basename,
-			render = self.render,
-			palette_names = [p.name for p in self.palettes]
-		)
-
 		# Set up the individual graphic generators.
 		self.generator_panel_timeseries = graphics.TimeseriesPanel(render = self.render)
 		self.generator_plot_timeseries = graphics.TimeseriesPlot(render = self.render)
@@ -62,8 +54,8 @@ class OutputGeneratorGraphics:
 
 	@staticmethod
 	def get_base_filename(data_basic) -> str:
-		if data_basic.program_options['name']:
-			base_filename = data_basic.program_options['name']
+		if data_basic.program_options.name:
+			base_filename = data_basic.program_options.name
 		else:
 			base_filename = data_basic.filename.stem
 		if data_basic.program_options['sheetname'] and data_basic.program_options['sheetname'] != 'Sheet1':
@@ -75,7 +67,7 @@ class OutputGeneratorGraphics:
 	# --------------------------------------------------------------- Panels ---------------------------------------------------------------------
 	##############################################################################################################################################
 
-	def generate_timeseries_panels(self, table_genotypes: pandas.DataFrame, table_trajectories: pandas.DataFrame,
+	def generate_timeseries_panels_multiple(self, table_genotypes: pandas.DataFrame, table_trajectories: pandas.DataFrame,
 			filenames: Dict[str, List[Path]] = None) -> Dict[str, List[Path]]:
 		"""
 			Generates a panel consisting of the inferred genotypes with an inset of the corresponding trajectories.
@@ -94,10 +86,22 @@ class OutputGeneratorGraphics:
 		# The timeseries panels should include the filtered trajectories in the trajectories inset plot.
 		filenames = self.parse_filenames(filenames, default = self.paths.files_panel)
 
-		self.generator_panel_timeseries.run_multiple(
-			table_genotypes, palettes = self.palettes, filenames = filenames, timeseries_trajectory = table_trajectories
-		)
+
 		return filenames
+
+	def generate_timeseries_panels(self, table_genotypes:pandas.DataFrame, table_trajectories:pandas.DataFrame, filename:Path):
+		"""
+			Generates a panel consisting of the inferred genotypes with an inset of the corresponding trajectories.
+		Parameters
+		----------
+		table_genotypes, table_trajectories: Dataframes of the genotypes and trajectories to plot.
+		"""
+
+		self.generator_panel_timeseries.run(
+			table_genotypes,
+			filenames = filename,
+			timeseries_trajectory = table_trajectories
+		)
 
 	def generate_timeseries_trajectories(self, trajectories: pandas.DataFrame, trajectory_palette: Dict[str, str],
 			filenames: Dict[str, List[Path]] = None) -> Path:
@@ -140,9 +144,7 @@ class OutputGeneratorGraphics:
 		self.generate_timeseries_panels(genotypes, filtered_trajectories)
 		self.generate_geneology_plots(genotypes)
 
-	def generate_dendrogram(self, linkage_matrix, distance_matrix, filename: Path = None) -> Path:
-		if filename is None:
-			filename = self.paths.linkage_plot
+	def generate_dendrogram(self, linkage_matrix, distance_matrix, filename: Path) -> Path:
 		# Only need the distance matrix fpr the labels
 		labels = distance_matrix.squareform().index
 		graphics.plot_dendrogram(linkage_matrix, labels, filename)
@@ -154,7 +156,7 @@ class OutputGeneratorGraphics:
 		graphics.plot_heatmap(squareform, filename)
 		return filename
 
-	def generate_geneology_plots(self, genotypes: dataio.GenotypeCollection, table_edges: pandas.DataFrame, filenames: GraphicPath = None) -> None:
+	def generate_geneology_plot(self, genotypes: dataio.GenotypeCollection, table_edges: pandas.DataFrame, filename: GraphicPath = None) -> None:
 		""" Generate the lineage plots."""
 		logger.info("Generating Lineage Plots...")
 		filenames = self.parse_filenames(filenames, self.paths.files_lineage_image)
@@ -162,7 +164,7 @@ class OutputGeneratorGraphics:
 		for palette in self.palettes:
 			graphics.flowchart(table_edges, palette, annotations = genotype_annotations, filenames = filenames)
 
-	def generate_muller_plots(self, muller_df: pandas.DataFrame, genotype_annotations, filenames: Optional[GraphicPath] = None):
+	def generate_muller_plots(self, muller_df: pandas.DataFrame, genotype_annotations, filename: Optional[GraphicPath] = None):
 		"""
 			Generates a muller plot from the 'muller_df` object.
 		Parameters
@@ -205,3 +207,17 @@ class OutputGeneratorGraphics:
 		filenames = {key: [Path(v) for v in value] for key, value in filenames.items()}
 		self.validate_filenames(filenames)
 		return filenames
+
+def generate_timeseries_panels(table_genotypes:pandas.DataFrame, table_trajectories:pandas.DataFrame, palette, filename:Path):
+	"""
+		Generates a panel consisting of the inferred genotypes with an inset of the corresponding trajectories.
+	Parameters
+	----------
+	table_genotypes, table_trajectories: Dataframes of the genotypes and trajectories to plot.
+	"""
+
+	self.generator_panel_timeseries.run(
+		table_genotypes,
+		filenames = filename,
+		timeseries_trajectory = table_trajectories
+	)

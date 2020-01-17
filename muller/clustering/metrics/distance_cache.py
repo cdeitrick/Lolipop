@@ -10,7 +10,7 @@ PairwiseArrayType = Dict[Tuple[str, str], float]
 # TODO: Refactor using UserDict
 class DistanceCache:
 	"""
-		Calculates and holds the calculations for all pairwise elements.
+		Calculates and holds the distances for all pairwise elements.
 
 		Usage
 		-----
@@ -95,6 +95,10 @@ class DistanceCache:
 				value = self.get(*key)
 				line = f"{key[0]}\t{key[1]}\t{value}\n"
 				output.write(line)
+
+	@property
+	def values(self)->List[float]:
+		return list(self.pairwise_values.values())
 
 	@classmethod
 	def read(cls, filename: Path) -> 'DistanceCache':

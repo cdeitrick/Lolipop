@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # plt.switch_backend('agg')
 import pandas
 import seaborn
-
+from loguru import logger
 
 def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	font = {
@@ -15,7 +15,6 @@ def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	matplotlib.rc('font', **font)
 	figsize = (20, 20)
 	fig, ax = plt.subplots(figsize = figsize)
-
 	seaborn.heatmap(
 		data,
 		ax = ax,

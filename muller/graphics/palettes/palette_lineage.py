@@ -30,7 +30,7 @@ def apply_clade_colorscheme(clade: List[str], colorscheme: str) -> Dict[str, str
 	return palette
 
 
-def generate_lineage_palette(edges: pandas.DataFrame) -> Dict[str, str]:
+def generate_lineage_palette(edges: pandas.Series) -> Dict[str, str]:
 	clades = treetools.parse_tree(edges)
 	major_clades = get_major_clades(clades)
 	clades['majorClade'] = [major_clades[i] for i in clades.index]

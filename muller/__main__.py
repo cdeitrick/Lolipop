@@ -29,10 +29,8 @@ def benchmark(dataset: Path, output: Path):
 
 
 def main(arguments)->None:
-	from muller.muller_workflow import MullerWorkflow
-	muller_workflow = MullerWorkflow(arguments)
-	muller_workflow.run(arguments.filename, arguments.output_folder)
-
+	from muller.workflows.workflow_full import run_workflow
+	muller_workflow = run_workflow(arguments)
 if __name__ == "__main__":
 	import sys
 	from pathlib import Path
@@ -44,17 +42,12 @@ if __name__ == "__main__":
 	program_parser = commandline_parser.create_parser()
 	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
 
-	args = sys.argv[1:]
+	args = program_parser.parse_args()
+	if args.name is None:
+		args.name = "lineage"
 
-	if args[0] not in {'lineage', 'benchmark', 'muller'}:
-		args = ['lineage'] + args
-	args = program_parser.parse_args(args)
-
-	if args.name == 'benchmark':
-		# The benchmarking utility was activated
-		benchmark(args.dataset, args.output)
-	elif args.name == 'muller':
-		mullerplot(args.edges, args.population, args.output)
-	else:
+	if args.name == 'lineage':
 		main(args)
+	else:
+		print("Need to use `muller/ lineage --input [input]")
 

@@ -9,10 +9,10 @@ from scipy.spatial import distance
 
 try:
 	from muller.clustering.metrics.distance_cache import DistanceCache
-	from muller.clustering.methods.changepoints import detect_changepoint
+	from muller.dataio import projectdata
 except ModuleNotFoundError:
-	from ..metrics.distance_cache import DistanceCache
-	from .changepoints import detect_changepoint
+	from muller.clustering.metrics.distance_cache import DistanceCache
+	from muller.dataio import projectdata
 
 
 def format_linkage_matrix(linkage_table, total_members: Optional[int]) -> pandas.DataFrame:
@@ -76,22 +76,6 @@ class HierarchalCluster:
 			cluster_map[i].append(j)
 		return list(cluster_map.values())
 
-	@staticmethod
-	def _get_cutoff(distances: numpy.ndarray):
-		try:
-			(changepoint_index, changepoint), __ = detect_changepoint(sorted(distances))
-		except ValueError:
-			changepoint = None
-			changepoint_index = len(distances)
-		if changepoint_index > len(distances) / 3:
-			logger.warning(f"Changepoint too great: (changepoint = {changepoint}, index = {changepoint_index}) vs. {len(distances)}")
-			changepoint = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(0.05)
-			logger.warning(f"Using a value of {changepoint} instead.")
-		logger.warning("The changepoint detection is currently disabled.")
-		changepoint = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(0.05)
-		logger.warning(f"Using a value of {changepoint}")
-		return changepoint
-
 
 	def link_clusters(self, distances: numpy.ndarray, num: int) -> pandas.DataFrame:
 		Z = hierarchy.linkage(distances, method = self.linkage_method, optimal_ordering = True)
@@ -116,20 +100,19 @@ class HierarchalCluster:
 			clusters = self._label_clusters(clusters, labels)
 
 		return clusters
-
-	def adjust_similarity_cutoff(self, similarity_cutoff:Optional[float], distances: List[float])->float:
+	@staticmethod
+	def adjust_similarity_cutoff(original_similarity_cutoff:Optional[float], distances: List[float])->float:
 		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
+		if original_similarity_cutoff is None: similarity_cutoff = 0.10
+		else: similarity_cutoff = original_similarity_cutoff
 
-		if similarity_cutoff is None:
-			if self.cluster_method == 'distance':
-				similarity_cutoff = pandas.Series(distances).quantile(0.2)
-			else:
-				similarity_cutoff = 0.05
+		result = pandas.Series(distances).quantile(similarity_cutoff)
 
-		return similarity_cutoff
+		logger.debug(f"Adjusted the similarity cutoff from {original_similarity_cutoff} to {result}")
+		return result
 
-	def run(self, pair_array: DistanceCache, starting_genotypes: List[List[str]] = None, similarity_cutoff: Optional[float] = None) -> Tuple[
-		List[List[str]], Any]:
+
+	def run(self, pair_array: DistanceCache, starting_genotypes: List[List[str]] = None, similarity_cutoff: Optional[float] = None) -> projectdata.DataHierarchalCluster:
 		"""
 		Parameters
 		----------
@@ -147,12 +130,21 @@ class HierarchalCluster:
 		distance_array = distance.squareform(squaremap.values)
 		linkage_table = self.link_clusters(distance_array, len(squaremap.index))
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
+
+
 		similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
 
 		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
 		clusters = self.cluster(reduced_linkage_table, similarity_cutoff, squaremap.index)
-		return clusters, linkage_table
+
+		result = projectdata.DataHierarchalCluster(
+			clusters = clusters,
+			table_linkage = linkage_table,
+			similarity_cutoff = similarity_cutoff
+		)
+
+		return result
 
 
 def plot_within_cluster_variation():

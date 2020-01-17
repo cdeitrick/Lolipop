@@ -344,7 +344,7 @@ class MullerPlot:
 				# The genotype contains child genotypes, so it has to be kept split.
 				genotype_series = groups.get_group(label)
 			merged_table.append(genotype_series)
-		return pandas.concat(merged_table)
+		return pandas.concat(merged_table, sort = True)
 
 	def add_genotype_annotations_to_plot(self, ax: Axes, points: Dict[str, Tuple[float, float]], annotations: Dict[str, List[str]],
 			color_palette: Dict[str, str]) -> Axes:
@@ -451,7 +451,7 @@ class MullerPlot:
 			fnames = filenames[palette.name]
 			self.plot(muller_df, fnames, palette, annotations, title, ax)
 
-	def plot(self, muller_df: pandas.DataFrame, filenames: Union[Path, List[Path]] = None, color_palette: Dict[str, str] = None,
+	def plot(self, muller_df: pandas.DataFrame, filename:Path = None, color_palette: Dict[str, str] = None,
 			annotations: Optional[Dict[str, List[str]]] = None,
 			title: Optional[str] = None, ax: Optional[plt.Axes] = None) -> plt.Axes:
 		"""
@@ -460,8 +460,7 @@ class MullerPlot:
 		----------
 		muller_df: pandas.DataFrame
 		color_palette: Dict[str,str]
-		filenames: Dict[str,List[Path]]
-			The filenmes of the output files. The filetypes will be taken from the available suffixes.
+		filename: Path
 		annotations: Dict[str, List[str]]
 			A map of genotype labels to add to the plot.
 		title: Optional[str]
@@ -473,8 +472,6 @@ class MullerPlot:
 		ax: Axes
 			The axes object containing the plot.
 		"""
-		if isinstance(filenames, Path):
-			filenames = [filenames]
 
 		if color_palette is None:
 			color_palette = self.get_default_palette(muller_df['Identity'].unique())
@@ -507,8 +504,8 @@ class MullerPlot:
 			self.add_genotype_annotations_to_plot(ax, points, annotations, color_palette)
 
 		ax = self._apply_style(ax, title, max(x))
-		if filenames:
-			for fname in filenames:
-				self.save_figure(fname)
+		if filename:
+			#logger.info(f"Saving the muller plot as {filename.absolute()}")
+			self.save_figure(filename)
 
 		return ax

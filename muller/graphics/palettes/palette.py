@@ -25,7 +25,7 @@ class Palette:
 	def generate_trajectory_palette(self, palette: Dict[str, str], members: Dict[str, List[str]]) -> Dict[str, str]:
 		""" Maps the genotype palette to each of the member trajectories."""
 		p = dict()
-		for genotype_name, members in members:
+		for genotype_name, members in members.items():
 			for member in members:
 				p[member] = palette[genotype_name]
 		self._palette_trajectory = p
@@ -40,6 +40,8 @@ class Palette:
 			raise ValueError(message)
 		return self._palette_trajectory
 
+	def get(self, item:str, default = None)->str:
+		return self.palette_genotype.get(item, self._palette_trajectory.get(item, default))
 
 if __name__ == "__main__":
 	pass

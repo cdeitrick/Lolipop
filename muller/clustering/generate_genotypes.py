@@ -6,11 +6,13 @@ import pandas
 from loguru import logger
 
 try:
-	from muller.clustering import metrics, methods, genotype_reorder
+	from muller.clustering import metrics, genotype_reorder, hierarchy
 	from muller.filters import filters
 	from muller.dataio import projectdata
+
 except ModuleNotFoundError:
-	from . import filters, metrics, methods
+	from ..filters import filters
+	from . import metrics, hierarchy
 
 
 class ClusterMutations:
@@ -46,7 +48,7 @@ class ClusterMutations:
 
 		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric, threads = threads)
 
-		self.clusterer = methods.HierarchalCluster()
+		self.clusterer = hierarchy.HierarchalCluster()
 
 		self.organizer = genotype_reorder.SortGenotypeTableWorkflow(
 			dlimit = dlimit,
@@ -153,7 +155,7 @@ class ClusterMutations:
 		self.pairwise_distances_full = metrics.DistanceCache(pair_array)  # Keep a record of the pairwise distances before filtering.
 		return self.pairwise_distances_full
 
-	def run(self, trajectories: pandas.DataFrame, distance_cutoff:Optional[float]) -> projectdata.DataGenotypeInference:
+	def run(self, trajectories: pandas.DataFrame, distance_cutoff:Optional[float] = None) -> projectdata.DataGenotypeInference:
 		"""
 			Run the genotype clustering workflow.
 		Parameters
@@ -173,12 +175,12 @@ class ClusterMutations:
 		pairwise_distances = self.get_pairwise_distances(modified_trajectories)
 
 		# Calculate the genotypes
-		genotypes, linkage_matrix = self.clusterer.run(
+		cluster_result = self.clusterer.run(
 			pairwise_distances,
 			starting_genotypes = self.known_genotypes,
 			similarity_cutoff = distance_cutoff
 		)
-		genotype_table, genotype_members = self.generate_genotype_table(modified_trajectories, genotypes)
+		genotype_table, genotype_members = self.generate_genotype_table(modified_trajectories, cluster_result.clusters)
 
 		sorted_genotype_table = self.organizer.run(genotype_table)
 		output_data = projectdata.DataGenotypeInference(
@@ -186,7 +188,7 @@ class ClusterMutations:
 			table_genotypes = sorted_genotype_table,
 			genotype_members = genotype_members,
 			matrix_distance = pairwise_distances,
-			table_linkage = linkage_matrix
+			clusterdata = cluster_result
 		)
 
 		return output_data

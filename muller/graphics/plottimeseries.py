@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Optional, List, Tuple, Union
 from muller import widgets
 from muller.graphics.palettes import palette_distinctive, Palette
-
+from loguru import logger
 
 class TimeseriesPlot:
 	def __init__(self, render: bool = True, legend: bool = True, scale: int = 1, style: Optional[str] = None):
@@ -15,11 +15,10 @@ class TimeseriesPlot:
 		self.length_x = 12
 		self.length_y = 10
 		self.scale = scale
+		if self.scale < 1:
+			self.scale = 1
 
 		self.dpi = 250
-		self.filetypes = ['.png']
-		if render:
-			self.filetypes += ['.svg']
 
 		# Parameters concerning the overall plot
 		self.default_color = "#333333"
@@ -31,7 +30,7 @@ class TimeseriesPlot:
 
 		# Parameters concerning the plot legend.
 		self.legend = legend
-		self.legend_font_properties = {'size': 24}  # The size of the font used to label each series in the legend.
+		self.legend_font_properties = {'size': 12*self.scale}  # The size of the font used to label each series in the legend.
 		self.legend_location = 'right'
 		self.legend_title = 'Genotypes'
 
@@ -52,11 +51,11 @@ class TimeseriesPlot:
 		self.yaxis_label = 'Frequency'
 		self.background_color = 'white'
 
-		self.markersize = 2  # The size of individual markers in the plot
+		self.markersize = 4*self.scale  # The size of individual markers in the plot
 		self.markertype = 'o'  # The type of marker to use.
 
 		self.linestyle = 'solid'
-		self.linewidth = 12
+		self.linewidth = 2*self.scale
 
 	def _set_style_nature(self):
 		""" Configures `TimeseriesPlot` to use a style similar to that in the yeast nature paper. """
@@ -65,10 +64,10 @@ class TimeseriesPlot:
 		self.background_color = "white"
 
 		self.markertype = 'o'
-		self.markersize = 12
+		self.markersize = 12*self.scale
 
 		self.linestyle = 'solid'
-		self.linewidth = 3
+		self.linewidth = 3*self.scale
 
 	def _apply_style(self, axes: plt.Axes, plot_title, xmax: Optional[int] = None) -> plt.Axes:
 		# Parameters concerning subfeatures of the plot.
@@ -90,7 +89,6 @@ class TimeseriesPlot:
 	def _initialize_plot(self, ax: Optional[plt.axes]) -> plt.Axes:
 		if ax is None:
 			fig, ax = plt.subplots(figsize = (self.length_x * self.scale, self.length_y * self.scale))
-
 		return ax
 
 	@staticmethod
@@ -104,7 +102,7 @@ class TimeseriesPlot:
 			self.plot(timeseries, palette, ax, fnames)
 
 	def plot(self, timeseries: pandas.DataFrame, palette: Union[Dict[str,str], Palette] = None, ax: Optional[plt.Axes] = None,
-			filenames: Optional[List[Path]] = None) -> plt.Axes:
+			filename: Optional[Path] = None) -> plt.Axes:
 		""" Plots a generic timeseries dataframe. The plot labels are inferred from how the index labels are formatted.
 			Parameters
 			----------
@@ -114,9 +112,8 @@ class TimeseriesPlot:
 				Maps each series id to the proper color to use.
 			ax: Optional[plt.Axes]
 				Specifies the plt.Axes object to use.
-			filenames: Optional[List[Path]]
-				The resulting figure will be saved to this filename if it is provided. The filetypes will be determined from the
-				`self.filetypes` parameter.
+			filename: Optional[Path]
+				The resulting figure will be saved to this filename if it is provided.
 		"""
 		# Set up the plotting area.
 
@@ -154,9 +151,8 @@ class TimeseriesPlot:
 			)
 			legend.get_title().set_fontsize(str(self.legend_font_properties['size']))
 
-		if filenames:
-			for f in filenames:
-				self.save_figure(f)
+		if filename:
+			self.save_figure(filename)
 		return ax
 
 	def save_figure(self, filename: Path):

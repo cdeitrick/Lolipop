@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass, fields
 
-__VERSION__ = "0.7.0"
+__VERSION__ = "0.8.0"
 DEBUG = True
 
 
@@ -36,10 +36,6 @@ class ProgramOptions(argparse.Namespace):
 	method: str = 'matlab'
 	metric: str = "similarity"
 	known_genotypes: Optional[Path] = None
-
-	def show(self):
-		for field in fields(self):
-			print(field)
 
 
 ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
@@ -223,6 +219,15 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 	)
 
 	analysis_group.add_argument(
+		"--metric",
+		help = "The distance metric to use when clustering mutaitons into genotypes.",
+		action = "store",
+		dest = "metric",
+		type = str,
+		default = "binomial"
+	)
+
+	analysis_group.add_argument(
 		"-p", "--pvalue",
 		help = "The p-value to use for the statistics tests",
 		action = "store",
@@ -235,8 +240,9 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
-		dest = 'fixed_breakpoint',
-		type = float
+		dest = 'flimit',
+		type = float,
+		default = 0.97
 	)
 	analysis_group.add_argument(
 		"-d", "--detection",
@@ -244,7 +250,7 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 			For example, a frequency at a given timepoint is considered undetected if it falls below 0 + `uncertainty`.",
 		action = 'store',
 		default = 0.03,
-		dest = 'detection_breakpoint',
+		dest = 'dlimit',
 		type = float
 	)
 	analysis_group.add_argument(
@@ -252,7 +258,7 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		help = "The frequency at which to consider a genotype significantly greater than zero.",
 		action = 'store',
 		default = 0.15,
-		dest = "significant_breakpoint",
+		dest = "slimit",
 		type = float
 	)
 	analysis_group.add_argument(
@@ -273,14 +279,6 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = FrequencyParser,
 		dest = 'frequencies',
 		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-	)
-	analysis_group.add_argument(
-		"--difference-cutoff",
-		help = "Minimum p-value to consider a pair of genotypes unrelated. Used when splitting muller_genotypes when using the two-step method.",
-		action = "store",
-		default = 0.25,
-		dest = "difference_breakpoint",
-		type = float
 	)
 	return analysis_group
 
@@ -385,29 +383,6 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 	return group_main
 
 
-def _create_parser_group_clustering(parser: argparse.ArgumentParser):
-	##############################################################################################################################################
-	# --------------------------------------------------- Genotype Clustering Options ------------------------------------------------------------
-	##############################################################################################################################################
-	group_cluster = parser.add_argument_group(title = "Genotype Clustering Parameters", description = "Configures how genotypes are clustered.")
-	group_cluster.add_argument(
-		'-m', '--method',
-		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
-		action = "store",
-		default = "hierarchy",
-		dest = "method",
-		choices = ['matlab', 'hierarchy', 'twostep']
-	)
-	group_cluster.add_argument(
-		"--metric",
-		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, " \
-			   "such as the difference between them or how well they are correlated.",
-		action = "store",
-		default = "binomial",
-		dest = "metric",
-		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
-	)
-
 
 def create_parser() -> argparse.ArgumentParser:
 	parser_parent = argparse.ArgumentParser(
@@ -435,7 +410,6 @@ def create_main_parser(subparsers) -> argparse.ArgumentParser:
 
 	# Broke up the indivisual groups into their own functions because this function was large enough to make browsing it annoying.
 	_create_parser_group_main(parser)
-	_create_parser_group_clustering(parser)
 	_create_parser_group_data(parser)
 	_create_parser_group_analysis(parser)
 	_create_parser_group_filter(parser)

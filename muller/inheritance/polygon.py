@@ -94,7 +94,7 @@ def _correct_one_dimensional_sections(points: List[Tuple[float, float]]) -> List
 
 
 def decompose(series: pandas.Series, use_index:bool = False) -> List[PointType]:
-
+	""" Converts a trajectory/genotype timeseries into a 2D polygon"""
 	# Make sure one-dimensional points are omitted.
 	minimum = 0.0001
 	masked_series = series.mask(lambda s: s < minimum, minimum).tolist()

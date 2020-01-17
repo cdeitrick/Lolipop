@@ -48,7 +48,6 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_path(input_table, sheet_name, index)
 	else:
 		data = _import_table_from_string(input_table, index = index)
-
 	# Make sure the x-values are numeric
 	numeric_columns = widgets.get_numeric_columns(data.columns)
 	nonnumeric_columns = [i for i in data.columns if i not in numeric_columns]

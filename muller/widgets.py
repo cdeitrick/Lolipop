@@ -1,11 +1,17 @@
 import csv
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
+
+def checkdir(path:Union[str,Path])->Path:
+	path = Path(path)
+	if not path.exists():
+		path.mkdir()
+	return path
 
 
 def get_numeric_columns(columns: List[str]) -> List[str]:
@@ -126,9 +132,16 @@ def fixed_immediately(trajectory: pandas.Series, dlimit: float, flimit: float) -
 
 
 def fixed(trajectory: pandas.Series, flimit: float) -> bool:
-	""" Tests whether the input series fixed at any point."""
-	return any(i > flimit for i in trajectory.values)
-
+	""" Tests whether the input series fixed at any point.
+		If it throws a ValueError due to being an array, check the input data for duplicate labels
+	"""
+	try:
+		return any(i > flimit for i in trajectory.values)
+	except ValueError:
+		message = "Encountered an error when selecting 'fixed' trajectories. This is usually caused by duplicate trajectory ids in the input table."
+		if isinstance(trajectory, pandas.DataFrame):
+			message += f"\nRename these trajectories: {list(trajectory.index)}"
+		raise ValueError(message)
 
 def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	""" Tests whether the series immediately fixed and stayed fixed."""

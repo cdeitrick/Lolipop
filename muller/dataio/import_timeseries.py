@@ -102,11 +102,13 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 		Converts column headers to integers and moves all non-integer columns to a separate dataframe.
 	"""
 	# Make sure the column with the series names is the index of the table.
+	logger.debug(raw_table.columns)
 	if key_column not in raw_table.columns:
 		raw_table = _add_key_column(raw_table, key_column)
 	raw_table = raw_table.sort_values(by = key_column)
 	raw_table[key_column] = [str(i) for i in raw_table[key_column].tolist()]
 	raw_table.set_index(key_column, inplace = True)
+	logger.debug(raw_table.columns)
 	# Extract the columns which indicate timepoints of observations. Should be integers.
 	frequency_columns = get_numeric_columns(raw_table.columns)
 
@@ -117,7 +119,6 @@ def _parse_table(raw_table: pandas.DataFrame, key_column: str) -> Tuple[pandas.D
 	time_table.columns = converted_frequency_columns
 	# Sort the table columns
 	time_table = time_table[sorted(time_table.columns)]
-
 	try:
 		# Test to see if the table was correctly converted to numerical datatypes.
 		time_table[time_table.columns[0]].max()
@@ -222,4 +223,7 @@ def parse_trajectory_table(filename: Union[str, Path], sheet_name = 'Sheet1') ->
 		info.pop('genotype')
 	# Make sure the index is named `Trajectory` for consistency
 	timeseries.index.name = 'Trajectory'
+	# Make sure the columns of `info` are lowercase to help with later parsing.
+	info.columns = [i.lower() for i in info.columns]
+	logger.debug(info.columns)
 	return timeseries, info

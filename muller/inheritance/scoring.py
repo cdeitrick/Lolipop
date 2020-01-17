@@ -127,7 +127,7 @@ class LegacyScore:
 class Score:
 	""" Refactored as a class so that all the dlimit,flimit,pvalue,etc variables don't have to be passed around"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights:Tuple[int,int,int,int] = (1, 1, 2, 2)):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights:Tuple[int,int,int,int] = (1, 2, 1, 2)):
 		self.pvalue = pvalue
 		self.dlimit = dlimit
 		self.flimit = flimit
@@ -316,9 +316,9 @@ class Score:
 			score = 0
 		elif len(valid_left) > 20 or True:
 			dotproduct, correlated_timepoints = self.derivative(valid_left, valid_right)
-			logger.debug(f"{dotproduct}, {correlated_timepoints}, {len(valid_left)}")
-			logger.debug(valid_left.diff().tolist())
-			logger.debug(valid_right.diff().tolist())
+			#logger.debug(f"{dotproduct}, {correlated_timepoints}, {len(valid_left)}")
+			#logger.debug(valid_left.diff().tolist())
+			#logger.debug(valid_right.diff().tolist())
 			if dotproduct > 0.01:
 				score = 1
 			elif dotproduct < -0.01:

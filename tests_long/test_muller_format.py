@@ -14,22 +14,24 @@ def muller_dataframe_generator() -> GenerateMullerDataFrame:
 	return GenerateMullerDataFrame()
 
 
-DATA_FOLDER = Path(__file__).parent.parent / "tests"/ "data" / "tables_ggmuller"
+FOLDER_DATA = Path(__file__).parent.parent / "tests" / "data"
+FOLDER_TABLES = FOLDER_DATA / "tables_ggmuller"
+FOLDER_SCRIPTS = FOLDER_DATA / "scripts_ggmuller"
 tables_combined = [
-	(DATA_FOLDER / "B1_muller_try1.ggmuller.populations.tsv", DATA_FOLDER / "B1_muller_try1.ggmuller.edges.tsv"),
-	(DATA_FOLDER / "B1_Muller.ggmuller.populations.tsv", DATA_FOLDER / "B1_Muller.ggmuller.edges.tsv"),
-	(DATA_FOLDER / "Planktonic3.ggmuller.populations.tsv", DATA_FOLDER / "Planktonic_3_mullerinput.ggmuller.edges.tsv"),
-	(DATA_FOLDER / "mullerinputbio1.ggmuller.populations.tsv", DATA_FOLDER / "mullerinputbio1.ggmuller.edges.tsv"),
-	(DATA_FOLDER / "P1_Final_Muller.ggmuller.populations.tsv", DATA_FOLDER / "P1_Final_Muller.ggmuller.edges.tsv"),
+	(FOLDER_TABLES / "B1_muller_try1.ggmuller.populations.tsv", FOLDER_TABLES / "B1_muller_try1.ggmuller.edges.tsv"),
+	(FOLDER_TABLES / "B1_Muller.ggmuller.populations.tsv", FOLDER_TABLES / "B1_Muller.ggmuller.edges.tsv"),
+	(FOLDER_TABLES / "Planktonic3.ggmuller.populations.tsv", FOLDER_TABLES / "Planktonic_3_mullerinput.ggmuller.edges.tsv"),
+	(FOLDER_TABLES / "mullerinputbio1.ggmuller.populations.tsv", FOLDER_TABLES / "mullerinputbio1.ggmuller.edges.tsv"),
+	(FOLDER_TABLES / "P1_Final_Muller.ggmuller.populations.tsv", FOLDER_TABLES / "P1_Final_Muller.ggmuller.edges.tsv"),
 	# The LTEE tables are causing an issue where timepoints are getting duplicated.
-	(DATA_FOLDER / "m5_correct.ggmuller.populations.tsv", DATA_FOLDER / "m5_correct.ggmuller.edges.tsv")
+	(FOLDER_TABLES / "m5_correct.ggmuller.populations.tsv", FOLDER_TABLES / "m5_correct.ggmuller.edges.tsv")
 ]
 
 tables_population = [i[0] for i in tables_combined]
 
 
 class ScriptFilenames:
-	script_folder = Path(__file__).parent.parent / "data" / "scripts_ggmuller"
+	script_folder = FOLDER_SCRIPTS
 
 	# Mainly used to collapse the filename methods in an IDE.
 	@classmethod
@@ -88,6 +90,7 @@ class ScriptFilenames:
 	def get_script_generate_muller_dataframe(cls) -> Path:
 		return cls.script_folder / "rscript.generatemullerdf.r"
 
+
 def approxlists(left, right) -> bool:
 	# Used to test whether two lists of floats are identical. Using `==` will not work with floats sometimes due to precision.
 	result = [pytest.approx(i, j) for i, j in zip(left, right)]
@@ -95,7 +98,7 @@ def approxlists(left, right) -> bool:
 
 
 def get_lookup_table(population_filename) -> pandas.Series:
-	abs_path = DATA_FOLDER / population_filename
+	abs_path = FOLDER_DATA / population_filename
 	mullerdf = GenerateMullerDataFrame()
 
 	population = pandas.read_csv(abs_path, sep = '\t')
@@ -109,11 +112,14 @@ def get_muller_df(filename: Path) -> pandas.DataFrame:
 	df = pandas.read_csv(filename, sep = "\t")
 	return GenerateMullerDataFrame().correct_population_values(df)
 
-def checkdir(path:Path)->Path:
+
+def checkdir(path: Path) -> Path:
 	path = Path(path)
 	if not path.exists():
 		path.mkdir()
 	return path
+
+
 @pytest.mark.parametrize("populationfilename", tables_population)
 def test_add_start_points(tmp_path, muller_dataframe_generator, populationfilename):
 	filename_truthset = tmp_path / "truth"
@@ -187,7 +193,7 @@ def test_add_start_points_run(tmp_path, muller_dataframe_generator, filename_pop
 	command = ["Rscript", ScriptFilenames.get_script_run(), filename_population, filename_truthset]
 	subprocess.run(command)
 	truthset = pandas.read_csv(filename_truthset, sep = '\t')
-	truthset['Generation'] = truthset['Generation'].astype(float) # Will be int sometimes.
+	truthset['Generation'] = truthset['Generation'].astype(float)  # Will be int sometimes.
 
 	result = muller_dataframe_generator.apply_add_start_points(population)
 
@@ -339,8 +345,9 @@ def test_reorder_by_vector_generate_unique_ids_genotype(tmp_path):
 	truth_table = pandas.read_csv(filename_truth, sep = "\t")
 	assert result == truth_table["Unique_id"].tolist()
 
-@pytest.mark.parametrize("filename_population, filename_edges", tables_combined[:-1]) # Known bug in the source ggmuller scripts.
-def test_generate_muller_dataframe(tmp_path,  filename_population, filename_edges):
+
+@pytest.mark.parametrize("filename_population, filename_edges", tables_combined[:-1])  # Known bug in the source ggmuller scripts.
+def test_generate_muller_dataframe(tmp_path, filename_population, filename_edges):
 	""" Tests whether the full get_Muller_df function has been implemented correctly in python."""
 	filename_script = ScriptFilenames.get_script_generate_muller_dataframe()
 	filename_truthset = tmp_path / "truthset"
@@ -358,5 +365,3 @@ def test_generate_muller_dataframe(tmp_path,  filename_population, filename_edge
 	logger.debug(result.columns)
 	logger.debug(truthset.columns)
 	pandas.testing.assert_frame_equal(result.reset_index(drop = True), truthset.reset_index(drop = True))
-
-

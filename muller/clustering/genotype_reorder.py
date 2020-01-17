@@ -1,7 +1,4 @@
-from typing import List
-
 import pandas
-from loguru import logger
 
 try:
 	from muller.inheritance import timepoint_detection
@@ -28,9 +25,6 @@ class SortGenotypeTableWorkflow:
 		# TODO: Make sure this is hard-coded globally.
 		# self.breakpoints = sorted([1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0] + [self.dlimit, self.flimit], reverse = True)
 		self.breakpoints = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-		logger.error(self.breakpoints)
-
-
 
 	@staticmethod
 	def _build_sorted_frequency_table(original_frequencies: pandas.DataFrame, thresholds: pandas.DataFrame) -> pandas.DataFrame:

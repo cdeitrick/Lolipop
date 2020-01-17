@@ -45,8 +45,7 @@ def test_score_jaccard(scorer, left, right):
 	assert actual_score == expected_score
 
 
-def test_lineage():
-	nester = LineageWorkflow(0.03, 0.97, 0.05)
+def test_lineage(nester):
 	filename = real_tables['nature12344']
 	table_genotype = pandas.read_excel(filename, sheet_name = 'genotype').set_index('Genotype')
 	expected_lineage = pandas.read_excel(filename, sheet_name = 'edges').set_index('Identity')['Parent']
