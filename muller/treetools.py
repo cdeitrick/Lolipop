@@ -46,7 +46,9 @@ def parse_tree(edges: pandas.Series) -> pandas.DataFrame:
 				The distance from the node/leaf to the root genotype.
 	"""
 	edges = edges.copy(deep = True)  # To prevent unintended alterations
-	lineage_table = edges.set_index('Identity')['Parent']
+
+	#lineage_table = edges.set_index('Identity')['Parent']
+	lineage_table = edges
 
 	clades, iterations = zip(*[determine_clade(lineage_table, i) for i in lineage_table.index])
 	leaf_table = lineage_table.to_frame().reset_index()
