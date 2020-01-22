@@ -107,8 +107,6 @@ class HierarchalCluster:
 		else: similarity_cutoff = original_similarity_cutoff
 
 		result = pandas.Series(distances).quantile(similarity_cutoff)
-
-		logger.debug(f"Adjusted the similarity cutoff from {original_similarity_cutoff} to {result}")
 		return result
 
 
