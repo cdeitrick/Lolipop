@@ -33,7 +33,7 @@ class DistanceCalculator:
 
 		self.progress_bar_minimum_points = 10000  # The value to activate the scale bar at.
 
-	def _calculate_pairwise_distances_threaded(self, pair_combinations: Generator, total:Optional[int] = None)->Dict[Tuple[str,str], float]:
+	def calculate_pairwise_distances_threaded(self, pair_combinations: Generator, total:Optional[int] = None)->Dict[Tuple[str,str], float]:
 		""" Threaded version of the pairwise distance calculator"""
 		pair_array: Dict[Tuple[str,str], float] = dict()
 		progress_bar = tqdm(total = total)
@@ -45,7 +45,7 @@ class DistanceCalculator:
 
 		return pair_array
 
-	def _calculate_pairwise_distances_serial(self, pair_combinations: Generator, total:Optional[int] = None):
+	def calculate_pairwise_distances_serial(self, pair_combinations: Generator, total:Optional[int] = None):
 		""" Nonthreaded version of the pairwise distance calculator"""
 		pair_array: Dict[Tuple[str,str], float] = dict()
 		progress_bar = tqdm(total = total)
@@ -76,10 +76,10 @@ class DistanceCalculator:
 
 		if self.threads and self.threads > 1:  # One process is slower than using the serial method.
 			logger.debug(f"Using multithreading...")
-			pair_array = self._calculate_pairwise_distances_threaded(pair_combinations, total_combinations)
+			pair_array = self.calculate_pairwise_distances_threaded(pair_combinations, total_combinations)
 		else:
 			logger.debug(f"Using a single thread...")
-			pair_array = self._calculate_pairwise_distances_serial(pair_combinations, total_combinations)
+			pair_array = self.calculate_pairwise_distances_serial(pair_combinations, total_combinations)
 
 		# Assume that any pair with NAN values are the maximum possible distance from each other.
 		maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
