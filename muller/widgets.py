@@ -1,13 +1,15 @@
 import csv
+import itertools
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
-import itertools
+from typing import *
+
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
-def checkdir(path:Union[str,Path])->Path:
+
+def checkdir(path: Union[str, Path]) -> Path:
 	path = Path(path)
 	if not path.exists():
 		path.mkdir()
@@ -143,6 +145,7 @@ def fixed(trajectory: pandas.Series, flimit: float) -> bool:
 			message += f"\nRename these trajectories: {list(trajectory.index)}"
 		raise ValueError(message)
 
+
 def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	""" Tests whether the series immediately fixed and stayed fixed."""
 	series = ((i > flimit or i < dlimit) for i in trajectory.values)
@@ -196,16 +199,20 @@ def get_commit_hash() -> str:
 	else:
 		commit_hash = "not available"
 	return commit_hash
-def get_pair_combinations(self, elements: Iterable[str])->Generator[Tuple[str,str], None, None]:
+
+
+def get_pair_combinations(elements: Iterable[str]) -> Generator[Tuple[str, str], None, None]:
 	# Use a generator to avoid using too much memory for large datasets.
 	# The only reason to use a list was so tqdm could automatically figure out how many operations had to be done,
 	# but this can be calculated manually by passing the total number of trajectories as an additional parameter.
 	return itertools.combinations(elements, 2)
-def calculate_number_of_combinations(n:int)->int:
+
+
+def calculate_number_of_combinations(n: int) -> int:
 	""" Calculates the number of pairwise combinations for an iterable of size `elements` using the
 		formula `n!/(n-r)!
 		Since we only want combinations of pairs (`r` = 2), this can be simplified to
 		`n * (n-1).
 	"""
 
-	return n*(n-1)
+	return n * (n - 1)
