@@ -269,7 +269,6 @@ def render_graphics(data_basic: projectdata.DataWorkflowBasic, data_inference: p
 	filename_dendrogram = folder_figures / "dendrogram.png"
 	filename_heatmap = folder_figures / "heatmap.png"
 	filename_distance_distribution = folder_figures / "distancedistribution.png"
-	logger.debug(f"{type(data_inference.matrix_distance)}")
 
 	# Plot the figures that aren't parametrized
 	workflow_graphics.generate_dendrogram(data_inference.clusterdata.table_linkage, data_inference.matrix_distance, filename_dendrogram)
