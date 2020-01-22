@@ -67,7 +67,6 @@ class AdjacencyMatrix:
 		""" This is a more concise implementation of the method used in ggmuller.
 			'Replace each genotype name in adjacency matrix with corresponding Age'
 		"""
-		logger.debug(self.table_edges.columns)
 		intermediate_edges = self.table_edges.copy(deep = True)  # To avoid unintented changes.
 		intermediate_edges['Identity'] = [lookup.loc[i] for i in self.table_edges['Identity'].values]
 		intermediate_edges['Parent'] = [lookup.loc[i] for i in self.table_edges['Parent'].values]
