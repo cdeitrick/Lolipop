@@ -67,6 +67,9 @@ class DistanceCalculator:
 
 		total_elements = len(labels)
 		total_combinations = widgets.calculate_number_of_combinations(total_elements)
+
+		logger.debug(f"Generating pairwise combinations with {total_elements} items resulting in {total_combinations} combinations...")
+
 		if total_combinations > 1_000_000_000:
 			message = f"The provided dataset has {total_elements} trajectories, which requires {total_combinations} distance calculations." \
 					  "This will require a long time to process (you may need to adjust the number of available threads with the --threads option)" \
@@ -113,9 +116,6 @@ class DistanceCalculator:
 		logger.debug(f"\t threads: {self.threads}")
 
 		self.trajectories = trajectories
-		# Use a list so that we can get the size for tqdm. Also prevent weird errors if we use the variable after consuming it.
-		# noinspection PyTypeChecker
-		logger.debug(f"Generating pairwise combinations with {len(trajectories)} items...")
 
 		pairwise_distances = self.calculate_pairwise_distances(trajectories.index)
 
