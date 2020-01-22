@@ -16,6 +16,7 @@ DEBUG = True
 
 
 # For convienience. Helps with autocomplete.
+# Not really used, will probably remove later.
 @dataclass
 class ProgramOptions(argparse.Namespace):
 	filename: Path
@@ -41,7 +42,7 @@ class ProgramOptions(argparse.Namespace):
 ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
 
 
-def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
+def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOptions:
 	"""
 		Generates values for each of the program parameters from the given parameters on the command line.
 	Parameters
@@ -54,9 +55,7 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 	"""
 
 	if program_options.flimit is None:
-		from loguru import logger
 		program_options.flimit = 1 - program_options.dlimit
-
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
 		starting_genotypes = dataio.import_file.parse_known_genotypes(program_options.known_genotypes)
@@ -474,3 +473,11 @@ def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
 		help = "A table with either a `Trajectory` column or a `Genotype` column.",
 		type = Path
 	)
+
+def get_arguments(arguments:Optional[List[str]] = None)->argparse.Namespace:
+	""" Implemented here to make sure the default parameters are properly applied. """
+	parser = create_parser()
+	args = parser.parse_args(arguments)
+
+	args = parse_workflow_options(args)
+	return args

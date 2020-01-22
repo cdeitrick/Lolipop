@@ -3,7 +3,7 @@ import itertools
 import re
 from pathlib import Path
 from typing import *
-
+from loguru import logger
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
@@ -144,6 +144,11 @@ def fixed(trajectory: pandas.Series, flimit: float) -> bool:
 		if isinstance(trajectory, pandas.DataFrame):
 			message += f"\nRename these trajectories: {list(trajectory.index)}"
 		raise ValueError(message)
+	except TypeError as exception:
+		logger.warning(f"Trajectory: {trajectory.values}")
+		logger.warning(f"flimit: {flimit}")
+
+		raise exception
 
 
 def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
@@ -214,5 +219,4 @@ def calculate_number_of_combinations(n: int) -> int:
 		Since we only want combinations of pairs (`r` = 2), this can be simplified to
 		`n * (n-1).
 	"""
-
 	return n * (n - 1)

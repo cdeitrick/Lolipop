@@ -40,13 +40,28 @@ class ClusterMutations:
 		self.pvalue: float = pvalue
 		self.known_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.filename_pairwise = None
+
+		logger.debug(f"Generating genotypes...")
+		logger.debug(f"\t metric: {metric}")
+		logger.debug(f"\t dlimit: {dlimit}")
+		logger.debug(f"\t slimit: {slimit}")
+		logger.debug(f"\t flimit: {slimit}")
+		logger.debug(f"\t pvalue: {pvalue}")
+		logger.debug(f"\t starting_genotypes: {starting_genotypes}")
+		logger.debug(f"\t threads: {threads}")
+
 		#self.filename_pairwise = filename_pairwise # Could be used to reuse a table of pairwise distances.
 		# The `breakpoints` value is a bit arbitrary, so it should be safe to hard-code it.
 		# 	This will actually prevent the most common error when sorting genotypes (i.e. no breakpoints given) so it's worth
 		#	hard-coding it to prevent that issue.
 		self.breakpoints = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 
-		self.distance_calculator = metrics.DistanceCalculator(self.dlimit, self.flimit, self.metric, threads = threads)
+		self.distance_calculator = metrics.DistanceCalculator(
+			detection_limit = self.dlimit,
+			fixed_limit = self.flimit,
+			metric = self.metric,
+			threads = threads
+		)
 
 		self.clusterer = hierarchy.HierarchalCluster()
 

@@ -82,7 +82,13 @@ class DistanceCalculator:
 			pair_array = self.calculate_pairwise_distances_serial(pair_combinations, total_combinations)
 
 		# Assume that any pair with NAN values are the maximum possible distance from each other.
-		maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
+		try:
+			maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
+		except ValueError:
+			# Usually cause by max() being used on an empty sequence.
+			message = f"Could not calculate the pairwise distances due to invalid series (usually because all measurements are below the detectionlimit"
+			raise ValueError(message)
+
 		pair_array = {k: (v if not math.isnan(v) else maximum_distance) for k, v in pair_array.items()}
 
 		return pair_array
@@ -117,7 +123,7 @@ class DistanceCalculator:
 
 
 # Keep this as a separate function. Class methods are finicky when used with multiprocessing.
-def calculate_distance(process, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
+def calculate_distance(process:DistanceCalculator, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
 	"""

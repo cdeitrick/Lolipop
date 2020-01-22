@@ -39,7 +39,7 @@ from typing import Dict, List, Optional, Union
 from muller import graphics, widgets
 from muller.graphics import graphicsio
 import pandas
-pandas.set_option('mode.chained_assignment', None)
+pandas.set_option('mode.chained_assignment', None) # This disables the warning about setting a value on a copy of a dataframe.
 from loguru import logger
 
 from muller import clustering, dataio, inheritance, commandline_parser

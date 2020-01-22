@@ -36,18 +36,20 @@ if __name__ == "__main__":
 	from pathlib import Path
 
 	sys.path.append(str(Path(__file__).parent.parent))
-
 	from muller import dataio, commandline_parser
 
 	program_parser = commandline_parser.create_parser()
 	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
+	#args = program_parser.parse_args()
+	program_arguments = commandline_parser.get_arguments()
 
-	args = program_parser.parse_args()
-	if args.name is None:
-		args.name = "lineage"
+	# Need to make sure the argument defaults are applied.
 
-	if args.name == 'lineage':
-		main(args)
+	if program_arguments.name is None:
+		program_arguments.name = "lineage"
+
+	if program_arguments.name == 'lineage':
+		main(program_arguments)
 	else:
 		print("Need to use `muller/ lineage --input [input]")
 
