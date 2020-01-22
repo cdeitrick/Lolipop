@@ -1,7 +1,7 @@
 import itertools
 import math
 import multiprocessing
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Iterable, Generator
 
 import pandas
 from loguru import logger
@@ -33,28 +33,39 @@ class DistanceCalculator:
 
 		self.progress_bar_minimum_points = 10000  # The value to activate the scale bar at.
 
-	def calculate_pairwise_distances(self, pair_combinations: List[Tuple[str, str]]) -> Dict[Tuple[str, str], float]:
-		""" Implements the actual loop over all pairs of trajectoies. """
 
-		# Initialize a progressbar if the dataset has a lot of combinations.
-		# if len(pair_combinations) >= self.progress_bar_minimum_points and tqdm:
-		#	self.progress_bar = tqdm(total = len(pair_combinations))
-		# else:
-		#	self.progress_bar = None
 
+	def calculate_pairwise_distances(self, labels: List[str]) -> Dict[Tuple[str, str], float]:
+		""" Implements the actual loop over all pairs of trajectories.
+		"""
+		# May as well move the combination function here so we don't have to pass an additional parameter specifying the total number
+		# of trajectories so tqdm workd properly.
+
+		total_elements = len(labels)
+		total_combinations = widgets.calculate_number_of_combinations(total_elements)
+		if total_combinations > 1_000_000_000:
+			message = f"The provided dataset has {total_elements} trajectories, which requires {total_combinations} distance calculations." \
+				"This will require a long time to process (you may need to adjust the number of available threads with the --threads option)" \
+				"and will consume a large amount of memory (i.e. more than 16GB)."
+			logger.warning(message)
+		pair_combinations = widgets.get_pair_combinations(labels)
 		pair_array: Dict[Tuple[str, str], float] = dict()
-
+		progress_bar = tqdm(total = total_combinations)
 		if self.threads and self.threads > 1:  # One process is slower than using the serial method.
+			logger.debug(f"Using multithreading...")
 			pool = multiprocessing.Pool(processes = self.threads)
 			for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
 				key, value = i.get()
 				pair_array[key] = value
+				progress_bar.update(1)
 		else:
+			logger.debug(f"Using a single thread...")
 			for element in pair_combinations:
 				key, value = calculate_distance(self, element, self.trajectories)
 				pair_array[key] = value
 				pair_array[
 					key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
+				progress_bar.update(1)
 
 		# Assume that any pair with NAN values are the maximum possible distance from each other.
 		maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
@@ -63,6 +74,18 @@ class DistanceCalculator:
 		return pair_array
 
 	def run(self, trajectories: pandas.DataFrame) -> Dict[Tuple[str, str], float]:
+		"""
+			Calculates the distance between all pairwise combinations of mutational trajectories. The total number of pairs can be calculated by
+			`n!/(n-2)!`, which can be simlified to `n*(n-1)`.
+			10 trajectories -> 90
+			100 trajectories -> 9900
+			1000 trajectories -> 999000
+			31000 trajectories -> 9.61E8
+
+		Parameters
+		----------
+		trajectories
+		"""
 		logger.debug("Calculating the pairwise values...")
 		logger.debug(f"\t detection limit: {self.detection_limit}")
 		logger.debug(f"\t fixed limit: {self.fixed_limit}")
@@ -72,9 +95,10 @@ class DistanceCalculator:
 		self.trajectories = trajectories
 		# Use a list so that we can get the size for tqdm. Also prevent weird errors if we use the variable after consuming it.
 		# noinspection PyTypeChecker
-		pair_combinations: List[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
+		logger.debug(f"Generating pairwise combinations with {len(trajectories)} items...")
 
-		pairwise_distances = self.calculate_pairwise_distances(pair_combinations)
+
+		pairwise_distances = self.calculate_pairwise_distances(trajectories.index)
 
 		return pairwise_distances
 

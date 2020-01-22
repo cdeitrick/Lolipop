@@ -212,7 +212,7 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = "store",
 		dest = "threads",
 		type = int,
-		default = 2
+		default = 1
 	)
 
 	analysis_group.add_argument(

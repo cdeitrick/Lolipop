@@ -2,7 +2,7 @@ import csv
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-
+import itertools
 import pandas
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
@@ -196,3 +196,16 @@ def get_commit_hash() -> str:
 	else:
 		commit_hash = "not available"
 	return commit_hash
+def get_pair_combinations(self, elements: Iterable[str])->Generator[Tuple[str,str], None, None]:
+	# Use a generator to avoid using too much memory for large datasets.
+	# The only reason to use a list was so tqdm could automatically figure out how many operations had to be done,
+	# but this can be calculated manually by passing the total number of trajectories as an additional parameter.
+	return itertools.combinations(elements, 2)
+def calculate_number_of_combinations(n:int)->int:
+	""" Calculates the number of pairwise combinations for an iterable of size `elements` using the
+		formula `n!/(n-r)!
+		Since we only want combinations of pairs (`r` = 2), this can be simplified to
+		`n * (n-1).
+	"""
+
+	return n*(n-1)
