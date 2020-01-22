@@ -127,7 +127,7 @@ class DataGenotypeLineage:
 
 		self.table_scores.to_csv(filename_table_scores, sep = delimiter)
 		self.table_populations.to_csv(filename_table_populations, sep = delimiter)
-		self.table_edges.to_csv(filename_table_edges, sep = delimiter)
+		self.table_edges.to_csv(filename_table_edges, sep = delimiter, header = True) # Added header option to avoid the FutureWarning
 
 
 if __name__ == "__main__":
