@@ -8,6 +8,11 @@ PointType = Tuple[Number, Number]
 import collections
 import itertools
 
+# There is an issue when attempting to calculate the area of a series. Rather than trying to calculate on individual polygons,
+# We use a very small value rather than 0 so that the entire series is technically a single polygon.
+# Will try to fix this issue later.
+MINIMUM = 0.0001
+
 
 def sliding_window_legacy(iterable: Iterable, width: int):
 	for index in range(len(iterable)):
@@ -93,15 +98,20 @@ def _correct_one_dimensional_sections(points: List[Tuple[float, float]]) -> List
 
 
 
-def decompose(series: pandas.Series, use_index:bool = False) -> List[PointType]:
+def get_vertices(series: pandas.Series, use_index:bool = False) -> List[PointType]:
 	""" Converts a trajectory/genotype timeseries into a 2D polygon"""
 	# Make sure one-dimensional points are omitted.
-	minimum = 0.0001
-	masked_series = series.mask(lambda s: s < minimum, minimum).tolist()
+	# Use a very small value rather than `0` due to how shapely calculates area.
+	#minimum = 0.0001
+	# Note: Apparently the area is properly calculated now as it was intended to, so this hack isn't necessary anymore.
+	# Will keep the process but use `0` as the minimum value in case the hack needs to be re-enabled.
+
+	masked_series = series.mask(lambda s: s < MINIMUM, MINIMUM).tolist()
 	masked_series[0] = series.values[0]
 	masked_series[-1] = series.values[-1]
 
 	if use_index:
+		# This will use the actual timepoint values rather than a linear range of identically spaced values.
 		x_values = series.index
 	else:
 		x_values = list(range(len(series)))
@@ -120,6 +130,10 @@ def decompose(series: pandas.Series, use_index:bool = False) -> List[PointType]:
 
 def separate_main(series: List[PointType]) -> List[List[PointType]]:
 	""" Separates a series into segregated polygons assuming there is a region of no detection between them."""
+	# Assume each series has at least three points.
+	if len(series) < 3:
+		# Does nothave enough vertices.
+		return []
 	if not is_multiple(series):
 		return [series]
 	for index, element in enumerate(sliding_window(series, 2), start = 1):  # Start indexing at 1 since starting with second element.
@@ -130,7 +144,7 @@ def separate_main(series: List[PointType]) -> List[List[PointType]]:
 			return separate_main(left) + separate_main(right)
 
 
-def separate(series: List[PointType]) -> List[List[PointType]]:
+def isolate_polygons(series: List[PointType]) -> List[List[PointType]]:
 	""" Implemented here until I refactor the above function to omit small sequences"""
 	return [i for i in separate_main(series) if len(i) > 2]
 
@@ -148,6 +162,6 @@ def as_polygon(series: pandas.Series) -> geometry.MultiPolygon:
 	""" Converts a series object to a polygon object.
 		[0.97 0.   0.97 0.97 0.97 0.87 0.97] Fails
 	"""
-	points = decompose(series)
+	points = get_vertices(series)
 	result = geometry.Polygon(points)
 	return result

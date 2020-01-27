@@ -5,7 +5,7 @@ import pandas
 from loguru import logger
 from shapely import geometry
 from shapely.errors import TopologicalError
-
+from typing import *
 Number = Union[float, int]
 
 from . import polygon
@@ -31,11 +31,16 @@ def calculate_area(series:pandas.Series)->float:
 
 
 def area_of_series(series: pandas.Series) -> float:
-	points = polygon.decompose(series)
-	collection = polygon.separate(points)
+	"""
+		Calculates the area under the curve of a given series. Assumes that the series
+		can be considered a sequence of polygons where vertices correspond to the
+		x-values and y-values in the series.
+	"""
+	points = polygon.get_vertices(series)
+	collection_of_polygons:List[List[Tuple[float,float]]] = polygon.isolate_polygons(points)
 	area = 0
-	for element in collection:
-		element_area = geometry.Polygon(element).area
+	for poly in collection_of_polygons:
+		element_area = geometry.Polygon(poly).area
 		area += element_area
 	return area
 
@@ -44,15 +49,15 @@ def calculate_common_area(left: pandas.Series, right: pandas.Series) -> float:
 	""" Calculates |X \cap Y|"""
 	# Use the pandas method for now. It is probably slower, but shouldn't add too much time, and should be more readable.
 
-	left_points = polygon.decompose(left) if isinstance(left, pandas.Series) else left  # Only decompose if the input was not a list of points.
-	right_points = polygon.decompose(right) if isinstance(right, pandas.Series) else right
+	left_points = polygon.get_vertices(left) if isinstance(left, pandas.Series) else left  # Only decompose if the input was not a list of points.
+	right_points = polygon.get_vertices(right) if isinstance(right, pandas.Series) else right
 
 	# Test if one of the series has regions where it is undetected between other areas where it is detected.
 	# Basically whether the series needs to be represented by two separate points
 	# Since polygon.separate() can handle the case where the series does not need to be modified, may as well run it on all
 	# series instead of testing for disjoint polygons first.
-	left_collection = polygon.separate(left_points)
-	right_collection = polygon.separate(right_points)
+	left_collection = polygon.isolate_polygons(left_points)
+	right_collection = polygon.isolate_polygons(right_points)
 
 	left_collection_polygon = [geometry.Polygon(i) for i in left_collection if len(i) > 2]
 	right_collection_polygon = [geometry.Polygon(i) for i in right_collection if len(i) > 2]

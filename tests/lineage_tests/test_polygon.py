@@ -29,7 +29,7 @@ def trajectory_table() -> pandas.DataFrame:
 def test_get_points(trajectory_table, key, expected):
 	series = trajectory_table.loc[key]
 
-	result = polygon.decompose(series)
+	result = polygon.get_vertices(series)
 
 	assert result == expected
 
@@ -86,21 +86,36 @@ def test_shoelace(trajectory_table, key, expected):
 	]
 )
 def test_separate(data, expected):
-	result = polygon.separate(data)
+	result = polygon.isolate_polygons(data)
 	assert result == expected
 
 
+# data: The y-values for a specific series.
+# expected: The expected polygons generated from the sequence, where y=0 deliminates polygon vertices.
 @pytest.mark.parametrize(
 	"data, expected",
 	[
-		([0, 1, 0, 0, .1, 0], [[(0, 0.0), (1, 1.0), (2, 0.0001)], [(3, 0.0001), (4, .1), (5, 0.0)]]),
-		([0, 1, 0, 0, 0, .1, 0], [[(0, 0.0), (1, 1.0), (2, 0.0001)], [(4, 0.0001), (5, 0.1), (6, 0.0)]]),
+		(
+				[0, 1, 0, 0, .1, 0],
+				[
+					# The polygon 0-1-0 is a triangle and is separate from the next polygon.
+					[(0, 0.0), (1, 1.0), (2, 0.0001)],
+					[(3, 0.0001), (4, .1), (5, 0.0)]
+				]
+		),
+		(
+				[0, 1, 0, 0, 0, .1, 0],
+				[
+					[(0, 0.0), (1, 1.0), (2, 0.0001)],
+					[(4, 0.0001), (5, 0.1), (6, 0.0)]
+				]
+		),
 	]
 )
 def test_separate_again(data, expected):
 	series = pandas.Series(data)
-	points = polygon.decompose(series)
-	result = polygon.separate(points)
+	points = polygon.get_vertices(series)
+	result = polygon.isolate_polygons(points)
 
 	assert result == expected
 
@@ -114,5 +129,5 @@ def test_separate_again(data, expected):
 )
 def test_decompose(data, expected):
 	series = pandas.Series(data)
-	result = polygon.decompose(series)
+	result = polygon.get_vertices(series)
 	assert result == expected

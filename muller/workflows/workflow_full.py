@@ -47,8 +47,7 @@ from muller.dataio import projectdata, annotations
 
 
 def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, slimit: float, flimit: float,
-		pvalue: float,
-		breakpoints: List[float], known_genotypes: Optional[Path], threads: Optional[int]) -> projectdata.DataGenotypeInference:
+		pvalue: float, known_genotypes: Optional[Path] = None, threads: Optional[int] = None) -> projectdata.DataGenotypeInference:
 	"""
 	Parameters
 	----------

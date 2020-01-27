@@ -99,53 +99,57 @@ if __name__ == "__main__":
 		}
 	)
 	annotations = {
-		'M1/M2': ["yciR Y355D", "rpfR E481D"],
+		'M1/M2': ["yciR Y355D", "monoxygenase E481D"],
 		'M3': ["OGHD R204S"],
-		'M4/M5': ["LysR-like L40V", "d95 d95"],
-		'M5': ["d95 d95"],
-		'M6': ["manC STOP"],
-		'M7': ["bfr 5`"],
-		'M8': ["succinate dehydrogenase synonymous"],
-		'M9': ["d49 d49"],
+		'M4/M5': ["LysR-like", "95 gene deletion"],
+		'M6': ["manC -1bp"],
+		'M7': ["bfr 5` -10bp"],
+		'M8': ["49 gene deletion"],
+		'M9': ["succinate dehydrogenase G147G"],
 		'M10':["DUF88 A209P"],
-		'M11': ["MltA 5`"],
+		'M11': ["MltA 5` -10bp"],
 		'M12': ["wspD L35P"],
 		'M13': ["wspA A407V"],
 		'M14': ["wspE S726L"],
-		'M15': ["rpfR A106P"],
-		'M16': ["rpoC A1318V"],
-		'M17': ["wspA I196N"],
-		'M18': ["bfr 5`"],
-		'M19': ["McsS Synonymous"],
-		'M20': ["manC T154A"]
+		'M15': ["yciR A106P"],
+		'M16': ["wspA I196N"],
+		'M17': ["rpoC A1318V"],
+		'M18': ["bfr 5` -35bp"],
+		'M19': ["McsS R135R"],
+		'M20': ["manC A412V"]
 	}
-	other = "#111111"
-	genotypes = [
-		"#fca082",
-		'#37a055',
-		'#9e9ac8',
-		'#ff5c00',
-		'#3787c0',
-		'#ff7f00'
+
+	genotypemap = [
+		["M1/M2"],
+		["M13", "M20"],
+		["M15", "M16", "MM17"],
+		["M14", "M18"],
+		["M3"],
+		["M4/M5"],
+		["M6", "M7"],
+		["M19"],
+		["M10", "M11", "M12", "M9"],
+		["M8"]
 	]
 	singleton = "#FFFFFF"
 	palette = {
-		'M1/M2': genotypes[0],
-		'M3': '#aedea7',
-		'M4/M5': genotypes[1],
-		'M6': genotypes[2],
-		'M7': genotypes[2],
-		'M8': genotypes[3],
-		'M9': '#ffff07',
-		'M10': genotypes[3],
-		'M11': genotypes[3],
-		'M12': genotypes[3],
-		'M13': other,
-		'M14': other,
-		'M15': genotypes[4],
-		'M16': genotypes[4],
-		'M17': genotypes[4],
-		'M18': other
+		'M1/M2': "#fca082",
+		'M3': "#aedea7",
+		'M4/M5': "#371055",
+		'M6': "#9e9ac8",
+		'M7': "#9e9ac8",
+		'M8': "#ffff07",
+		'M9': "#ff5c00",
+		'M10': "#ff5c00",
+		'M11': "#ff5c00",
+		'M12': "#ff5c00",
+		'M13': "#adb0e6",
+		'M14': "#e32f27",
+		'M15': "#3787c0",
+		'M16': "#3787c0",
+		'M17': "#3787c0",
+		'M18': "#e32f27",
+		'M20': "#adb0e6"
 	}
 	output = Path("/media/cld100/FA86364B863608A1/Users/cld100/Storage/projects/muller/manuscript/figures/results/flowchart.png")
 

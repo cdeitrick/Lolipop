@@ -90,7 +90,6 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 		alias_map = {}
 
 	column_label_gene = 'gene'
-	annotation_columns = ["annotation", "mutation"]
 	annotation_column = 'annotation'
 
 	trajectory_annotations = dict()

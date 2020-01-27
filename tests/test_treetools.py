@@ -41,6 +41,7 @@ def test_parse_tree():
 		genotype-1	genotype-8
 	"""
 	table = dataio.import_table(string)
+	table = table.set_index('Identity')['Parent']
 
 	expected_parent = {
 		'genotype-1':  'genotype-1',
