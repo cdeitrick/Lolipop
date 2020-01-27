@@ -10,7 +10,8 @@ import itertools
 
 # There is an issue when attempting to calculate the area of a series. Rather than trying to calculate on individual polygons,
 # We use a very small value rather than 0 so that the entire series is technically a single polygon.
-# Will try to fix this issue later.
+# shapely throws a TopologyError if this isn't done anytime you try to get the subset of two polygons.
+# The minimum value shouldn't change the calculated area enough to affect anything.
 MINIMUM = 0.0001
 
 
@@ -98,14 +99,15 @@ def _correct_one_dimensional_sections(points: List[Tuple[float, float]]) -> List
 
 
 
-def get_vertices(series: pandas.Series, use_index:bool = False) -> List[PointType]:
+def get_vertices(series: Union[List[PointType], pandas.Series], use_index:bool = False) -> List[PointType]:
 	""" Converts a trajectory/genotype timeseries into a 2D polygon"""
 	# Make sure one-dimensional points are omitted.
 	# Use a very small value rather than `0` due to how shapely calculates area.
 	#minimum = 0.0001
 	# Note: Apparently the area is properly calculated now as it was intended to, so this hack isn't necessary anymore.
 	# Will keep the process but use `0` as the minimum value in case the hack needs to be re-enabled.
-
+	if not isinstance(series, pandas.Series):
+		series = pandas.Series(series)
 	masked_series = series.mask(lambda s: s < MINIMUM, MINIMUM).tolist()
 	masked_series[0] = series.values[0]
 	masked_series[-1] = series.values[-1]

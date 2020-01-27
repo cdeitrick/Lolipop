@@ -190,6 +190,8 @@ def is_subset(left: pandas.Series, right: pandas.Series) -> bool:
 	except TopologicalError as exception:
 		logger.error(f"{left.values}, {left.index}")
 		logger.error(f"{right.values}, {right.index}")
+		logger.error(f"Left polygon: {left_poly}")
+		logger.error(f"Right polygon: {right_poly}")
 		logger.error(f"TopologyError")
 		return False
 

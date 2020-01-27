@@ -33,6 +33,17 @@ def test_get_points(trajectory_table, key, expected):
 
 	assert result == expected
 
+@pytest.mark.parametrize(
+	"data, expected",
+	[
+		([0, 1, 0, 0, .1, 0], [(0.0, 0), (1, 1.0), (2, polygon.MINIMUM), (3, polygon.MINIMUM), (4, 0.1), (5, 0)])
+	]
+)
+def test_get_vertices_again(data, expected):
+	result = polygon.get_vertices(data)
+
+	assert result == expected
+
 
 def test_decompose_correct_split_series():
 	series = pandas.Series([0.97, 0.0, 0.97, 0.97, 0.97, 0.87, 0.97])
@@ -78,11 +89,19 @@ def test_shoelace(trajectory_table, key, expected):
 @pytest.mark.parametrize(
 	"data, expected",
 	[
-		([(0, 0), (1, 1), (2, 0), (3, 0), (4, 0), (5, .1), (6, 0)], [[(0, 0), (1, 1), (2, 0)], [(4, 0), (5, .1), (6, 0)]]),
-		([(0, 0), (1, 1), (2, 0)], [[(0, 0), (1, 1), (2, 0)]]),
+		(
+				[(0, 0), (1, 1), (2, 0), (3, 0), (4, 0), (5, .1), (6, 0)],
+				[[(0, 0), (1, 1), (2, 0)], [(4, 0), (5, .1), (6, 0)]]
+		),
+		(
+				[(0, 0), (1, 1), (2, 0)],
+				[[(0, 0), (1, 1), (2, 0)]]
+		),
 		([], []),
-		([(0, 0), (0, .1), (1, .2), (2, .3), (3, .4), (4, .5), (5, .6), (6, .7), (6, 0)],
-		[[(0, 0), (0, .1), (1, .2), (2, .3), (3, .4), (4, .5), (5, .6), (6, .7), (6, 0)]])
+		(
+				[(0, 0), (0, .1), (1, .2), (2, .3), (3, .4), (4, .5), (5, .6), (6, .7), (6, 0)],
+				[[(0, 0), (0, .1), (1, .2), (2, .3), (3, .4), (4, .5), (5, .6), (6, .7), (6, 0)]],
+		),
 	]
 )
 def test_separate(data, expected):
@@ -93,21 +112,21 @@ def test_separate(data, expected):
 # data: The y-values for a specific series.
 # expected: The expected polygons generated from the sequence, where y=0 deliminates polygon vertices.
 @pytest.mark.parametrize(
-	"data, expected",
+	"data, expected,",
 	[
 		(
 				[0, 1, 0, 0, .1, 0],
 				[
 					# The polygon 0-1-0 is a triangle and is separate from the next polygon.
-					[(0, 0.0), (1, 1.0), (2, 0.0001)],
-					[(3, 0.0001), (4, .1), (5, 0.0)]
+					[(0, 0.0), (1, 1.0), (2, polygon.MINIMUM)],
+					[(3, polygon.MINIMUM), (4, .1), (5, 0.0)]
 				]
 		),
 		(
-				[0, 1, 0, 0, 0, .1, 0],
+				[0, 1, 0, 0, .1, 0],
 				[
-					[(0, 0.0), (1, 1.0), (2, 0.0001)],
-					[(4, 0.0001), (5, 0.1), (6, 0.0)]
+					[(0, 0.0), (1, 1.0), (2, polygon.MINIMUM)],
+					[(3, polygon.MINIMUM), (4, 0.1), (5, 0.0)]
 				]
 		),
 	]
@@ -117,7 +136,12 @@ def test_separate_again(data, expected):
 	points = polygon.get_vertices(series)
 	result = polygon.isolate_polygons(points)
 
-	assert result == expected
+	# Note: polygon.isolate_polygons returns a single polygon for each series. This is to prevent
+	# a TopologyError from shapely.
+	# This is basicaly a list with another list as the only element.
+	expected = expected[0] + expected[1]
+
+	assert result[0] == expected
 
 
 @pytest.mark.parametrize(
