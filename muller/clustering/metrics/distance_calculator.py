@@ -39,8 +39,9 @@ class DistanceCalculator:
 		progress_bar = tqdm(total = total)
 		pool = multiprocessing.Pool(processes = self.threads)
 		for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
-			key, value = i.get()
+			key, value = i.get() # retrieve the calculated value
 			pair_array[key] = value
+			pair_array[key[::-1]] = value
 			progress_bar.update(1)
 
 		return pair_array
@@ -53,8 +54,7 @@ class DistanceCalculator:
 		for element in pair_combinations:
 			key, value = calculate_distance(self, element, self.trajectories)
 			pair_array[key] = value
-			pair_array[
-				key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
+			pair_array[key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
 			progress_bar.update(1)
 		return pair_array
 
@@ -70,7 +70,7 @@ class DistanceCalculator:
 
 		logger.debug(f"Generating pairwise combinations with {total_elements} items resulting in {total_combinations} combinations...")
 
-		if total_combinations > 1_000_000_000:
+		if total_combinations > 100_000_000:
 			message = f"The provided dataset has {total_elements} trajectories, which requires {total_combinations} distance calculations." \
 					  "This will require a long time to process (you may need to adjust the number of available threads with the --threads option)" \
 					  "and will consume a large amount of memory (i.e. more than 16GB)."
