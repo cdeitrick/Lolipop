@@ -143,11 +143,15 @@ def run_workflow(program_options: argparse.Namespace):
 		logger.info(f"\t{key:<30}{value}")
 	output_folder = program_options.output_folder
 
+
 	data_basic = projectdata.DataWorkflowBasic(
 		version = commandline_parser.__VERSION__,
 		filename = program_options.filename,
 		program_options = program_options
 	)
+	if not data_basic.program_options.output_folder.exists():
+		data_basic.program_options.output_folder.mkdir()
+
 	trajectory_table, trajectory_info = dataio.parse_trajectory_table(program_options.filename, program_options.sheetname)
 
 	# Need to read in the input dataset.
@@ -159,7 +163,6 @@ def run_workflow(program_options: argparse.Namespace):
 		slimit = program_options.slimit,
 		flimit = program_options.flimit,
 		pvalue = program_options.pvalue,
-		breakpoints = program_options.frequencies,
 		known_genotypes = program_options.known_genotypes,
 		threads = program_options.threads
 	)
@@ -174,8 +177,7 @@ def run_workflow(program_options: argparse.Namespace):
 		known_ancestry = program_options.known_ancestry
 	)
 
-	if not data_basic.program_options.output_folder.exists():
-		data_basic.program_options.output_folder.mkdir()
+
 	save_tables(data_basic, result_genotype_inference, result_genotype_lineage, genotype_annotations)
 	# Save using the older graphics workflow for now.
 	render_graphics(
