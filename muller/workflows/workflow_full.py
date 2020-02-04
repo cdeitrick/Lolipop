@@ -45,6 +45,12 @@ from loguru import logger
 from muller import clustering, dataio, inheritance, commandline_parser
 from muller.dataio import projectdata, annotations
 
+logger.remove() # Need to remove the default sink so that the logger doesn't print messages twice.
+import sys
+if commandline_parser.DEBUG:
+	logger.add(sys.stderr, level = "DEBUG")
+else:
+	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, slimit: float, flimit: float,
 		pvalue: float, known_genotypes: Optional[Path] = None, threads: Optional[int] = None) -> projectdata.DataGenotypeInference:
