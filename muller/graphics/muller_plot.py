@@ -6,7 +6,7 @@ import math
 import random
 from itertools import filterfalse
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Tuple, Union
+from typing import *
 
 import pandas
 from loguru import logger
@@ -293,7 +293,6 @@ class MullerPlot:
 		-------
 		x, y, colors, labels
 		"""
-		# TODO Add a method to highlight clades based on a gene or mutation of interest.
 		genotype_order = list(unique_everseen(muller_df['Group_id'].tolist()))
 
 		x_values = list(unique_everseen(muller_df['Generation'].tolist()))
@@ -444,12 +443,6 @@ class MullerPlot:
 
 		return mean_x, mean_y
 
-	def plot_multiple(self, muller_df: pandas.DataFrame, filenames: Dict[str, List[Path]], palettes: List[Palette] = None,
-			annotations: Optional[Dict[str, List[str]]] = None,
-			title: Optional[str] = None, ax: Optional[plt.Axes] = None):
-		for palette in palettes:
-			fnames = filenames[palette.name]
-			self.plot(muller_df, fnames, palette, annotations, title, ax)
 
 	def plot(self, muller_df: pandas.DataFrame, filename:Path = None, color_palette: Dict[str, str] = None,
 			annotations: Optional[Dict[str, List[str]]] = None,

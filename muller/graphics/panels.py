@@ -18,6 +18,7 @@ from typing import Optional, Tuple, List
 
 from loguru import logger
 
+
 class TimeseriesPanel:
 	""" Plots the genotype frequencies over time with an inset of the original mutaitonal trajectories.
 		Parameters
@@ -68,14 +69,9 @@ class TimeseriesPanel:
 			scale_y = self.scale_max
 		return scale_x, scale_y
 
-	def run_multiple(self, timeseries_genotype, palettes: List[Palette], filenames: Dict[str,List[Path]], timeseries_trajectory:Optional[pandas.DataFrame] = None):
 
-		for palette in palettes:
-			fnames = filenames[palette.name]
-			self.run(timeseries_genotype, palette, fnames, timeseries_trajectory)
-
-	def run(self, timeseries_genotype: pandas.DataFrame, palette: Palette, filename:Path,
-			timeseries_trajectory: Optional[pandas.DataFrame]=None):
+	def run(self, timeseries_genotype: pandas.DataFrame, palette: Palette, filename: Path,
+			timeseries_trajectory: Optional[pandas.DataFrame] = None):
 		"""
 			Plots the clustered muller_genotypes.
 		Parameters
@@ -105,7 +101,7 @@ class TimeseriesPanel:
 		# Upper left. The legend will occupy the remaining space in the upper right.
 		plotter = TimeseriesPlot()
 		# Manually define the figure to control the figure size
-		figure = plt.Figure(figsize = (12*scale_x, 10*scale_y))
+		figure = plt.Figure(figsize = (12 * scale_x, 10 * scale_y))
 		grid = plt.GridSpec(2, 3, wspace = 0.4, hspace = 0.3, figure = figure)
 
 		# Plot all trajectories
@@ -152,15 +148,6 @@ class MullerPanel:
 		self.vertical = vertical  # The orientation of the plots.
 		self.vertical = False
 		self.render = render
-
-	def plot_multiple(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palettes: List[Palette],
-			annotations: Dict[str, List[str]] = None, filenames: Dict[str, List[Path]] = None):
-		for palette in palettes:
-			if filenames:
-				fnames = filenames[palette.name]
-			else:
-				fnames = None
-			self.plot(timeseries, muller_df, palette, annotations, fnames)
 
 	def plot(self, timeseries: pandas.DataFrame, muller_df: pandas.DataFrame, palette: Palette = None, annotations: Dict[str, List[str]] = None,
 			filename: Optional[Path] = None):
@@ -214,8 +201,8 @@ def convert_population_to_timeseries(populations: pandas.DataFrame) -> pandas.Da
 	return table
 
 
-def _generate_image_size(size_muller:Tuple[int,int], size_lineage:Tuple[int,int], vertical:bool)->Tuple[Tuple[int,int], Tuple[int,int], Tuple[int,int]]:
-
+def _generate_image_size(size_muller: Tuple[int, int], size_lineage: Tuple[int, int], vertical: bool) -> Tuple[
+	Tuple[int, int], Tuple[int, int], Tuple[int, int]]:
 	muller_width, muller_height = size_muller
 	lineage_width, lineage_height = size_lineage
 
@@ -240,14 +227,14 @@ def _generate_image_size(size_muller:Tuple[int,int], size_lineage:Tuple[int,int]
 	return (new_lineage_width, new_lineage_height), (panel_width, panel_height), position
 
 
-
-
-def generate_lineage_panel(filename_muller: Path, filename_lineage:Path, filename:Path, vertical:bool = True):
+def generate_lineage_panel(filename_muller: Path, filename_lineage: Path, filename: Path, vertical: bool = True):
 	""" Combines the muller plot and lineage plots into a single figure."""
 
-	# TODO: add PIL as an optional requirement.
-	from PIL import Image
-
+	try:
+		from PIL import Image
+	except ModuleNotFoundError:
+		# Cannot combine the two plots.
+		return None
 	image_muller: Image = Image.open(filename_muller)
 	image_lineage: Image = Image.open(filename_lineage)
 
@@ -256,7 +243,7 @@ def generate_lineage_panel(filename_muller: Path, filename_lineage:Path, filenam
 	image_lineage = image_lineage.resize(new_lineage_size)
 	# Generate the new figure
 	newimage = Image.new(image_muller.mode, panel_size)
-	newimage.paste(image_muller, (0,0))
+	newimage.paste(image_muller, (0, 0))
 	newimage.paste(image_lineage, position)
 
 	newimage.save(filename)

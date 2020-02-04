@@ -3,8 +3,9 @@ import itertools
 import re
 from pathlib import Path
 from typing import *
-from loguru import logger
+
 import pandas
+from loguru import logger
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
@@ -16,7 +17,7 @@ def checkdir(path: Union[str, Path]) -> Path:
 	return path
 
 
-def get_numeric_columns(columns: List[str]) -> List[str]:
+def get_numeric_columns(columns: List[Union[str, int, float]]) -> List[Union[str, int, float]]:
 	numeric_columns = list()
 	for column in columns:
 		if isinstance(column, str):
@@ -163,12 +164,7 @@ def overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> int:
 	return sum(result)
 
 
-def find_boundaries_detected(trajectory: pandas.Series, dlimit: float) -> Tuple[int, int]:
-	""" Returns the start and stop points of a series"""
-	detected = trajectory[trajectory > dlimit]
-	return min(detected.index), max(detected.index)
-
-
+# noinspection PyTypeChecker
 def find_boundaries_fixed(trajectory: pandas.Series, flimit: float) -> Optional[Tuple[int, int]]:
 	fixed_series = trajectory[trajectory > flimit]
 	# Assume index is sorted to avoid the situation where the index is str.
