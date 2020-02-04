@@ -1,6 +1,5 @@
-import re
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Union
+from typing import *
 
 import pandas
 

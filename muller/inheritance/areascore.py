@@ -1,5 +1,4 @@
 import math
-from typing import Union
 
 import pandas
 from loguru import logger

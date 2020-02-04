@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Dict, Optional, List, Tuple, Union
 from muller import widgets
 from muller.graphics.palettes import palette_distinctive, Palette
-from loguru import logger
 
 class TimeseriesPlot:
 	def __init__(self, render: bool = True, legend: bool = True, scale: int = 1, style: Optional[str] = None):

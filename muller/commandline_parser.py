@@ -9,7 +9,7 @@ try:
 except ModuleNotFoundError:
 	from . import dataio
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
 __VERSION__ = "0.7.0"
 DEBUG = False
@@ -42,6 +42,7 @@ class ProgramOptions(argparse.Namespace):
 ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
 
 
+# noinspection PyTypeChecker
 def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOptions:
 	"""
 		Generates values for each of the program parameters from the given parameters on the command line.
@@ -473,6 +474,7 @@ def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
 		help = "A table with either a `Trajectory` column or a `Genotype` column.",
 		type = Path
 	)
+	return parser_timeseries
 
 def get_arguments(arguments:Optional[List[str]] = None)->argparse.Namespace:
 	""" Implemented here to make sure the default parameters are properly applied. """

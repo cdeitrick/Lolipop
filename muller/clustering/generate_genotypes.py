@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import numpy
 import pandas
 from loguru import logger
 
@@ -40,7 +39,7 @@ class ClusterMutations:
 		self.pvalue: float = pvalue
 		self.known_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.filename_pairwise = None
-
+		self.pairwise_distances_full = None # overwritten in self.get_pairwise_distances.
 		logger.debug(f"Generating genotypes...")
 		logger.debug(f"\t metric: {metric}")
 		logger.debug(f"\t dlimit: {dlimit}")
@@ -182,6 +181,8 @@ class ClusterMutations:
 				- Columns -> int
 					The timeseries points will correspond to the frequencies for each trajectory included with the input sheet.
 					Each trajectory/timepoint will include the observed frequency at each timepoint.
+		distance_cutoff: Optional[float]
+			Used to determine the distance cutoff when clustering genomtypes.
 		"""
 
 		modified_trajectories = trajectories.copy(deep = True)  # To avoid unintended changes

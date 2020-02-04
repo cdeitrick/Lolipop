@@ -74,13 +74,13 @@ def _extract_value(row: Mapping[str, str], column: str) -> Optional[str]:
 	return value
 
 
-def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, List[str]]:
+def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] = None) -> Dict[str, str]:
 	""" Maps trajectories to their corresponding mutation.
 		Parameters
 		----------
 		info: pandas.DataFrame
 			The info table. Each column label should be lowercase.
-			alias_filename: Will map each gene from the infotable to an alias.
+		alias_filename: Will map each gene from the infotable to an alias.
 	"""
 	# Make the column labels lowercase so we don't have to care about capitalization
 	info.columns = [str(i).lower() for i in info.columns]
@@ -92,7 +92,7 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 	column_label_gene = 'gene'
 	annotation_column = 'annotation'
 
-	trajectory_annotations = dict()
+	trajectory_annotations: Dict[str,str] = dict()
 	for trajectory_label, row in info.iterrows():
 		# Since the columns from the info table should already be lowercase, we don't need this method anymore.
 		gene_value = row.get(column_label_gene)

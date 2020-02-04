@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Iterable
+from typing import *
 
 import pandas
 
@@ -6,21 +6,16 @@ from . import colorset
 from .palette_annotation import generate_annotation_palette
 from .palette_distinctive import generate_distinctive_palette
 from .palette_lineage import generate_lineage_palette
-from loguru import logger
 
 def generate_palette(edges: pandas.Series, custom_palette: Dict[str, str] = None, annotations: Dict[str, List[str]] = None,
 		kind = 'distinctive') -> Dict[str, str]:
 	"""
 	Parameters
 	----------
-	genotypes: A list of unique genotypes or the edges table.
+	edges: A list of unique genotypes or the edges table.
 	custom_palette: Dict[str,str]
 	annotations
 	kind
-
-	Returns
-	-------
-
 	"""
 	if custom_palette is None: custom_palette = {}
 	if annotations is None: custom_palette = {}

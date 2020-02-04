@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 # plt.switch_backend('agg')
 import pandas
 import seaborn
-from loguru import logger
 
 def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	font = {

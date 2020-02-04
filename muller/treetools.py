@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 
 import pandas
 
-from loguru import logger
 def get_child_nodes(tree: pandas.DataFrame, label: str) -> List[str]:
 	"""Retrieves all child node for the given label from the tree. Includes `label` in the output"""
 

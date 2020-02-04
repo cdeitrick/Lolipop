@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List, Tuple, Union
+from typing import *
 
 import pandas
 from shapely import geometry
@@ -15,7 +15,7 @@ import itertools
 MINIMUM = 0.0001
 
 
-def sliding_window_legacy(iterable: Iterable, width: int):
+def sliding_window_legacy(iterable: List, width: int):
 	for index in range(len(iterable)):
 		try:
 			if index + width > len(iterable):

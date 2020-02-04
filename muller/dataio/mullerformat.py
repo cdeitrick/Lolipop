@@ -5,7 +5,6 @@ from typing import Any, Iterable, List, Optional, Union
 import pandas
 
 Numeric = Union[int, float]
-from loguru import logger
 
 def lag_gens(x: int, values: Iterable[int]) -> int:
 	# function to get the generation previous to a specified generation:

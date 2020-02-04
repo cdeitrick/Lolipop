@@ -61,7 +61,6 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 		genotype-2	0	.2	.1 ...
 	metric: Literal['']
 	dlimit, slimit, flimit, pvalue: float
-	breakpoints
 	known_genotypes
 	threads
 	"""

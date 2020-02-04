@@ -31,7 +31,6 @@ class LegacyScore:
 		Parameters
 		----------
 		nested_genotype, unnested_genotype: pandas.Series
-		cutoff: The minimum distance between each timepoint between `nested_genotype` and `unnested_genotype`
 		"""
 		difference = nested_genotype - unnested_genotype
 
@@ -54,11 +53,6 @@ class LegacyScore:
 		----------
 		left, right: pandas.Series
 			The two series to test.
-		detection_cutoff: float
-			Used to determine which points to use for the comparison.
-		cutoff: float
-			The cutoff value to determine whther the series are actually correlated/anticorrelated. Any value within the range [-`cutoff`, `cutoff`]
-			results in a score of 0.
 		"""
 		# Pandas implementation of the derivative check, since it basically just checks for covariance.
 		valid_left, valid_right = widgets.get_valid_points(left, right, self.dlimit, self.flimit)
@@ -110,10 +104,7 @@ class LegacyScore:
 		Parameters
 		----------
 		left, right: pandas.Series
-		fixed_cutoff: The fixed breakpoint.
-		cutoff: Governs whether two series consistently sum to a value greater than `fixed_cutoff`. Should be in the range [0,1]
 		"""
-		# TODO: Maybe the cutoff should be the variance as calculated from the clustering step.
 		combined = left + right
 		above_fixed = combined - self.flimit
 
@@ -254,8 +245,10 @@ class Score:
 		# If the nested genotype is not fixed, group the remaining frequencies into an `other` category.
 		difference_series = nested_genotype - unnested_genotype
 		if difference_series.mean() > 0:
+			# noinspection PyTypeChecker
 			other_genotypes: pandas.Series = self.flimit - nested_genotype
 		else:
+			# noinspection PyTypeChecker
 			other_genotypes: pandas.Series = self.flimit - unnested_genotype  # In case we're testing if a small genotype contains a large genotype
 
 		other_genotypes = other_genotypes.mask(lambda s: s < 0, 0.0001)  # Since the flimit is not exactly 1.
