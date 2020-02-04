@@ -21,6 +21,7 @@ setup(
 		'Show progressbar for large datasets': ['tqdm'],
 		'Additional support for parsing files': ['beautifulsoup4'],
 		'List similar annotations when selecting genotypes': ['fuzzywuzzy'],
+		'Generate composite graphs from the genotye/lineage/timeseries plots': ["pillow"],
 		'To run tests': ["pytest"]
 	},
 	provides = 'lolipop',
