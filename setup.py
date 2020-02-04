@@ -8,7 +8,7 @@ FOLDER = Path(__file__).parent
 README = FOLDER / "README.md"
 
 with README.open() as readmefile:
-    LONG_DESCRIPTION = readmefile.read()
+	LONG_DESCRIPTION = readmefile.read()
 
 setup(
 	name = 'lolipop',
