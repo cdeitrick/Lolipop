@@ -1,7 +1,6 @@
 import argparse
 import itertools
 import math
-import sys
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -10,13 +9,14 @@ try:
 except ModuleNotFoundError:
 	from . import dataio
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
-__VERSION__ = "0.6.0"
+__VERSION__ = "0.7.0"
 DEBUG = False
 
 
 # For convienience. Helps with autocomplete.
+# Not really used, will probably remove later.
 @dataclass
 class ProgramOptions(argparse.Namespace):
 	filename: Path
@@ -38,46 +38,12 @@ class ProgramOptions(argparse.Namespace):
 	metric: str = "similarity"
 	known_genotypes: Optional[Path] = None
 
-	def show(self):
-		for field in fields(self):
-			print(field)
-
 
 ACCEPTED_METHODS = ["matlab", "hierarchy", "twostep"]
 
 
-# Custom method added to argparse.ArgumentParser
-def set_default_subparser(self, name, args = None, positional_args = 0):
-	"""default subparser selection. Call after setup, just before parse_args()
-	name: is the name of the subparser to call by default
-	args: if set is the argument list handed to parse_args()
-
-	, tested with 2.7, 3.2, 3.3, 3.4
-	it works with 2.6 assuming argparse is installed
-	"""
-
-	subparser_found = False
-	for arg in sys.argv[1:]:
-		if arg in ['-h', '--help']:  # global help if no subparser
-			break
-	else:
-		for x in self._subparsers._actions:
-			if not isinstance(x, argparse._SubParsersAction):
-				continue
-			for sp_name in x._name_parser_map.keys():
-				if sp_name in sys.argv[1:]:
-					subparser_found = True
-		if not subparser_found:
-			# insert default in last position before global positional
-			# arguments, this implies no global options are specified after
-			# first positional argument
-			if args is None:
-				sys.argv.insert(len(sys.argv) - positional_args, name)
-			else:
-				args.insert(len(args) - positional_args, name)
-
-
-def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
+# noinspection PyTypeChecker
+def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOptions:
 	"""
 		Generates values for each of the program parameters from the given parameters on the command line.
 	Parameters
@@ -89,24 +55,17 @@ def parse_workflow_options(program_options: ProgramOptions) -> ProgramOptions:
 
 	"""
 
-	if program_options.fixed_breakpoint is None:
-		program_options.fixed_breakpoint = 1 - program_options.detection_breakpoint
-	if program_options.additive_cutoff is None:
-		program_options.additive_cutoff = program_options.detection_breakpoint
-	if program_options.subtractive_cutoff is None:
-		program_options.subtractive_cutoff = program_options.detection_breakpoint
-
+	if program_options.flimit is None:
+		program_options.flimit = 1 - program_options.dlimit
 	if program_options.known_genotypes:
 		program_options.known_genotypes = Path(program_options.known_genotypes)
-		starting_genotypes = dataio.parse_known_genotypes(program_options.known_genotypes)
+		starting_genotypes = dataio.import_file.parse_known_genotypes(program_options.known_genotypes)
 	else:
 		starting_genotypes = None
 
 	program_options.starting_genotypes = starting_genotypes
-	cluster_method = program_options.method
-	if cluster_method not in ACCEPTED_METHODS:
-		message = f"{cluster_method} is not a valid option for the --method option. Expected one of {ACCEPTED_METHODS}"
-		raise ValueError(message)
+	if program_options.output_folder is None:
+		program_options.output_folder = program_options.filename.stem
 	return program_options
 
 
@@ -140,7 +99,7 @@ class FrequencyParser(argparse.Action):
 
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
-		detected = namespace.detection_breakpoint
+		detected = namespace.dlimit
 		if values == "1":
 			values = 1 - detected
 		else:
@@ -149,34 +108,6 @@ class FixedBreakpointParser(argparse.Action):
 
 
 # noinspection PyTypeChecker
-
-def create_utility_parser(subparsers) -> argparse.ArgumentParser:
-	""" Defines options for utilities that complement the scripts.
-		TODO: Add a script to directly convert breseq output to muller input.
-	"""
-	parser_benchmark: argparse.ArgumentParser = subparsers.add_parser(
-		"benchmark",
-		help = "Runs a series of benchmarks to test the time required to calculate all pairwise distances of a dataset based on available processes."
-	)
-	parser_benchmark.add_argument(
-		"--benchmark",
-		help = "",
-		action = "store_true",
-	)
-	parser_benchmark.add_argument(
-		"--dataset",
-		help = "The location of a test dataset to use. Should be large enough that adding additional processes will actually imrpove parsing speed.",
-		type = Path
-	)
-	parser_benchmark.add_argument(
-		"--output",
-		help = "The filenme of the output graph. Should be a .png file.",
-		type = Path
-	)
-
-	return parser_benchmark
-
-
 def _create_parser_group_graphics(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
@@ -227,6 +158,7 @@ def _create_parser_group_graphics(parser: argparse.ArgumentParser):
 	return group_graphics
 
 
+# noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker
 def _create_parser_group_data(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
@@ -280,14 +212,34 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = "store",
 		dest = "threads",
 		type = int,
-		default = 2
+		default = 1
 	)
+
+	analysis_group.add_argument(
+		"--metric",
+		help = "The distance metric to use when clustering mutaitons into genotypes.",
+		action = "store",
+		dest = "metric",
+		type = str,
+		default = "binomial"
+	)
+
+	analysis_group.add_argument(
+		"-p", "--pvalue",
+		help = "The p-value to use for the statistics tests",
+		action = "store",
+		dest = "pvalue",
+		type = float,
+		default = 0.05
+	)
+
 	analysis_group.add_argument(
 		'--fixed',
 		help = "The minimum frequency at which to consider a mutation fixed.",
 		action = FixedBreakpointParser,
-		dest = 'fixed_breakpoint',
-		type = float
+		dest = 'flimit',
+		type = float,
+		default = None
 	)
 	analysis_group.add_argument(
 		"-d", "--detection",
@@ -295,7 +247,7 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 			For example, a frequency at a given timepoint is considered undetected if it falls below 0 + `uncertainty`.",
 		action = 'store',
 		default = 0.03,
-		dest = 'detection_breakpoint',
+		dest = 'dlimit',
 		type = float
 	)
 	analysis_group.add_argument(
@@ -303,23 +255,8 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		help = "The frequency at which to consider a genotype significantly greater than zero.",
 		action = 'store',
 		default = 0.15,
-		dest = "significant_breakpoint",
+		dest = "slimit",
 		type = float
-	)
-	analysis_group.add_argument(
-		"--additive",
-		help = "Controls how the additive score between a nested and unnested genotype is calculated. Defaults to the detection cutoff value.",
-		action = 'store',
-		default = None,
-		dest = 'additive_cutoff',
-		type = float
-	)
-	analysis_group.add_argument(
-		"--subtractive",
-		help = "Controls when the combined frequencies of a nested and unnested genotype are considered consistently larger than the fixed cutoff."
-			   "Defaults to the detection cutoff value.",
-		default = None,
-		dest = "subtractive_cutoff"
 	)
 	analysis_group.add_argument(
 		"--covariance",
@@ -339,22 +276,6 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		action = FrequencyParser,
 		dest = 'frequencies',
 		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-	)
-	analysis_group.add_argument(
-		"--similarity-cutoff",
-		help = "Maximum p-value difference to consider trajectories related. Used when grouping trajectories into genotypes.",
-		action = "store",
-		default = 0.05,
-		dest = "similarity_breakpoint",
-		type = float
-	)
-	analysis_group.add_argument(
-		"--difference-cutoff",
-		help = "Minimum p-value to consider a pair of genotypes unrelated. Used when splitting muller_genotypes when using the two-step method.",
-		action = "store",
-		default = 0.25,
-		dest = "difference_breakpoint",
-		type = float
 	)
 	return analysis_group
 
@@ -399,10 +320,17 @@ def _create_parser_group_filter(parser: argparse.ArgumentParser):
 		default = 0.1,
 		type = float
 	)
+	group_filter.add_argument(
+		"--disable-genotype-filter",
+		help = "Disables filtering based on genotypes.",
+		action = "store_false",
+		dest = "use_filter_genotype"
+	)
 
 	return group_filter
 
 
+# noinspection PyTypeChecker,PyTypeChecker
 def _create_parser_group_main(parser: argparse.ArgumentParser):
 	group_main = parser.add_argument_group(title = "Main Options")
 
@@ -412,7 +340,7 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 		action = 'store',
 		dest = 'filename',
 		type = Path,
-		# required = True
+		required = True
 	)
 	group_main.add_argument(
 		'-o', '--output',
@@ -452,53 +380,106 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 	return group_main
 
 
-def _create_parser_group_clustering(parser: argparse.ArgumentParser):
-	##############################################################################################################################################
-	# --------------------------------------------------- Genotype Clustering Options ------------------------------------------------------------
-	##############################################################################################################################################
-	group_cluster = parser.add_argument_group(title = "Genotype Clustering Parameters", description = "Configures how genotypes are clustered.")
-	group_cluster.add_argument(
-		'-m', '--method',
-		help = "The clustering method to use. `matlab` will use the original two-step algorithm while `hierarchy` will use hierarchical clustering.",
-		action = "store",
-		default = "hierarchy",
-		dest = "method",
-		choices = ['matlab', 'hierarchy', 'twostep']
-	)
-	group_cluster.add_argument(
-		"--metric",
-		help = "Selects the distance metric to use. Each metric tends to focus on a specific feature between two series, " \
-			   "such as the difference between them or how well they are correlated.",
-		action = "store",
-		default = "binomial",
-		dest = "metric",
-		choices = ['similarity', 'binomial', 'pearson', 'minkowski', 'jaccard', 'combined']
-	)
-
 
 def create_parser() -> argparse.ArgumentParser:
-	# Add the custom method to select the default parser
-	argparse.ArgumentParser.set_default_subparser = set_default_subparser
-
 	parser_parent = argparse.ArgumentParser(
 		description = "Infers genotypes and lineage based on mutation frequency timeseries data observed over the course of an evolutionary biology experiment.",
 		formatter_class = argparse.ArgumentDefaultsHelpFormatter
 	)
-
-	subparsers = parser_parent.add_subparsers()
-	parser = subparsers.add_parser("lineage")
-	parser.add_argument(
+	parser_parent.add_argument(
 		"-v", "--version",
 		action = 'version',
 		version = f"%(prog)s {__VERSION__}"
 	)
 
+	subparsers = parser_parent.add_subparsers(dest = 'name')  # Each subparser can be identifies by the `name` attribute.
+	create_main_parser(subparsers)
+	create_benchmark_parser(subparsers)
+	create_muller_parser(subparsers)
+
+	#parser_parent.set_default_parser = set_default_subparser
+	#parser_parent.set_default_parser('lineage')
+	return parser_parent
+
+
+def create_main_parser(subparsers) -> argparse.ArgumentParser:
+	parser = subparsers.add_parser("lineage")
+
 	# Broke up the indivisual groups into their own functions because this function was large enough to make browsing it annoying.
 	_create_parser_group_main(parser)
-	_create_parser_group_clustering(parser)
 	_create_parser_group_data(parser)
 	_create_parser_group_analysis(parser)
 	_create_parser_group_filter(parser)
 	_create_parser_group_graphics(parser)
-	create_utility_parser(subparsers)
-	return parser_parent
+
+	return parser
+
+
+# noinspection PyTypeChecker,PyTypeChecker
+def create_benchmark_parser(subparsers) -> argparse.ArgumentParser:
+	""" Defines options for utilities that complement the scripts.
+		TODO: Add a script to directly convert breseq output to muller input.
+	"""
+	parser_benchmark: argparse.ArgumentParser = subparsers.add_parser(
+		"benchmark",
+		help = "Runs a series of benchmarks to test the time required to calculate all pairwise distances of a dataset based on available processes."
+	)
+	parser_benchmark.add_argument(
+		"--dataset",
+		help = "The location of a test dataset to use. Should be large enough that adding additional processes will actually imrpove parsing speed.",
+		type = Path
+	)
+	parser_benchmark.add_argument(
+		"--output",
+		help = "The filenme of the output graph. Should be a .png file.",
+		type = Path
+	)
+
+	return parser_benchmark
+
+
+# noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker
+def create_muller_parser(subparsers) -> argparse.ArgumentParser:
+	parser_muller: argparse.ArgumentParser = subparsers.add_parser(
+		"muller",
+		help = "Generates muller plots from a pair od `population` and `edges` tables."
+	)
+
+	parser_muller.add_argument(
+		"population",
+		help = "Path to the population table.",
+		type = Path
+	)
+
+	parser_muller.add_argument(
+		"edges",
+		help = "Path to the edges table delineating the lineage of the population genotypes.",
+		type = Path
+	)
+	parser_muller.add_argument(
+		"output",
+		help = "Path to save the generated muller plot as.",
+		type = Path
+	)
+
+	return parser_muller
+
+def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
+	parser_timeseries: argparse.ArgumentParser = subparsers.add_parser(
+		"timeseries",
+		help = "A small utility to plot timeseries tables."
+	)
+	parser_timeseries.add_argument(
+		"timeseries",
+		help = "A table with either a `Trajectory` column or a `Genotype` column.",
+		type = Path
+	)
+	return parser_timeseries
+
+def get_arguments(arguments:Optional[List[str]] = None)->argparse.Namespace:
+	""" Implemented here to make sure the default parameters are properly applied. """
+	parser = create_parser()
+	args = parser.parse_args(arguments)
+
+	args = parse_workflow_options(args)
+	return args

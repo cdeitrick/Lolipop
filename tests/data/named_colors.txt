@@ -1,0 +1,36 @@
+https://matplotlib.org/3.1.0/gallery/color/named_colors.html
+[set 1]
+black
+red
+sienna
+orange
+gold
+green
+teal
+aqua
+steelblue
+orchid
+
+[set 2]
+dimgray
+rosybrown
+maroon
+peru
+darkgoldenrod
+olive
+lightseagreen
+deepskyblue
+indigo
+violet
+
+[set 3]
+silver
+salmon
+burlywood
+goldenrod
+khaki
+forestgreen
+dodgerblue
+slateblue
+plum
+deeppink

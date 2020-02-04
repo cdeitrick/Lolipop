@@ -1,14 +1,23 @@
 import csv
+import itertools
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import *
 
 import pandas
+from loguru import logger
 
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
 
-def get_numeric_columns(columns: List[str]) -> List[str]:
+def checkdir(path: Union[str, Path]) -> Path:
+	path = Path(path)
+	if not path.exists():
+		path.mkdir()
+	return path
+
+
+def get_numeric_columns(columns: List[Union[str, int, float]]) -> List[Union[str, int, float]]:
 	numeric_columns = list()
 	for column in columns:
 		if isinstance(column, str):
@@ -102,17 +111,6 @@ def get_valid_points(left_trajectory: pandas.Series, right_trajectory: pandas.Se
 get_detected_points = get_valid_points
 
 
-def format_linkage_matrix(linkage_table, total_members: Optional[int]) -> pandas.DataFrame:
-	linkage_dataframe = pandas.DataFrame(linkage_table, columns = ["left", "right", "distance", "observations"])
-
-	linkage_dataframe['left'] = linkage_dataframe['left'].astype(int)
-	linkage_dataframe['right'] = linkage_dataframe['right'].astype(int)
-	linkage_dataframe['observations'] = linkage_dataframe['observations'].astype(int)
-	if total_members:
-		linkage_dataframe['clusterId'] = list(total_members + i for i in range(len(linkage_dataframe)))
-	return linkage_dataframe
-
-
 def calculate_luminance(color: str) -> float:
 	# 0.299 * color.R + 0.587 * color.G + 0.114 * color.B
 	red = int(color[1:3], 16)
@@ -137,7 +135,42 @@ def fixed_immediately(trajectory: pandas.Series, dlimit: float, flimit: float) -
 
 
 def fixed(trajectory: pandas.Series, flimit: float) -> bool:
-	return any(i > flimit for i in trajectory.values)
+	""" Tests whether the input series fixed at any point.
+		If it throws a ValueError due to being an array, check the input data for duplicate labels
+	"""
+	try:
+		return any(i > flimit for i in trajectory.values)
+	except ValueError:
+		message = "Encountered an error when selecting 'fixed' trajectories. This is usually caused by duplicate trajectory ids in the input table."
+		if isinstance(trajectory, pandas.DataFrame):
+			message += f"\nRename these trajectories: {list(trajectory.index)}"
+		raise ValueError(message)
+	except TypeError as exception:
+		logger.warning(f"Trajectory: {trajectory.values}")
+		logger.warning(f"flimit: {flimit}")
+
+		raise exception
+
+
+def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
+	""" Tests whether the series immediately fixed and stayed fixed."""
+	series = ((i > flimit or i < dlimit) for i in trajectory.values)
+	return all(series)
+
+
+def overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> int:
+	result = [(i > dlimit and j > dlimit) for i, j in zip(left.values, right.values)]
+
+	return sum(result)
+
+
+# noinspection PyTypeChecker
+def find_boundaries_fixed(trajectory: pandas.Series, flimit: float) -> Optional[Tuple[int, int]]:
+	fixed_series = trajectory[trajectory > flimit]
+	# Assume index is sorted to avoid the situation where the index is str.
+	if fixed_series.empty: return None
+	else:
+		return fixed_series.index[0], fixed_series.index[-1]
 
 
 def _get_git_log() -> str:
@@ -167,3 +200,19 @@ def get_commit_hash() -> str:
 	else:
 		commit_hash = "not available"
 	return commit_hash
+
+
+def get_pair_combinations(elements: Iterable[str]) -> Generator[Tuple[str, str], None, None]:
+	# Use a generator to avoid using too much memory for large datasets.
+	# The only reason to use a list was so tqdm could automatically figure out how many operations had to be done,
+	# but this can be calculated manually by passing the total number of trajectories as an additional parameter.
+	return itertools.combinations(elements, 2)
+
+
+def calculate_number_of_combinations(n: int) -> int:
+	""" Calculates the number of pairwise combinations for an iterable of size `elements` using the
+		formula `n!/(n-r)!
+		Since we only want combinations of pairs (`r` = 2), this can be simplified to
+		`n * (n-1).
+	"""
+	return n * (n - 1)

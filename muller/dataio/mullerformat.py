@@ -3,10 +3,8 @@ from functools import partial
 from typing import Any, Iterable, List, Optional, Union
 
 import pandas
-from loguru import logger
 
 Numeric = Union[int, float]
-
 
 def lag_gens(x: int, values: Iterable[int]) -> int:
 	# function to get the generation previous to a specified generation:
@@ -31,7 +29,7 @@ class Vector:
 		if value:
 			self.data.append(value)
 
-	def __len__(self):
+	def __len__(self)->int:
 		return len(self.data)
 
 	def __setitem__(self, key: int, value: Any):
@@ -44,7 +42,7 @@ class Vector:
 			message = f"Trying to access a value that is not the next position in the array: {key} -> {len(self)}"
 			raise ValueError(message)
 
-	def __getitem__(self, item):
+	def __getitem__(self, item)->Any:
 		return self.data[item]
 
 
@@ -179,7 +177,7 @@ class AdjacencyMatrix:
 
 
 class GenerateMullerDataFrame:
-	""" implements the get_Muller_df function from ggmuller. The original fails when there are a large number of samples timepoints."""
+	""" implements the get_Muller_df function from ggmuller. The original fails when there are a large number of sampled timepoints."""
 
 	def __init__(self):
 		self.time_column = 'Generation'
@@ -215,7 +213,7 @@ class GenerateMullerDataFrame:
 	@staticmethod
 	def _clean_population_table(population: pandas.DataFrame) -> pandas.DataFrame:
 		""" Implements the cleaning steps from the ggmuller package. Since these are already done with the other scripts, this returns
-			The imput table.
+			The input table.
 		"""
 		return population
 
@@ -412,8 +410,9 @@ class GenerateMullerDataFrame:
 
 		return muller_df
 
-	def run(self, edges: pandas.DataFrame, population: pandas.DataFrame) -> pandas.DataFrame:
+	def run(self, edges: pandas.Series, population: pandas.DataFrame) -> pandas.DataFrame:
 		# Test if the length of the population table makes sense given the population and number of timepoints.
+		edges = edges.reset_index()
 		population = self._clean_population_table(population)
 		# Construct a dataframe with the "Age" of each genotype.
 		population_sorted = population.sort_values(by = ["Generation", "Population"], ascending = [True, False])
@@ -431,15 +430,3 @@ class GenerateMullerDataFrame:
 		# Rearrange the columns so pandas.testing.assert_frame_equal doesn't complain.
 		muller_ordered = muller_ordered[['Generation', 'Identity', 'Population', 'Frequency', 'Group_id', 'Unique_id']]
 		return muller_ordered
-
-
-if __name__ == "__main__":
-	filename_edges = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.edges.tsv"
-	filename_population = "/home/cld100/Documents/github/muller_diagrams/m5Correct/tables/m5_correct.ggmuller.populations.tsv"
-
-	table_edges = pandas.read_csv(filename_edges, sep = "\t")
-	table_population = pandas.read_csv(filename_population, sep = "\t")
-
-	mw = GenerateMullerDataFrame()
-	df = mw.run(table_edges, table_population)
-	print("F")

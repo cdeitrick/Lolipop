@@ -75,3 +75,4 @@ b6/
 #tests/data
 *env/
 .Rhistory
+tests/data/example/

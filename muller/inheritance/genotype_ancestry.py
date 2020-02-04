@@ -5,11 +5,33 @@ import pandas
 
 
 class Ancestry:
-	""" Holds the possible ancestry candidates as well as the confidance score for each."""
+	""" Holds the possible ancestry candidates as well as the confidance score for each.
+		Parameters
+		----------
+		initial_background: pandas.Series
+			The genotype which reached the maximum relative frequency within the population. Serves as the first
+			nested genotype to compare all others against.
+		timepoints: pandas.DataFrame
+			A copy of the genotype timeseries table. Currently only used in the `self.get_sum_of_backgrounds` method.
+			May be worth removing later to reduce the number of dependent parameters.
+		cautious: bool = True
+			Indicates whether to favor the oldest genotype within at least 2 points of the maximum genotype.
+			Basically controlls the likliness that these scripts will assign a genotype to an olser lineage
+			rather than nesting the genotype under a newer lineage.
+	"""
 
-	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame):
+	def __init__(self, initial_background: pandas.Series, timepoints: pandas.DataFrame, cautious: bool = True):
+		self.cautious = cautious
 		self.initial_background_label: str = initial_background.name
-		self.timepoints = timepoints.copy()  # To  prevent unintended modifications to source table.
+
+		# The minimum score to consider a genotype as a possible ancestor.
+		self.minimum_score = 1
+		# The number of points separating a genotype from the maximum scored genotype
+		# by which an older genotype will be considered as a viable newest ancestor
+		# Make a copy to prevent unintended modifications to source table.
+		self.score_window = 2
+		self.timepoints = timepoints.copy()
+
 		# Keep track of the parent and confidence for each new genotype.
 		self.confidence: Dict[str, List[Tuple[str, float]]] = dict()
 		self.ancestral_genotype = 'genotype-0'
@@ -43,7 +65,7 @@ class Ancestry:
 		background = self.get(element)
 		return len(background) == 1 or (len(background) == 2 and 'genotype-0' in background)
 
-	def get_highest_priority(self, label: str) -> Tuple[Optional[str], float]:
+	def get_highest_priority_legacy(self, label: str) -> Tuple[Optional[str], float]:
 		candidates = self.confidence.get(label, [])
 		if candidates:
 			# Explicity tell the sorting method to use the priority score.
@@ -60,6 +82,21 @@ class Ancestry:
 			candidate = None
 
 		return candidate, score
+
+	def get_highest_priority(self, label: str) -> Tuple[Optional[str], float]:
+		""" Returns the genotype label representing the newest ancestor for the genotype indicated by `label`."""
+		candidates = self.confidence.get(label, [])
+		maximum_genotype, maximum_score = max(candidates, key = lambda s: s[1])
+		if self.cautious:
+			for candidate, score in candidates:
+				# Make sure the score is within 2 or so of the maximum.
+				# Will output the genotype with the maximum score if no other genotype exists with 2 points of the maximum.
+				if score > self.minimum_score and abs(maximum_score - score) <= self.score_window:
+					return candidate, score
+			else:
+				return None, math.nan
+		else:
+			return maximum_genotype, maximum_score
 
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()

@@ -8,30 +8,34 @@ FOLDER = Path(__file__).parent
 README = FOLDER / "README.md"
 
 with README.open() as readmefile:
-    LONG_DESCRIPTION = readmefile.read()
+	LONG_DESCRIPTION = readmefile.read()
 
 setup(
-	name = 'muller',
+	name = 'lolipop',
 	version = commandline_parser.__VERSION__,
 	packages = [
 		'muller', 'muller.clustering', 'muller.dataio', 'muller.graphics', 'muller.inheritance',
-		'muller.graphics.palettes', 'muller.clustering.metrics', 'muller.clustering.methods'
+		'muller.graphics.palettes', 'muller.clustering.metrics'
 	],
 	extras_require = {
 		'Show progressbar for large datasets': ['tqdm'],
 		'Additional support for parsing files': ['beautifulsoup4'],
 		'List similar annotations when selecting genotypes': ['fuzzywuzzy'],
+		'Generate composite graphs from the genotye/lineage/timeseries plots': ["pillow"],
 		'To run tests': ["pytest"]
 	},
-	provides = 'muller',
-	url = 'https://github.com/cdeitrick/muller_diagrams',
+	provides = 'lolipop',
+	url = 'https://github.com/cdeitrick/lolipop',
 	license = 'MIT',
 	author = 'chris deitrick',
 	author_email = 'chrisdeitrick1@gmail.com',
-	description = 'A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background',
+	description = 'A set of scripts to cluster mutational trajectories into genotypes and infer lineage in the context of population evolution experiments.',
 	long_description = LONG_DESCRIPTION,
 	long_description_content_type='text/markdown',
-	install_requires = ['pandas', 'loguru', 'scipy', 'matplotlib','graphviz', 'pygraphviz', 'seaborn', 'numpy', 'xlrd'],
+	install_requires = [
+		'pandas>=0.24.0', 'loguru', 'scipy>=1.3.0', 'matplotlib>=3.0.0','graphviz',
+		'pygraphviz', 'seaborn', 'numpy>=1.16.2', 'xlrd', 'shapely>=1.6.4'
+	],
 	tests_requires = ['pytest'],
 	classifiers = [
 		"Programming Language :: Python :: 3",

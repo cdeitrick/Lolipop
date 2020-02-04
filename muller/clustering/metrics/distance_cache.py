@@ -7,10 +7,10 @@ from scipy.spatial import distance
 
 PairwiseArrayType = Dict[Tuple[str, str], float]
 
-
+# TODO: Refactor using UserDict
 class DistanceCache:
 	"""
-		Calculates and holds the calculations for all pairwise elements.
+		Calculates and holds the distances for all pairwise elements.
 
 		Usage
 		-----
@@ -32,7 +32,8 @@ class DistanceCache:
 
 	def __len__(self) -> int:
 		return len(self.pairwise_values)
-
+	def __getitem__(self, item):
+		return self.pairwise_values[item]
 	def asdict(self) -> PairwiseArrayType:
 		return self.pairwise_values
 
@@ -95,6 +96,10 @@ class DistanceCache:
 				line = f"{key[0]}\t{key[1]}\t{value}\n"
 				output.write(line)
 
+	@property
+	def values(self)->List[float]:
+		return list(self.pairwise_values.values())
+
 	@classmethod
 	def read(cls, filename: Path) -> 'DistanceCache':
 		contents = filename.read_text().split('\n')
@@ -105,4 +110,14 @@ class DistanceCache:
 			value = float(value)
 			data[left, right] = value
 			data[right, left] = value
+		return DistanceCache(data)
+
+	@classmethod
+	def from_squareform(cls, square:pandas.DataFrame)->'DistanceCache':
+		data = dict()
+
+		for left, row in square.iterrows():
+			for right, value in row.items():
+				data[left,right] = value
+				data[right,left] = value
 		return DistanceCache(data)

@@ -1,7 +1,7 @@
 import itertools
 import math
 import multiprocessing
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Generator
 
 import pandas
 from loguru import logger
@@ -33,7 +33,82 @@ class DistanceCalculator:
 
 		self.progress_bar_minimum_points = 10000  # The value to activate the scale bar at.
 
+	def calculate_pairwise_distances_threaded(self, pair_combinations: Generator, total:Optional[int] = None)->Dict[Tuple[str,str], float]:
+		""" Threaded version of the pairwise distance calculator"""
+		pair_array: Dict[Tuple[str,str], float] = dict()
+		progress_bar = tqdm(total = total)
+		pool = multiprocessing.Pool(processes = self.threads)
+		for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
+			key, value = i.get() # retrieve the calculated value
+			pair_array[key] = value
+			pair_array[key[::-1]] = value
+			progress_bar.update(1)
+
+		return pair_array
+
+	def calculate_pairwise_distances_serial(self, pair_combinations: Generator, total:Optional[int] = None):
+		""" Nonthreaded version of the pairwise distance calculator"""
+		pair_array: Dict[Tuple[str,str], float] = dict()
+		progress_bar = tqdm(total = total)
+
+		for element in pair_combinations:
+			key, value = calculate_distance(self, element, self.trajectories)
+			pair_array[key] = value
+			pair_array[key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
+			progress_bar.update(1)
+		return pair_array
+
+
+	def calculate_pairwise_distances(self, labels: List[str]) -> Dict[Tuple[str, str], float]:
+		""" Implements the actual loop over all pairs of trajectories.
+		"""
+		# May as well move the combination function here so we don't have to pass an additional parameter specifying the total number
+		# of trajectories so tqdm workd properly.
+
+		total_elements = len(labels)
+		total_combinations = widgets.calculate_number_of_combinations(total_elements)
+
+		logger.debug(f"Generating pairwise combinations with {total_elements} items resulting in {total_combinations} combinations...")
+
+		if total_combinations > 100_000_000:
+			message = f"The provided dataset has {total_elements} trajectories, which requires {total_combinations} distance calculations." \
+					  "This will require a long time to process (you may need to adjust the number of available threads with the --threads option)" \
+					  "and will consume a large amount of memory (i.e. more than 16GB)."
+			logger.warning(message)
+		pair_combinations = widgets.get_pair_combinations(labels)
+
+		if self.threads and self.threads > 1:  # One process is slower than using the serial method.
+			logger.debug(f"Using multithreading...")
+			pair_array = self.calculate_pairwise_distances_threaded(pair_combinations, total_combinations)
+		else:
+			logger.debug(f"Using a single thread...")
+			pair_array = self.calculate_pairwise_distances_serial(pair_combinations, total_combinations)
+
+		# Assume that any pair with NAN values are the maximum possible distance from each other.
+		try:
+			maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
+		except ValueError:
+			# Usually cause by max() being used on an empty sequence.
+			message = f"Could not calculate the pairwise distances due to invalid series (usually because all measurements are below the detectionlimit"
+			raise ValueError(message)
+
+		pair_array = {k: (v if not math.isnan(v) else maximum_distance) for k, v in pair_array.items()}
+
+		return pair_array
+
 	def run(self, trajectories: pandas.DataFrame) -> Dict[Tuple[str, str], float]:
+		"""
+			Calculates the distance between all pairwise combinations of mutational trajectories. The total number of pairs can be calculated by
+			`n!/(n-2)!`, which can be simlified to `n*(n-1)`.
+			10 trajectories -> 90
+			100 trajectories -> 9900
+			1000 trajectories -> 999000
+			31000 trajectories -> 9.61E8
+
+		Parameters
+		----------
+		trajectories
+		"""
 		logger.debug("Calculating the pairwise values...")
 		logger.debug(f"\t detection limit: {self.detection_limit}")
 		logger.debug(f"\t fixed limit: {self.fixed_limit}")
@@ -41,46 +116,14 @@ class DistanceCalculator:
 		logger.debug(f"\t threads: {self.threads}")
 
 		self.trajectories = trajectories
-		# Use a list so that we can get the size for tqdm. Also prevent weird errors if we use the variable after consuming it.
-		# noinspection PyTypeChecker
-		pair_combinations: List[Tuple[str, str]] = list(itertools.combinations(trajectories.index, 2))
 
-		pairwise_distances = self.calculate_pairwise_distances(pair_combinations)
+		pairwise_distances = self.calculate_pairwise_distances(trajectories.index)
 
 		return pairwise_distances
 
-	def calculate_pairwise_distances(self, pair_combinations: List[Tuple[str, str]]) -> Dict[Tuple[str, str], float]:
-		""" Implements the actual loop over all pairs of trajectoies. """
-
-		# Initialize a progressbar if the dataset has a lot of combinations.
-		# if len(pair_combinations) >= self.progress_bar_minimum_points and tqdm:
-		#	self.progress_bar = tqdm(total = len(pair_combinations))
-		# else:
-		#	self.progress_bar = None
-
-		pair_array: Dict[Tuple[str, str], float] = dict()
-
-		if self.threads and self.threads > 1: #One process is slower than using the serial method.
-			pool = multiprocessing.Pool(processes = self.threads)
-			for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
-				key, value = i.get()
-				pair_array[key] = value
-		else:
-			for element in pair_combinations:
-				key, value = calculate_distance(self, element, self.trajectories)
-				pair_array[key] = value
-				pair_array[
-					key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
-
-		# Assume that any pair with NAN values are the maximum possible distance from each other.
-		maximum_distance = max(filter(lambda s: not math.isnan(s), pair_array.values()))
-		pair_array = {k: (v if not math.isnan(v) else maximum_distance) for k, v in pair_array.items()}
-
-		return pair_array
-
 
 # Keep this as a separate function. Class methods are finicky when used with multiprocessing.
-def calculate_distance(process, element: Tuple[str, str], trajectories) -> Tuple[Tuple[str, str], float]:
+def calculate_distance(process:DistanceCalculator, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
 	"""
@@ -147,9 +190,9 @@ def plot_benchmark_results(benchmarks, output_filename):
 	fig, ax = plt.subplots(figsize = (12, 10))
 	seaborn.barplot(x = values, y = labels)
 
-	plt.xlabel('time in seconds', fontsize = 14)
-	plt.ylabel('number of processes', fontsize = 14)
-	plt.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
+	ax.xlabel('time in seconds', fontsize = 14)
+	ax.ylabel('number of processes', fontsize = 14)
+	ax.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
 	plt.grid()
 
 	plt.savefig(output_filename)
@@ -177,8 +220,3 @@ def benchmark(filename):
 		label = str(index)
 		benchmarks[label] = duration
 	return benchmarks
-
-
-if __name__ == "__main__":
-	b = benchmark()
-	plot_benchmark_results(b)

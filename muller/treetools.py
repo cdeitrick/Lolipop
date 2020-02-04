@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 
 import pandas
 
-
 def get_child_nodes(tree: pandas.DataFrame, label: str) -> List[str]:
 	"""Retrieves all child node for the given label from the tree. Includes `label` in the output"""
 
@@ -27,7 +26,7 @@ def get_parent_nodes(tree: pandas.DataFrame, label: str) -> List[str]:
 	return parents
 
 
-def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
+def parse_tree(edges: pandas.Series) -> pandas.DataFrame:
 	"""
 		Determines the clade and distance from root of every leaf and node in the ggmuller edges table.
 	Parameters
@@ -36,7 +35,7 @@ def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 
 	Returns
 	-------
-	pandas.DataFrame
+	pandas.Series
 		- index: str
 			The leaf/node genotype label
 		- columns
@@ -46,12 +45,16 @@ def parse_tree(edges: pandas.DataFrame) -> pandas.DataFrame:
 				The distance from the node/leaf to the root genotype.
 	"""
 	edges = edges.copy(deep = True)  # To prevent unintended alterations
-	leaf_table = edges.set_index('Identity')['Parent']
-	clades, iterations = zip(*[determine_clade(leaf_table, i) for i in edges['Identity'].values])
-	edges['clade'] = clades
-	edges['iterations'] = iterations
-	edges = edges.set_index('Identity')
-	return edges.sort_values(by = ['clade', 'iterations'])
+
+	#lineage_table = edges.set_index('Identity')['Parent']
+	lineage_table = edges
+
+	clades, iterations = zip(*[determine_clade(lineage_table, i) for i in lineage_table.index])
+	leaf_table = lineage_table.to_frame().reset_index()
+	leaf_table['clade'] = clades
+	leaf_table['iterations'] = iterations
+	leaf_table = leaf_table.set_index('Identity')
+	return leaf_table.sort_values(by = ['clade', 'iterations'])
 
 
 def determine_clade(parents: pandas.Series, label: str) -> Tuple[str, int]:

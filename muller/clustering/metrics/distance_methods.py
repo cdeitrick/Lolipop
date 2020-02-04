@@ -1,7 +1,7 @@
 import math
 
 import pandas
-
+from loguru import logger
 try:
 	from muller.inheritance.areascore import area_of_series, calculate_common_area
 except ModuleNotFoundError:
@@ -83,8 +83,15 @@ def binomial_distance(left: pandas.Series, right: pandas.Series) -> float:
 
 
 def binomial_probability(left: pandas.Series, right: pandas.Series) -> float:
+	""" Calculates the probability that the distance between `left` and `right` can be explained by experimental error.
+		Note that higher probabilities indicate a closer relationship between two series in contrast to distance measurements where
+		lower distances correspond to better matches. This can be accounted for by subtracting the probability value from 1.
+
+	"""
 	X = binomial_distance(left, right)
 	value = 1 - math.erf(X)
+	logger.error("Set a patch so that binomialp represents probability")
+	value = 1- value
 	return value
 
 

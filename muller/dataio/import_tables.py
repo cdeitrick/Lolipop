@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pandas
-
+from loguru import logger
+from muller import widgets
 
 # noinspection PyProtectedMember
 def _import_table_from_path(filename: Path, sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
@@ -47,4 +48,27 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_path(input_table, sheet_name, index)
 	else:
 		data = _import_table_from_string(input_table, index = index)
+	# Make sure the x-values are numeric
+	numeric_columns = widgets.get_numeric_columns(data.columns)
+	nonnumeric_columns = [i for i in data.columns if i not in numeric_columns]
+
+	def _cast_to_int(value)->int:
+		try:
+			return int(value)
+		except (ValueError, TypeError):
+			return value
+
+	try:
+		# Using float causes problems
+		data.columns = [_cast_to_int(i) for i in data.columns]
+	except ValueError:
+		# The columns could not be converted to str
+		logger.warning(f"The columns could not be converted to int: {data.columns}")
+	try:
+		# Keep str columns to the left
+		sorted_columns = sorted(data.columns, key = lambda s: s if isinstance(s, int) else -1)
+		data = data[sorted_columns]
+	except TypeError as exception:
+		logger.error(data.columns)
+		raise exception
 	return data
