@@ -1,4 +1,1 @@
-try:
-	from workflow_full import run_workflow, run_genotype_inference_workflow, run_genotype_lineage_workflow
-except ModuleNotFoundError:
-	from .workflow_full import run_workflow, run_genotype_inference_workflow, run_genotype_lineage_workflow
+from .workflow_full import run_workflow, run_genotype_inference_workflow, run_genotype_lineage_workflow
