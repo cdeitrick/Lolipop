@@ -15,7 +15,7 @@ setup(
 	version = commandline_parser.__VERSION__,
 	packages = [
 		'muller', 'muller.clustering', 'muller.dataio', 'muller.graphics', 'muller.inheritance',
-		'muller.graphics.palettes', 'muller.clustering.metrics'
+		'muller.graphics.palettes', 'muller.clustering.metrics', 'muller.workflows'
 	],
 	extras_require = {
 		'Show progressbar for large datasets': ['tqdm'],
