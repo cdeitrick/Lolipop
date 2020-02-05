@@ -12,10 +12,10 @@ if __name__ == "__main__":
 
 	sys.path.append(str(Path(__file__).parent.parent))
 	from muller.commandline_parser import create_parser
-	from muller.workflows import workflow_full
+	from muller.workflows import run_workflow
 	program_parser = create_parser()
 	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
 	#program_parser.set_default_subparser('lineage')  # Only works when using sys.args rather than providing the args directly
 	args = program_parser.parse_args()
 
-	workflow_full.run_workflow(args)
+	run_workflow(args)
