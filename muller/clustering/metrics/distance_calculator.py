@@ -1,16 +1,11 @@
 import itertools
 import math
 import multiprocessing
-from typing import Dict, List, Optional, Tuple, Generator
+from typing import Dict, Generator, List, Optional, Tuple
 
 import pandas
 from loguru import logger
-
-try:
-	# tqdm is an optional dependancy
-	from tqdm import tqdm
-except ModuleNotFoundError:
-	tqdm = None
+from tqdm import tqdm
 
 try:
 	from muller.clustering.metrics import distance_methods
@@ -33,22 +28,22 @@ class DistanceCalculator:
 
 		self.progress_bar_minimum_points = 10000  # The value to activate the scale bar at.
 
-	def calculate_pairwise_distances_threaded(self, pair_combinations: Generator, total:Optional[int] = None)->Dict[Tuple[str,str], float]:
+	def calculate_pairwise_distances_threaded(self, pair_combinations: Generator, total: Optional[int] = None) -> Dict[Tuple[str, str], float]:
 		""" Threaded version of the pairwise distance calculator"""
-		pair_array: Dict[Tuple[str,str], float] = dict()
+		pair_array: Dict[Tuple[str, str], float] = dict()
 		progress_bar = tqdm(total = total)
 		pool = multiprocessing.Pool(processes = self.threads)
 		for i in tqdm([pool.apply_async(calculate_distance, args = (self, e, self.trajectories)) for e in pair_combinations]):
-			key, value = i.get() # retrieve the calculated value
+			key, value = i.get()  # retrieve the calculated value
 			pair_array[key] = value
 			pair_array[key[::-1]] = value
 			progress_bar.update(1)
 
 		return pair_array
 
-	def calculate_pairwise_distances_serial(self, pair_combinations: Generator, total:Optional[int] = None):
+	def calculate_pairwise_distances_serial(self, pair_combinations: Generator, total: Optional[int] = None):
 		""" Nonthreaded version of the pairwise distance calculator"""
-		pair_array: Dict[Tuple[str,str], float] = dict()
+		pair_array: Dict[Tuple[str, str], float] = dict()
 		progress_bar = tqdm(total = total)
 
 		for element in pair_combinations:
@@ -57,7 +52,6 @@ class DistanceCalculator:
 			pair_array[key[1], key[0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
 			progress_bar.update(1)
 		return pair_array
-
 
 	def calculate_pairwise_distances(self, labels: List[str]) -> Dict[Tuple[str, str], float]:
 		""" Implements the actual loop over all pairs of trajectories.
@@ -123,7 +117,7 @@ class DistanceCalculator:
 
 
 # Keep this as a separate function. Class methods are finicky when used with multiprocessing.
-def calculate_distance(process:DistanceCalculator, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
+def calculate_distance(process: DistanceCalculator, element: Tuple[str, str], trajectories: pandas.DataFrame) -> Tuple[Tuple[str, str], float]:
 	""" Implements the actual calculation for a specific pair of trajectories.
 		It should be atomitized so that it works with multithreading.
 	"""

@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass
 
-__VERSION__ = "0.7.3"
+__VERSION__ = "0.7.3.5"
 DEBUG = False
 
 

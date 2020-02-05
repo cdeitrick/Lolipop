@@ -1,7 +1,7 @@
 import pandas
 import pytest
 
-from muller.filters import filters
+from muller import filters
 from muller.dataio import import_table
 
 

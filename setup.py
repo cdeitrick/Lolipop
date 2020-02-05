@@ -15,10 +15,10 @@ setup(
 	version = commandline_parser.__VERSION__,
 	packages = [
 		'muller', 'muller.clustering', 'muller.dataio', 'muller.graphics', 'muller.inheritance',
-		'muller.graphics.palettes', 'muller.clustering.metrics', 'muller.workflows'
+		'muller.graphics.palettes', 'muller.clustering.metrics', 'muller.workflows',
+		'muller.utilities'
 	],
 	extras_require = {
-		'Show progressbar for large datasets': ['tqdm'],
 		'Additional support for parsing files': ['beautifulsoup4'],
 		'List similar annotations when selecting genotypes': ['fuzzywuzzy'],
 		'Generate composite graphs from the genotye/lineage/timeseries plots': ["pillow"],
@@ -34,7 +34,7 @@ setup(
 	long_description_content_type='text/markdown',
 	install_requires = [
 		'pandas>=0.24.0', 'loguru', 'scipy>=1.3.0', 'matplotlib>=3.0.0','graphviz',
-		'pygraphviz', 'seaborn', 'numpy>=1.16.2', 'xlrd', 'shapely>=1.6.4'
+		'pygraphviz', 'seaborn', 'numpy>=1.16.2', 'xlrd', 'shapely>=1.6.4', 'tqdm'
 	],
 	tests_requires = ['pytest'],
 	classifiers = [
