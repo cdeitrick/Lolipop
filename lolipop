@@ -1,0 +1,46 @@
+#!python
+import muller
+#if __name__ == "__main__":
+
+#	args = muller.commandline_parser.create_parser().parse_args()
+#	workflow = muller.muller_workflow.MullerWorkflow(program_options = args)
+#	workflow.run(args.filename, args.output_folder)
+"""
+if __name__ == "__main__":
+	import sys
+	from pathlib import Path
+
+	sys.path.append(str(Path(__file__).parent.parent))
+	from muller.commandline_parser import create_parser
+	from muller.workflows import run_workflow
+	program_parser = create_parser()
+	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
+	#program_parser.set_default_subparser('lineage')  # Only works when using sys.args rather than providing the args directly
+	args = program_parser.parse_args()
+
+	run_workflow(args)
+"""
+def main(arguments)->None:
+	from muller.workflows.workflow_full import run_workflow
+	muller_workflow = run_workflow(arguments)
+if __name__ == "__main__":
+	import sys
+	from pathlib import Path
+
+	sys.path.append(str(Path(__file__).parent.parent))
+	from muller import dataio, commandline_parser
+
+	program_parser = commandline_parser.create_parser()
+	# Custom method to select `lineage` as the default parser. Used to keep the current api, but will probably be changed later.
+	#args = program_parser.parse_args()
+	program_arguments = commandline_parser.get_arguments()
+
+	# Need to make sure the argument defaults are applied.
+
+	if program_arguments.name is None:
+		program_arguments.name = "lineage"
+
+	if program_arguments.name == 'lineage':
+		main(program_arguments)
+	else:
+		print("Need to use `muller/ lineage --input [input]")

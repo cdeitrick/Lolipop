@@ -6,7 +6,7 @@ from loguru import logger
 
 try:
 	from muller.clustering import metrics, genotype_reorder, hierarchy
-	from muller.filters import filters
+	from .. import filters
 	from muller.dataio import projectdata
 
 except ModuleNotFoundError:

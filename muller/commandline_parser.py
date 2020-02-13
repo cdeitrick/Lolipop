@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass
 
-__VERSION__ = "0.7.0"
+__VERSION__ = "0.7.4.0"
 DEBUG = False
 
 
@@ -65,7 +65,7 @@ def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOption
 
 	program_options.starting_genotypes = starting_genotypes
 	if program_options.output_folder is None:
-		program_options.output_folder = program_options.filename.stem
+		program_options.output_folder = Path(program_options.filename.parent)
 	return program_options
 
 
@@ -348,7 +348,7 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 		action = 'store',
 		dest = 'output_folder',
 		type = Path,
-		# required = True
+		default = None
 	)
 	group_main.add_argument(
 		"--name",
