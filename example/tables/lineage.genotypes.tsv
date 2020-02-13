@@ -1,0 +1,10 @@
+Genotype	0	30	45	60	90	members
+genotype-6	0.0	0.16699999999999998	0.55	0.91	0.972	genotype-1
+genotype-8	0.0	0.01	0.20750000000000002	0.868	0.9575	genotype-2
+genotype-7	0.0	0.09681818	0.4625	0.6799999999999999	0.854	genotype-3
+genotype-1	0.0	0.3345	0.28125	0.095	0.045	genotype-4
+genotype-4	0.0	0.005	0.24	0.03	0.0375	genotype-5
+genotype-2	0.0	0.0	0.0	0.0	0.263	genotype-6
+genotype-5	0.0	0.11366666666666668	0.0	0.0	0.0033333333333333335	genotype-7
+genotype-9	0.0	0.0	0.0	0.0	0.11	genotype-8
+genotype-3	0.0	0.0	0.0	0.0	0.01	genotype-9

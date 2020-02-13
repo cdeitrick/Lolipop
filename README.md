@@ -1,5 +1,5 @@
 # A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background
-![muller_plot](./example/example.muller.unannotated.png)
+![muller_plot](example/lineage/lineage.mullerpanel.png)
 
 # Contents
 - [A set of scripts to cluster mutational trajectories into genotypes and cluster genotypes by background](#a-set-of-scripts-to-cluster-mutational-trajectories-into-genotypes-and-cluster-genotypes-by-background)
@@ -13,7 +13,7 @@
 	- [General Options](#general-options)
 	- [Filtering Options](#filtering-options)
 	- [Clustering Options](#clustering-options)
-	- [Nesting Options](#nesting-options)
+	- [Lineage Options](#lineage-options)
 	- [Graphics Options](#graphics-options)
 - [Input Dataset](#input-dataset)
 - [Output](#output)
@@ -22,8 +22,7 @@
 		- [Tables for ggmuller](#tables-for-ggmuller)
 		- [Linkage matrix](#linkage-matrix)
 		- [Distance Matrix](#distance-matrix)
-		- [Muller table](#muller-table)
-	- [Graphics](#graphics)
+	- [Figures](#figures)
 		- [Muller Plots](#muller-plots)
 		- [Lineage Diagrams](#lineage-diagrams)
 		- [Timeseries plots](#timeseries-plots)
@@ -189,7 +188,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
                                 would other wise take a very onlg time to process (such as data from the 
                                 Long Term Evolution Experiment).
 
-## Nesting Options
+## Lineage Options
     --additive
                                 [0.03] Controls how the additive score between a nested and
                                 unnested genotype is calculated. Defaults to the
@@ -227,7 +226,7 @@ Flowcharts for each individual step can be found under docs/flowcharts.
 
 # Input Dataset
 
-The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (refered to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
+The script operates on a table listing all mutations and their corresponding frequencies at each timepoint (referred to as "trajectories" in this script) or a table with each genotype and frequency at each timepoint (ex. the genotype table in the examples folder).
 The table must have a column named `Trajectory` with labels for each mutational trajectory (or `Genotype` when using `--genotype`) and integer columns for each timepoint. The labels are solely used to identify trajectories belonging to a specific genotype, and must be integers. All other columns will be ignored when calculating genotypes and genotype clusters.
 The frequencies can be represented as either a number between 0 - 1,
 a number between 0 - 100 or as percentage.
@@ -265,10 +264,8 @@ All files are prefixed by the name of the original input table if the `--name` p
 ## Tables
 
 ### Timeseries tables
-- .muller_genotypes.tsv
-- .muller.trajectories.tsv
-- tables/.muller_genotypes.original.tsv
-- tables/.trajectories.original.tsv
+- tables/lineage.genotypes.tsv
+- tables/lineage.trajectories.tsv
 
 Tables listing the genotypes and trajectories encountered in the analysis. The trajectory tables also link each trajectory to its respective genotype. There are two versions of these tables: one set with the original input trajectories and the initial calculated genotypes and another set with the final trajectories and genotypes left in the analysis after the filtering step. The trajectory tables include all columns from the input trajectory table as well as the timeseries and annotation columns used in the analysis.
 
@@ -289,13 +286,13 @@ Example Genotype Table:
 
 
 ### Tables for ggmuller
-- tables/.ggmuller.populations.tsv
-- tables/.ggmuller.edges.tsv
+- tables/lineage.populations.tsv
+- tables/lineage.edges.tsv
 
 These tables are designed for use with the ggmuller r package. The `populations` table describes the population/abundance of each genotype at each timepoint while the `edges` table describes the ancestry relationship between genotypes.
 
 ### Linkage matrix
-- tables/.linkagematrix.tsv
+- tables/lineage.linkagetable.tsv
 
 This table is generated using the [scipy](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html) python package. It describes the agglomeration of clusters starting with the individual trajectories, as well as the mean, variance, and trajectory count of each cluster.
 Columns:
@@ -328,59 +325,48 @@ Example linkage matrix:
 | 34   | 35    | 4.943    | 19           | 36               |
 
 ### Distance Matrix
-- tables/.distance.tsv
+- tables/lineage.distancematrix.tsv
 
 A table of pairwise distance values between each trajectory.
 
-### Muller table
-- tables/.muller.tsv
-
-The converted form of the `.ggmuller.populations.tsv` and `.ggmuller.edges.tsv` used to generate the muller plots. This file is created from the r script, described later.
-
-## Graphics
-Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convienience.
+## Figures
+Each of the output plots use the same palette for genotypes and trajectories. A genotype colored a shade of blue will share that color across all graphs and diagrams which depict that genotype. There are two palettes: one to indicate each clade in the geneology and one to easily distinguish between different genotypes. Each graphic is created with both palettes, and some are provided in multiple formats for convenience.
 
 ### Muller Plots
-- .muller.annotated.png
-- graphics/clade/.muller.annotated.svg
-- graphics/clade/.muller.annotated.png
-- graphics/clade/.muller.unannotated.png
-- graphics/distinctive/.muller.annotated.distinctive.png
-- graphics/distinctive/.muller.annotated.distinctive.svg
+- (lineage|unique)/muller.annotated.(png|svg)
+- (lineage|unique)/muller.unannotated.(png|svg)
 
 The main value of a muller plot is to quickly visualize abundance and geneology of genotypes over the course of an evolution experiment.
 
-![muller](example/example.trajectories.clade.annotated.png)
+![muller](example/lineage/lineage.muller.annotated.png)
 
 ### Lineage Diagrams
-- .lineage.png
-- graphics/.lineage.distinctive.png
+- (lineage|unique)/lineage.lineageplot.(png|svg)
 
 These are simple flowcharts indicating the relationship between genotypes and clades. The original genotype of each clade are shown to arise in "genotype-0", the root background. The ancestry of all other genotypes are then shown relative to these clades.
 
-![geneology](example/example.trajectories.lineage.clade.png)
+![geneology](example/lineage/lineage.lineageplot.png)
 
 ### Timeseries plots
-- .genotypes.png
-- .genotypes.filtered.png
-- .trajectories.distinctive.png
+- (lineage|unique)/lineage.timeseries.genotypes.(png|svg)
+- (lineage|unique)/lineage.timeseriespanel.(png|svg)
 
 Timeseries plots of the frequency of each trajectory and genotype at each timepoint. Trajectories are colored according to which genotype they were grouped into. The `.genotypes.filtered.png` file includes trajectories that were filtered out during the filtering step (clored black).
 
-![timeseries](example/graphics/clade/example.trajectories.clade.unannotated.png)
+![timeseries](example/lineage/lineage.timeseriespanel.png)
 
 ### Distance Heatmap
-- graphics/.heatmap.distance.png
+- heatmap.png
 
 A pairwise comparison of the calculated distance between each mutational trajectory. Trajectories are grouped by the final genotype. The heatmap will be annotated with the distance values if there are fewer than thirty total trajectories in the analysis.
 
-![heatmap](example/graphics/example.trajectories.pairwisedistance.svg)
+![heatmap](example/heatmap.png)
 
 ### Dendrogram
-- graphics/.dendrogram.png
+- dendrogram.png
 Shows the arrangement and distance between clusters and member trajectories. Not available with `--method twostep`.
 
-![dendrogram](example/graphics/example.trajectories.dendrogram.png)
+![dendrogram](example/dendrogram.png)
 
 ## Scripts
 - scripts/example.r
