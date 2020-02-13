@@ -42,6 +42,18 @@ def _import_table_from_string(string: str, delimiter: Optional[str] = None, inde
 		result.set_index(index, inplace = True)
 	return result
 
+def filter_empty_trajectories(data:pandas.DataFrame)->pandas.DataFrame:
+	# If the inputfiles have whitespace characters in a line they'll be imported as additional trajectories with 0% at every timepoint.
+	# So basically remove any trajectories which are 0% at all timepoints.
+	numeric_columns = widgets.get_numeric_columns(data.columns)
+	index_to_keep = list()
+	for index, row in data.iterrows():
+		numeric = row[numeric_columns]
+		if numeric.sum() > 0:
+			index_to_keep.append(index)
+	data = data.loc[index_to_keep]
+
+	return data
 
 def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
 	if isinstance(input_table, Path):
@@ -49,8 +61,7 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 	else:
 		data = _import_table_from_string(input_table, index = index)
 	# Make sure the x-values are numeric
-	numeric_columns = widgets.get_numeric_columns(data.columns)
-	nonnumeric_columns = [i for i in data.columns if i not in numeric_columns]
+
 
 	def _cast_to_int(value)->int:
 		try:
@@ -71,4 +82,7 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 	except TypeError as exception:
 		logger.error(data.columns)
 		raise exception
+
+
+
 	return data
