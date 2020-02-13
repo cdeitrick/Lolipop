@@ -1,0 +1,92 @@
+strict graph "" {
+	graph [orientation=90,
+		splines=ortho
+	];
+	node [fontname=lato,
+		label="\N",
+		shape=box,
+		style="filled,rounded"
+	];
+	edge [dir=forward];
+	"genotype-6"	 [color="#333333",
+		fillcolor="#911eb4",
+		fontcolor="#FFFFFF",
+		label="genotype-6
+OGDH R204S"];
+	"genotype-8"	 [color="#333333",
+		fillcolor="#f032e6",
+		fontcolor="#FFFFFF",
+		label="genotype-8
+manC -1bp
+bfr -10bp"];
+	"genotype-6" -- "genotype-8"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-7"	 [color="#333333",
+		fillcolor="#46f0f0",
+		fontcolor="#333333",
+		label="genotype-7
+LysR-like -6:CGATGC
+95 gene deletion d95"];
+	"genotype-6" -- "genotype-7"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-9"	 [color="#333333",
+		fillcolor="#bcf60c",
+		fontcolor="#333333",
+		label="genotype-9
+49 gene deletion d49"];
+	"genotype-6" -- "genotype-9"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-2"	 [color="#333333",
+		fillcolor="#3cb44b",
+		fontcolor="#333333",
+		label="genotype-2
+DUF88 A209P
+MltA -10bp
+wspD L35P
+succinate dehydrogenase G147G"];
+	"genotype-8" -- "genotype-2"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-1"	 [color="#333333",
+		fillcolor="#e6194b",
+		fontcolor="#FFFFFF",
+		label="genotype-1
+yciR Y355D
+monoxygenase E481D"];
+	"genotype-4"	 [color="#333333",
+		fillcolor="#4363d8",
+		fontcolor="#FFFFFF",
+		label="genotype-4
+wspE S726L
+bfr -35bp"];
+	"genotype-1" -- "genotype-4"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-5"	 [color="#333333",
+		fillcolor="#f58231",
+		fontcolor="#333333",
+		label="genotype-5
+yciR A106P
+wspA I196N
+rpoC A1318V"];
+	"genotype-3"	 [color="#333333",
+		fillcolor="#ffe119",
+		fontcolor="#333333",
+		label="genotype-3
+wspA A407V"];
+	"genotype-0" -- "genotype-6"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-0" -- "genotype-1"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-0" -- "genotype-5"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+	"genotype-0" -- "genotype-3"	 [headlabel=0.0,
+		labeldistance=2.0,
+		tooltip=Parent];
+}
