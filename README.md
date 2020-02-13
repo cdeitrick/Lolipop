@@ -35,23 +35,23 @@
 # Installation
 These scripts are available on [pypi](https://pypi.org/project/muller/) and can be installed with
 ```bash
-pip install muller 
+pip install lolipop
 ```
 To update the scripts to the newest version, simply run 
 ```bash
-pip install muller --upgrade
+pip install lolipop --upgrade
 ```
 
 Then run the scripts using 
 ```
-lineage [args]
+lolipop lineage [args]
 ```
 
 It is also possible to simply clone the package, although the additional required packages would then need to be installed separately.
 ```
-git clone https://github.com/cdeitrick/muller_diagrams.git
-cd muller_diagrams
-lineage [args]
+git clone https://github.com/cdeitrick/lolipop.git
+cd lolipop
+lolipop lineage [args]
 ```
 
 # Requirements
