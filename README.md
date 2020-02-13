@@ -95,7 +95,7 @@ Run with default parameters.
 ```
 lolipop lineage --input [filename] --frequencies 0.05 --detected 0.10
 ```
-Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table.
+Groups genotypes in groups of 0.05 (i.e. `[0.00, 0.05, 0.10, ... , 0.90, 0.95, 1.00]`) based on each genotype's maximum frequency. Each genotype in each group is then sorted by the timepoint it was first detected (the first timepoint where the frequency was greater than 0.10). Output files are saved to the same folder as the input table. Since the `--ouput` flag was not given, the output will be generated in the same folder as the input dataset.
 
 # General Workflow
 
