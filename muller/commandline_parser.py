@@ -88,14 +88,9 @@ def _parse_frequency_option(frequency: Union[str, List[float]]) -> List[float]:
 	return frequencies
 
 
-class FrequencyParser(argparse.Action):
-	def __call__(self, parser, namespace, values, option_string = None):
-		if not values:
-			parsed_frequencies = self.default
-		else:
-			parsed_frequencies = _parse_frequency_option(values)
-		setattr(namespace, self.dest, parsed_frequencies)
-
+#####################################################################################
+################################ Custom Parsers ####################################
+#####################################################################################
 
 class FixedBreakpointParser(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string = None):
@@ -107,8 +102,10 @@ class FixedBreakpointParser(argparse.Action):
 		setattr(namespace, self.dest, values)
 
 
-# noinspection PyTypeChecker
-def _create_parser_group_graphics(parser: argparse.ArgumentParser):
+#####################################################################################
+############################# Lineage Parser Groups #################################
+#####################################################################################
+def _create_parser_lineage_group_graphics(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# -------------------------------------------------------- Graphics Options ------------------------------------------------------------------
 	##############################################################################################################################################
@@ -159,7 +156,7 @@ def _create_parser_group_graphics(parser: argparse.ArgumentParser):
 
 
 # noinspection PyTypeChecker,PyTypeChecker,PyTypeChecker
-def _create_parser_group_data(parser: argparse.ArgumentParser):
+def _create_parser_lineage_group_data(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# ----------------------------------------------------- Additional Input Files ---------------------------------------------------------------
 	##############################################################################################################################################
@@ -201,7 +198,7 @@ def _create_parser_group_data(parser: argparse.ArgumentParser):
 	)
 
 
-def _create_parser_group_analysis(parser: argparse.ArgumentParser):
+def _create_parser_lineage_group_genotype_generation(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# ------------------------------------------------------ General Analysis Options ------------------------------------------------------------
 	##############################################################################################################################################
@@ -266,21 +263,10 @@ def _create_parser_group_analysis(parser: argparse.ArgumentParser):
 		type = float
 	)
 
-	##############################################################################################################################################
-	# ----------------------------------------------- Options for individual analysis steps ------------------------------------------------------
-	##############################################################################################################################################
-
-	analysis_group.add_argument(
-		"-f", "--frequencies",
-		help = 'The frequency cutoff to use when sorting the muller_genotypes by first detected frequency. For example, a value of 0.15 will use the frequencies 0,.15,.30,.45...',
-		action = FrequencyParser,
-		dest = 'frequencies',
-		default = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-	)
 	return analysis_group
 
 
-def _create_parser_group_filter(parser: argparse.ArgumentParser):
+def _create_parser_lineage_group_filter(parser: argparse.ArgumentParser):
 	##############################################################################################################################################
 	# --------------------------------------------------- Genotype Filtering Options -------------------------------------------------------------
 	##############################################################################################################################################
@@ -331,7 +317,7 @@ def _create_parser_group_filter(parser: argparse.ArgumentParser):
 
 
 # noinspection PyTypeChecker,PyTypeChecker
-def _create_parser_group_main(parser: argparse.ArgumentParser):
+def _create_parser_lineage_group_main(parser: argparse.ArgumentParser):
 	group_main = parser.add_argument_group(title = "Main Options")
 
 	group_main.add_argument(
@@ -380,37 +366,20 @@ def _create_parser_group_main(parser: argparse.ArgumentParser):
 	return group_main
 
 
-
-def create_parser() -> argparse.ArgumentParser:
-	parser_parent = argparse.ArgumentParser(
-		description = "Infers genotypes and lineage based on mutation frequency timeseries data observed over the course of an evolutionary biology experiment.",
-		formatter_class = argparse.ArgumentDefaultsHelpFormatter
-	)
-	parser_parent.add_argument(
-		"-v", "--version",
-		action = 'version',
-		version = f"%(prog)s {__VERSION__}"
-	)
-
-	subparsers = parser_parent.add_subparsers(dest = 'name')  # Each subparser can be identifies by the `name` attribute.
-	create_main_parser(subparsers)
-	create_benchmark_parser(subparsers)
-	create_muller_parser(subparsers)
-
-	#parser_parent.set_default_parser = set_default_subparser
-	#parser_parent.set_default_parser('lineage')
-	return parser_parent
+#####################################################################################
+########################## Main Application Parsers #################################
+#####################################################################################
 
 
-def create_main_parser(subparsers) -> argparse.ArgumentParser:
+def create_lineage_parser(subparsers) -> argparse.ArgumentParser:
 	parser = subparsers.add_parser("lineage")
 
 	# Broke up the indivisual groups into their own functions because this function was large enough to make browsing it annoying.
-	_create_parser_group_main(parser)
-	_create_parser_group_data(parser)
-	_create_parser_group_analysis(parser)
-	_create_parser_group_filter(parser)
-	_create_parser_group_graphics(parser)
+	_create_parser_lineage_group_main(parser)
+	_create_parser_lineage_group_data(parser)
+	_create_parser_lineage_group_genotype_generation(parser)
+	# _create_parser_group_filter(parser)
+	_create_parser_lineage_group_graphics(parser)
 
 	return parser
 
@@ -442,7 +411,7 @@ def create_benchmark_parser(subparsers) -> argparse.ArgumentParser:
 def create_muller_parser(subparsers) -> argparse.ArgumentParser:
 	parser_muller: argparse.ArgumentParser = subparsers.add_parser(
 		"muller",
-		help = "Generates muller plots from a pair od `population` and `edges` tables."
+		help = "Generates muller plots from a pair of `population` and `edges` tables."
 	)
 
 	parser_muller.add_argument(
@@ -464,6 +433,7 @@ def create_muller_parser(subparsers) -> argparse.ArgumentParser:
 
 	return parser_muller
 
+
 def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
 	parser_timeseries: argparse.ArgumentParser = subparsers.add_parser(
 		"timeseries",
@@ -476,7 +446,27 @@ def create_timeseries_parser(subparsers) -> argparse.ArgumentParser:
 	)
 	return parser_timeseries
 
-def get_arguments(arguments:Optional[List[str]] = None)->argparse.Namespace:
+
+def create_parser() -> argparse.ArgumentParser:
+	parser_parent = argparse.ArgumentParser(
+		description = "Infers genotypes and lineage based on mutation frequency timeseries data observed over the course of an evolutionary biology experiment.",
+		formatter_class = argparse.ArgumentDefaultsHelpFormatter
+	)
+	parser_parent.add_argument(
+		"-v", "--version",
+		action = 'version',
+		version = f"%(prog)s {__VERSION__}"
+	)
+
+	subparsers = parser_parent.add_subparsers(dest = 'name')  # Each subparser can be identifies by the `name` attribute.
+	create_lineage_parser(subparsers)
+	create_benchmark_parser(subparsers)
+	create_muller_parser(subparsers)
+
+	return parser_parent
+
+
+def get_arguments(arguments: Optional[List[str]] = None) -> argparse.Namespace:
 	""" Implemented here to make sure the default parameters are properly applied. """
 	parser = create_parser()
 	args = parser.parse_args(arguments)
