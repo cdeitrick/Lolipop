@@ -30,24 +30,15 @@ class ClusterMutations:
 		grouped together.
 	"""
 
-	def __init__(self, metric: str, dlimit: float, slimit:float, flimit: float, pvalue: float,
+	def __init__(self, metric: str, dlimit: float, flimit: float, pvalue: float,
 			starting_genotypes: Optional[List[List[str]]] = None, threads: Optional[int] = None):
 		self.metric: str = metric
 		self.dlimit: float = dlimit
 		self.flimit: float = flimit
-		self.slimit:float = slimit
 		self.pvalue: float = pvalue
 		self.known_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.filename_pairwise = None
 		self.pairwise_distances_full = None # overwritten in self.get_pairwise_distances.
-		logger.debug(f"Generating genotypes...")
-		logger.debug(f"\t metric: {metric}")
-		logger.debug(f"\t dlimit: {dlimit}")
-		logger.debug(f"\t slimit: {slimit}")
-		logger.debug(f"\t flimit: {slimit}")
-		logger.debug(f"\t pvalue: {pvalue}")
-		logger.debug(f"\t starting_genotypes: {starting_genotypes}")
-		logger.debug(f"\t threads: {threads}")
 
 		#self.filename_pairwise = filename_pairwise # Could be used to reuse a table of pairwise distances.
 		# The `breakpoints` value is a bit arbitrary, so it should be safe to hard-code it.
@@ -66,7 +57,6 @@ class ClusterMutations:
 
 		self.organizer = genotype_reorder.SortGenotypeTableWorkflow(
 			dlimit = dlimit,
-			slimit = slimit,
 			flimit = flimit
 		)
 
