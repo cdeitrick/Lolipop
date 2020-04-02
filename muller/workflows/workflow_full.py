@@ -165,7 +165,6 @@ def run_workflow(program_options: argparse.Namespace):
 		trajectory_table,
 		program_options.metric,
 		dlimit = program_options.dlimit,
-		slimit = program_options.slimit,
 		flimit = program_options.flimit,
 		pvalue = program_options.pvalue,
 		known_genotypes = program_options.known_genotypes,
