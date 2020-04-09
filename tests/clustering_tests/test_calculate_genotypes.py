@@ -28,8 +28,6 @@ def genotype_generator() -> ClusterMutations:
 		metric = 'binomial',
 		dlimit = 0.03,
 		flimit = 0.97,
-		pvalue = 0.05,
-		slimit = 0.10,
 		starting_genotypes = [],
 	)
 	return g

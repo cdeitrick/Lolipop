@@ -6,10 +6,28 @@ from typing import *
 
 import pandas
 from loguru import logger
-
+NumericType = Union[int, float]
+IterableValues = Union[List[NumericType], pandas.Series]
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
+def _coerce_to_series(item:Any)->pandas.Series:
+	if not isinstance(item, pandas.Series):
+		item = pandas.Series(item)
+	return item
 
+def _coerce_to_list(item:Any)->List[Any]:
+	if isinstance(item, list):
+		# Nothing to change
+		result = item
+	elif isinstance(item, pandas.Series):
+		result = item.tolist()
+	else:
+		try:
+			result = list(item)
+		except ValueError:
+			message = f"Could not coerce this to a list: '{type(item)}' -> {item}"
+			raise ValueError(message)
+	return result
 def checkdir(path: Union[str, Path]) -> Path:
 	path = Path(path)
 	if not path.exists():
@@ -151,14 +169,58 @@ def fixed(trajectory: pandas.Series, flimit: float) -> bool:
 
 		raise exception
 
+def get_fixed(trajectory:IterableValues, flimit)->pandas.Series:
+	""" Returns a pandas.Series object with only the timepoints where the series was fixed."""
+	# Usa a dummy value for the `flimit` parameter.
+	result = get_intermediate(trajectory, dlimit = flimit, flimit = 2)
+	return result
+def get_undetected(trajectory:IterableValues, dlimit:float)->pandas.Series:
+	return get_intermediate(trajectory, dlimit = -2, flimit = dlimit)
+def get_intermediate(trajectory:IterableValues, dlimit:float, flimit:float)->pandas.Series:
+	""" Tests whether the input series had timepoints that were neither undetected nor fixed.
+		Returns a pandas.Series object with the indecies and values that satisfy this criteria.
+	"""
+	trajectory = _coerce_to_series(trajectory)
+	is_intermediate = trajectory.apply(lambda s: dlimit <= s <= flimit)
+	# remove the timepoints which are undetected or fixed
+	result = trajectory[is_intermediate]
+	return result
+
+
 
 def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	""" Tests whether the series immediately fixed and stayed fixed."""
 	series = ((i > flimit or i < dlimit) for i in trajectory.values)
 	return all(series)
 
+def get_first_fixed_timepoint(elements:pandas.Series, flimit:float)->Any:
+	""" Returns the first index that was `fixed` """
+	elements = _coerce_to_series(elements)
+	result = elements.apply(lambda s: s>flimit)
+	# Check if any timepoints were fixed
+	if result.sum() == 0:
+		result = None
+	else:
+		result = result.idxmax()
 
-def overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> int:
+	return result
+
+def get_overlap_regions(left:IterableValues, right:IterableValues, flimit:float)->pandas.Series:
+	"""
+		Returns the regions between `left` and `right` that have overlapping "fixed" values.
+		This will be a pandas.Series object with timepoints as the index and boolean values indicating
+		if both series were fixed at that timepoint.
+	"""
+	# Convert to a pandas.Series object if they aren't already
+	left = _coerce_to_series(left)
+	right = _coerce_to_series(right)
+
+	fixed_left = left.apply(lambda s: s>= flimit)
+	fixed_right = right.apply(lambda s: s>= flimit)
+	overlapping_regions = fixed_left & fixed_right
+	return overlapping_regions
+
+def overlap(left: Union[List[float], pandas.Series], right: Union[List[float], pandas.Series], dlimit: float) -> int:
 	result = [(i > dlimit and j > dlimit) for i, j in zip(left.values, right.values)]
 
 	return sum(result)

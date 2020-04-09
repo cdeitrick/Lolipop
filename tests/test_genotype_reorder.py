@@ -11,7 +11,6 @@ from .filenames import generic_tables_with_trajectories, model_tables, real_tabl
 def sorter() -> SortGenotypeTableWorkflow:
 	return SortGenotypeTableWorkflow(
 		dlimit = .03,
-		slimit = .15,
 		flimit = .97,
 	)
 

@@ -1,4 +1,7 @@
-""" Implements a class which can compute statistical values over a set of clusters. Implemented as its own class to make is usable elsewhere."""
+""" Implements a class which can compute statistical values over a set of clusters. Implemented as its own class to make is usable elsewhere.
+	TODO: This class isn't used anywhere important and can be safely removed.
+
+"""
 import itertools
 import statistics
 from typing import Dict, List, Tuple, Union

@@ -84,9 +84,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 	genotype_generator = clustering.ClusterMutations(
 		metric = metric,
 		dlimit = dlimit,
-		slimit = slimit,
 		flimit = flimit,
-		pvalue = pvalue,
 		starting_genotypes = known_genotypes,
 		threads = threads
 	)
@@ -166,7 +164,6 @@ def run_workflow(program_options: argparse.Namespace):
 		program_options.metric,
 		dlimit = program_options.dlimit,
 		flimit = program_options.flimit,
-		pvalue = program_options.pvalue,
 		known_genotypes = program_options.known_genotypes,
 		threads = program_options.threads
 	)

@@ -13,9 +13,7 @@ def cluster() -> ClusterMutations:
 	value = ClusterMutations(
 		metric = 'binomial',
 		dlimit = 0.03,
-		slimit = 0.15,
 		flimit = 0.97,
-		pvalue = 0.05
 	)
 
 	return value

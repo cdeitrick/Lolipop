@@ -18,8 +18,8 @@ class ClusterMutations:
 	"""
 	Parameters
 	----------
-	dlimit, slimit, flimit:float
-		The detection, significant, and fixed cutoff values, respectively
+	dlimit, flimit:float
+		The detection, and fixed cutoff values, respectively
 	pvalue: float
 		The cutoff value to use when clustering trajectories into genotypes. Two trajectories must have a distance less than this value to be
 		considered members of the same genotype.
@@ -30,12 +30,11 @@ class ClusterMutations:
 		grouped together.
 	"""
 
-	def __init__(self, metric: str, dlimit: float, flimit: float, pvalue: float,
+	def __init__(self, metric: str, dlimit: float, flimit: float,
 			starting_genotypes: Optional[List[List[str]]] = None, threads: Optional[int] = None):
 		self.metric: str = metric
 		self.dlimit: float = dlimit
 		self.flimit: float = flimit
-		self.pvalue: float = pvalue
 		self.known_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.filename_pairwise = None
 		self.pairwise_distances_full = None # overwritten in self.get_pairwise_distances.
