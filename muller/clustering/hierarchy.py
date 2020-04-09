@@ -144,33 +144,3 @@ class HierarchalCluster:
 
 		return result
 
-
-def plot_within_cluster_variation():
-	from pathlib import Path
-	from muller.clustering.metrics import DistanceCalculator
-	from muller.clustering.clustercalc import ClusterSet
-	import matplotlib.pyplot as plt
-	filename = Path("/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx")
-	table = pandas.read_excel(filename, sheet_name = 'trajectory').set_index('Trajectory')
-
-	calculator = DistanceCalculator(.03, .97, 'binomial')
-	clusterer = HierarchalCluster()
-
-	distances = calculator.run(table)
-	x = list()
-	y = list()
-	for cutoff in range(0, 500):
-		logger.info(f"Running cutoff = {cutoff}")
-		simcutoff = cutoff / 100
-		clusters, _ = clusterer.run(DistanceCache(distances), similarity_cutoff = simcutoff)
-		clusters = ClusterSet(clusters, distances)
-		k = clusters.calculate_between_cluster_variation()
-		logger.debug(f"{simcutoff}, {len(clusters)}, {k}")
-		x.append(len(clusters))
-		y.append(k)
-
-	plt.scatter(x, y)
-	plt.show()
-
-if __name__ == "__main__":
-	plot_within_cluster_variation()
