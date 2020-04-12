@@ -103,7 +103,7 @@ class HierarchalCluster:
 	@staticmethod
 	def adjust_similarity_cutoff(original_similarity_cutoff:Optional[float], distances: List[float])->float:
 		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
-		if original_similarity_cutoff is None: similarity_cutoff = 0.10
+		if original_similarity_cutoff is None: similarity_cutoff = 0.05
 		else: similarity_cutoff = original_similarity_cutoff
 
 		result = pandas.Series(distances).quantile(similarity_cutoff)
