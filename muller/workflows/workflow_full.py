@@ -52,8 +52,8 @@ if commandline_parser.DEBUG:
 else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
-def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, slimit: float, flimit: float,
-		pvalue: float, known_genotypes: Optional[Path] = None, threads: Optional[int] = None) -> projectdata.DataGenotypeInference:
+def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, flimit: float,
+		known_genotypes: Optional[Path] = None, threads: Optional[int] = None) -> projectdata.DataGenotypeInference:
 	"""
 	Parameters
 	----------
@@ -91,7 +91,6 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 
 	genotype_data = genotype_generator.run(trajectories)
 	genotype_data.table_trajectories_info = trajectory_info
-
 	return genotype_data
 
 
@@ -146,7 +145,7 @@ def run_workflow(program_options: argparse.Namespace):
 		logger.info(f"\t{key:<30}{value}")
 	output_folder = program_options.output_folder
 
-
+	logger.info("Parsing options...")
 	data_basic = projectdata.DataWorkflowBasic(
 		version = commandline_parser.__VERSION__,
 		filename = program_options.filename,
@@ -154,11 +153,11 @@ def run_workflow(program_options: argparse.Namespace):
 	)
 	if not data_basic.program_options.output_folder.exists():
 		data_basic.program_options.output_folder.mkdir()
-
+	logger.info("Importing trajectories...")
 	trajectory_table, trajectory_info = dataio.parse_trajectory_table(program_options.filename, program_options.sheetname)
 
 	# Need to read in the input dataset.
-
+	logger.info("Generating genotypes...")
 	result_genotype_inference = run_genotype_inference_workflow(
 		trajectory_table,
 		program_options.metric,
