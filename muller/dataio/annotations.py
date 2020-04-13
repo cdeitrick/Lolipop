@@ -83,6 +83,7 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 		alias_filename: Will map each gene from the infotable to an alias.
 	"""
 	# Make the column labels lowercase so we don't have to care about capitalization
+
 	info.columns = [str(i).lower() for i in info.columns]
 	if alias_filename:
 		alias_map = read_map(alias_filename)

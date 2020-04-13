@@ -28,7 +28,7 @@ class DataGenotypeInference:
 	"""
 	# Include the original trajectory table.
 	table_trajectories: pandas.DataFrame
-	#table_trajectories_info: Optional[pandas.DataFrame]
+	table_trajectories_info: Optional[pandas.DataFrame]
 	# A table with inferred genotypes sorted by maximum frequency and earliest timepoint.
 	# Each genotype is the mean of consituent trajectories.
 	table_genotypes: pandas.DataFrame
@@ -39,7 +39,7 @@ class DataGenotypeInference:
 	# Type: 'muller.clustering.metrics.distance_cache.DistanceCache'
 	matrix_distance: Optional[Any]
 	# Generated from the hierarchal clustering step. Links trajectories based on the pairwise distance.
-	clusterdata: "DataHierarchalCluster"
+	clusterdata: Optional["DataHierarchalCluster"]
 
 	def save(self, folder:Path, prefix:str):
 		"""
@@ -66,8 +66,10 @@ class DataGenotypeInference:
 		# Save the data
 		self.table_trajectories.to_csv(filename_table_trajectory, sep = delimiter)
 		self.table_genotypes.to_csv(filename_table_genotypes, sep = delimiter)
-		self.clusterdata.table_linkage.to_csv(filename_table_linkage_matrix, sep = delimiter)
-		self.matrix_distance.squareform().to_csv(filename_table_distance_matrix, sep = delimiter)
+		if self.clusterdata is not None:
+			self.clusterdata.table_linkage.to_csv(filename_table_linkage_matrix, sep = delimiter)
+		if self.matrix_distance is not None:
+			self.matrix_distance.squareform().to_csv(filename_table_distance_matrix, sep = delimiter)
 
 		# Need to remove the `members` column from the genotype table so that the graphics workflow uses a purely numeric table
 		self.table_genotypes.pop('members')

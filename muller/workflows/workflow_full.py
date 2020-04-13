@@ -53,7 +53,7 @@ else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, flimit: float,
-		known_genotypes: Optional[Path] = None, threads: Optional[int] = None) -> projectdata.DataGenotypeInference:
+		known_genotypes: Optional[Path] = None, threads: Optional[int] = None, is_genotype:bool = False) -> projectdata.DataGenotypeInference:
 	"""
 	Parameters
 	----------
@@ -88,8 +88,24 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 		starting_genotypes = known_genotypes,
 		threads = threads
 	)
-
-	genotype_data = genotype_generator.run(trajectories)
+	if is_genotype:
+		logger.info(f"Skipping genotype infeerence...")
+		table_genotypes = trajectories.copy(deep = True)
+		# Make sure the "Genotype" column is properly named.
+		table_genotypes.index.name = "Genotype"
+		genotype_members = {f"genotype-{k}":[k] for k in table_genotypes.index}
+		# Make sure the genotype names are prefixed with 'genotype'
+		table_genotypes.index = [f'genotype-{i}' for i in table_genotypes.index]
+		genotype_data = projectdata.DataGenotypeInference(
+			table_trajectories = trajectories,
+			table_genotypes = table_genotypes,
+			genotype_members = genotype_members,
+			matrix_distance = None,
+			clusterdata = None,
+			table_trajectories_info = None
+		)
+	else:
+		genotype_data = genotype_generator.run(trajectories)
 	genotype_data.table_trajectories_info = trajectory_info
 	return genotype_data
 
@@ -164,11 +180,14 @@ def run_workflow(program_options: argparse.Namespace):
 		dlimit = program_options.dlimit,
 		flimit = program_options.flimit,
 		known_genotypes = program_options.known_genotypes,
-		threads = program_options.threads
+		threads = program_options.threads,
+		is_genotype = program_options.is_genotype
 	)
+	if result_genotype_inference.table_trajectories_info is None:
+		result_genotype_inference.table_trajectories_info = trajectory_info
+
 
 	genotype_annotations = annotations.read_genotype_annotations(trajectory_info, result_genotype_inference.genotype_members)
-
 	result_genotype_lineage = run_genotype_lineage_workflow(
 		result_genotype_inference.table_genotypes,  # should already be sorted.
 		dlimit = program_options.dlimit,
@@ -272,13 +291,16 @@ def render_graphics(data_basic: projectdata.DataWorkflowBasic, data_inference: p
 	filename_distance_distribution = folder_figures / "distancedistribution.png"
 
 	# Plot the figures that aren't parametrized
-	workflow_graphics.generate_dendrogram(data_inference.clusterdata.table_linkage, data_inference.matrix_distance, filename_dendrogram)
-	workflow_graphics.generate_heatmap(data_inference.matrix_distance.squareform(), filename_heatmap)
-	graphics.generate_distance_plot(
-		data_inference.matrix_distance.values,
-		data_inference.clusterdata.similarity_cutoff,
-		filename_distance_distribution
-	)
+	if data_inference.clusterdata is not None:
+		workflow_graphics.generate_dendrogram(data_inference.clusterdata.table_linkage, data_inference.matrix_distance, filename_dendrogram)
+	if data_inference.matrix_distance is not None:
+		workflow_graphics.generate_heatmap(data_inference.matrix_distance.squareform(), filename_heatmap)
+	if data_inference.clusterdata is not None and data_inference.matrix_distance is not None:
+		graphics.generate_distance_plot(
+			data_inference.matrix_distance.values,
+			data_inference.clusterdata.similarity_cutoff,
+			filename_distance_distribution
+		)
 	# Set up the generators
 	generator_panel_timeseries = graphics.TimeseriesPanel(render = data_basic.program_options.render)
 	generator_plot_timeseries = graphics.TimeseriesPlot(render = data_basic.program_options.render)

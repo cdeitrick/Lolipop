@@ -193,7 +193,8 @@ class ClusterMutations:
 			table_genotypes = sorted_genotype_table,
 			genotype_members = genotype_members,
 			matrix_distance = pairwise_distances,
-			clusterdata = cluster_result
+			clusterdata = cluster_result,
+			table_trajectories_info = None
 		)
 
 		return output_data
