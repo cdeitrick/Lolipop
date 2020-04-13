@@ -64,7 +64,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 		Ex.
 		genotype	0	7	13 ...
 		genotype-1	0	.1	.3 ...
-		genotype-2	0	.2	.1 ...
+		genotype-2	0.2	.1 ...
 	metric: Literal['']
 	dlimit, slimit, flimit, pvalue: float
 	known_genotypes
@@ -141,6 +141,30 @@ def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame]
 
 	lineage_data = lineage_generator.run(genotypes, known_ancestry)
 	return lineage_data
+
+def run_lineageplot_workflow(edgesio:Union[str,Path, pandas.DataFrame], filename:Path, sheet_name:Optional[str] = None):
+	""" Generates a lineage plot given an `edges` table. The columns should be named `parent` and `identity`.
+		An optional `annotation` column will be used to annotate the plot.
+	"""
+	from muller.graphics import flowchart
+	from muller.graphics.palettes import generate_palette
+	if isinstance(edgesio, (str,Path)):
+		edges = dataio.import_table(edgesio, sheet_name = sheet_name)
+	else:
+		edges = edgesio
+	# Convert the column labels to lowercase
+	edges.columns = [i.capitalize() for i in edges.columns]
+	edges = edges.set_index('Identity')
+	if 'Annotation' in edges.columns:
+		annotations = edges.pop("Annotation").to_dict()
+		# Make sure 'annotations' is a list of str which is expected by the flowchart
+		annotations = {k:[v] for k,v in annotations.items()}
+	else:
+		annotations = dict()
+
+	palette = generate_palette(edges['Parent'], kind = 'lineage')
+
+	lineage = flowchart(edges, palette, annotations, filename)
 
 
 

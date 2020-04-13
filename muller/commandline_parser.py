@@ -54,7 +54,7 @@ def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOption
 	-------
 
 	"""
-
+	if program_options.name != 'lineage': return program_options
 	if program_options.flimit is None:
 		program_options.flimit = 1 - program_options.dlimit
 	if program_options.known_genotypes:
@@ -369,6 +369,27 @@ def _create_parser_lineage_group_main(parser: argparse.ArgumentParser):
 #####################################################################################
 ########################## Main Application Parsers #################################
 #####################################################################################
+def create_lineageplot_parser(subparsers):
+	parser = subparsers.add_parser('lineageplot')
+	group_main = parser.add_argument_group(title = "Lineageplot Options")
+	group_main.add_argument(
+		"edges",
+		help = "Path to an `edges` table with both `identity` and `parent` columns. An optional `annotations` column"
+			   "may also be included.",
+		type = Path
+	)
+	group_main.add_argument(
+		"filename",
+		help = "Name of where to save the plot.",
+		type = Path
+	)
+	group_main.add_argument(
+		"--sheetname",
+		help = "The sheet to use if the input file is an excel sheet.",
+		type = str,
+		required = False
+	)
+	return group_main
 
 
 def create_lineage_parser(subparsers) -> argparse.ArgumentParser:
@@ -462,6 +483,7 @@ def create_parser() -> argparse.ArgumentParser:
 	create_lineage_parser(subparsers)
 	create_benchmark_parser(subparsers)
 	create_muller_parser(subparsers)
+	create_lineageplot_parser(subparsers)
 
 	return parser_parent
 
@@ -473,3 +495,4 @@ def get_arguments(arguments: Optional[List[str]] = None) -> argparse.Namespace:
 
 	args = parse_workflow_options(args)
 	return args
+

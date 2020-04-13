@@ -32,6 +32,7 @@ def main(arguments)->None:
 	from muller.workflows.workflow_full import run_workflow
 	muller_workflow = run_workflow(arguments)
 if __name__ == "__main__":
+	"""
 	import sys
 	from pathlib import Path
 
@@ -52,4 +53,5 @@ if __name__ == "__main__":
 		main(program_arguments)
 	else:
 		print("Need to use `muller/ lineage --input [input]")
+	"""
 

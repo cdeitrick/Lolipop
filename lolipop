@@ -23,6 +23,8 @@ if __name__ == "__main__":
 def main(arguments)->None:
 	from muller.workflows.workflow_full import run_workflow
 	muller_workflow = run_workflow(arguments)
+
+
 if __name__ == "__main__":
 	import sys
 	from pathlib import Path
@@ -42,5 +44,8 @@ if __name__ == "__main__":
 
 	if program_arguments.name == 'lineage':
 		main(program_arguments)
+	elif program_arguments.name == "lineageplot":
+		from muller.workflows.workflow_full import run_lineageplot_workflow
+		run_lineageplot_workflow(program_arguments.edges, program_arguments.filename, program_arguments.sheetname)
 	else:
 		print("Need to use `muller/ lineage --input [input]")
