@@ -43,7 +43,7 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	parent_column = "Parent"
 
 	# Check if the edges table is using the identity column an an index.
-	if edges.index.name.lower() == identity_column.lower():
+	if edges.index.name and edges.index.name == identity_column.lower():
 		edges = edges.reset_index()
 	if annotations is None:
 		annotations = {}

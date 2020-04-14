@@ -3,7 +3,7 @@ import itertools
 import math
 from pathlib import Path
 from typing import List, Optional, Union
-
+from loguru import logger
 try:
 	from muller import dataio
 except ModuleNotFoundError:
@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 from dataclasses import dataclass
 
 __VERSION__ = "0.7.4.2"
-DEBUG = False
+DEBUG = True
 
 
 # For convienience. Helps with autocomplete.
@@ -54,7 +54,7 @@ def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOption
 	-------
 
 	"""
-	if program_options.name != 'lineage': return program_options
+	#if program_options.name != 'lineage': return program_options
 	if program_options.flimit is None:
 		program_options.flimit = 1 - program_options.dlimit
 	if program_options.known_genotypes:
