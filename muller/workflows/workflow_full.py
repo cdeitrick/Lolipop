@@ -53,7 +53,7 @@ else:
 	logger.add(sys.stderr, level = 'INFO', format = "{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFrame], metric: str, dlimit: float, flimit: float,
-		known_genotypes: Optional[Path] = None, threads: Optional[int] = None, is_genotype:bool = False) -> projectdata.DataGenotypeInference:
+		similarity_cutoff:float, known_genotypes: Optional[Path] = None, threads: Optional[int] = None, is_genotype:bool = False) -> projectdata.DataGenotypeInference:
 	"""
 	Parameters
 	----------
@@ -66,7 +66,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 		genotype-1	0	.1	.3 ...
 		genotype-2	0.2	.1 ...
 	metric: Literal['']
-	dlimit, slimit, flimit, pvalue: float
+	dlimit, flimit: float
 	known_genotypes
 	threads
 	"""
@@ -105,7 +105,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 			table_trajectories_info = None
 		)
 	else:
-		genotype_data = genotype_generator.run(trajectories)
+		genotype_data = genotype_generator.run(trajectories, distance_cutoff = similarity_cutoff)
 	genotype_data.table_trajectories_info = trajectory_info
 	return genotype_data
 
@@ -203,6 +203,7 @@ def run_workflow(program_options: argparse.Namespace):
 		program_options.metric,
 		dlimit = program_options.dlimit,
 		flimit = program_options.flimit,
+		similarity_cutoff = program_options.similarity_cutoff,
 		known_genotypes = program_options.known_genotypes,
 		threads = program_options.threads,
 		is_genotype = program_options.is_genotype

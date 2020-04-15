@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
+import re
 import pandas
 from loguru import logger
 
@@ -12,7 +12,30 @@ try:
 except ModuleNotFoundError:
 	from ..filters import filters
 	from . import metrics, hierarchy
+def is_trajectory_labeled_by_genotype(label):
+	regex = "trajectory-[a-z]+-[0-9]+"
+	match = re.search(regex, label)
+	return match
 
+def generate_genotype_name(index: int, members: List[str]):
+	""" Generates the genotype names.
+		When the trajectories are named like "trajectory-aqua-2", the genotype will be named "genotype-aqua".
+	"""
+	# Check if the trajectories follow the naming convention
+	trajectory_label_results = [is_trajectory_labeled_by_genotype(m) for m in members]
+	all_trajectories_follow_convention = all(trajectory_label_results)
+	try:
+		unique_genotype_labels = sorted(set(i.split('-')[1] for i in members))
+	except IndexError:
+		unique_genotype_labels = list()
+	all_trajectories_specify_same_genotype = len(unique_genotype_labels) == 1
+
+	if all_trajectories_follow_convention and all_trajectories_specify_same_genotype:
+		genotype_name = unique_genotype_labels[0]
+	else:
+		genotype_name = str(index)
+	genotype_label = f"genotype-{genotype_name}"
+	return genotype_label
 
 class ClusterMutations:
 	"""
@@ -100,6 +123,9 @@ class ClusterMutations:
 
 		return pair_array
 
+
+
+
 	def calculate_mean_genotype(self, all_genotypes: List[List[str]], timeseries: pandas.DataFrame) -> pandas.DataFrame:
 		"""
 			Calculates the mean frequency of each genotype ate every timepoint.
@@ -124,7 +150,9 @@ class ClusterMutations:
 			except Exception as exception:
 				logger.critical(f"Missing Trajectory Labels: {genotype} - {timeseries.index}")
 				raise exception
-			mean_genotype_timeseries = self._calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)
+			#genotype_name = generate_genotype_name(index, genotype_timeseries.index)
+			genotype_name = f"genotype-{index}"
+			mean_genotype_timeseries = self._calculate_mean_frequencies_of_trajectories(genotype_name, genotype_timeseries, genotype)
 			mean_genotypes.append(mean_genotype_timeseries)
 
 		mean_genotypes = pandas.DataFrame(mean_genotypes)

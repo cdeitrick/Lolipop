@@ -129,8 +129,8 @@ class HierarchalCluster:
 		linkage_table = self.link_clusters(distance_array, len(squaremap.index))
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
 
-
-		similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
+		if similarity_cutoff is None:
+			similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
 
 		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 

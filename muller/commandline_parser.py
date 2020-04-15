@@ -220,7 +220,14 @@ def _create_parser_lineage_group_genotype_generation(parser: argparse.ArgumentPa
 		type = str,
 		default = "binomial"
 	)
-
+	analysis_group.add_argument(
+		"--similarity-cutoff",
+		help = "Used to group trajectories into genotypes. The 10th percentile of the trajectory distances is used if None.",
+		action = "store",
+		dest = "similarity_cutoff",
+		type = float,
+		default = None
+	)
 	analysis_group.add_argument(
 		"-p", "--pvalue",
 		help = "The p-value to use for the statistics tests",

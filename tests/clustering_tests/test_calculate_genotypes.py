@@ -3,7 +3,7 @@ from io import StringIO
 import pandas
 import pytest
 from loguru import logger
-from muller.clustering import ClusterMutations
+from muller.clustering import ClusterMutations, generate_genotypes
 from muller.dataio import import_table
 
 trajectory_csv = "Trajectory,0,17,25,44,66,75,90\n" \
@@ -54,3 +54,16 @@ def test_calculate_mean_genotype(genotype_generator):
 	logger.debug(output.to_string())
 	# Rearrange columns to match output
 	pandas.testing.assert_frame_equal(expected_mean, output)
+
+@pytest.mark.parametrize(
+	"members,expected",
+	[
+		(["trajectory-green-1", "trajectory-green-2", "trajectory-green-3"], "genotype-green"),
+		(["trajectory-green-1", "trajectory-aqua-2", "trajectory-green-3"], 'genotype-12'),
+		(["trajectory-1", "trajectory-2", "trajectory-33"], 'genotype-12'),
+
+	]
+)
+def test_generate_genotype_name(members, expected):
+	result = generate_genotypes.generate_genotype_name(12,members)
+	assert result == expected
