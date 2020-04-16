@@ -3,7 +3,7 @@ import itertools
 import re
 from pathlib import Path
 from typing import *
-
+import math
 import pandas
 from loguru import logger
 NumericType = Union[int, float]
@@ -271,10 +271,16 @@ def get_pair_combinations(elements: Iterable[str]) -> Generator[Tuple[str, str],
 	return itertools.combinations(elements, 2)
 
 
-def calculate_number_of_combinations(n: int) -> int:
+def calculate_number_of_combinations(n: int, r:int = 2) -> int:
 	""" Calculates the number of pairwise combinations for an iterable of size `elements` using the
-		formula `n!/(n-r)!
+		formula `n!/((n-r)!r!)
 		Since we only want combinations of pairs (`r` = 2), this can be simplified to
 		`n * (n-1).
 	"""
-	return n * (n - 1)
+	n_factorial = math.factorial(n)
+	r_factorial = math.factorial(r)
+	n_minus_r_factorial = math.factorial(n-r)
+	#return int(n * (n - r)/r)
+
+	result = n_factorial / (n_minus_r_factorial * r_factorial)
+	return int(result)

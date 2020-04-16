@@ -264,3 +264,16 @@ def test_get_undetected(values, expected):
 	# Let's check the values and index directly.
 	assert result.tolist() == expected.tolist()
 	assert list(result.index) == list(expected.index)
+
+@pytest.mark.parametrize(
+	"elements, size, expected",
+	[
+		(3, 3, 1),
+		(4, 2, 6),
+		(6, 3, 20)
+	]
+)
+def test_calculate_total_number_of_combinations(elements, size, expected):
+
+	result = widgets.calculate_number_of_combinations(elements, size)
+	assert result == expected
