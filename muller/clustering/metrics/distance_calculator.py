@@ -48,14 +48,21 @@ class DistanceCalculator:
 	def calculate_pairwise_distances_serial(self, pair_combinations: Generator, total: Optional[int] = None):
 		""" Nonthreaded version of the pairwise distance calculator"""
 		pair_array: Dict[Tuple[str, str], float] = dict()
-		progress_bar = tqdm(total = total)
+
+		# The progressbar is not really useful if there aren;t a lot of combinations, since calculating the pairwise
+		# distances is pretty fast. So disable the progressbar when the expected time to calculate all distances
+		# Is less than, say, 20-30s.
+		use_progressbar = total >= 10_000
+		if use_progressbar:
+			progress_bar = tqdm(total = total)
 
 		for element in pair_combinations:
 			key, value = calculate_distance(self, element, self.trajectories)
 			pair_array[key] = value
 			pair_array[key[1], key[
 				0]] = value  # It's faster to add the reverse key rather than trying trying to get  test forward and reverse keys
-			progress_bar.update(1)
+			if use_progressbar:
+				progress_bar.update(1)
 		return pair_array
 
 	def calculate_pairwise_distances(self, labels: List[str]) -> Dict[Tuple[str, str], float]:
