@@ -131,4 +131,8 @@ class SortGenotypeTableWorkflow:
 				sorted_genotypes.append(sorted_dataframe)
 		df = pandas.concat(sorted_genotypes, sort = False)
 		df = unsorted_genotypes.reindex(df.index)
+
+		# Make sure the genotype column is labelled correctly.
+		df.index.name = "Genotype"
+		
 		return df
