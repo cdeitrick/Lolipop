@@ -186,7 +186,7 @@ def is_subset(left: pandas.Series, right: pandas.Series) -> bool:
 
 	try:
 		area_intersection = left_poly.intersection(right_poly).area
-	except TopologicalError as exception:
+	except TopologicalError:
 		logger.error(f"{left.values}, {left.index}")
 		logger.error(f"{right.values}, {right.index}")
 		logger.error(f"Left polygon: {left_poly}")

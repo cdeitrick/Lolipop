@@ -66,6 +66,10 @@ def parse_workflow_options(program_options: argparse.Namespace) -> ProgramOption
 	program_options.starting_genotypes = starting_genotypes
 	if program_options.output_folder is None:
 		program_options.output_folder = Path(program_options.filename.parent)
+
+	if program_options.similarity_cutoff is not None and program_options.similarity_cutoff < 0:
+		program_options.similarity_cutoff = None
+
 	return program_options
 
 

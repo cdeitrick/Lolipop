@@ -4,12 +4,11 @@ import pandas
 
 from muller.dataio import annotations
 
-folder_data = Path()
+folder_data = Path(__file__).parent.parent / "data"
 
 @pytest.fixture
 def infotable()->pandas.DataFrame:
-	folder = Path.home() / "storage" / "projects" / "muller" / "datasets" / "traverse"
-	filename = folder / "traversedata.filtered.tsv"
+	filename = folder_data / "tables" / "traversedata.filtered.tsv"
 
 	table = pandas.read_table(filename).set_index('Trajectory')
 	infotable = table[[i for i in table if not isinstance(i, int)]]
@@ -17,6 +16,7 @@ def infotable()->pandas.DataFrame:
 	return infotable
 
 def test_parse_genotype_annotations(infotable):
+	# This currently fails because the trajectory labels in the info table are not the same as the original ones.
 	genotype_members = {
 		'genotype-1':["M2", "M3", "M12"],
 		'genotype-2': ["M4"],
@@ -28,6 +28,7 @@ def test_parse_genotype_annotations(infotable):
 		'genotype-2': ['LysR-like -6:CGATGC'],
 		'genotype-3': ["succinate dehydrogenase G147G", "DUF88 A209P", "MltA -10bp", "wspA A407V"]
 	}
+
 	result = annotations.parse_genotype_annotations(genotype_members, infotable)
 
 	# Simple test, since it's just a list of str.

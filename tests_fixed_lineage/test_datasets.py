@@ -9,17 +9,9 @@ import subprocess
 import pytest
 import pandas
 from loguru import logger
-
+from muller.dataio import projectpaths
 data_folder = Path(__file__).parent
 
-
-class OutputStructure:
-	def __init__(self, folder: Path):
-		self.filename_genotypes = folder / "tables" / "lineage.genotypes.tsv"
-		self.filename_edges = folder / "tables" / "lineage.lineage.edges.tsv"
-
-		self.table_genotypes = pandas.read_csv(self.filename_genotypes, sep = "\t")
-		self.table_edges = pandas.read_csv(self.filename_edges, sep = "\t")
 
 
 class ExpectedStructure:
@@ -47,7 +39,7 @@ def run_command(filename: Path, output_folder: Path):
 	filename_stdout.write_bytes(process.stdout)
 	filename_stderr.write_bytes(process.stderr)
 
-	return OutputStructure(output_folder)
+	return projectpaths.OutputFilenames(output_folder, "input_table")
 
 
 def dataset_test(folder_dataset: Path, output_folder: Path):
@@ -66,10 +58,12 @@ def test_traverse_lineage(tmp_path):
 	output = run_command(filename_input_table, folder_output)
 
 	# Test the genotype table
-	pandas.testing.assert_frame_equal(expected.table_genotypes, output.table_genotypes)
+	output_table = pandas.read_csv(output.filename_table_genotypes, sep = "\t")
+	pandas.testing.assert_frame_equal(expected.table_genotypes, output_table)
 
 	# Test the edges table
-	pandas.testing.assert_frame_equal(expected.table_genotypes, output.table_genotypes)
+	output_edges = pandas.read_csv(output.filename_table_edges, sep = "\t")
+	pandas.testing.assert_frame_equal(expected.table_edges, output_edges)
 
 
 def test_lang_lineage(tmp_path):

@@ -129,6 +129,7 @@ def parse_genotype_annotations(genotype_members: Mapping[str, Union[str, List[st
 
 	alias_filename
 	"""
+	info.columns = [i.lower() for i in info.columns]
 	trajectory_annotations: Dict[str,str] = extract_annotations(info, alias_filename)
 
 	genotype_annotations = dict()

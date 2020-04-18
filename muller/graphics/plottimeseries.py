@@ -115,13 +115,14 @@ class TimeseriesPlot:
 				The resulting figure will be saved to this filename if it is provided.
 		"""
 		# Set up the plotting area.
-
+		if palette is None: palette = {}
 		self.set_scale()
 
 		ax = self._initialize_plot(ax)
 		plot_title = 'Genotypes' if 'genotype' in timeseries.index[0] else 'Trajectories'
 
 		numeric_columns = list(widgets.get_numeric_columns(timeseries.columns))
+		timeseries = timeseries[numeric_columns]
 
 		for series_id, series in timeseries.iterrows():
 			color = palette.get(series_id, self.default_color)

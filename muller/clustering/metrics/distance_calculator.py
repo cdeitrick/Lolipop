@@ -157,8 +157,8 @@ def get_pair_category(left: pandas.Series, right: pandas.Series, dlimit: float, 
 	intermediate_left = widgets.get_intermediate(left, dlimit, flimit)
 	intermediate_right = widgets.get_intermediate(right, dlimit, flimit)
 
-	undetected_left = widgets.get_undetected(left, dlimit)
-	undetected_right = widgets.get_undetected(right, dlimit)
+	#undetected_left = widgets.get_undetected(left, dlimit)
+	#undetected_right = widgets.get_undetected(right, dlimit)
 
 	if left_was_fixed and right_was_fixed:
 		# If both of these fixed at some point, the regions where they're both fixed means they should be
@@ -190,14 +190,14 @@ def get_pair_category(left: pandas.Series, right: pandas.Series, dlimit: float, 
 		nonfixed_regions_after_first = overlapping_regions.apply(lambda s: s < 0.97)
 		# If there is no subsequent timepoint that is not fixed or the overlapping regions after fixed is empty
 		# Then these should be grouped together, but still need to check if the nonfixed regions agree.
-		is_genotype = overlapping_regions_after_fixed.empty or nonfixed_regions_after_first.sum() == 0
+		#is_genotype = overlapping_regions_after_fixed.empty or nonfixed_regions_after_first.sum() == 0
 
 	# Check if the number of timepoints that overlap is more than one (overlapping suring one timepoint may be
 	# due to measurement error.
 	elif (left_was_fixed and not right_was_fixed) or (not left_was_fixed and right_was_fixed):
 		# Only one trajectory had fixed timepoints
 		category = 'oneFixed'
-	elif (not left_was_fixed and not right_was_fixed):
+	elif not left_was_fixed and not right_was_fixed:
 		# Neither series had fixed values.
 		category = 'notFixed'
 	else:
@@ -324,46 +324,3 @@ def fixed_overlap(left: pandas.Series, right: pandas.Series, fixed_cutoff: float
 
 	return result
 
-
-def plot_benchmark_results(benchmarks, output_filename):
-	import matplotlib.pyplot as plt
-	import seaborn
-	labels = list()
-	values = list()
-	for k, v in benchmarks.items():
-		labels.append(k)
-		values.append(v)
-	fig, ax = plt.subplots(figsize = (12, 10))
-	seaborn.barplot(x = values, y = labels)
-
-	ax.xlabel('time in seconds', fontsize = 14)
-	ax.ylabel('number of processes', fontsize = 14)
-	ax.title('Serial vs. Multiprocessing via Parzen-window estimation', fontsize = 18)
-	plt.grid()
-
-	plt.savefig(output_filename)
-
-
-def benchmark(filename):
-	import time
-
-	table = pandas.read_excel(filename)
-	table = table.set_index('Trajectory')
-	table = table[widgets.get_numeric_columns(table.columns)]
-	combinations = list(itertools.combinations(table.index, 2))
-	benchmarks = dict()
-	for index in [None] + list(range(1, 9)):
-		logger.info(f"Running iteration {index}")
-		distance_calculator = DistanceCalculator(.03, .97, 'binomial', threads = index)
-		start = time.time()
-		if index is None:
-			results = [calculate_distance(distance_calculator, e, table) for e in combinations]
-		else:
-			pool = multiprocessing.Pool(processes = index)
-			results = [pool.apply_async(calculate_distance, args = (distance_calculator, e, table)) for e in
-				combinations]
-			results = [i.get() for i in results]
-		duration = time.time() - start
-		label = str(index)
-		benchmarks[label] = duration
-	return benchmarks

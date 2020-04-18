@@ -43,9 +43,6 @@ class ClusterMutations:
 	----------
 	dlimit, flimit:float
 		The detection, and fixed cutoff values, respectively
-	pvalue: float
-		The cutoff value to use when clustering trajectories into genotypes. Two trajectories must have a distance less than this value to be
-		considered members of the same genotype.
 	metric: {'binomial', 'pearson', 'minkowski'}
 		The distance metric to determine trajectory similarity.
 	starting_genotypes: List[List[str]]

@@ -43,6 +43,7 @@ if __name__ == "__main__":
 		program_arguments.name = "lineage"
 
 	if program_arguments.name == 'lineage':
+
 		main(program_arguments)
 	elif program_arguments.name == "lineageplot":
 		from muller.workflows.workflow_full import run_lineageplot_workflow

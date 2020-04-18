@@ -81,8 +81,6 @@ class DataHierarchalCluster:
 	table_linkage: Optional[pandas.DataFrame]
 	similarity_cutoff: float
 
-	def save(self):
-		pass
 
 @dataclass
 class DataGGmuller:
@@ -126,10 +124,12 @@ class DataGenotypeLineage:
 		filename_table_scores = folder / (prefix + f'.lineage.scores.{suffix}')
 		filename_table_populations = folder / (prefix + f".lineage.populations.{suffix}")
 		filename_table_edges = folder / (prefix + f".lineage.edges.{suffix}")
+		filename_table_muller = folder / (prefix + f".lineage.muller.{suffix}")
 
 		self.table_scores.to_csv(filename_table_scores, sep = delimiter)
 		self.table_populations.to_csv(filename_table_populations, sep = delimiter)
 		self.table_edges.to_csv(filename_table_edges, sep = delimiter, header = True) # Added header option to avoid the FutureWarning
+		self.table_muller.to_csv(filename_table_muller, sep = delimiter, index = False)
 
 
 if __name__ == "__main__":
