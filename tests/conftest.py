@@ -31,3 +31,20 @@ def get_model_tables():
 
 def get_real_tables():
 	return real_tables
+
+"""
+These tables are used for the tests:
+- test_distance_metrics
+	- tables/real.B1_muller_try1.xlsx
+- test_genotype_average
+	- tables/generic.coexistinglineages.xlsx
+	- generic.coexistinglineages.xlsx
+	- generic.genotypes.3.xlsx
+	- generic.genotypes.5.xlsx
+	- generic.genotypes.10.xlsx
+	- generic.small.xlsx
+	- model.clonalinterferance.xlsx
+	- model.periodicselection.xlsx
+	- model.strongselection.xlsx
+	- real.nature12344-s2.BYB1-G07
+"""

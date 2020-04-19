@@ -8,7 +8,7 @@ folder_data = Path(__file__).parent.parent / "data"
 
 @pytest.fixture
 def infotable()->pandas.DataFrame:
-	filename = folder_data / "tables" / "traversedata.filtered.tsv"
+	filename = folder_data / "tables" / "real.traverse.tsv"
 
 	table = pandas.read_table(filename).set_index('Trajectory')
 	infotable = table[[i for i in table if not isinstance(i, int)]]
@@ -24,9 +24,9 @@ def test_parse_genotype_annotations(infotable):
 	}
 
 	expected = {
-		'genotype-1': ["monoxygenase E481D", "OGDH R204S", "wspD L35P"],
+		'genotype-1': ['monoxygenase E481D', "OGDH R204S", "wspD L35P"],
 		'genotype-2': ['LysR-like -6:CGATGC'],
-		'genotype-3': ["succinate dehydrogenase G147G", "DUF88 A209P", "MltA -10bp", "wspA A407V"]
+		'genotype-3': ["succinate dehydrogenase G147G", "DUF88 A209P", "MltA -10bp",'wspA A407V']
 	}
 
 	result = annotations.parse_genotype_annotations(genotype_members, infotable)
