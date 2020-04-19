@@ -103,10 +103,11 @@ class HierarchalCluster:
 	@staticmethod
 	def adjust_similarity_cutoff(original_similarity_cutoff:Optional[float], distances: List[float])->float:
 		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
-		if original_similarity_cutoff is None: similarity_cutoff = 0.05
+		if original_similarity_cutoff is None: similarity_cutoff = 0.1
 		else: similarity_cutoff = original_similarity_cutoff
 
 		result = pandas.Series(distances).quantile(similarity_cutoff)
+		result = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(similarity_cutoff)
 		return result
 
 
@@ -130,16 +131,23 @@ class HierarchalCluster:
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
 
 		if similarity_cutoff is None:
-			similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
+			quantile = 0.10
+		else:
+			quantile = similarity_cutoff
 
-		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
 
-		clusters = self.cluster(reduced_linkage_table, similarity_cutoff, squaremap.index)
+		distance_cutoff = self.adjust_similarity_cutoff(quantile, list(pair_array.pairwise_values.values()))
+
+
+		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {distance_cutoff}")
+
+		clusters = self.cluster(reduced_linkage_table, distance_cutoff, squaremap.index)
 
 		result = projectdata.DataHierarchalCluster(
 			clusters = clusters,
 			table_linkage = linkage_table,
-			similarity_cutoff = similarity_cutoff
+			distance_cutoff = distance_cutoff,
+			distance_quantile = quantile
 		)
 
 		return result

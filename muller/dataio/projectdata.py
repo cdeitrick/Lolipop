@@ -79,7 +79,16 @@ class DataHierarchalCluster:
 	""" Output from the hierarchal cluster. """
 	clusters: List[List[str]]
 	table_linkage: Optional[pandas.DataFrame]
-	similarity_cutoff: float
+	distance_cutoff: float
+	distance_quantile: float
+	def to_dict(self)->Dict[str,Any]:
+		data = {
+			'clusters': self.clusters,
+			'distanceCutoff': self.distance_cutoff,
+			'distanceQuantile': self.distance_quantile
+		}
+
+		return data
 
 
 @dataclass

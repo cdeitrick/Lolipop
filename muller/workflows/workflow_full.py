@@ -234,7 +234,7 @@ def run_workflow(program_options: argparse.Namespace):
 
 	paths.save_projectdata_basic(data_basic)
 	paths.save_workflow_clustering(result_genotype_inference)
-	# paths.save_workflow_hierarchy()
+	paths.save_workflow_hierarchy(result_genotype_inference.clusterdata)
 	paths.save_workflow_lineage(result_genotype_lineage)
 
 	# save_tables(data_basic, result_genotype_inference, result_genotype_lineage, genotype_annotations)
@@ -333,9 +333,6 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 		render = True
 	)
 
-	filename_heatmap = paths.folder_figures / "heatmap.png"
-	filename_distance_distribution = paths.folder_figures / "distancedistribution.png"
-
 	# Plot the figures that aren't parametrized
 	if data_inference.clusterdata is not None:
 		workflow_graphics.generate_dendrogram(data_inference.clusterdata.table_linkage, data_inference.matrix_distance,
@@ -346,7 +343,7 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 	if data_inference.clusterdata is not None and data_inference.matrix_distance is not None:
 		graphics.generate_distance_plot(
 			data_inference.matrix_distance.values,
-			data_inference.clusterdata.similarity_cutoff,
+			data_inference.clusterdata.distance_cutoff,
 			paths.filename_figure_distribution
 		)
 	# Set up the generators
@@ -371,6 +368,9 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 			palette = current_palette_data,
 			members = data_inference.genotype_members
 		)
+
+		filename_palette = paths.filename_palette.with_name(f"palette.{palette_name}.json")
+		current_palette.save(filename_palette)
 
 		for suffix in ["png", "svg"]:
 			filename_mullerplot_annotated = paths.get_template(folder_palette,
