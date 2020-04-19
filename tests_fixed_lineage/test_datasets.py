@@ -59,11 +59,11 @@ def test_traverse_lineage(tmp_path):
 
 	# Test the genotype table
 	output_table = pandas.read_csv(output.filename_table_genotypes, sep = "\t")
-	pandas.testing.assert_frame_equal(expected.table_genotypes, output_table)
+	pandas.testing.assert_frame_equal(expected.table_genotypes, output_table, check_dtype = False)
 
 	# Test the edges table
 	output_edges = pandas.read_csv(output.filename_table_edges, sep = "\t")
-	pandas.testing.assert_frame_equal(expected.table_edges, output_edges)
+	pandas.testing.assert_frame_equal(expected.table_edges, output_edges, check_dtype = False)
 
 
 def test_lang_lineage(tmp_path):

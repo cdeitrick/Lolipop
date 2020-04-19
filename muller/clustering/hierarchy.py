@@ -101,14 +101,11 @@ class HierarchalCluster:
 
 		return clusters
 	@staticmethod
-	def adjust_similarity_cutoff(original_similarity_cutoff:Optional[float], distances: List[float])->float:
+	def adjust_similarity_cutoff(quantile:float, distances: List[float])->float:
 		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
 
-		if original_similarity_cutoff is None: similarity_cutoff = 0.10
-		else: similarity_cutoff = original_similarity_cutoff
-
-		result = pandas.Series(distances).quantile(similarity_cutoff)
-		#result = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(similarity_cutoff)
+		#result = pandas.Series(distances).quantile(quantile)
+		result = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(quantile)
 		return result
 
 
@@ -132,7 +129,7 @@ class HierarchalCluster:
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
 
 		if similarity_cutoff is None:
-			quantile = 0.10
+			quantile = 0.05
 		else:
 			quantile = similarity_cutoff
 
