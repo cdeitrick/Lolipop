@@ -273,6 +273,12 @@ def _create_parser_lineage_group_genotype_generation(parser: argparse.ArgumentPa
 		dest = "derivative_cutoff",
 		type = float
 	)
+	analysis_group.add_argument(
+		"--conservative",
+		help = "Whether to use conservative methods of lineage inference.",
+		action = "store_false",
+		dest = "conservative"
+	)
 
 	return analysis_group
 
@@ -327,7 +333,7 @@ def _create_parser_lineage_group_filter(parser: argparse.ArgumentParser):
 	return group_filter
 
 
-# noinspection PyTypeChecker,PyTypeChecker
+# noinspection PyTypeChecker,PyTypeCheckerFalse
 def _create_parser_lineage_group_main(parser: argparse.ArgumentParser):
 	group_main = parser.add_argument_group(title = "Main Options")
 
@@ -373,6 +379,7 @@ def _create_parser_lineage_group_main(parser: argparse.ArgumentParser):
 		action = 'store_true',
 		dest = 'is_genotype'
 	)
+
 
 	return group_main
 

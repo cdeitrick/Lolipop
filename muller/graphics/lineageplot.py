@@ -23,7 +23,7 @@ def get_node_label_properties(identity: str, genotype_color: str, annotation: Li
 	return label_properties
 
 
-def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None)->pygraphviz.AGraph:
+def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None, add_score:bool = True)->pygraphviz.AGraph:
 	"""
 		Creates a lineage plot showing the ancestry of each genotype.
 	Parameters
@@ -64,8 +64,14 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	for index, row in edges.iterrows():
 		parent = row[parent_column]
 		identity = row[identity_column]
-		score = row.get('score', 0)
-		graph.add_edge(parent, identity, tooltip = f"Parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
+		arguments = {
+			'tooltip': f"{parent}",
+			'labeldistance': 2.0
+		}
+		if add_score:
+			score = row.get('score', 0)
+			arguments['headlabel'] = f"{score:.1f}"
+		graph.add_edge(parent, identity, **arguments)
 
 	if filename:
 		try:

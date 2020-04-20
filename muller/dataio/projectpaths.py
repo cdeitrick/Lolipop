@@ -28,19 +28,19 @@ class OutputFilenames:
 
 		# General Files
 		self.filename_trajectory_table: Path = self.folder_output / (name + f'.trajectories.{suffix}')
-		self.filename_genotype_table: Path = self.folder_output / (name + f'.genotypes.{suffix}')
+		self.filename_table_genotypes: Path = self.folder_output / (name + f'.genotypes.{suffix}')
 		self.filename_palette: Path = self.folder_supplementary / (name + f'.palette.json')
 
 		# tables
 		self.filename_table_trajectories: Path = self.folder_tables / (name + f'.trajectories.original.{suffix}')
 		self.filename_table_trajectories_rejected: Path = self.folder_tables / (
 					name + f"trajectories.rejected.{suffix}")
-		self.filename_table_genotypes: Path = self.folder_tables / (name + f'.genotypes.original.{suffix}')
+		#self.filename_table_genotypes: Path = self.folder_tables / (name + f'.genotypes.original.{suffix}')
 
 		self.filename_table_population: Path = self.folder_tables / (name + f'.populations.{suffix}')
 		self.filename_table_edges: Path = self.folder_tables / (name + f'.edges.{suffix}')
 		self.filename_table_muller: Path = self.folder_tables / (name + f".muller.{suffix}")
-		self.filename_table_lineage_scores: Path = self.folder_supplementary / (name + '.lineagescores.tsv')
+		self.filename_table_lineage_scores: Path = self.folder_tables / (name + '.lineagescores.tsv')
 		self.filename_table_linkage = self.folder_tables / (name + f".linkagematrix.tsv")
 		self.filename_table_distance: Path = self.folder_tables / (name + f".distance.{suffix}")
 
@@ -115,11 +115,14 @@ class OutputFilenames:
 		members = {key: '|'.join(values) for key, values in data.genotype_members.items()}
 		data.table_genotypes['members'] = members
 		data.table_genotypes.to_csv(self.filename_table_genotypes, sep = self.delimiter)
-		data.matrix_distance.squareform().to_csv(self.filename_table_distance, sep = self.delimiter)
-		data.clusterdata.table_linkage.to_csv(self.filename_table_linkage, sep = self.delimiter)
+		if data.matrix_distance is not None:
+			data.matrix_distance.squareform().to_csv(self.filename_table_distance, sep = self.delimiter)
+		if data.clusterdata is not None:
+			data.clusterdata.table_linkage.to_csv(self.filename_table_linkage, sep = self.delimiter)
 
 	def save_workflow_hierarchy(self, data):
-		self.filename_clusterdata.write_text(json.dumps(data.to_dict(), indent = 4, sort_keys = True))
+		if data is not None:
+			self.filename_clusterdata.write_text(json.dumps(data.to_dict(), indent = 4, sort_keys = True))
 
 	def save_workflow_ggmuller(self, data):
 		data.table_population.to_csv(self.filename_table_population, sep = self.delimiter)

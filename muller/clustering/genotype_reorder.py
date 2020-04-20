@@ -134,5 +134,5 @@ class SortGenotypeTableWorkflow:
 
 		# Make sure the genotype column is labelled correctly.
 		df.index.name = "Genotype"
-		
+
 		return df
