@@ -99,6 +99,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 	if is_genotype:
 		logger.info(f"Skipping genotype infeerence...")
 		table_genotypes = trajectories.copy(deep = True)
+		table_genotypes = genotype_generator.organizer.run(table_genotypes)
 		# Make sure the "Genotype" column is properly named.
 		table_genotypes.index.name = "Genotype"
 		genotype_members = {f"genotype-{k}": [k] for k in table_genotypes.index}
@@ -119,8 +120,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 
 
 def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame], dlimit: float, flimit: float,
-		pvalue: float,
-		known_ancestry: Optional[Path]) -> projectdata.DataGenotypeLineage:
+		pvalue: float, known_ancestry: Optional[Path], conservative:bool) -> projectdata.DataGenotypeLineage:
 	"""
 
 	Parameters
@@ -138,7 +138,8 @@ def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame]
 	lineage_generator = inheritance.LineageWorkflow(
 		dlimit = dlimit,
 		flimit = flimit,
-		pvalue = pvalue
+		pvalue = pvalue,
+		conservative = conservative
 	)
 
 	# Read in the input data if it is not already a pandas.DataFrame object
@@ -190,6 +191,9 @@ def get_base_filename(filename: Path, name: Optional[str], sheetname: Optional[s
 
 
 def run_workflow(program_options: argparse.Namespace):
+
+	# TODO: Test whether the lineage makes sense by computing the sum of genotypes/lineages at each timepoint,
+	# Where 100% should be the maximum value.
 	logger.info("Running with the following parameters")
 	for key, value in vars(program_options).items():
 		logger.info(f"\t{key:<30}{value}")
@@ -229,7 +233,8 @@ def run_workflow(program_options: argparse.Namespace):
 		dlimit = program_options.dlimit,
 		flimit = program_options.flimit,
 		pvalue = program_options.pvalue,
-		known_ancestry = program_options.known_ancestry
+		known_ancestry = program_options.known_ancestry,
+		conservative = program_options.conservative
 	)
 
 	paths.save_projectdata_basic(data_basic)
