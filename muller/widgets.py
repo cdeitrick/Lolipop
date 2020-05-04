@@ -54,6 +54,14 @@ def get_numeric_columns(columns: List[Union[str, int, float]]) -> List[Union[str
 		numeric_columns.append(column)
 	return numeric_columns
 
+def get_numeric_table(table:pandas.DataFrame)->pandas.DataFrame:
+	""" Returns a version of the input table with only the columns related to timepoints.
+		The columns will also be converted to numeric values.
+	"""
+	table = table[get_numeric_columns(table.column)]
+	table.columns = [int(i) for i in table.columns]
+
+	return table
 
 def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
 	""" Maps each trajectory to the genotype it belongs to."""
@@ -284,3 +292,26 @@ def calculate_number_of_combinations(n: int, r:int = 2) -> int:
 
 	result = n_factorial / (n_minus_r_factorial * r_factorial)
 	return int(result)
+
+def validate_table_genotypes(table:pandas.DataFrame):
+	""" Throws an error if the genotype table does not conform to the expected format.
+		This is mainly for debugging while trying to make sure the genotype table is cosistent at every stage.
+
+		Genotype Table Schema:
+		- Columns will be in two forms: integers indicating time points, and a str label for the `members` column.
+	"""
+	assert 'members' in table.columns
+	assert all(isinstance(i, int) for i in table.columns if i != 'members')
+
+
+
+
+
+def validate_series_edges(edges:pandas.Series):
+	""" Validates that the edges table is a pandas.Series object and has correct labels.
+		This is ment for debugging while trying to make the edges variable more consistent accross scripts.
+	"""
+
+	assert isinstance(edges, pandas.Series)
+	assert edges.index.name == 'Identity'
+	assert edges.name == 'Parent'
