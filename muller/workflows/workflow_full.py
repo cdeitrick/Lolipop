@@ -149,6 +149,14 @@ def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame]
 	else:
 		genotypes = genotypeio
 
+	if known_ancestry:
+		known_ancestry = dataio.read_map(known_ancestry)
+		# Remove the table headers.
+		if 'Parent' in known_ancestry:
+			known_ancestry.pop('Parent')
+		if 'Identity' in known_ancestry:
+			known_ancestry.pop('Identity')
+
 	lineage_data = lineage_generator.run(genotypes, known_ancestry)
 	return lineage_data
 
@@ -189,11 +197,27 @@ def get_base_filename(filename: Path, name: Optional[str], sheetname: Optional[s
 
 	return base_filename
 
+class WorkFlowLineage:
+	def __init__(self, program_options):
+		self.program_options = program_options
 
+	def run(self, filename:Path):
+		pass
 def run_workflow(program_options: argparse.Namespace):
 
 	# TODO: Test whether the lineage makes sense by computing the sum of genotypes/lineages at each timepoint,
 	# Where 100% should be the maximum value.
+
+	"""
+		TODO: Running this command will fail:
+		python /home/cld100/Documents/github/muller_diagrams/lolipop lineage
+		--input traverse-etal-B1-mutationfrequencies.xlsx
+		--sheetname trajectories.filtered
+		--output traverse-genotypes
+		--known-ancestry known_ancestry2.txt
+		--genotypes
+	"""
+
 	logger.info("Running with the following parameters")
 	for key, value in vars(program_options).items():
 		logger.info(f"\t{key:<30}{value}")
@@ -223,6 +247,7 @@ def run_workflow(program_options: argparse.Namespace):
 		threads = program_options.threads,
 		is_genotype = program_options.is_genotype
 	)
+
 	if result_genotype_inference.table_trajectories_info is None:
 		result_genotype_inference.table_trajectories_info = trajectory_info
 
@@ -441,9 +466,9 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 				edges = data_lineage.table_edges.reset_index(),
 				palette = current_palette.get_genotype_palette(),
 				annotations = genotype_annotations,
-				filename = filename_lineageplot
+				filename = filename_lineageplot,
+				add_score = False
 			)
-
 			filename_graphviz_script.write_text(lineageplot.to_string())
 			if suffix == 'png':
 				# PIL doesn't work with svgs

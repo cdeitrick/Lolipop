@@ -168,7 +168,6 @@ class ClusterMutations:
 		# Try to keep the genotype members separate so that `mean_genotypes` is consistent.
 		# The table should only have the timeseries frequency values and be indexed by genotype label.
 		genotype_members = mean_genotypes.pop('members')
-
 		# Convert the `genotype_members` pandas.Series object to a dictionary mapping genotypes to member trajectories.
 		genotype_members = {k: v.split('|') for k, v in genotype_members.items()}
 
@@ -221,6 +220,6 @@ class ClusterMutations:
 			clusterdata = cluster_result,
 			table_trajectories_info = None
 		)
-
+		print(genotype_table.to_string())
 		return output_data
 

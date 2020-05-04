@@ -127,7 +127,6 @@ class Score:
 		# Keep this around as a fallback
 		# Shapely has been having issues, so may need to fallback to the legacy area score.
 		self.legacy_scorer = LegacyScore(pvalue, dlimit, flimit)
-
 		self.weight_greater = weights[0]
 		self.weight_above_fixed = weights[1]
 		self.weight_derivative = weights[2]

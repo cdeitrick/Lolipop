@@ -25,6 +25,7 @@ class Ancestry:
 		self.initial_background_label: str = initial_background.name
 
 		# The minimum score to consider a genotype as a possible ancestor.
+		#self.minimum_score = 1 if not self.cautious else 0.01 # basically anything non-zero.
 		self.minimum_score = 1
 		# The number of points separating a genotype from the maximum scored genotype
 		# by which an older genotype will be considered as a viable newest ancestor
@@ -87,16 +88,15 @@ class Ancestry:
 		""" Returns the genotype label representing the newest ancestor for the genotype indicated by `label`."""
 		candidates = self.confidence.get(label, [])
 		maximum_genotype, maximum_score = max(candidates, key = lambda s: s[1])
-		if self.cautious:
-			for candidate, score in candidates:
-				# Make sure the score is within 2 or so of the maximum.
-				# Will output the genotype with the maximum score if no other genotype exists with 2 points of the maximum.
-				if score > self.minimum_score and abs(maximum_score - score) <= self.score_window:
-					return candidate, score
-			else:
-				return None, math.nan
+
+		for candidate, score in candidates:
+			# Make sure the score is within 2 or so of the maximum.
+			# Will output the genotype with the maximum score if no other genotype exists with 2 points of the maximum.
+			if score > self.minimum_score and abs(maximum_score - score) <= self.score_window:
+				return candidate, score
 		else:
-			return maximum_genotype, maximum_score
+			return None, math.nan
+
 
 	def as_ancestry_table(self) -> pandas.Series:
 		table = list()

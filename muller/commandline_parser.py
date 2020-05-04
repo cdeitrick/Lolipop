@@ -274,8 +274,8 @@ def _create_parser_lineage_group_genotype_generation(parser: argparse.ArgumentPa
 		type = float
 	)
 	analysis_group.add_argument(
-		"--conservative",
-		help = "Whether to use conservative methods of lineage inference.",
+		"--liberal",
+		help = "Whether to allow genotypes to be placed under more recent nested genotypes when an earlier genotype also passes the score check.",
 		action = "store_false",
 		dest = "conservative"
 	)

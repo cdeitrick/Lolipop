@@ -3,12 +3,13 @@ import pytest
 import pandas
 
 from muller.dataio import annotations
+from tests import filenames
 
 folder_data = Path(__file__).parent.parent / "data"
 
 @pytest.fixture
 def infotable()->pandas.DataFrame:
-	filename = folder_data / "tables" / "real.traverse.tsv"
+	filename = filenames.real_tables['traverse']
 
 	table = pandas.read_table(filename).set_index('Trajectory')
 	infotable = table[[i for i in table if not isinstance(i, int)]]

@@ -1,7 +1,7 @@
 import math
 from functools import partial
-from typing import Any, Iterable, List, Optional, Union
-
+from typing import *
+from loguru import logger
 import pandas
 
 Numeric = Union[int, float]
@@ -421,7 +421,6 @@ class GenerateMullerDataFrame:
 		muller_df = self.correct_population_values(population)
 
 		ages = self.get_genotype_ages(population_sorted)
-
 		clean_edges = AdjacencyMatrix(edges, ages)
 		path_vector: List[str] = clean_edges.path_vector()
 		path_vector: List[str] = path_vector[::-1]  # Convert to list and reverse it to match ggmuller scripts.

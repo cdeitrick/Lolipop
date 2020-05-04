@@ -24,7 +24,7 @@ def helper_read_table(filename: str) -> Tuple[pandas.DataFrame, Dict[str, str]]:
 
 
 @pytest.mark.parametrize(
-	"filename", filenames.generic_tables_with_trajectories.values()
+	"filename", filenames.generic_tables.values()
 )
 def test_lineage_of_generic_tables(lineage_workflow, filename: str):
 	""" A parametrized function to assess how well the scripts infer genotypes from generic data."""

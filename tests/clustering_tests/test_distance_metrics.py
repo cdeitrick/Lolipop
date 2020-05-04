@@ -6,13 +6,12 @@ from loguru import logger
 from muller import dataio
 from muller.clustering.metrics import DistanceCalculator, distance_calculator, distance_methods
 import math
-
-DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables"
+from tests import filenames
 
 
 @pytest.fixture
 def b1_data() -> pandas.DataFrame:
-	f = DATA_FOLDER / "real.B1_muller_try1.xlsx"
+	f = filenames.real_tables["B1"]
 	t = dataio.import_table(f, sheet_name = 'trajectory', index = 'Trajectory')
 	t.index = [str(i) for i in t.index]
 	return t
