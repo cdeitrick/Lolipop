@@ -92,6 +92,8 @@ def extract_annotations(info: pandas.DataFrame, alias_filename: Optional[Path] =
 
 	column_label_gene = 'gene'
 	annotation_column = 'annotation'
+	if 'annotation' not in info.columns:
+		annotation_column = 'mutation'
 
 	trajectory_annotations: Dict[str,str] = dict()
 	for trajectory_label, row in info.iterrows():
