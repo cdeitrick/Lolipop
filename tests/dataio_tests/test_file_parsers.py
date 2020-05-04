@@ -65,9 +65,9 @@ def test_parse_annotations():
 		'genotype-3': "6|7|8"
 	}
 	expected_result = {
-		'genotype-1': ["PROKKA_00139|glyA", "PROKKA_00438", "PROKKA_00512"],
-		'genotype-2': ["gapN|glgB"],
-		'genotype-3': ["intergenic(62/+110)", "bglK_1", "dnaI"]
+		'genotype-1': ["PROKKA_00139|glyA A>C", "PROKKA_00438 G>C", "PROKKA_00512 A>T"],
+		'genotype-2': ["gapN|glgB T>G"],
+		'genotype-3': ["intergenic(62/+110) C>A", "bglK_1 G>T", "dnaI G>T"]
 	}
 
 	test_result = annotations.parse_genotype_annotations(genotype_members, info_table)
