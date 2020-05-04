@@ -10,6 +10,7 @@ class OutputFilenames:
 		string = f"OutputFilenames('{self.folder_output}')"
 		return string
 	def __init__(self, output: Path, name: str, suffix = 'tsv'):
+		self.name = name
 		self.suffix = suffix
 
 		def check_folder(path: Union[str, Path]) -> Path:
@@ -82,7 +83,7 @@ class OutputFilenames:
 		self.filename_script_graphviz: Path = self.folder_scripts / (name + '.dot')
 
 		# supplementary files
-
+		self.filename_data_genotype_members: Path = self.folder_supplementary / (name + '.genotypemembers.json')
 		self.filename_parameters: Path = self.folder_supplementary / (name + '.options.json')
 		self.filename_clusterdata: Path = self.folder_supplementary / (name + '.clusterdata.json')
 		self.genotype_information: Path = self.folder_supplementary / (name + '.genotypeinformation.json')
@@ -113,12 +114,15 @@ class OutputFilenames:
 		# TODO: merge table_trajectories_info with the trajectories table.
 		# data.table_trajectories_info.to_csv()
 		members = {key: '|'.join(values) for key, values in data.genotype_members.items()}
-		data.table_genotypes['members'] = members
+
+		data.table_genotypes['members'] = [members[i] for i in data.table_genotypes.index]
 		data.table_genotypes.to_csv(self.filename_table_genotypes, sep = self.delimiter)
 		if data.matrix_distance is not None:
 			data.matrix_distance.squareform().to_csv(self.filename_table_distance, sep = self.delimiter)
 		if data.clusterdata is not None:
 			data.clusterdata.table_linkage.to_csv(self.filename_table_linkage, sep = self.delimiter)
+
+		self.filename_data_genotype_members.write_text(json.dumps(data.genotype_members, indent = 4, sort_keys = True))
 
 	def save_workflow_hierarchy(self, data):
 		if data is not None:
@@ -130,13 +134,13 @@ class OutputFilenames:
 		self.filename_script_r_script.write_text(data.script_r)
 
 	def save_workflow_lineage(self, data):
-		data.table_scores.to_csv(self.filename_table_lineage_scores, sep = self.delimiter)
+		data.table_scores.to_csv(self.filename_table_lineage_scores, sep = self.delimiter, index = False)
 		if not self.filename_table_population.exists():
-			data.table_populations.to_csv(self.filename_table_population, sep = self.delimiter)
+			data.table_populations.to_csv(self.filename_table_population, sep = self.delimiter, index = False)
 		if not self.filename_table_edges.exists():
-			data.table_edges.to_csv(self.filename_table_edges, sep = self.delimiter)
+			data.table_edges.to_csv(self.filename_table_edges, sep = self.delimiter, index = True)
 
-		data.table_muller.to_csv(self.filename_table_muller, sep = self.delimiter)
+		data.table_muller.to_csv(self.filename_table_muller, sep = self.delimiter, index = False)
 
 	@property
 	def delimiter(self) -> str:
