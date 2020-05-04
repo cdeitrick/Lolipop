@@ -48,7 +48,7 @@ class ClusterSet:
 			right_cluster = clusters[right_genotype]
 
 			distance = self.calculate_distance_between_clusters(left_cluster, right_cluster, 'min')
-			logger.debug(f"{left_genotype}, {right_genotype}, ({len(left_cluster), len(right_cluster)}), {distance}")
+			#logger.debug(f"{left_genotype}, {right_genotype}, ({len(left_cluster), len(right_cluster)}), {distance}")
 			cluster_distances.append(distance)
 
 		mean_cluster_distance = statistics.mean(cluster_distances)
@@ -86,6 +86,7 @@ class ClusterSet:
 	def calculate_silhouette_coefficients(self) -> Dict[str, float]:
 		coefficients = dict()
 		for cluster_name, cluster in self.genotypes.items():
+			if len(cluster) == 1: continue
 			closest_cluster = self.get_closest_cluster(cluster_name)
 			closest_cluster_members = self[closest_cluster]
 			for member in cluster:
@@ -148,4 +149,4 @@ class ClusterSet:
 			if name == label: continue
 			d = self.calculate_distance_between_clusters(self[label], self[name])
 			dist[name] = d
-		return min(dist.items(), key = lambda s: s[1])[0]
+		return min(dist.items(), key = lambda s: s[1])[0] 

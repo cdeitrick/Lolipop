@@ -26,13 +26,13 @@ class LineageWorkflow:
 		The pvalue to use for statistical tests.
 	"""
 
-	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = (1, 1, 2, 2), debug: bool = False):
+	def __init__(self, dlimit: float, flimit: float, pvalue: float, weights = (1, 1, 2, 2), conservative:bool = False,debug: bool = False):
 		self.dlimit = dlimit
 		self.flimit = flimit
 		self.pvalue = pvalue
 		self.debug = debug
 		self.genotype_nests: Optional[Ancestry] = None
-
+		self.conservative = conservative
 		self.scorer = scoring.Score(self.dlimit, self.flimit, self.pvalue, weights)
 
 	def __repr__(self)->str:
@@ -65,7 +65,7 @@ class LineageWorkflow:
 		"""
 
 		initial_background = sorted_genotypes.iloc[0]
-		self.genotype_nests = Ancestry(initial_background, timepoints = sorted_genotypes)
+		self.genotype_nests = Ancestry(initial_background, timepoints = sorted_genotypes, cautious = self.conservative)
 		self.add_known_lineages(known_ancestry if known_ancestry else dict())
 
 		score_records: List[Dict[str, float]] = list()  # Keeps track of the individual score values for each pair

@@ -74,7 +74,7 @@ def benchmark_serial(datasets: List[pandas.DataFrame], threads: int = 1):
 		total_elements = len(dataset)
 		total_timepoints = len(widgets.get_numeric_columns(dataset.columns))
 		start = time.time()
-		result = calculator.run(dataset)
+		calculator.run(dataset)
 		duration = time.time() - start
 
 		logger.info(f"It took {duration:.2f} seconds to compute {total_elements} elements and {total_timepoints} timepoints.")
@@ -89,7 +89,7 @@ def benchmark_serial(datasets: List[pandas.DataFrame], threads: int = 1):
 	return pandas.DataFrame(benchmarktable)
 
 
-def plot_banchmarks(data: pandas.DataFrame, ax: plt.Axes = None):
+def plot_banchmarks(data: pandas.DataFrame):
 	fig, ax = plt.subplots(figsize = (12, 10))
 
 	ax.scatter("totalTrajectories", "duration", data = data)

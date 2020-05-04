@@ -5,13 +5,13 @@ import pytest
 
 from muller import dataio
 from muller.inheritance import areascore, polygon
-
+from tests import filenames
 FOLDER_DATA = Path(__file__).parent.parent / "data"
 
 
 @pytest.fixture
 def trajectory_table() -> pandas.DataFrame:
-	filename_table = FOLDER_DATA / "truthsets" / "truthset.model.area.xlsx"
+	filename_table = filenames.fake_tables['generic.model.area']
 	return dataio.import_table(filename_table, sheet_name = "data", index = 'Trajectory')
 
 

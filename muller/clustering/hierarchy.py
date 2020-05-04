@@ -101,12 +101,11 @@ class HierarchalCluster:
 
 		return clusters
 	@staticmethod
-	def adjust_similarity_cutoff(original_similarity_cutoff:Optional[float], distances: List[float])->float:
+	def adjust_similarity_cutoff(quantile:float, distances: List[float])->float:
 		""" Adjusts the `similarity_cutoff` value to work with the distance observations."""
-		if original_similarity_cutoff is None: similarity_cutoff = 0.10
-		else: similarity_cutoff = original_similarity_cutoff
 
-		result = pandas.Series(distances).quantile(similarity_cutoff)
+		#result = pandas.Series(distances).quantile(quantile)
+		result = pandas.Series([i for i in distances if 0 < i < max(distances)]).quantile(quantile)
 		return result
 
 
@@ -129,48 +128,23 @@ class HierarchalCluster:
 		linkage_table = self.link_clusters(distance_array, len(squaremap.index))
 		reduced_linkage_table = linkage_table[['left', 'right', 'distance', 'observations']]  # Removes the extra column
 
+		if similarity_cutoff is None:
+			quantile = 0.05
+		else:
+			quantile = similarity_cutoff
 
-		similarity_cutoff = self.adjust_similarity_cutoff(similarity_cutoff, list(pair_array.pairwise_values.values()))
+		distance_cutoff = self.adjust_similarity_cutoff(quantile, list(pair_array.pairwise_values.values()))
 
-		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {similarity_cutoff}")
+		logger.debug(f"Using Hierarchical Clustering with similarity cutoff {distance_cutoff}")
 
-		clusters = self.cluster(reduced_linkage_table, similarity_cutoff, squaremap.index)
+		clusters = self.cluster(reduced_linkage_table, distance_cutoff, squaremap.index)
 
 		result = projectdata.DataHierarchalCluster(
 			clusters = clusters,
 			table_linkage = linkage_table,
-			similarity_cutoff = similarity_cutoff
+			distance_cutoff = distance_cutoff,
+			distance_quantile = quantile
 		)
 
 		return result
 
-
-def plot_within_cluster_variation():
-	from pathlib import Path
-	from muller.clustering.metrics import DistanceCalculator
-	from muller.clustering.clustercalc import ClusterSet
-	import matplotlib.pyplot as plt
-	filename = Path("/home/cld100/Documents/github/muller_diagrams/tests/data/tables/real.nature12344-s2.BYB1-G07.xlsx")
-	table = pandas.read_excel(filename, sheet_name = 'trajectory').set_index('Trajectory')
-
-	calculator = DistanceCalculator(.03, .97, 'binomial')
-	clusterer = HierarchalCluster()
-
-	distances = calculator.run(table)
-	x = list()
-	y = list()
-	for cutoff in range(0, 500):
-		logger.info(f"Running cutoff = {cutoff}")
-		simcutoff = cutoff / 100
-		clusters, _ = clusterer.run(DistanceCache(distances), similarity_cutoff = simcutoff)
-		clusters = ClusterSet(clusters, distances)
-		k = clusters.calculate_between_cluster_variation()
-		logger.debug(f"{simcutoff}, {len(clusters)}, {k}")
-		x.append(len(clusters))
-		y.append(k)
-
-	plt.scatter(x, y)
-	plt.show()
-
-if __name__ == "__main__":
-	plot_within_cluster_variation()

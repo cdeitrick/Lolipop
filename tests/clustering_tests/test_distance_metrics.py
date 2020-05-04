@@ -6,12 +6,12 @@ from loguru import logger
 from muller import dataio
 from muller.clustering.metrics import DistanceCalculator, distance_calculator, distance_methods
 import math
-DATA_FOLDER = Path(__file__).parent.parent / "data" / "tables"
+from tests import filenames
 
 
 @pytest.fixture
 def b1_data() -> pandas.DataFrame:
-	f = DATA_FOLDER / "real.B1_muller_try1.xlsx"
+	f = filenames.real_tables["B1"]
 	t = dataio.import_table(f, sheet_name = 'trajectory', index = 'Trajectory')
 	t.index = [str(i) for i in t.index]
 	return t
@@ -40,7 +40,8 @@ def test_minkowski_distance(left, right, expected: float):
 
 @pytest.mark.parametrize("left,right,expected",
 	[
-		([0, 0.0, 0.0, 0.273, 0.781, 1.0, 1.0], [0, 0.0, 0.0, 0.0, 0.345, 0.833, 0.793], 1 - 0.945696),
+		([0, 0.0, 0.0, 0.273, 0.781, 1.0, 1.0], [0, 0.0, 0.0, 0.0, 0.345, 0.833, 0.793],
+		1 - 0.945696),
 		([1, 2, 2, 1, 5, 1, 2, 6, 2], [12, 4, 1, 4, 5, 1, 4, 1, 3], 1 + 0.274663),
 		([0, 0.0, 0.261, 1.0, 1.0, 1.0, 1.0], [0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0], 1 - 0.539221)
 	]

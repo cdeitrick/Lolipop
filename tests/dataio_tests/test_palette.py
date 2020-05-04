@@ -6,6 +6,9 @@ import pytest
 from muller import treetools
 from muller.graphics import palettes
 from muller.dataio import import_table
+from muller.graphics.palettes.palette_annotation import generate_annotation_palette
+from muller.graphics.palettes import palette_lineage
+import seaborn
 
 
 @pytest.fixture
@@ -53,8 +56,6 @@ def test_determine_clade(edges_table, label, expected):
 	assert expected == result
 
 
-
-
 def test_generate_random_color():
 	color = palettes.random_color()
 	assert re.match("#[0-9A-F]{6}", color)
@@ -76,3 +77,33 @@ def test_generate_random_color():
 def test_rgbtohex(rgb, expected):
 	result = palettes.rgbtohex(rgb)
 	assert expected.lower() == result.lower()
+
+
+def test_generate_annotation_palette():
+	annotations = {
+		'genotype-1': ['gene1', 'gene7'],
+		'genotype-7': ['gene5'],
+		'genotype-4': []
+	}
+	palette = {
+		'gene1': '#444444',
+		'gene7': '#555555',
+		'gene5': '#666666'
+	}
+
+	expected_palette = {
+		'genotype-1': '#444444',
+		'genotype-7': '#666666',
+		'genotype-4': None
+	}
+	result = generate_annotation_palette(annotations, palette)
+
+	assert result == expected_palette
+
+
+def test_apply_clade_colorscheme():
+	clade = ['genotype-1', 'genotype-2', 'genotype-3']
+
+	result = palette_lineage.apply_clade_colorscheme(clade, 'Blues')
+	expected_result = dict(zip(clade, seaborn.color_palette('Blues', 3).as_hex()))
+	assert result == expected_result

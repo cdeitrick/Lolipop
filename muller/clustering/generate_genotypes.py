@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
+import re
 import pandas
 from loguru import logger
 
@@ -12,17 +12,37 @@ try:
 except ModuleNotFoundError:
 	from ..filters import filters
 	from . import metrics, hierarchy
+def is_trajectory_labeled_by_genotype(label):
+	regex = "trajectory-[a-z]+-[0-9]+"
+	match = re.search(regex, label)
+	return match
 
+def generate_genotype_name(index: int, members: List[str]):
+	""" Generates the genotype names.
+		When the trajectories are named like "trajectory-aqua-2", the genotype will be named "genotype-aqua".
+	"""
+	# Check if the trajectories follow the naming convention
+	trajectory_label_results = [is_trajectory_labeled_by_genotype(m) for m in members]
+	all_trajectories_follow_convention = all(trajectory_label_results)
+	try:
+		unique_genotype_labels = sorted(set(i.split('-')[1] for i in members))
+	except IndexError:
+		unique_genotype_labels = list()
+	all_trajectories_specify_same_genotype = len(unique_genotype_labels) == 1
+
+	if all_trajectories_follow_convention and all_trajectories_specify_same_genotype:
+		genotype_name = unique_genotype_labels[0]
+	else:
+		genotype_name = str(index)
+	genotype_label = f"genotype-{genotype_name}"
+	return genotype_label
 
 class ClusterMutations:
 	"""
 	Parameters
 	----------
-	dlimit, slimit, flimit:float
-		The detection, significant, and fixed cutoff values, respectively
-	pvalue: float
-		The cutoff value to use when clustering trajectories into genotypes. Two trajectories must have a distance less than this value to be
-		considered members of the same genotype.
+	dlimit, flimit:float
+		The detection, and fixed cutoff values, respectively
 	metric: {'binomial', 'pearson', 'minkowski'}
 		The distance metric to determine trajectory similarity.
 	starting_genotypes: List[List[str]]
@@ -30,24 +50,14 @@ class ClusterMutations:
 		grouped together.
 	"""
 
-	def __init__(self, metric: str, dlimit: float, slimit:float, flimit: float, pvalue: float,
+	def __init__(self, metric: str, dlimit: float, flimit: float,
 			starting_genotypes: Optional[List[List[str]]] = None, threads: Optional[int] = None):
 		self.metric: str = metric
 		self.dlimit: float = dlimit
 		self.flimit: float = flimit
-		self.slimit:float = slimit
-		self.pvalue: float = pvalue
 		self.known_genotypes: List[List[str]] = starting_genotypes if starting_genotypes else []
 		self.filename_pairwise = None
 		self.pairwise_distances_full = None # overwritten in self.get_pairwise_distances.
-		logger.debug(f"Generating genotypes...")
-		logger.debug(f"\t metric: {metric}")
-		logger.debug(f"\t dlimit: {dlimit}")
-		logger.debug(f"\t slimit: {slimit}")
-		logger.debug(f"\t flimit: {slimit}")
-		logger.debug(f"\t pvalue: {pvalue}")
-		logger.debug(f"\t starting_genotypes: {starting_genotypes}")
-		logger.debug(f"\t threads: {threads}")
 
 		#self.filename_pairwise = filename_pairwise # Could be used to reuse a table of pairwise distances.
 		# The `breakpoints` value is a bit arbitrary, so it should be safe to hard-code it.
@@ -66,7 +76,6 @@ class ClusterMutations:
 
 		self.organizer = genotype_reorder.SortGenotypeTableWorkflow(
 			dlimit = dlimit,
-			slimit = slimit,
 			flimit = flimit
 		)
 
@@ -111,6 +120,9 @@ class ClusterMutations:
 
 		return pair_array
 
+
+
+
 	def calculate_mean_genotype(self, all_genotypes: List[List[str]], timeseries: pandas.DataFrame) -> pandas.DataFrame:
 		"""
 			Calculates the mean frequency of each genotype ate every timepoint.
@@ -135,7 +147,9 @@ class ClusterMutations:
 			except Exception as exception:
 				logger.critical(f"Missing Trajectory Labels: {genotype} - {timeseries.index}")
 				raise exception
-			mean_genotype_timeseries = self._calculate_mean_frequencies_of_trajectories(f"genotype-{index}", genotype_timeseries, genotype)
+			#genotype_name = generate_genotype_name(index, genotype_timeseries.index)
+			genotype_name = f"genotype-{index}"
+			mean_genotype_timeseries = self._calculate_mean_frequencies_of_trajectories(genotype_name, genotype_timeseries, genotype)
 			mean_genotypes.append(mean_genotype_timeseries)
 
 		mean_genotypes = pandas.DataFrame(mean_genotypes)
@@ -154,7 +168,6 @@ class ClusterMutations:
 		# Try to keep the genotype members separate so that `mean_genotypes` is consistent.
 		# The table should only have the timeseries frequency values and be indexed by genotype label.
 		genotype_members = mean_genotypes.pop('members')
-
 		# Convert the `genotype_members` pandas.Series object to a dictionary mapping genotypes to member trajectories.
 		genotype_members = {k: v.split('|') for k, v in genotype_members.items()}
 
@@ -204,8 +217,9 @@ class ClusterMutations:
 			table_genotypes = sorted_genotype_table,
 			genotype_members = genotype_members,
 			matrix_distance = pairwise_distances,
-			clusterdata = cluster_result
+			clusterdata = cluster_result,
+			table_trajectories_info = None
 		)
-
+		print(genotype_table.to_string())
 		return output_data
 

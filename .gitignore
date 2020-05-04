@@ -76,3 +76,5 @@ b6/
 *env/
 .Rhistory
 tests/data/example/
+manuscript_scripts/
+misc.py

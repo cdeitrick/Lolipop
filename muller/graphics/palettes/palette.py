@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional
-
+from pathlib import Path
 
 class Palette:
 	# Holds the palette used by genotypes/trajectories.
@@ -42,6 +42,15 @@ class Palette:
 
 	def get(self, item:str, default = None)->str:
 		return self.palette_genotype.get(item, self._palette_trajectory.get(item, default))
+
+	def save(self, filename:Path):
+		data = {
+			'name': self.name,
+			'genotype': self.palette_genotype,
+			'trajectory': self._palette_trajectory
+		}
+		import json
+		filename.write_text(json.dumps(data, indent = 4, sort_keys = True))
 
 if __name__ == "__main__":
 	pass

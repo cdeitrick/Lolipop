@@ -13,9 +13,7 @@ def cluster() -> ClusterMutations:
 	value = ClusterMutations(
 		metric = 'binomial',
 		dlimit = 0.03,
-		slimit = 0.15,
 		flimit = 0.97,
-		pvalue = 0.05
 	)
 
 	return value
@@ -33,7 +31,7 @@ def helper_get_expected_members(table: pandas.DataFrame):
 	return members
 
 
-@pytest.mark.parametrize("filename", filenames.generic_tables_with_trajectories.values())
+@pytest.mark.parametrize("filename", filenames.generic_tables.values())
 def test_clustering_algorithm_on_generic_tables(cluster, filename):
 
 	trajectories = dataio.import_table(filename, sheet_name = 'trajectory', index = 'Trajectory')
@@ -48,7 +46,7 @@ def test_clustering_algorithm_on_generic_tables(cluster, filename):
 	assert sorted(result.genotype_members.values()) == sorted(expected_members.values())
 
 
-@pytest.mark.parametrize("filename", filenames.real_tables.values())
+@pytest.mark.parametrize("filename", [filenames.real_tables['nature12344']])
 def test_clustering_algorithm_on_real_tables(cluster, filename):
 	trajectories = dataio.import_table(filename, sheet_name = 'trajectory', index = 'Trajectory')
 	expected_members = helper_get_expected_members(trajectories)

@@ -23,7 +23,7 @@ def get_node_label_properties(identity: str, genotype_color: str, annotation: Li
 	return label_properties
 
 
-def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None)->pygraphviz.AGraph:
+def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dict[str, List[str]] = None, filename: Optional[Path] = None, add_score:bool = True)->pygraphviz.AGraph:
 	"""
 		Creates a lineage plot showing the ancestry of each genotype.
 	Parameters
@@ -39,6 +39,12 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	-------
 
 	"""
+	identity_column = "Identity"
+	parent_column = "Parent"
+
+	# Check if the edges table is using the identity column an an index.
+	if edges.index.name and edges.index.name == identity_column.lower():
+		edges = edges.reset_index()
 	if annotations is None:
 		annotations = {}
 
@@ -48,7 +54,7 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 	graph.node_attr['fontname'] = 'lato'
 	graph.edge_attr['dir'] = 'forward'
 
-	for identity in edges['Identity'].unique():
+	for identity in edges[identity_column].unique():
 		genotype_color = palette.get(identity)
 		graph.add_node(identity, color = "#333333", fillcolor = genotype_color)
 		node = graph.get_node(identity)
@@ -56,10 +62,16 @@ def flowchart(edges: pandas.DataFrame, palette: Dict[str, str], annotations: Dic
 		node.attr.update(node_label_properties)
 
 	for index, row in edges.iterrows():
-		parent = row['Parent']
-		identity = row['Identity']
-		score = row.get('score', 0)
-		graph.add_edge(parent, identity, tooltip = f"Parent", headlabel = f"{score:.1f}", labeldistance = 2.0)
+		parent = row[parent_column]
+		identity = row[identity_column]
+		arguments = {
+			'tooltip': f"{parent}",
+			'labeldistance': 2.0
+		}
+		if add_score:
+			score = row.get('score', 0)
+			arguments['headlabel'] = f"{score:.1f}"
+		graph.add_edge(parent, identity, **arguments)
 
 	if filename:
 		try:

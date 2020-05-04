@@ -15,9 +15,9 @@ class SortGenotypeTableWorkflow:
 			Frequencies with which to group genotypes into sortable bins. Each bin will be sorted individually then added to the final output.
 	"""
 
-	def __init__(self, dlimit: float, slimit: float, flimit: float):
+	def __init__(self, dlimit: float, flimit: float):
 		self.dlimit = dlimit
-		self.slimit = slimit
+		self.slimit = 0.15
 		self.flimit = flimit
 		# The `breakpoints` value is a bit arbitrary, so it should be safe to hard-code it.
 		# 	This will actually prevent the most common error when sorting genotypes (i.e. no breakpoints given) so it's worth
@@ -131,4 +131,8 @@ class SortGenotypeTableWorkflow:
 				sorted_genotypes.append(sorted_dataframe)
 		df = pandas.concat(sorted_genotypes, sort = False)
 		df = unsorted_genotypes.reindex(df.index)
+
+		# Make sure the genotype column is labelled correctly.
+		df.index.name = "Genotype"
+
 		return df

@@ -127,7 +127,6 @@ class Score:
 		# Keep this around as a fallback
 		# Shapely has been having issues, so may need to fallback to the legacy area score.
 		self.legacy_scorer = LegacyScore(pvalue, dlimit, flimit)
-
 		self.weight_greater = weights[0]
 		self.weight_above_fixed = weights[1]
 		self.weight_derivative = weights[2]
@@ -163,16 +162,23 @@ class Score:
 		nested_is_above_unnested = difference > self.dlimit
 		unnested_is_above_nested = difference < -self.dlimit
 
+		# Select the timepoints that correspond to whichever was greater.
 		nested = difference[nested_is_above_unnested]
 		unnested = difference[unnested_is_above_nested]
 
 		portion_of_series = 0.5
+		# The `cutoff` value is just half the total number of timepoints.
 		cutoff = len(difference) * portion_of_series
 
-		nested_timepoints = len(nested)
-		unnested_timepoints = len(unnested)
+		nested_timepoints = len(nested) # Number of timepoints where the nested genotype was greater
+		unnested_timepoints = len(unnested) # Number of timepoints where the unnested genotype was greater.
+		# This is adding up the difference in values. Basically the area under the curve.
+		# Since each series already omits the timepoints not in that category the abs() method just
+		# makes sure the differences are positive.
 		nested_sum = abs(nested.sum())
 		unnested_sum = abs(unnested.sum())
+
+		# This is basically the mean of the difference between series.
 		nested_mean = abs(nested.mean())
 		unnested_mean = abs(unnested.mean())
 
@@ -197,6 +203,31 @@ class Score:
 
 		return score
 
+	def _single_sample_ttest(self, left:pandas.Series, right:pandas.Series):
+		""" Implements a single sample ttest."""
+		combined_series = (left + right) - (1+self.dlimit)
+		logger.debug(combined_series.tolist())
+		# Test if the result is greater than 0
+		statistic, pvalue = stats.ttest_1samp(combined_series.values, 0)
+		return statistic, pvalue
+	def _multiple_sample_ttest(self, left:pandas.Series, right:pandas.Series):
+		combined_series = (left + right).tolist()[1:]
+
+		mean_c = statistics.mean(combined_series)
+		var_c = self.dlimit
+		mean_f = 1 + self.dlimit
+		var_f = self.dlimit
+
+		forward_statistic, forward_pvalue = stats.ttest_ind_from_stats(
+			mean1 = mean_c,
+			std1 = var_c ** 2,
+			nobs1 = len(combined_series),
+			mean2 = mean_f,
+			std2 = var_f ** 2,
+			nobs2 = len(combined_series)
+		)
+		return forward_statistic, forward_pvalue
+
 	def calculate_score_above_fixed(self, left: pandas.Series, right: pandas.Series) -> int:
 		"""
 			Tests whether two genotypes consistently sum to a value greater than the fixed breakpoint. This suggests that one of the genotypes
@@ -209,25 +240,15 @@ class Score:
 		# Including points where one genotype was not detected will skew the results.
 		left, right = widgets.get_valid_points(left, right, dlimit = self.dlimit, inner = True)
 		combined_series = (left + right).tolist()[1:]
+
 		if len(combined_series) == 0:
 			result = 0
 		elif len(combined_series) == 1:
 			result = combined_series[0] > self.flimit
 		else:
-			mean_c = statistics.mean(combined_series)
-			var_c = self.dlimit
-			mean_f = 1 + self.dlimit
-			var_f = self.dlimit
-
-			forward_statistic, forward_pvalue = stats.ttest_ind_from_stats(
-				mean1 = mean_c,
-				std1 = var_c ** 2,
-				nobs1 = len(combined_series),
-				mean2 = mean_f,
-				std2 = var_f ** 2,
-				nobs2 = len(combined_series)
-			)
-
+			forward_statistic, forward_pvalue = self._multiple_sample_ttest(left, right)
+			#forward_statistic, forward_pvalue = self._single_sample_ttest(left, right)
+			# Since we're using a two-sided test we need to convert it to a one-sided test.
 			result = forward_pvalue / 2 < self.pvalue and forward_statistic > 0
 
 		return int(result)
@@ -266,6 +287,7 @@ class Score:
 		unnested_area = areascore.area_of_series(unnested_genotype)
 		common_area_nested = areascore.X_and_Y_polygon(unnested_polygon, nested_polygon)
 		xor_area_unnested = areascore.difference_polygon(unnested_polygon, nested_polygon)  # This does not distinguish between xor left vs xor right
+
 
 		if self.debug:
 			logger.debug(

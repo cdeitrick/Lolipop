@@ -3,13 +3,31 @@ import itertools
 import re
 from pathlib import Path
 from typing import *
-
+import math
 import pandas
 from loguru import logger
-
+NumericType = Union[int, float]
+IterableValues = Union[List[NumericType], pandas.Series]
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")
 
+def _coerce_to_series(item:Any)->pandas.Series:
+	if not isinstance(item, pandas.Series):
+		item = pandas.Series(item)
+	return item
 
+def _coerce_to_list(item:Any)->List[Any]:
+	if isinstance(item, list):
+		# Nothing to change
+		result = item
+	elif isinstance(item, pandas.Series):
+		result = item.tolist()
+	else:
+		try:
+			result = list(item)
+		except ValueError:
+			message = f"Could not coerce this to a list: '{type(item)}' -> {item}"
+			raise ValueError(message)
+	return result
 def checkdir(path: Union[str, Path]) -> Path:
 	path = Path(path)
 	if not path.exists():
@@ -36,6 +54,14 @@ def get_numeric_columns(columns: List[Union[str, int, float]]) -> List[Union[str
 		numeric_columns.append(column)
 	return numeric_columns
 
+def get_numeric_table(table:pandas.DataFrame)->pandas.DataFrame:
+	""" Returns a version of the input table with only the columns related to timepoints.
+		The columns will also be converted to numeric values.
+	"""
+	table = table[get_numeric_columns(table.column)]
+	table.columns = [int(i) for i in table.columns]
+
+	return table
 
 def map_trajectories_to_genotype(genotype_members: pandas.Series) -> Dict[str, str]:
 	""" Maps each trajectory to the genotype it belongs to."""
@@ -151,14 +177,58 @@ def fixed(trajectory: pandas.Series, flimit: float) -> bool:
 
 		raise exception
 
+def get_fixed(trajectory:IterableValues, flimit)->pandas.Series:
+	""" Returns a pandas.Series object with only the timepoints where the series was fixed."""
+	# Usa a dummy value for the `flimit` parameter.
+	result = get_intermediate(trajectory, dlimit = flimit, flimit = 2)
+	return result
+def get_undetected(trajectory:IterableValues, dlimit:float)->pandas.Series:
+	return get_intermediate(trajectory, dlimit = -2, flimit = dlimit)
+def get_intermediate(trajectory:IterableValues, dlimit:float, flimit:float)->pandas.Series:
+	""" Tests whether the input series had timepoints that were neither undetected nor fixed.
+		Returns a pandas.Series object with the indecies and values that satisfy this criteria.
+	"""
+	trajectory = _coerce_to_series(trajectory)
+	is_intermediate = trajectory.apply(lambda s: dlimit <= s <= flimit)
+	# remove the timepoints which are undetected or fixed
+	result = trajectory[is_intermediate]
+	return result
+
+
 
 def only_fixed(trajectory: pandas.Series, dlimit: float, flimit: float) -> bool:
 	""" Tests whether the series immediately fixed and stayed fixed."""
 	series = ((i > flimit or i < dlimit) for i in trajectory.values)
 	return all(series)
 
+def get_first_fixed_timepoint(elements:pandas.Series, flimit:float)->Any:
+	""" Returns the first index that was `fixed` """
+	elements = _coerce_to_series(elements)
+	result = elements.apply(lambda s: s>flimit)
+	# Check if any timepoints were fixed
+	if result.sum() == 0:
+		result = None
+	else:
+		result = result.idxmax()
 
-def overlap(left: pandas.Series, right: pandas.Series, dlimit: float) -> int:
+	return result
+
+def get_overlap_regions(left:IterableValues, right:IterableValues, flimit:float)->pandas.Series:
+	"""
+		Returns the regions between `left` and `right` that have overlapping "fixed" values.
+		This will be a pandas.Series object with timepoints as the index and boolean values indicating
+		if both series were fixed at that timepoint.
+	"""
+	# Convert to a pandas.Series object if they aren't already
+	left = _coerce_to_series(left)
+	right = _coerce_to_series(right)
+
+	fixed_left = left.apply(lambda s: s>= flimit)
+	fixed_right = right.apply(lambda s: s>= flimit)
+	overlapping_regions = fixed_left & fixed_right
+	return overlapping_regions
+
+def overlap(left: Union[List[float], pandas.Series], right: Union[List[float], pandas.Series], dlimit: float) -> int:
 	result = [(i > dlimit and j > dlimit) for i, j in zip(left.values, right.values)]
 
 	return sum(result)
@@ -209,10 +279,39 @@ def get_pair_combinations(elements: Iterable[str]) -> Generator[Tuple[str, str],
 	return itertools.combinations(elements, 2)
 
 
-def calculate_number_of_combinations(n: int) -> int:
+def calculate_number_of_combinations(n: int, r:int = 2) -> int:
 	""" Calculates the number of pairwise combinations for an iterable of size `elements` using the
-		formula `n!/(n-r)!
+		formula `n!/((n-r)!r!)
 		Since we only want combinations of pairs (`r` = 2), this can be simplified to
 		`n * (n-1).
 	"""
-	return n * (n - 1)
+	n_factorial = math.factorial(n)
+	r_factorial = math.factorial(r)
+	n_minus_r_factorial = math.factorial(n-r)
+	#return int(n * (n - r)/r)
+
+	result = n_factorial / (n_minus_r_factorial * r_factorial)
+	return int(result)
+
+def validate_table_genotypes(table:pandas.DataFrame):
+	""" Throws an error if the genotype table does not conform to the expected format.
+		This is mainly for debugging while trying to make sure the genotype table is cosistent at every stage.
+
+		Genotype Table Schema:
+		- Columns will be in two forms: integers indicating time points, and a str label for the `members` column.
+	"""
+	assert 'members' in table.columns
+	assert all(isinstance(i, int) for i in table.columns if i != 'members')
+
+
+
+
+
+def validate_series_edges(edges:pandas.Series):
+	""" Validates that the edges table is a pandas.Series object and has correct labels.
+		This is ment for debugging while trying to make the edges variable more consistent accross scripts.
+	"""
+
+	assert isinstance(edges, pandas.Series)
+	assert edges.index.name == 'Identity'
+	assert edges.name == 'Parent'

@@ -174,3 +174,106 @@ def test_find_boundaries_fixed(series, expected):
 	result = widgets.find_boundaries_fixed(s, 0.97)
 
 	assert result == expected
+
+
+@pytest.mark.parametrize(
+	"left, right, expected",
+	[
+		([0, 0, 0.261, 1.000, 1.000, 1.000, 1.000],[0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], [0,0,0,0,0,1,1]),
+		([0, 0, 0.261, 1.000, 0.000, 0.200, 0.200],[0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], [0,0,0,0,0,0,0]),
+	]
+)
+def test_get_overlap_regions(left, right, expected):
+	result = widgets.get_overlap_regions(left, right, 0.9)
+	# Convert to bool for safety.
+	assert result.tolist() == [bool(i) for i in expected]
+
+@pytest.mark.parametrize(
+	"values, expected",
+	[
+		(pandas.Series([4,7,9,11]), [4,7,9,11]),
+		([1,88,4,88], [1,88,4,88]),
+		('string1', ['s', 't', 'r', 'i', 'n', 'g', '1'])
+	]
+)
+def test_coerce_to_list(values, expected):
+	result = widgets._coerce_to_list(values)
+	assert result == expected
+
+@pytest.mark.parametrize(
+	"values, expected",
+	[
+		([0.000, 0.000, 0.261, 1.000, 1.000, 1.000, 1.000], 3),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], 5),
+		([.1, .1, .1, .1], None),
+		([1, .1, .1, .1], 0)
+	]
+
+)
+def test_get_first_fixed_timepoint(values, expected):
+	result = widgets.get_first_fixed_timepoint(values, 0.9)
+	assert result == expected
+
+@pytest.mark.parametrize(
+	"values, expected",
+	[
+		([0.000, 0.000, 0.261, 1.000, 1.000, 1.000, 1.000], pandas.Series([0.261], index = [2])),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], pandas.Series([0.525, 0.454], index = [3, 4])),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.810], pandas.Series([0.525, 0.454, 0.810], index = [3,4,6])),
+		([0.000, 0.000, 1.000, 1.000, 1.000, 1.000, 1.000], pandas.Series([]))
+	]
+)
+def test_get_intermediate(values, expected):
+	result = widgets.get_intermediate(values, 0.03, 0.9)
+
+	# Since pandas likes to return a series of bool values when comparing items rather than a scalar result,
+	# Let's check the values and index directly.
+	assert result.tolist() == expected.tolist()
+	assert list(result.index) == list(expected.index)
+
+@pytest.mark.parametrize(
+	"values, expected",
+	[
+		([0.000, 0.000, 0.261, 1.000, 1.000, 1.000, 1.000], pandas.Series([1,1,1,1], index = [3,4,5,6])),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], pandas.Series([0.911, 0.910], index = [5,6])),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.810], pandas.Series([0.911], index = [5])),
+		([0.000, 0.000, 0.860, 0.000, 0.000, 0.000, 0.000], pandas.Series([]))
+	]
+)
+def test_get_fixed(values, expected):
+	result = widgets.get_fixed(values, 0.9)
+
+	# Since pandas likes to return a series of bool values when comparing items rather than a scalar result,
+	# Let's check the values and index directly.
+	assert result.tolist() == expected.tolist()
+	assert list(result.index) == list(expected.index)
+
+@pytest.mark.parametrize(
+	"values, expected",
+	[
+		([0.000, 0.000, 0.261, 1.000, 1.000, 1.000, 1.000], pandas.Series([0,0], index = [0,1])),
+		([0.000, 0.000, 0.000, 0.525, 0.454, 0.911, 0.910], pandas.Series([0, 0,0], index = [0,1,2])),
+		([0.000, 0.000, 0.000, 0.525, 0.020, 0.911, 0.810], pandas.Series([0,0,0,0.020], index = [0,1,2,4])),
+		([1.000, 1.000, 0.860, 1.000, 1.000, 1.000, 1.000], pandas.Series([]))
+	]
+)
+def test_get_undetected(values, expected):
+	result = widgets.get_undetected(values, 0.03)
+
+	# Since pandas likes to return a series of bool values when comparing items rather than a scalar result,
+	# Let's check the values and index directly.
+	assert result.tolist() == expected.tolist()
+	assert list(result.index) == list(expected.index)
+
+@pytest.mark.parametrize(
+	"elements, size, expected",
+	[
+		(3, 3, 1),
+		(4, 2, 6),
+		(6, 3, 20)
+	]
+)
+def test_calculate_total_number_of_combinations(elements, size, expected):
+
+	result = widgets.calculate_number_of_combinations(elements, size)
+	assert result == expected

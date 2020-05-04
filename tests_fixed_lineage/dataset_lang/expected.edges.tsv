@@ -1,0 +1,7 @@
+Identity	Parent
+genotype-red	genotype-0
+genotype-orange	genotype-red
+genotype-aqua	genotype-0
+genotype-sienna	genotype-green
+genotype-green	genotype-red
+genotype-gold	genotype-sienna

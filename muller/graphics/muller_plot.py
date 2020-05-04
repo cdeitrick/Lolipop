@@ -23,6 +23,7 @@ except (ModuleNotFoundError, ImportError):
 	from ..widgets import calculate_luminance
 	from .palettes import Palette
 
+NumericArrayType = List[Union[int,float]]
 plt.style.use('seaborn-white')
 
 pandas.set_option('display.max_rows', 500)
@@ -130,6 +131,13 @@ class MullerPlot:
 
 		# Set up the fontsizes for each labeltype
 		self.label_size_axis, self.label_size_title, self.label_size_ticks = self.set_scale(scale)
+
+		# Set the interpolation method.
+		# This makes the plots look a little less jarring.
+		# Available options: ‘linear’, ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’
+		self.interpolation_type = 'slinear'
+		# Set the number of points to generate with the interpolation method
+		self.interpolation_size = 100
 
 	def _apply_style(self, ax: plt.Axes, title: Optional[str], maximum_x: float):
 		"""
@@ -443,6 +451,23 @@ class MullerPlot:
 
 		return mean_x, mean_y
 
+	def interpolate_values(self, x:NumericArrayType, y: NumericArrayType)->Tuple[NumericArrayType, NumericArrayType]:
+		""" Interpolates the values of the input arrays. """
+		from scipy import interpolate
+
+		interpolation = interpolate.interp1d(x, y, kind = self.interpolation_type)
+
+		# Generate the interolated values
+		x_value_minimum = min(x)
+		x_value_maximum = max(x)
+		step = (x_value_maximum - x_value_minimum) / self.interpolation_size  # The increment number for the new x-axis.
+		x_interpolated = [x_value_minimum + (step * i) for i in range(self.interpolation_size)]
+		y_interpolated = [interpolation(i) for i in x_interpolated]
+
+		return x_interpolated, y_interpolated
+
+
+
 
 	def plot(self, muller_df: pandas.DataFrame, filename:Path = None, color_palette: Dict[str, str] = None,
 			annotations: Optional[Dict[str, List[str]]] = None,
@@ -482,9 +507,15 @@ class MullerPlot:
 
 		ax = self._initialize_plot(ax)
 		x, y, colors, labels = self.generate_muller_series(merged_table, color_palette)
+		y_interpolated = list()
+		for y_series in y:
+			x_interpolated, yi = self.interpolate_values(x, y_series)
+			y_interpolated.append(yi)
+
+		#x_interpolated, y_interpolated = self.interpolate_values(x, y)
 
 		ax.stackplot(
-			x, y,
+			x_interpolated, y_interpolated,
 			colors = colors,
 			labels = labels,
 			edgecolor = self.outline_color,
