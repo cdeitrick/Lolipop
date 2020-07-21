@@ -3,7 +3,7 @@ import itertools
 import math
 from pathlib import Path
 from typing import List, Optional, Union
-from loguru import logger
+
 try:
 	from muller import dataio
 except ModuleNotFoundError:
@@ -11,8 +11,8 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass
 
-__VERSION__ = "0.8.0"
-DEBUG = True
+__VERSION__ = "0.8.1"
+DEBUG = False
 
 
 # For convienience. Helps with autocomplete.
