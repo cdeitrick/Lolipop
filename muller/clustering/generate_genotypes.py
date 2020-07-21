@@ -6,11 +6,11 @@ from loguru import logger
 
 try:
 	from muller.clustering import metrics, genotype_reorder, hierarchy
-	from .. import filters
+	from muller import filters
 	from muller.dataio import projectdata
-
-except ModuleNotFoundError:
-	from ..filters import filters
+except ModuleNotFoundError as exception:
+	logger.warning(str(exception))
+	from .. import filters
 	from . import metrics, hierarchy
 def is_trajectory_labeled_by_genotype(label):
 	regex = "trajectory-[a-z]+-[0-9]+"
