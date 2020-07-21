@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas
 import seaborn
 
+
 def plot_heatmap(data: pandas.DataFrame, filename: Path):
 	font = {
 		'size': 20

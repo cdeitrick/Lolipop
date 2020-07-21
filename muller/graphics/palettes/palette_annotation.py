@@ -2,7 +2,9 @@
 	Generates a palette using the annotations available from the input trajectories table.
 """
 from typing import Dict, List
+
 from loguru import logger
+
 
 def generate_annotation_palette(genotype_annotations: Dict[str, List[str]], annotation_palette: Dict[str, str]) -> Dict[str, str]:
 	"""

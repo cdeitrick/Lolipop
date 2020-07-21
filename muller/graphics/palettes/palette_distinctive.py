@@ -1,8 +1,10 @@
+import re
 from collections import OrderedDict
 from typing import Dict, List
+
 import matplotlib.colors
+
 from . import colorset
-import re
 
 available_colors = matplotlib.colors.get_named_colors_mapping()
 

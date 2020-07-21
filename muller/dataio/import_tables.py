@@ -4,7 +4,9 @@ from typing import Optional, Union
 
 import pandas
 from loguru import logger
+
 from muller import widgets
+
 
 # noinspection PyProtectedMember
 def _import_table_from_path(filename: Path, sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:

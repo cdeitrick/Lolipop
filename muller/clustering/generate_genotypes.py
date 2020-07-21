@@ -1,6 +1,7 @@
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import re
+
 import pandas
 from loguru import logger
 

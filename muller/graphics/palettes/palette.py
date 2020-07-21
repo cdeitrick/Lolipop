@@ -1,5 +1,6 @@
-from typing import Dict, List, Optional
 from pathlib import Path
+from typing import Dict, List, Optional
+
 
 class Palette:
 	# Holds the palette used by genotypes/trajectories.

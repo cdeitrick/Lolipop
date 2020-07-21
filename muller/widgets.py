@@ -1,11 +1,13 @@
 import csv
 import itertools
+import math
 import re
 from pathlib import Path
 from typing import *
-import math
+
 import pandas
 from loguru import logger
+
 NumericType = Union[int, float]
 IterableValues = Union[List[NumericType], pandas.Series]
 NUMERIC_REGEX = re.compile("^.?(?P<number>[\d]+)")

@@ -1,9 +1,10 @@
 import math
 from functools import partial
 from typing import *
-from loguru import logger
+
 import pandas
 from loguru import logger
+
 Numeric = Union[int, float]
 
 def lag_gens(x: int, values: Iterable[int]) -> int:

@@ -2,6 +2,7 @@ import math
 
 import pandas
 from loguru import logger
+
 try:
 	from muller.inheritance.areascore import area_of_series, calculate_common_area
 except ModuleNotFoundError:

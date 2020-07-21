@@ -7,6 +7,7 @@ from .palette_annotation import generate_annotation_palette
 from .palette_distinctive import generate_distinctive_palette
 from .palette_lineage import generate_lineage_palette
 
+
 def generate_palette(edges: pandas.Series, custom_palette: Dict[str, str] = None, annotations: Dict[str, List[str]] = None,
 		kind = 'distinctive') -> Dict[str, str]:
 	"""

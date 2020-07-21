@@ -36,9 +36,11 @@
 import argparse
 from pathlib import Path
 from typing import *
+
+import pandas
+
 from muller import graphics, widgets
 from muller.graphics import graphicsio
-import pandas
 
 pandas.set_option('mode.chained_assignment',
 	None)  # This disables the warning about setting a value on a copy of a dataframe.
