@@ -48,12 +48,13 @@ def filter_empty_trajectories(data:pandas.DataFrame)->pandas.DataFrame:
 	# If the inputfiles have whitespace characters in a line they'll be imported as additional trajectories with 0% at every timepoint.
 	# So basically remove any trajectories which are 0% at all timepoints.
 	numeric_columns = widgets.get_numeric_columns(data.columns)
-	index_to_keep = list()
+	index_to_drop = list()
 	for index, row in data.iterrows():
 		numeric = row[numeric_columns]
-		if numeric.sum() > 0:
-			index_to_keep.append(index)
-	data = data.loc[index_to_keep]
+		if all(numeric.isna()):
+			index_to_drop.append(index)
+	index_to_keep = [i for i in data.index if i not in index_to_drop]
+	data = data.reindex(index_to_keep)
 
 	return data
 
@@ -64,6 +65,8 @@ def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None
 		data = _import_table_from_string(input_table, index = index)
 	# Make sure the x-values are numeric
 
+	# check for empty lines
+	data = filter_empty_trajectories(data)
 
 	def _cast_to_int(value)->int:
 		try:
