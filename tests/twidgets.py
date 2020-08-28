@@ -3,6 +3,7 @@ from typing import *
 import pandas
 from loguru import logger
 import pytest
+
 def assert_frame_equal(left:pandas.DataFrame, right:pandas.DataFrame):
 	""" Tests whether two frames are equal. This is being implemented because the version included
 		with pandas checks for things that we don't care about. For example, if dataframe A has an
@@ -61,8 +62,3 @@ def assert_frame_equal(left:pandas.DataFrame, right:pandas.DataFrame):
 			logger.error(f"\t Right snapshot ({len(r)} elements of type {r}): {r}")
 			logger.error(f"\t Difference: {difference}")
 			raise AssertionError(message)
-
-def main():
-	pass
-if __name__ == "__main__":
-	main()
