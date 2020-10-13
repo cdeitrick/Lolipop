@@ -164,10 +164,10 @@ class OutputFilenames:
 		if not self.filename_table_population.exists():
 			data.table_populations.to_csv(self.filename_table_population, sep = self.delimiter, index = False)
 		if not self.filename_table_edges.exists():
-			table_edges = data.series_edges.to_frame()
+			table_edges = data.series_edges.to_frame().reset_index()
 			# GGmuller expected the columns to be ordered as ['Parent', 'Identity']
 			table_edges = table_edges[['Parent', 'Identity']]
-			data.series_edges.to_frame().to_csv(self.filename_table_edges, sep = self.delimiter, index = True)
+			table_edges.to_csv(self.filename_table_edges, sep = self.delimiter, index = False)
 
 		data.table_muller.to_csv(self.filename_table_muller, sep = self.delimiter, index = False)
 
