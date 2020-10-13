@@ -122,7 +122,7 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 
 
 def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame], dlimit: float, flimit: float,
-		pvalue: float, known_ancestry: Optional[Path], conservative:bool) -> projectdata.DataGenotypeLineage:
+		pvalue: float, known_ancestry: Optional[Path], conservative: bool) -> projectdata.DataGenotypeLineage:
 	"""
 
 	Parameters
@@ -202,7 +202,6 @@ def get_base_filename(filename: Path, name: Optional[str], sheetname: Optional[s
 
 
 def run_workflow(program_options: argparse.Namespace):
-
 	# TODO: Test whether the lineage makes sense by computing the sum of genotypes/lineages at each timepoint,
 	# Where 100% should be the maximum value.
 
@@ -287,7 +286,8 @@ def run_workflow(program_options: argparse.Namespace):
 	data_basic.save(output_folder)
 
 
-def run_workflow_ggmuller(table_genotypes:pandas.DataFrame, series_edges:pandas.Series, dlimit:float, smooth_values:bool):
+def run_workflow_ggmuller(table_genotypes: pandas.DataFrame, series_edges: pandas.Series, dlimit: float,
+		smooth_values: bool):
 	""" Generates the population and edges table used in the muller plot.
 		Parameters
 		----------
@@ -311,8 +311,6 @@ def run_workflow_ggmuller(table_genotypes:pandas.DataFrame, series_edges:pandas.
 	)
 
 	return result
-
-
 
 
 def save_tables(data_basic: projectdata.DataWorkflowBasic, data_inference: projectdata.DataGenotypeInference,
@@ -368,7 +366,7 @@ def save_tables(data_basic: projectdata.DataWorkflowBasic, data_inference: proje
 
 def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata.DataWorkflowBasic,
 		data_inference: projectdata.DataGenotypeInference,
-		data_ggmuller:projectdata.DataGGmuller, genotype_annotations: Dict[str, List[str]]):
+		data_ggmuller: projectdata.DataGGmuller, genotype_annotations: Dict[str, List[str]]):
 	""" Graphics are parametrized by filename suffix (png vs svg) and palette.
 		.figures
 		|---- dendrogram.png

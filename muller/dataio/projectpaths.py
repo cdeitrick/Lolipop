@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict, List
+import pandas
 
 
 class OutputFilenames:
@@ -35,7 +36,7 @@ class OutputFilenames:
 		self.filename_palette: Path = self.folder_supplementary / (name + f'.palette.json')
 
 		# tables
-		self.filename_table_trajectories: Path = self.folder_tables / (name + f'.trajectories.original.{suffix}')
+		self.filename_table_trajectories: Path = self.folder_tables / (name + f'.trajectories.{suffix}')
 		self.filename_table_trajectories_rejected: Path = self.folder_tables / (
 				name + f"trajectories.rejected.{suffix}")
 		# self.filename_table_genotypes: Path = self.folder_tables / (name + f'.genotypes.original.{suffix}')
@@ -91,6 +92,26 @@ class OutputFilenames:
 		self.genotype_information: Path = self.folder_supplementary / (name + '.genotypeinformation.json')
 
 	@staticmethod
+	def _generate_trajectory_table(table_trajectories: pandas.DataFrame, table_info: pandas.DataFrame,
+			genotype_members: Dict[str, List[str]]):
+		"""
+			Merges all of the available data on trajectories into a single table. Both the `trajectories` and trajectory_info` table
+			should be indexed by trajectory id.
+		"""
+		# Convert the mapping from genotype->members into members->genotype
+		trajectory_genotypes = dict()
+		for genotype_name, genotype_members in genotype_members.items():
+			for member_name in genotype_members:
+				trajectory_genotypes[member_name] = genotype_name
+
+		table_trajectories = table_trajectories.merge(table_info, left_index = True, right_index = True, how = 'outer')
+
+		# Add a column to the `trajectories` table with the resulting parent genotype.
+		table_trajectories['genotype'] = [trajectory_genotypes.get(i, 'rejected') for i in table_trajectories.index]
+
+		return table_trajectories
+
+	@staticmethod
 	def get_template(folder: Path, template: str, extension: str):
 		"""
 			Generates an actual filename based on the template string.
@@ -112,7 +133,13 @@ class OutputFilenames:
 
 	def save_workflow_clustering(self, data):
 
-		data.table_trajectories.to_csv(self.filename_table_trajectories, sep = self.delimiter)
+		table_trajectories = self._generate_trajectory_table(
+			data.table_trajectories,
+			data.table_trajectories_info,
+			data.genotype_members
+		)
+
+		table_trajectories.to_csv(self.filename_table_trajectories, sep = self.delimiter)
 		# TODO: merge table_trajectories_info with the trajectories table.
 		# data.table_trajectories_info.to_csv()
 		members = {key: '|'.join(values) for key, values in data.genotype_members.items()}
