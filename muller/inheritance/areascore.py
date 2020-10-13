@@ -1,10 +1,11 @@
 import math
+from typing import *
 
 import pandas
 from loguru import logger
 from shapely import geometry
 from shapely.errors import TopologicalError
-from typing import *
+
 Number = Union[float, int]
 
 from . import polygon

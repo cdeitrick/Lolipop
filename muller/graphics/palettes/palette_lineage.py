@@ -1,9 +1,10 @@
 """
 Generates a palette using the information.
 """
-from typing import Dict, List
-import pandas
 import random
+from typing import Dict, List
+
+import pandas
 
 try:
 	from . import colorset

@@ -1,4 +1,3 @@
-import itertools
 import math
 import multiprocessing
 from typing import Dict, Generator, List, Optional, Tuple

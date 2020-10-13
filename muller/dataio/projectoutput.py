@@ -1,6 +1,8 @@
 from pathlib import Path
-from typing import *
+
 import pandas
+
+
 class OutputStructure:
 	def __init__(self, folder: Path):
 		self.filename_genotypes = folder / "tables" / "lineage.trajectory.genotypes.tsv"

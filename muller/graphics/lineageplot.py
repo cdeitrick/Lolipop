@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 import pandas
 import pygraphviz
 from loguru import logger
+
 from muller import widgets
+
 
 def get_node_label_properties(identity: str, genotype_color: str, annotation: List[str]) -> Dict[str, str]:
 	luminance = widgets.calculate_luminance(genotype_color)

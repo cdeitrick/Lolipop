@@ -1,1 +1,1 @@
-from .workflow_full import run_workflow, run_genotype_inference_workflow, run_genotype_lineage_workflow
+from .workflow_full import run_genotype_inference_workflow, run_genotype_lineage_workflow, run_workflow, run_workflow_ggmuller

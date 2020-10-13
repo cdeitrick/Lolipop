@@ -1,8 +1,9 @@
 import math
 from functools import partial
 from typing import *
-from loguru import logger
+
 import pandas
+from loguru import logger
 
 Numeric = Union[int, float]
 
@@ -280,6 +281,8 @@ class GenerateMullerDataFrame:
 
 	@staticmethod
 	def add_semi_frequencies(population: pandas.DataFrame) -> pandas.DataFrame:
+
+		population = population.dropna()
 		frequencies = population.groupby(by = "Generation").apply(lambda s: .5 * (s['Population'] / s['Population'].sum()))
 		population['Frequency'] = frequencies.fillna(0).values
 		population['Population'] = population['Population'] / 2  # Because of the duplication

@@ -3,13 +3,16 @@ from pathlib import Path
 import pandas
 import pytest
 from typing import *
-from muller.dataio import import_table, parse_genotype_table, parse_trajectory_table
+from muller.dataio import import_table, parse_trajectory_table, import_tables
 from muller.dataio.import_timeseries import _convert_to_integer, _correct_math_scale
 from muller import widgets
 from tests import filenames, twidgets
 from loguru import logger
 
 DATA_FOLDER = Path(__file__).parent.parent / "data"
+
+
+
 
 def make_table(parent_folder:Path, name:str):
 	filename = filenames.real_tables['B1']
@@ -47,10 +50,10 @@ def _run(truth_tables, name):
 	for extension in extensions:
 		filename = basename.with_suffix(extension)
 		test_table, info = parse_trajectory_table(filename)
-		test_table.index.name = name.capitalize
-		logger.debug(test_table.index)
+		test_table.index.name = name.capitalize()
+		logger.debug(f"Dataframe index: {test_table.index}")
+		#pandas.testing.assert_frame_equal(test_table, truthset)
 		twidgets.assert_frame_equal(test_table, truthset)
-
 def test_import_trajectory_table(truth_trajectory_tables):
 	_run(truth_trajectory_tables, 'trajectory')
 
@@ -87,6 +90,9 @@ def test_correct_math_scale():
 ])
 def test_convert_to_integer(value, expected):
 	assert _convert_to_integer(value) == expected
+
+
+
 
 
 if __name__ == "__main__":

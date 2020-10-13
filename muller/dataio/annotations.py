@@ -1,9 +1,11 @@
-from pathlib import Path
-import pandas
-from typing import Dict, List, Union, Optional, Mapping
 import re
+from pathlib import Path
+from typing import Dict, List, Mapping, Optional, Union
+
+import pandas
 
 from muller.dataio import read_map
+
 
 def read_genotype_annotations(info: pandas.DataFrame, genotype_members: Dict[str, List[str]], alias_filename: Optional[Path] = None) -> Dict[
 	str, List[str]]:

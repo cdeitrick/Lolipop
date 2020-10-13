@@ -1,8 +1,10 @@
-from pathlib import Path
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
 import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import pandas
+
 
 @dataclass
 class DataWorkflowBasic:
@@ -20,6 +22,7 @@ class DataWorkflowBasic:
 		# Need to conver `Path` to `str`
 		options = {key: (str(value)) for key, value in options.items()}
 		file_name.write_text(json.dumps(options, sort_keys = True, indent = 4))
+
 @dataclass
 class DataGenotypeInference:
 	"""
@@ -94,9 +97,9 @@ class DataHierarchalCluster:
 @dataclass
 class DataGGmuller:
 	""" Holds data related to the current implementation of ggmuller."""
-	table_population: pandas.DataFrame
-	table_edges: pandas.DataFrame
-	script_r: str
+	table_populations: pandas.DataFrame
+	series_edges: pandas.Series
+	table_muller: pandas.DataFrame
 
 	def save(self, folder:Path, prefix: str):
 		"""
@@ -112,7 +115,7 @@ class DataGGmuller:
 		filename_table_edges = folder / (prefix + f'.ggmuller.edges.{suffix}')
 		filename_script_r = folder / (prefix + f'.script.r')
 
-		self.table_population.to_csv(filename_table_populations, sep = delimiter)
+		self.table_populations.to_csv(filename_table_populations, sep = delimiter)
 		self.table_edges.to_csv(filename_table_edges, sep = delimiter)
 		filename_script_r.write_text(self.script_r)
 
@@ -122,9 +125,6 @@ class DataGenotypeLineage:
 	# The resulting scores of each unnested genotype to cancidate nested genotypes.
 	table_scores: pandas.DataFrame
 	clusters: Any # muller.inheritance.genotype_ancestry.Ancestry
-	table_edges: pandas.Series
-	table_populations: pandas.DataFrame
-	table_muller: pandas.DataFrame
 
 	def save(self, folder:Path, prefix:str):
 		delimiter = "\t"

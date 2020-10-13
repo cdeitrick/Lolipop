@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import List, Tuple
 
 import pandas
-
 from muller import dataio
 
 
@@ -16,7 +15,7 @@ def get_key_pairs(filename: Path) -> List[Tuple[str, str]]:
 
 def helper_test_score(scorer, method: str, left: str, right: str, filename: Path):
 	""" Applies the selected check using the given filename. The `genotype` sheet and score sheet must be present."""
-	table_genotype = dataio.import_table(filename, sheet_name = 'genotype', index = 'Genotype')
+	table_genotype = dataio.import_table(filename, sheet_name = 'genotype', index = 'Genotype', keep_empty = True)
 
 	if method == 'greater':
 		sheetname = 'score.greater'
@@ -32,7 +31,7 @@ def helper_test_score(scorer, method: str, left: str, right: str, filename: Path
 		actual_score = scorer.calculate_score_area(table_genotype.loc[left], table_genotype.loc[right])
 	else:
 		raise ValueError
-	table_scores = dataio.import_table(filename, sheet_name = sheetname, index = 'name')
+	table_scores = dataio.import_table(filename, sheet_name = sheetname, index = 'name', keep_empty = True)
 	expected_score = table_scores[left][right]
 
 	return actual_score, expected_score

@@ -4,7 +4,9 @@ from typing import Optional, Union
 
 import pandas
 from loguru import logger
+
 from muller import widgets
+
 
 # noinspection PyProtectedMember
 def _import_table_from_path(filename: Path, sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
@@ -45,23 +47,27 @@ def _import_table_from_string(string: str, delimiter: Optional[str] = None, inde
 def filter_empty_trajectories(data:pandas.DataFrame)->pandas.DataFrame:
 	# If the inputfiles have whitespace characters in a line they'll be imported as additional trajectories with 0% at every timepoint.
 	# So basically remove any trajectories which are 0% at all timepoints.
-	numeric_columns = widgets.get_numeric_columns(data.columns)
-	index_to_keep = list()
-	for index, row in data.iterrows():
-		numeric = row[numeric_columns]
-		if numeric.sum() > 0:
-			index_to_keep.append(index)
-	data = data.loc[index_to_keep]
+
+	# Need to first isolate the columns dedicated to the experimental timepoints
+	row_totals = data.sum(axis = 1)
+	index_to_drop = row_totals[row_totals == 0.0].index
+
+	index_to_keep = [i for i in data.index if i not in index_to_drop]
+	data = data.reindex(index_to_keep)
 
 	return data
 
-def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None, index: Optional[str] = None) -> pandas.DataFrame:
+def import_table(input_table: Union[str, Path], sheet_name: Optional[str] = None, index: Optional[str] = None, keep_empty:bool = False) -> pandas.DataFrame:
 	if isinstance(input_table, Path):
 		data = _import_table_from_path(input_table, sheet_name, index)
 	else:
 		data = _import_table_from_string(input_table, index = index)
 	# Make sure the x-values are numeric
 
+	# check for empty lines
+	if not keep_empty:
+		logger.debug(f"Removing empty trajectories...")
+		data = filter_empty_trajectories(data)
 
 	def _cast_to_int(value)->int:
 		try:

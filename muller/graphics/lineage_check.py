@@ -1,8 +1,9 @@
-from pathlib import Path
 from typing import *
-import pandas
+
 import matplotlib.pyplot as plt
-from muller import treetools
+import pandas
+
+
 def generate_lineage_table(genotypes:pandas.DataFrame, lineages:Dict[str,str]):
 
 

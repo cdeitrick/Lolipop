@@ -1,16 +1,17 @@
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import re
+
 import pandas
 from loguru import logger
 
 try:
 	from muller.clustering import metrics, genotype_reorder, hierarchy
-	from .. import filters
+	from muller import filters
 	from muller.dataio import projectdata
-
-except ModuleNotFoundError:
-	from ..filters import filters
+except ModuleNotFoundError as exception:
+	logger.warning(str(exception))
+	from .. import filters
 	from . import metrics, hierarchy
 def is_trajectory_labeled_by_genotype(label):
 	regex = "trajectory-[a-z]+-[0-9]+"
@@ -220,6 +221,6 @@ class ClusterMutations:
 			clusterdata = cluster_result,
 			table_trajectories_info = None
 		)
-		print(genotype_table.to_string())
+
 		return output_data
 

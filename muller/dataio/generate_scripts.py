@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List
 
 
-def generate_r_script(trajectory: Path, population: Path, edges: Path, plot_filename: Path,
+def generate_r_script(trajectory: Path, population: Path, edges: Path,
 		color_palette: Dict[str, str], genotype_labels: List[str]) -> str:
 	# `color_palette` should be an OrderedDict.
 	genotype_labels = sorted(genotype_labels)
@@ -29,12 +29,12 @@ def generate_r_script(trajectory: Path, population: Path, edges: Path, plot_file
     scale_fill_manual(name = "Identity", values = palette) +
     scale_color_manual(values = palette)
 
-	ggsave("{output}", height = 10, width = 10)
+	# ggsave("{output}", height = 10, width = 10)
 	""".format(
 		trajectory = trajectory,
 		population = population.absolute(),
 		edges = edges.absolute(),
-		output = plot_filename.absolute(),
+		output = "filename",
 		palette = script_colors
 	)
 	script = '\n'.join(i.strip() for i in script.split('\n'))

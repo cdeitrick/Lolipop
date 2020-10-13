@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, Optional, Dict
+from typing import Dict, Optional, Union
 
 import pandas
 from loguru import logger

@@ -1,13 +1,20 @@
 from unittest.mock import patch
-
+from loguru import logger
 import pandas
 import pytest
 
 from muller import dataio, widgets
 
-
-def test_get_numeric_columns():
-	assert ['1', '66', '0', 'X9', 'x33'] == widgets.get_numeric_columns(['1', '66', '0', 'X9', 'xc', 'x33', 'col4'])
+@pytest.mark.parametrize(
+	"columns, expected",
+	[
+		(['1', '66', '0', 'X9', 'xc', 'x33', 'col4'], ['1', '66', '0', 'X9', 'x33']),
+		( ['Genotype', 0, 1 ,2, 3], [0, 1, 2, 3])
+	]
+)
+def test_get_numeric_columns(columns, expected):
+	result = widgets.get_numeric_columns(columns)
+	assert result == expected
 
 
 def test_map_trajectories_to_genotype():
@@ -277,3 +284,5 @@ def test_calculate_total_number_of_combinations(elements, size, expected):
 
 	result = widgets.calculate_number_of_combinations(elements, size)
 	assert result == expected
+
+

@@ -101,6 +101,10 @@ class MullerPlot:
 			Whether to add an outline each genotype.
 		render: bool
 			Whther to generate an svg or pdf render of the diagram.
+		style: Literal['default']
+			Specifies one of the pre-defined styles to use when generating the plots.
+		smooth_plot:bool; default True
+			Whether to smooth out the timeseries data when plotting.
 	"""
 
 	def __init__(self, outlines: bool, render: bool, style: Optional[str] = 'default', scale: int = 1):
