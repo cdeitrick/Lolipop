@@ -299,7 +299,7 @@ def run_workflow_ggmuller(table_genotypes: pandas.DataFrame, series_edges: panda
 		smooth_values:bool
 	"""
 
-	generator_table_population = dataio.GGMuller(cutoff_detection = dlimit, adjust_populations = smooth_values)
+	generator_table_population = dataio.GGMuller(cutoff_detection = dlimit, adjust_populations = True)
 	table_population = generator_table_population.generate_ggmuller_population_table(series_edges, table_genotypes)
 	generator_table_muller = dataio.GenerateMullerDataFrame()
 	table_muller = generator_table_muller.run(series_edges, table_population.copy(deep = True))
