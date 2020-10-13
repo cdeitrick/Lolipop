@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 from dataclasses import dataclass
 
 __VERSION__ = "0.9.0"
-DEBUG = True
+DEBUG = False
 
 
 # For convienience. Helps with autocomplete.
