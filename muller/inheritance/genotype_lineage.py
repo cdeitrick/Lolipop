@@ -81,25 +81,9 @@ class LineageWorkflow:
 
 		self.show_ancestry(sorted_genotypes)
 
-
-		# Need to generate the population and edges tables.
-		table_edges = self.genotype_nests.as_ancestry_table()
-		population_table_generator = dataio.GGMuller(cutoff_detection = self.dlimit, adjust_populations = True)
-		table_populations = population_table_generator.generate_ggmuller_population_table(
-			table_edges,
-			sorted_genotypes
-		)
-
-		# Need to generate the muller table
-		muller_table_generator = dataio.GenerateMullerDataFrame()
-		table_muller = muller_table_generator.run(table_edges, table_populations)
-
 		output_data = dataio.projectdata.DataGenotypeLineage(
 			table_scores = pandas.DataFrame(score_records),
 			clusters = self.genotype_nests, # Used to extract the `edges` table.
-			table_edges = self.genotype_nests.as_ancestry_table(),
-			table_populations = table_populations,
-			table_muller = table_muller
 		)
 
 		return output_data

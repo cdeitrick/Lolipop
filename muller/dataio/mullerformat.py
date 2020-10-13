@@ -281,15 +281,9 @@ class GenerateMullerDataFrame:
 
 	@staticmethod
 	def add_semi_frequencies(population: pandas.DataFrame) -> pandas.DataFrame:
-		logger.warning("patch")
-		print(population.shape)
-		print(population.to_string())
 
 		population = population.dropna()
 		frequencies = population.groupby(by = "Generation").apply(lambda s: .5 * (s['Population'] / s['Population'].sum()))
-		print()
-		print(frequencies.shape)
-		print(frequencies.to_string())
 		population['Frequency'] = frequencies.fillna(0).values
 		population['Population'] = population['Population'] / 2  # Because of the duplication
 

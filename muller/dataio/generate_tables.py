@@ -106,7 +106,8 @@ class GGMuller:
 		Parameters
 		----------
 		mean_genotypes: pandas.DataFrame
-			Contains the mean frequency for each genotype at each timepoint.
+			Contains the mean frequency for each genotype at each timepoint. Assumes that the table is indeed by
+			genotype label and only the timepoint columns are included.
 		edges: pandas.Series
 			A Mapping from child genotype to parent genotype.
 

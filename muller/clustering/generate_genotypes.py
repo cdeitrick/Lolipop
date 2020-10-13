@@ -221,6 +221,6 @@ class ClusterMutations:
 			clusterdata = cluster_result,
 			table_trajectories_info = None
 		)
-		print(genotype_table.to_string())
+
 		return output_data
 

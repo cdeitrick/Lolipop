@@ -11,8 +11,8 @@ except ModuleNotFoundError:
 
 from dataclasses import dataclass
 
-__VERSION__ = "0.8.1"
-DEBUG = False
+__VERSION__ = "0.9.0"
+DEBUG = True
 
 
 # For convienience. Helps with autocomplete.
@@ -154,6 +154,13 @@ def _create_parser_lineage_group_graphics(parser: argparse.ArgumentParser):
 		action = 'store',
 		dest = 'highlight_color',
 		default = "#FFFF00"
+	)
+
+	group_graphics.add_argument(
+		"--no-smoothing",
+		help = "Whether to smooth the values represented in the timeseries plots.",
+		action = 'store_false',
+		dest = "smooth_plot"
 	)
 
 	return group_graphics

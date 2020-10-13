@@ -99,14 +99,14 @@ def run_genotype_inference_workflow(trajectoryio: Union[str, Path, pandas.DataFr
 		threads = threads
 	)
 	if is_genotype:
-		logger.info(f"Skipping genotype infeerence...")
+		logger.info(f"Skipping genotype inference...")
 		table_genotypes = trajectories.copy(deep = True)
 		table_genotypes = genotype_generator.organizer.run(table_genotypes)
 		# Make sure the "Genotype" column is properly named.
-		table_genotypes.index.name = "Genotype"
 		genotype_members = {f"genotype-{k}": [k] for k in table_genotypes.index}
 		# Make sure the genotype names are prefixed with 'genotype'
 		table_genotypes.index = [f'genotype-{i}' for i in table_genotypes.index]
+		table_genotypes.index.name = "Genotype"
 		genotype_data = projectdata.DataGenotypeInference(
 			table_trajectories = trajectories,
 			table_genotypes = table_genotypes,
@@ -132,6 +132,7 @@ def run_genotype_lineage_workflow(genotypeio: Union[str, Path, pandas.DataFrame]
 	flimit
 	pvalue
 	known_ancestry
+	conservative
 
 	Returns
 	-------
@@ -178,15 +179,15 @@ def run_lineageplot_workflow(edgesio: Union[str, Path, pandas.DataFrame], filena
 	edges.columns = [i.capitalize() for i in edges.columns]
 	edges = edges.set_index('Identity')
 	if 'Annotation' in edges.columns:
-		annotations = edges.pop("Annotation").to_dict()
+		edges_annotations = edges.pop("Annotation").to_dict()
 		# Make sure 'annotations' is a list of str which is expected by the flowchart
-		annotations = {k: [v] for k, v in annotations.items()}
+		edges_annotations = {k: [v] for k, v in edges_annotations.items()}
 	else:
-		annotations = dict()
+		edges_annotations = dict()
 
 	palette = generate_palette(edges['Parent'], kind = 'lineage')
 
-	lineage = flowchart(edges, palette, annotations, filename)
+	flowchart(edges, palette, edges_annotations, filename)
 
 
 def get_base_filename(filename: Path, name: Optional[str], sheetname: Optional[str]) -> str:
@@ -199,12 +200,7 @@ def get_base_filename(filename: Path, name: Optional[str], sheetname: Optional[s
 
 	return base_filename
 
-class WorkFlowLineage:
-	def __init__(self, program_options):
-		self.program_options = program_options
 
-	def run(self, filename:Path):
-		pass
 def run_workflow(program_options: argparse.Namespace):
 
 	# TODO: Test whether the lineage makes sense by computing the sum of genotypes/lineages at each timepoint,
@@ -255,6 +251,7 @@ def run_workflow(program_options: argparse.Namespace):
 
 	genotype_annotations = annotations.read_genotype_annotations(trajectory_info,
 		result_genotype_inference.genotype_members)
+
 	result_genotype_lineage = run_genotype_lineage_workflow(
 		result_genotype_inference.table_genotypes,  # should already be sorted.
 		dlimit = program_options.dlimit,
@@ -264,22 +261,58 @@ def run_workflow(program_options: argparse.Namespace):
 		conservative = program_options.conservative
 	)
 
+	# Generate the tables needed for generating the muller plots.
+	result_ggmuller = run_workflow_ggmuller(
+		table_genotypes = result_genotype_inference.table_genotypes,
+		series_edges = result_genotype_lineage.clusters.as_ancestry_table(),
+		dlimit = data_basic.program_options.dlimit,
+		smooth_values = data_basic.program_options.smooth_plot
+	)
+
 	paths.save_projectdata_basic(data_basic)
 	paths.save_workflow_clustering(result_genotype_inference)
 	paths.save_workflow_hierarchy(result_genotype_inference.clusterdata)
 	paths.save_workflow_lineage(result_genotype_lineage)
-
+	paths.save_workflow_ggmuller(result_ggmuller)
 	# save_tables(data_basic, result_genotype_inference, result_genotype_lineage, genotype_annotations)
 	# Save using the older graphics workflow for now.
 	render_graphics(
 		paths = paths,
 		data_basic = data_basic,
 		data_inference = result_genotype_inference,
-		data_lineage = result_genotype_lineage,
+		data_ggmuller = result_ggmuller,
 		genotype_annotations = genotype_annotations
 	)
 
 	data_basic.save(output_folder)
+
+
+def run_workflow_ggmuller(table_genotypes:pandas.DataFrame, series_edges:pandas.Series, dlimit:float, smooth_values:bool):
+	""" Generates the population and edges table used in the muller plot.
+		Parameters
+		----------
+		table_genotypes: pandas.DataFrame
+		series_edges: pandas.Series
+			The index corresponds the the id of the child genotype, while the linked value is the id of the
+			predicted parent genotype.
+		dlimit:float
+		smooth_values:bool
+	"""
+
+	generator_table_population = dataio.GGMuller(cutoff_detection = dlimit, adjust_populations = smooth_values)
+	table_population = generator_table_population.generate_ggmuller_population_table(series_edges, table_genotypes)
+	generator_table_muller = dataio.GenerateMullerDataFrame()
+	table_muller = generator_table_muller.run(series_edges, table_population.copy(deep = True))
+
+	result = projectdata.DataGGmuller(
+		table_populations = table_population,
+		series_edges = series_edges,
+		table_muller = table_muller
+	)
+
+	return result
+
+
 
 
 def save_tables(data_basic: projectdata.DataWorkflowBasic, data_inference: projectdata.DataGenotypeInference,
@@ -335,7 +368,7 @@ def save_tables(data_basic: projectdata.DataWorkflowBasic, data_inference: proje
 
 def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata.DataWorkflowBasic,
 		data_inference: projectdata.DataGenotypeInference,
-		data_lineage: projectdata.DataGenotypeLineage, genotype_annotations: Dict[str, List[str]]):
+		data_ggmuller:projectdata.DataGGmuller, genotype_annotations: Dict[str, List[str]]):
 	""" Graphics are parametrized by filename suffix (png vs svg) and palette.
 		.figures
 		|---- dendrogram.png
@@ -381,15 +414,18 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 	# Set up the generators
 	generator_panel_timeseries = graphics.TimeseriesPanel(render = data_basic.program_options.render)
 	generator_plot_timeseries = graphics.TimeseriesPlot(render = data_basic.program_options.render)
-	generator_plot_muller = graphics.MullerPlot(outlines = data_basic.program_options.draw_outline,
-		render = data_basic.program_options.render)
+	generator_plot_muller = graphics.MullerPlot(
+		outlines = data_basic.program_options.draw_outline,
+		render = data_basic.program_options.render
+
+	)
 	generator_plot_muller_panel = graphics.MullerPanel()
 	# These figures need to be parametrized by palette type and filetype.
 	for palette_name in ["unique", "lineage"]:
 		folder_palette = paths.folder_figures_lineage if palette_name == 'lineage' else paths.folder_figures_unique
 
 		current_palette_data = graphics.palettes.generate_palette(
-			edges = data_lineage.table_edges,
+			edges = data_ggmuller.series_edges,
 			custom_palette = custom_palette,
 			annotations = genotype_annotations,
 			kind = palette_name,
@@ -420,6 +456,7 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 			# filename_lineageplot = folder_palette / f"{prefix}.lineageplot.{suffix}"
 			# filename_muller_panel = folder_palette / f"{prefix}.mullerpanel.{suffix}"
 			filename_graphviz_script = folder_palette / f"{prefix}.lineagescript.{suffix}.dot"
+			filename_ggmuller_script = folder_palette / f"{prefix}.ggmuller.r"
 			filename_lineage_panel = folder_palette / f"{prefix}.lineagepanel.{suffix}"
 
 			filename_lineageplot = paths.get_template(folder_palette, paths.template_figure_lineageplot, suffix)
@@ -442,7 +479,7 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 			)
 			logger.info("Generating the annotated muller plots...")
 			generator_plot_muller.plot(
-				muller_df = data_lineage.table_muller,
+				muller_df = data_ggmuller.table_muller,
 				color_palette = current_palette.get_genotype_palette(),
 				annotations = genotype_annotations,
 				filename = filename_mullerplot_annotated
@@ -450,7 +487,7 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 
 			generator_plot_muller_panel.plot(
 				timeseries = data_inference.table_genotypes,
-				muller_df = data_lineage.table_muller,
+				muller_df = data_ggmuller.table_muller,
 				palette = current_palette.get_genotype_palette(),
 				annotations = genotype_annotations,
 				filename = filename_muller_panel
@@ -458,19 +495,29 @@ def render_graphics(paths: projectpaths.OutputFilenames, data_basic: projectdata
 
 			logger.info("Generating the unannotated muller plots...")
 			generator_plot_muller.plot(
-				muller_df = data_lineage.table_muller,
+				muller_df = data_ggmuller.table_muller,
 				color_palette = current_palette.get_genotype_palette(),
 				annotations = None,
 				filename = filename_mullerplot_unannotated
 			)
 			logger.info("Generating the lineageplot...")
 			lineageplot = graphics.flowchart(
-				edges = data_lineage.table_edges.reset_index(),
+				edges = data_ggmuller.series_edges.reset_index(),
 				palette = current_palette.get_genotype_palette(),
 				annotations = genotype_annotations,
 				filename = filename_lineageplot,
 				add_score = False
 			)
+
+			# Save the scripts
+			script_contents_ggmuller = dataio.generate_r_script(
+				trajectory = paths.filename_table_trajectories,
+				population = paths.filename_table_population,
+				edges = paths.filename_table_edges,
+				color_palette = current_palette.get_genotype_palette(),
+				genotype_labels = list(data_inference.table_genotypes.index)
+			)
+			filename_ggmuller_script.write_text(script_contents_ggmuller)
 			filename_graphviz_script.write_text(lineageplot.to_string())
 			if suffix == 'png':
 				# PIL doesn't work with svgs
